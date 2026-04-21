@@ -1,0 +1,6 @@
+anthropic>=0.40.0
+pybit>=5.7.0
+telethon>=1.36.0
+python-dotenv>=1.0.0
+python-telegram-bot>=21.0
+pandas>=2.0.0
