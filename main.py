@@ -15,7 +15,7 @@ async def run_screener():
     print("→ Fetching Bybit data...")
     bybit = BybitFetcher()
     market = bybit.get_full_market_snapshot()
-    print(f"  Got {len(market['top_movers'])} movers, {len(market['technicals'])} technicals")
+    print(f"  Got {len(market['top_movers'])} movers, {len(market['technicals'])} symbols with multi-TF data")
 
     # 2. Fetch Telegram signals
     print("→ Reading Telegram groups...")

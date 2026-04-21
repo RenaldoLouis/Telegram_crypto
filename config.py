@@ -14,13 +14,20 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # === Claude Settings ===
 CLAUDE_MODEL = "claude-haiku-4-5"   # Cheap for daily use; switch to sonnet when tuning
-MAX_TOKENS_OUTPUT = 2000
+MAX_TOKENS_OUTPUT = 4000             # Increased for 5 full setups with multi-TF analysis
 
 # === Bybit Settings ===
 BYBIT_CATEGORY = "linear"            # USDT perpetuals
-TOP_MOVERS_LIMIT = 20                # Screen top 20 by volume
-KLINE_INTERVAL = "60"                # 1h candles for technicals
-KLINE_LIMIT = 100                    # Last 100 candles for RSI etc.
+TOP_MOVERS_LIMIT = 25                # Screen top 25 by volume
+KLINE_INTERVALS = {                  # Multi-timeframe candle config
+    "15": 100,                       # 15m — scalp (last ~25h)
+    "60": 100,                       # 1h  — intraday (last ~4 days)
+    "240": 100,                      # 4h  — swing (last ~16 days)
+    "D": 60,                         # 1D  — trend context (last ~2 months)
+}
+# Legacy single-TF settings (kept for backward compat)
+KLINE_INTERVAL = "60"
+KLINE_LIMIT = 100
 
 # === Telegram Groups to Monitor ===
 # Add group usernames or IDs you want to screen
