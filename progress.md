@@ -6,30 +6,35 @@ _Last updated: 2026-04-22_
 
 ## What This Project Does
 
-A personal, automated crypto analyst that runs once a night and delivers the **5 best trading opportunities** on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It also self-evaluates past recommendations against actual price data.
+A personal, automated crypto analyst that runs once a night and delivers the **5 best trading opportunities** on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It self-evaluates past recommendations against actual price data and feeds results back to Claude.
 
 ```
-Bybit API (50 tickers)
+Bybit API (50 tickers, single call)
     ↓
-Python pre-filter (score by volume, funding, price action, OI)
-    → Disqualify illiquid coins (<$10M volume, <$50M OI)
-    → Rank by interest score
-    → Keep top 25 + watchlist
+Python pre-filter (knowledge-based scoring, free)
+    → Disqualify: <$10M turnover or <$50M OI
+    → Score by: price action, funding extremes, liquidity, OI+move combos
+    → Keep top 25 + watchlist (BTC, ETH, SOL)
     ↓
 Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
-    → RSI(14), EMA 20/50, volume spike ratio, breakout flags
+    → RSI(14), EMA 20/50, volume spike ratio, breakout flags per TF
     ↓
-Claude (Sonnet 4.6) analyzes against full knowledge base
-    → 9 knowledge files: philosophy, risk mgmt, market structure,
-      volume analysis, crypto specifics, 7 playbook setups, watchlist, glossary
-    → Outputs 5 ranked setups + structured JSON for tracking
+Claude (Sonnet 4.6) analyzes against full knowledge base (9 files)
+    → Multi-TF confluence scoring (4/4=High, 3/4=Medium, 2/4=Low)
+    → Outputs 5 ranked setups (readable brief) + structured JSON
     ↓
-Telegram delivery (HTML formatted, retry on failure)
+main.py parses JSON → saves to logs/setups/
     ↓
-Archive: brief (markdown) + setups (JSON)
+Brief archived to logs/briefs/ (clean, no JSON)
     ↓
-Weekly eval: fetches actual prices, scores each setup,
-    writes performance summary → Claude reads on future runs (feedback loop)
+Telegram delivery (HTML formatted, retry on failure, plain text fallback)
+    ↓
+Weekly eval (weekly_eval.py, run Sundays)
+    → Fetches actual prices from Bybit for each past setup
+    → Scores: triggered? stop or target hit first? actual R:R?
+    → Aggregates by: setup type, confidence, rank, MODEL
+    → Writes logs/performance/summary.md
+    → Claude reads summary on next run → feedback loop
 ```
 
 ---
@@ -38,15 +43,27 @@ Weekly eval: fetches actual prices, scores each setup,
 
 | File | Lines | Purpose |
 |---|---|---|
-| `main.py` | 86 | Orchestrator — fetch → analyze → archive → deliver |
-| `config.py` | 40 | All settings: API keys, model, limits, watchlist |
-| `fetchers/bybit_data.py` | 288 | Bybit API: tickers, multi-TF klines, pre-filter scoring |
+| `main.py` | 88 | Orchestrator — fetch → analyze → parse JSON → archive → deliver |
+| `config.py` | 41 | Settings: API keys, model, limits, timeframes, watchlist |
+| `fetchers/bybit_data.py` | 288 | Bybit API: 50 tickers → knowledge-based scoring → top 25 → multi-TF klines |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 161 | System prompt + knowledge loader + performance feedback |
-| `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching |
-| `delivery/telegram_bot.py` | 160 | Markdown→HTML conversion, smart chunking, retry logic |
-| `weekly_eval.py` | 463 | Evaluation engine: scores past setups, generates summary |
+| `analyzer/prompts.py` | 161 | System prompt + knowledge loader + performance feedback injection |
+| `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
+| `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
+| `weekly_eval.py` | 495 | Evaluation engine: scores setups, tracks by model, generates summary |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
+| `progress.md` | — | This file — project progress tracker |
+
+### Directory Structure
+
+```
+logs/
+  briefs/         → Archived markdown briefs (one per run)
+  setups/         → Structured JSON per run (symbol, entry, stop, target, model)
+  evaluations/    → Scored results per run (win/loss, actual R:R, exit reason)
+  performance/
+    summary.md    → Rolling stats — Claude reads this on every future run
+```
 
 ---
 
@@ -57,8 +74,9 @@ Weekly eval: fetches actual prices, scores each setup,
 | Model | `claude-sonnet-4-6` |
 | Max output tokens | 8000 |
 | Broad scan pool | 50 tickers (by turnover) |
-| Pre-filter to | 25 coins (by interest score + watchlist) |
+| Pre-filter to | 25 coins (by knowledge-based interest score + watchlist) |
 | Timeframes | 15m, 1h, 4h, 1D |
+| Indicators per TF | RSI(14), EMA 20, EMA 50, volume spike ratio, 20-candle breakout |
 | Watchlist (always included) | BTCUSDT, ETHUSDT, SOLUSDT |
 | Schedule | Once nightly (launchd, 9pm local) |
 | Delivery | Telegram bot (HTML formatted) |
@@ -68,20 +86,20 @@ Weekly eval: fetches actual prices, scores each setup,
 ## Cost Estimation (Monthly)
 
 ### Per Run (once/night)
-| Component | Tokens | Cost (Sonnet 4.6) |
-|---|---|---|
-| System prompt + knowledge | ~16,700 input | ~$0.050 |
-| Market data (25 coins × 4 TFs) | ~3,000 input | ~$0.009 |
-| Output (5 setups + JSON) | ~6,000-8,000 output | ~$0.090-0.120 |
-| **Total per run** | **~28,000** | **~$0.15-0.18** |
+| Component | Tokens | Cost (Sonnet 4.6) | Cost (Haiku 4.5) |
+|---|---|---|---|
+| System prompt + knowledge | ~16,700 input | $0.050 | $0.013 |
+| Market data (25 coins × 4 TFs) | ~3,000 input | $0.009 | $0.002 |
+| Output (5 setups + JSON) | ~6,000-8,000 output | $0.090-0.120 | $0.024-0.032 |
+| **Total per run** | **~28,000** | **~$0.15-0.18** | **~$0.04-0.05** |
 
 ### Monthly (30 runs)
-| Scenario | Est. Cost |
+| Model | Est. Cost |
 |---|---|
-| Sonnet 4.6 (current) | **~$4.50-5.40/month** |
-| Haiku 4.5 (if switched back) | **~$0.50-0.70/month** |
+| **Sonnet 4.6 (current)** | **$4.50-5.40/month** |
+| Haiku 4.5 | $1.20-1.50/month |
 
-_Note: Prompt caching saves ~90% on system prompt for runs within 5 min of each other, but with once-nightly runs the cache is always cold._
+_Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nightly runs always have cold cache._
 
 ---
 
@@ -89,21 +107,46 @@ _Note: Prompt caching saves ~90% on system prompt for runs within 5 min of each 
 
 **Status: Tracking started 2026-04-22. No evaluated setups yet.**
 
-The weekly eval (`weekly_eval.py`) needs 1-7 days of price data after each brief before it can score setups:
+The weekly eval needs price data after each brief before scoring:
 - Scalp setups: scored after 1 day
 - Intraday setups: scored after 2 days
 - Swing setups: scored after 7 days
 
 **First evaluation possible: ~2026-04-29** (run `python weekly_eval.py`)
 
-Once data accumulates, this section will show:
-- Overall win rate
-- Win rate by setup type (trend pullback, range breakout, etc.)
+### What the eval tracks
+- Overall win rate (W/L, avg R:R)
+- Win rate by setup type (trend pullback, range breakout, spring, etc.)
 - Win rate by confidence level (high/medium/low)
+- Win rate by rank position (#1 through #5)
+- **Win rate by model** (Sonnet vs Haiku comparison)
 - Avg predicted R:R vs actual R:R
 - Confidence calibration (do "high" calls actually win more?)
+- Actionable insights auto-generated for Claude's future runs
 
-Results are auto-generated in `logs/performance/summary.md` and fed back to Claude.
+Results live in `logs/performance/summary.md` and are injected into Claude's system prompt.
+
+---
+
+## Pre-Filter Scoring Logic
+
+The Python pre-filter uses rules extracted from the knowledge base to score 50 tickers before any kline fetching:
+
+### Hard Disqualifiers
+| Rule | Threshold | Source |
+|---|---|---|
+| Low turnover | < $10M 24h turnover | `02_risk_management` |
+| Low open interest | < $50M OI | `02_risk_management` |
+
+### Scoring Factors
+| Factor | Thresholds | Max Points | Source |
+|---|---|---|---|
+| Liquidity | $50M→1pt, $100M→2, $500M→3, $1B+→4 | 4 | `04_volume_analysis` |
+| Price action | 1.5%→1, 3%→2, 5%→3, 10%→4, 15%+→5 | 5 | `05_crypto_specifics` |
+| Funding extremes | ±0.01%→1, ±0.03%→3, ±0.05%+→5 | 5 | `04_volume_analysis`, `06_setup_playbook` |
+| High OI + big move | $200M+ OI and >5% change | 2 | `04_volume_analysis` |
+| Funding squeeze buildup | Extreme funding but price flat (<3%) | 3 | `06_setup_playbook` Setup 5 |
+| Post-liquidation candidate | >10% move + >$200M turnover | 2 | `06_setup_playbook` Setup 6 |
 
 ---
 
@@ -114,66 +157,79 @@ Results are auto-generated in `logs/performance/summary.md` and fed back to Clau
 **Multi-Timeframe Analysis**
 - Added 4-timeframe scanning: 15m, 1h, 4h, 1D (was 1h only)
 - Added EMA 20/50 trend detection per timeframe
-- Claude now checks multi-TF confluence for every recommendation
+- Claude checks multi-TF confluence for every recommendation (4/4=High, 3/4=Med, 2/4=Low)
 
-**Smarter Coin Selection**
-- Broadened initial scan from 20 → 50 tickers
-- Added knowledge-based Python pre-filter scoring:
-  - Hard disqualifiers: <$10M turnover or <$50M OI (from `02_risk_management`)
-  - Volume/liquidity tiers (from `04_volume_analysis`)
-  - Funding rate extremes → squeeze potential (from `06_setup_playbook`)
-  - Price action magnitude scoring (from `05_crypto_specifics`)
-  - Combined signal bonuses: funding squeeze buildup, post-liquidation candidates
-- Pre-filter cuts 50 → 25 most interesting coins before any kline fetching
+**Knowledge-Based Python Pre-Filter**
+- Broadened initial scan from 20 → 50 tickers (single API call)
+- Hard disqualifiers: <$10M turnover or <$50M OI (from `02_risk_management`)
+- Multi-factor scoring: liquidity, price action magnitude, funding extremes, OI+move combos, squeeze buildup, post-liquidation signals
+- All thresholds derived from knowledge files, not arbitrary
+- Pre-filter cuts 50 → 25 before any kline fetching (halves Bybit API calls)
 
 **Always 5 Recommendations**
-- Changed output from 0-3 conservative setups to always 5 ranked opportunities
-- Each with full trade plan: entry zone, stop, target 1 + target 2, R:R, confidence
-- Ranked by R:R, multi-TF confluence, volume confirmation
+- Changed from 0-3 conservative setups to always 5 ranked opportunities
+- Each with: multi-TF analysis, trade plan (entry/stop/target1/target2/R:R), confidence level
+- Ranked by: R:R ratio, multi-TF confluence, volume confirmation, setup clarity
 
 **Self-Evaluation Feedback Loop**
 - Claude outputs structured JSON (`setups_json`) alongside readable brief
-- `main.py` parses and archives to `logs/setups/`
-- New `weekly_eval.py`: fetches actual prices from Bybit, scores each setup
-- Generates `logs/performance/summary.md` with win rate stats
-- Claude reads performance summary on future runs → calibrates behavior
+- `main.py` parses and archives to `logs/setups/` with model name
+- `weekly_eval.py`: fetches actual 15m klines from Bybit, scores each setup
+- Checks: entry triggered? → stop hit first or target? → actual R:R
+- Aggregates stats by: setup type, confidence, rank, **model**
+- Generates `logs/performance/summary.md` with actionable insights
+- Claude reads performance summary on future runs → self-calibration
+
+**Model Tracking**
+- Every setup JSON records which Claude model generated it
+- Weekly eval tracks win rate and avg R:R per model
+- Enables future Sonnet vs Haiku comparison to find cost-effective option
 
 **Telegram Delivery Improvements**
-- Switched from Markdown to HTML parse mode (no more parse errors)
-- Added markdown→HTML converter for Claude's output
-- Smart chunking: splits on section boundaries, not mid-sentence
-- Retry with backoff on network errors (3 attempts, 2s/4s/6s)
+- Switched from Markdown to HTML parse mode (eliminates parse errors)
+- Markdown→HTML converter handles `**bold**`, `*italic*`, `##` headers, `---` dividers
+- Smart chunking: splits on section boundaries (`━━━` lines), not mid-sentence
+- Retry with backoff on network errors (3 attempts: 2s, 4s, 6s delays)
 - Fallback to plain text if HTML also fails
+- 30s timeout per request
 
 **Token Optimization**
-- Removed duplicate knowledge files (technical_analysis.md, watchlist.md, README.md, 00_recommended_reading.md)
-- Compact JSON format (no indentation) — ~40% smaller market data
-- Pre-filtering means Claude only sees 25 pre-scored coins, not raw 50
+- Removed 4 duplicate/unnecessary knowledge files (technical_analysis.md, watchlist.md, README.md, 00_recommended_reading.md)
+- Compact JSON format (`separators=(',',':')`) — ~40% smaller market data
+- Pre-filtering: Claude sees 25 pre-scored coins, not raw 50
 - System prompt: ~16.7k tokens (down from ~20k+)
-- Max output: 4000 → 8000 tokens (needed for 5 setups + JSON block)
+- Max output: 8000 tokens (5 setups + JSON block)
 
 ### 2026-04-21 — Initial Build
 
 - Basic pipeline: Bybit → Claude (Haiku) → Telegram
 - Single timeframe (1h), top 20 movers
-- RSI, volume spike, breakout detection
-- 0-3 conservative setups, "no trade" valid
-- 8 knowledge files written (philosophy through glossary)
+- RSI(14), volume spike detection, 20-candle breakout
+- 0-3 conservative setups, "no trade" valid output
+- 8 knowledge files written (trading philosophy through glossary)
 - Brief archiving to `logs/briefs/`
 
 ---
 
 ## What's Next (Backlog)
 
-- [ ] Run first weekly evaluation (after ~7 days of briefs)
+### Short Term (next 1-2 weeks)
+- [ ] Run first weekly evaluation (~2026-04-29)
+- [ ] Review first eval results, adjust prompt if needed
+- [ ] Try a few runs on Haiku to start model comparison data
+
+### Medium Term (next 1-2 months)
 - [ ] Enable Telegram signal group reading (add groups to config)
 - [ ] Add CoinGlass data (funding history, liquidation heatmap, OI changes)
 - [ ] Add on-chain data source (exchange flows via CryptoQuant/Glassnode)
-- [ ] Eval script: add time-to-resolution tracking
-- [ ] Eval script: compare predicted R:R vs actual R:R
-- [ ] Consider switching back to Haiku for cost savings once eval shows quality is sufficient
+- [ ] Compress multi-TF analysis in prompt to save output tokens
 - [ ] Build a simple dashboard/viewer for past briefs + eval results
-- [ ] Phase B prerequisites: 60+ days of journaled Phase A data, documented win rate, risk engine design
+
+### Long Term (Phase B prerequisites)
+- [ ] 60+ days of Phase A briefs with evaluation data
+- [ ] Documented win rate proving edge (from weekly_eval)
+- [ ] Separate hard-coded risk engine (not Claude) for position sizing
+- [ ] Explicit user approval to begin Phase B
 
 ---
 
@@ -181,8 +237,11 @@ Results are auto-generated in `logs/performance/summary.md` and fed back to Clau
 
 **Currently: Phase A — Analyst mode (signal-only)**
 
-Phase B (auto-execution) prerequisites:
-1. ❌ 60+ days of Phase A briefs with evaluation data
-2. ❌ Documented win rate proving edge (from weekly_eval)
-3. ❌ Separate hard-coded risk engine (not Claude) for position sizing
-4. ❌ Explicit user approval to begin Phase B
+The human makes every trading decision. Claude surfaces setups. No auto-execution.
+
+Phase B (auto-execution) will only be considered after:
+1. 60+ days of evaluated Phase A data
+2. Proven edge from weekly_eval (win rate + R:R)
+3. Hard-coded risk engine built (position sizing, stop enforcement — NOT Claude)
+4. Model comparison data (Sonnet vs Haiku accuracy)
+5. Explicit user approval
