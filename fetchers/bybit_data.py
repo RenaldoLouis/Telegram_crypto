@@ -130,16 +130,151 @@ class BybitFetcher:
 
         return result
 
+    @staticmethod
+    def _ticker_interest_score(ticker):
+        """Score a ticker using knowledge-based rules. Uses only ticker-level data (free).
+
+        Scoring is derived from the knowledge files:
+        - 02_risk_management.md: liquidity minimums ($10M volume, $50M OI)
+        - 04_volume_analysis.md: funding rate thresholds (±0.03%, ±0.05%)
+        - 05_crypto_specifics.md: BTC correlation, extreme moves
+        - 06_setup_playbook.md: setup triggers (funding squeeze, liquidation cascade)
+
+        Returns (score, disqualified). Disqualified coins are dropped entirely.
+        """
+        score = 0
+        pct_change = ticker.get("price_change_24h_pct", 0)
+        abs_pct = abs(pct_change)
+        funding = ticker.get("funding_rate_pct", 0)
+        abs_funding = abs(funding)
+        turnover = ticker.get("turnover_24h_usd", 0)
+        volume = ticker.get("volume_24h", 0)
+        oi = ticker.get("open_interest", 0)
+
+        # ===== HARD DISQUALIFIERS (from 02_risk_management, 07_watchlist) =====
+        # "Any perp below $50M OI or $10M daily volume should be avoided" — 02_risk_management
+        if turnover < 10_000_000:
+            return 0, True
+        # Low OI = illiquid, unreliable signals
+        if oi > 0 and oi < 50_000_000:
+            return 0, True
+
+        # ===== LIQUIDITY (higher = more reliable signals) =====
+        # "High volume = institutional interest = higher probability moves" — system prompt
+        if turnover > 1_000_000_000:
+            score += 4  # top-tier liquid
+        elif turnover > 500_000_000:
+            score += 3
+        elif turnover > 100_000_000:
+            score += 2
+        elif turnover > 50_000_000:
+            score += 1
+
+        # ===== PRICE ACTION (from 01_trading_philosophy, 05_crypto_specifics) =====
+        # "Unusual 24h % change combined with high turnover suggests attention" — system prompt
+        # "Normal daily volatility (crypto): 3-10%" — 05_crypto_specifics
+        if abs_pct > 15:
+            score += 5  # exceptional event, possible liquidation cascade / climactic move
+        elif abs_pct > 10:
+            score += 4  # strong move, likely setup forming
+        elif abs_pct > 5:
+            score += 3  # "FOMO extended move" territory but also breakout candidate
+        elif abs_pct > 3:
+            score += 2  # above normal crypto vol, worth checking
+        elif abs_pct > 1.5:
+            score += 1  # mild activity
+
+        # ===== FUNDING RATE (from 04_volume_analysis, 06_setup_playbook) =====
+        # ">0.05%/8h = longs crowded (squeeze risk). <-0.05%/8h = shorts crowded" — 04_volume_analysis
+        # "Funding rate has been extreme for 24+ hours → squeeze setup" — 06_setup_playbook
+        if abs_funding > 0.05:
+            score += 5  # extreme crowding = Setup 5 (Funding Squeeze) candidate
+        elif abs_funding > 0.03:
+            score += 3  # moderate crowding, worth monitoring
+        elif abs_funding > 0.01:
+            score += 1  # mild bias
+
+        # ===== OI-PRICE DIVERGENCE (from 04_volume_analysis) =====
+        # "Price ↑ + OI ↓ = shorts covering (squeeze, near tops)"
+        # "Price ↓ + OI ↓ = longs closing (capitulation, near bottoms)"
+        # We can't see OI *change* from a single ticker snapshot, but high OI
+        # + big move = lots of positions getting tested
+        if oi > 200_000_000 and abs_pct > 5:
+            score += 2  # high OI + big move = liquidation cluster likely
+
+        # ===== COMBINED SIGNALS (from 06_setup_playbook) =====
+        # Setup 5 (Funding Squeeze): extreme funding + price stalling
+        if abs_funding > 0.05 and abs_pct < 3:
+            score += 3  # crowded BUT price not moving = squeeze building
+
+        # Setup 6 (Post-Liquidation): big move + high volume
+        if abs_pct > 10 and turnover > 200_000_000:
+            score += 2  # post-liquidation reversal candidate
+
+        return score, False
+
     def get_full_market_snapshot(self):
-        """Main entry — returns everything Claude needs with multi-TF data."""
-        top_movers = self.get_top_movers(config.TOP_MOVERS_LIMIT)
+        """Main entry — returns everything Claude needs with multi-TF data.
 
-        # Build symbols to analyze: top movers + your watchlist
-        symbols_to_analyze = list({m["symbol"] for m in top_movers} | set(config.WATCHLIST))
+        Flow:
+          1. Fetch top 50 tickers by turnover (single API call, free)
+          2. Disqualify illiquid coins ($10M volume, $50M OI minimums)
+          3. Score remaining by knowledge-based rules (free)
+          4. Keep top 25 by score + watchlist
+          5. Fetch multi-TF klines only for those ~25
+          6. Send all with full detail to Claude
+        """
+        # Step 1: Get broad pool of 50 tickers
+        broad_pool = self.get_top_movers(50)
+        print(f"  Fetched {len(broad_pool)} tickers from Bybit")
 
+        # Step 2: Score, disqualify illiquid, and rank
+        watchlist_syms = set(config.WATCHLIST)
+        scored = []
+        disqualified = 0
+        for t in broad_pool:
+            score, disq = self._ticker_interest_score(t)
+            if disq and t["symbol"] not in watchlist_syms:
+                disqualified += 1
+                continue
+            scored.append((t, score))
+
+        scored.sort(key=lambda x: x[1], reverse=True)
+        print(f"  Disqualified {disqualified} illiquid coins (< $10M vol or < $50M OI)")
+
+        # Step 3: Keep top 25 + watchlist (dedup)
+        selected_symbols = set()
+        selected_movers = []
+
+        # Always include watchlist first
+        for t, s in scored:
+            if t["symbol"] in watchlist_syms:
+                selected_symbols.add(t["symbol"])
+                selected_movers.append(t)
+
+        # Fill up to limit from ranked list
+        for t, s in scored:
+            if len(selected_symbols) >= config.TOP_MOVERS_LIMIT:
+                break
+            if t["symbol"] not in selected_symbols:
+                selected_symbols.add(t["symbol"])
+                selected_movers.append(t)
+
+        # Add watchlist symbols that weren't in the top 50 at all
+        for sym in watchlist_syms:
+            if sym not in selected_symbols:
+                selected_symbols.add(sym)
+
+        # Log top scores for debugging
+        top_5 = scored[:5]
+        print(f"  Top 5 scores: {', '.join(f'{t['symbol']}={s}' for t, s in top_5)}")
+        print(f"  Selected {len(selected_symbols)} symbols for multi-TF analysis")
+
+        # Step 4: Fetch multi-TF klines only for selected symbols
         technicals = []
-        total = len(symbols_to_analyze)
-        for i, sym in enumerate(symbols_to_analyze):
+        symbols_list = sorted(selected_symbols)
+        total = len(symbols_list)
+        for i, sym in enumerate(symbols_list):
             try:
                 print(f"  [{i+1}/{total}] Fetching {sym}...")
                 technicals.append(self.get_multi_tf_indicators(sym))
@@ -148,6 +283,6 @@ class BybitFetcher:
 
         return {
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            "top_movers": top_movers,
+            "top_movers": selected_movers,
             "technicals": technicals,
         }

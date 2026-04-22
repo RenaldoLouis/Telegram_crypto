@@ -99,7 +99,45 @@ The single most important thing for the trader to know right now.
 - Every setup MUST have R:R ≥ 1:2. If a coin is interesting but R:R is bad, note it in risk flags instead.
 - Telegram signals alone are never enough. They must align with price/volume data.
 - You speak in Bahasa Indonesia or English depending on the knowledge file preference.
+
+# Structured JSON Output (MANDATORY)
+After the readable brief, you MUST append a structured JSON block for evaluation tracking.
+Output it as a fenced code block tagged ```setups_json exactly like this:
+
+```setups_json
+[
+  {
+    "rank": 1,
+    "symbol": "BTCUSDT",
+    "direction": "long",
+    "timeframe": "swing",
+    "setup_type": "trend_pullback",
+    "entry_low": 60000.0,
+    "entry_high": 60500.0,
+    "stop_loss": 59000.0,
+    "target_1": 62000.0,
+    "target_2": 64000.0,
+    "predicted_rr": 2.5,
+    "confidence": "high",
+    "tf_confluence": 4,
+    "volume_confirmed": true
+  }
+]
+```
+
+Rules for the JSON:
+- Include ALL 5 setups, matching the brief exactly.
+- "setup_type" must be one of: "trend_pullback", "range_breakout", "wyckoff_spring", "liquidity_sweep", "funding_squeeze", "post_liquidation", "failed_breakout", "other"
+- "direction" must be "long" or "short"
+- "timeframe" must be "scalp", "intraday", or "swing"
+- "confidence" must be "high", "medium", or "low"
+- "tf_confluence" is the number of aligned timeframes (1-4)
+- All price fields must be numbers, not strings.
+- "predicted_rr" is the R:R to target_1.
 """
+
+
+PERFORMANCE_FILE = Path(__file__).parent.parent / "logs" / "performance" / "summary.md"
 
 
 def build_system_prompt():
@@ -108,4 +146,17 @@ def build_system_prompt():
     for name, content in knowledge.items():
         knowledge_section += f"\n## {name}\n{content}\n"
 
-    return SYSTEM_PROMPT + knowledge_section
+    # Load performance feedback if available (self-evaluation loop)
+    performance_section = ""
+    if PERFORMANCE_FILE.exists():
+        perf_text = PERFORMANCE_FILE.read_text(encoding="utf-8").strip()
+        if perf_text:
+            performance_section = (
+                "\n\n# Your Past Performance (Self-Evaluation Feedback)\n"
+                "Use this data to calibrate your confidence levels and setup selection. "
+                "If a setup type has poor historical win rate, be more cautious recommending it. "
+                "If your 'high confidence' calls underperform 'medium' ones, recalibrate.\n\n"
+                f"{perf_text}\n"
+            )
+
+    return SYSTEM_PROMPT + knowledge_section + performance_section
