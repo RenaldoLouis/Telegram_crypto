@@ -242,8 +242,9 @@ def run_evaluation():
             continue  # already evaluated
 
         run_ts = record["run_timestamp_utc"]
+        model = record.get("model", "unknown")
         setups = record["setups"]
-        print(f"\nEvaluating {run_tag} ({len(setups)} setups)...")
+        print(f"\nEvaluating {run_tag} [{model}] ({len(setups)} setups)...")
 
         eval_results = []
         skipped = False
@@ -283,6 +284,7 @@ def run_evaluation():
         eval_record = {
             "run_tag": run_tag,
             "run_timestamp_utc": run_ts,
+            "model": model,
             "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
             "results": eval_results,
         }
@@ -306,11 +308,12 @@ def generate_summary(all_evals):
         print("No evaluations to summarize.")
         return
 
-    # Flatten all results
+    # Flatten all results, carrying model info from the eval record
     all_results = []
     for ev in all_evals:
         for r in ev["results"]:
             r["run_tag"] = ev["run_tag"]
+            r["model"] = ev.get("model", "unknown")
             all_results.append(r)
 
     evaluated = [r for r in all_results if r["status"] == "evaluated"]
@@ -368,6 +371,19 @@ def generate_summary(all_evals):
         else:
             rank_stats[rank]["losses"] += 1
 
+    # Stats by model
+    model_stats = {}
+    for r in evaluated:
+        model = r.get("model", "unknown")
+        if model not in model_stats:
+            model_stats[model] = {"wins": 0, "losses": 0, "rr_sum": 0, "count": 0}
+        model_stats[model]["count"] += 1
+        model_stats[model]["rr_sum"] += r["actual_rr"]
+        if r["won"]:
+            model_stats[model]["wins"] += 1
+        else:
+            model_stats[model]["losses"] += 1
+
     # Build summary
     lines = [
         "# Performance Summary",
@@ -418,6 +434,19 @@ def generate_summary(all_evals):
         wr = s["wins"] / s["count"] * 100 if s["count"] else 0
         lines.append(f"| #{rank} | {s['count']} | {wr:.0f}% |")
 
+    # Stats by model
+    if len(model_stats) > 0:
+        lines += [
+            "",
+            "## By Model",
+            "| Model | Trades | Wins | Losses | Win Rate | Avg R:R |",
+            "|---|---|---|---|---|---|",
+        ]
+        for model, s in sorted(model_stats.items()):
+            wr = s["wins"] / s["count"] * 100 if s["count"] else 0
+            ar = s["rr_sum"] / s["count"] if s["count"] else 0
+            lines.append(f"| {model} | {s['count']} | {s['wins']} | {s['losses']} | {wr:.0f}% | {ar:.2f} |")
+
     # Actionable insights
     lines += [
         "",
@@ -448,6 +477,21 @@ def generate_summary(all_evals):
             lines.append("- CALIBRATION ISSUE: 'High' confidence setups don't outperform 'Medium'. Recalibrate confidence scoring.")
         else:
             lines.append("- Confidence calibration looks good: High > Medium win rates.")
+
+    # Model comparison
+    if len(model_stats) >= 2:
+        model_ranked = sorted(model_stats.items(), key=lambda x: (x[1]["wins"]/x[1]["count"]) if x[1]["count"] >= 3 else 0, reverse=True)
+        best_model = model_ranked[0]
+        if best_model[1]["count"] >= 3:
+            best_wr = best_model[1]["wins"] / best_model[1]["count"] * 100
+            best_ar = best_model[1]["rr_sum"] / best_model[1]["count"]
+            lines.append(f"- Best performing model: **{best_model[0]}** ({best_wr:.0f}% win rate, {best_ar:.2f} avg R:R)")
+        # Compare all models with enough data
+        for model, s in model_ranked:
+            if s["count"] >= 5:
+                wr = s["wins"] / s["count"] * 100
+                ar = s["rr_sum"] / s["count"]
+                lines.append(f"- {model}: {wr:.0f}% win rate, {ar:.2f} avg R:R over {s['count']} trades")
 
     summary_text = "\n".join(lines) + "\n"
     PERFORMANCE_DIR.mkdir(parents=True, exist_ok=True)

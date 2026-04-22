@@ -4,6 +4,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+import config
 from fetchers.bybit_data import BybitFetcher
 from fetchers.telegram_reader import TelegramReader
 from analyzer.claude_client import ClaudeAnalyzer
@@ -59,6 +60,7 @@ async def run_screener():
         setup_record = {
             "run_timestamp_utc": run_ts.isoformat(),
             "run_tag": run_tag,
+            "model": config.CLAUDE_MODEL,
             "setups": setups,
         }
         setup_file = setups_dir / f"setups_{run_tag}.json"
