@@ -1,0 +1,16 @@
+[
+  {
+    "date": "2026-04-23",
+    "run_tag": "20260423_1634",
+    "symbol": "SPKUSDT",
+    "direction": "long",
+    "entry_price": 0.05010,
+    "stop_loss": 0.04655,
+    "target_hit": null,
+    "actual_exit": 0.04655,
+    "exit_reason": "stop_loss",
+    "result": "loss",
+    "pnl_percent": -7.09,
+    "note": "Should have TP'd at 0.05255 — the screening target was too far. Next time consider taking partial profit at a closer level when the move stalls."
+  }
+]

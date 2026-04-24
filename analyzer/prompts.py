@@ -1,6 +1,8 @@
+import json
 from pathlib import Path
 
 KNOWLEDGE_DIR = Path(__file__).parent.parent / "knowledge"
+TRADES_FILE = Path(__file__).parent.parent / "logs" / "trades" / "my_trades.json"
 
 
 def load_knowledge():
@@ -159,4 +161,25 @@ def build_system_prompt():
                 f"{perf_text}\n"
             )
 
-    return SYSTEM_PROMPT + knowledge_section + performance_section
+    # Load trader's personal notes/lessons
+    trader_notes_section = ""
+    if TRADES_FILE.exists():
+        try:
+            trades = json.loads(TRADES_FILE.read_text(encoding="utf-8"))
+            notes = [t for t in trades if t.get("note", "").strip()]
+            if notes:
+                trader_notes_section = (
+                    "\n\n# Trader's Personal Notes & Lessons\n"
+                    "The trader has logged actual trades and lessons. Use these to calibrate your recommendations.\n"
+                    "Pay special attention to target placement feedback — if the trader says targets were too far, "
+                    "prefer closer, more realistic targets in future setups.\n\n"
+                )
+                for t in notes:
+                    trader_notes_section += (
+                        f"- **{t.get('symbol', '?')}** ({t.get('date', '?')}, {t.get('result', '?')}): "
+                        f"{t['note']}\n"
+                    )
+        except Exception:
+            pass
+
+    return SYSTEM_PROMPT + knowledge_section + performance_section + trader_notes_section

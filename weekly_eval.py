@@ -32,6 +32,10 @@ EVAL_WINDOWS = {
 SETUPS_DIR = Path("logs/setups")
 EVALS_DIR = Path("logs/evaluations")
 PERFORMANCE_DIR = Path("logs/performance")
+TRADES_FILE = Path("logs/trades/my_trades.json")
+
+# Only evaluate setups from the last N weeks
+EVAL_LOOKBACK_WEEKS = 7
 
 
 def get_bybit_client():
@@ -216,90 +220,114 @@ def run_evaluation():
         print("No setups directory found. Run the screener first.")
         return
 
-    setup_files = sorted(SETUPS_DIR.glob("setups_*.json"))
-    if not setup_files:
-        print("No setup files found.")
-        return
-
-    client = get_bybit_client()
+    # --- Phase 1: Load ALL past evaluations (full history for learning) ---
     all_evals = []
-
-    # Load existing evaluations
     for ef in sorted(EVALS_DIR.glob("eval_*.json")):
         try:
             all_evals.append(json.loads(ef.read_text(encoding="utf-8")))
         except Exception:
             pass
-
     evaluated_tags = {e["run_tag"] for e in all_evals}
+    print(f"Loaded {len(all_evals)} past evaluation(s) from history.")
+
+    # --- Phase 2: Evaluate NEW setups from last {EVAL_LOOKBACK_WEEKS} weeks only ---
+    cutoff = datetime.now(timezone.utc) - timedelta(weeks=EVAL_LOOKBACK_WEEKS)
+    all_setup_files = sorted(SETUPS_DIR.glob("setups_*.json"))
+    setup_files = []
+    for sf in all_setup_files:
+        try:
+            record = json.loads(sf.read_text(encoding="utf-8"))
+            run_dt = datetime.fromisoformat(record["run_timestamp_utc"])
+            if run_dt >= cutoff:
+                setup_files.append(sf)
+        except Exception:
+            setup_files.append(sf)  # include if we can't parse date
+
+    # Count how many actually need evaluation
+    pending = [sf for sf in setup_files
+               if json.loads(sf.read_text(encoding="utf-8"))["run_tag"] not in evaluated_tags]
+    print(f"Found {len(setup_files)} setup file(s) within last {EVAL_LOOKBACK_WEEKS} weeks, "
+          f"{len(pending)} need evaluation.")
+
     new_count = 0
+    if pending:
+        client = get_bybit_client()
 
-    for sf in setup_files:
-        record = json.loads(sf.read_text(encoding="utf-8"))
-        run_tag = record["run_tag"]
+        for sf in pending:
+            record = json.loads(sf.read_text(encoding="utf-8"))
+            run_tag = record["run_tag"]
+            run_ts = record["run_timestamp_utc"]
+            model = record.get("model", "unknown")
+            setups = record["setups"]
+            print(f"\nEvaluating {run_tag} [{model}] ({len(setups)} setups)...")
 
-        if run_tag in evaluated_tags:
-            continue  # already evaluated
+            eval_results = []
+            skipped = False
 
-        run_ts = record["run_timestamp_utc"]
-        model = record.get("model", "unknown")
-        setups = record["setups"]
-        print(f"\nEvaluating {run_tag} [{model}] ({len(setups)} setups)...")
+            for setup in setups:
+                symbol = setup["symbol"]
+                print(f"  → {symbol} ({setup['direction']} {setup['timeframe']})...", end=" ")
 
-        eval_results = []
-        skipped = False
+                result = evaluate_setup(client, setup, run_ts)
+                if result is None:
+                    print("too early to evaluate")
+                    skipped = True
+                    break
 
-        for setup in setups:
-            symbol = setup["symbol"]
-            print(f"  → {symbol} ({setup['direction']} {setup['timeframe']})...", end=" ")
+                result["symbol"] = symbol
+                result["direction"] = setup["direction"]
+                result["timeframe"] = setup.get("timeframe", "intraday")
+                result["setup_type"] = setup.get("setup_type", "other")
+                result["confidence"] = setup.get("confidence", "medium")
+                result["predicted_rr"] = setup.get("predicted_rr", 0)
+                result["tf_confluence"] = setup.get("tf_confluence", 0)
+                result["rank"] = setup.get("rank", 0)
+                eval_results.append(result)
 
-            result = evaluate_setup(client, setup, run_ts)
-            if result is None:
-                print("too early to evaluate")
-                skipped = True
-                break
+                status = result["status"]
+                if status == "evaluated":
+                    icon = "✓" if result["won"] else "✗"
+                    print(f"{icon} R:R {result['actual_rr']} ({result['exit_reason']})")
+                else:
+                    print(f"— {result['reason']}")
 
-            result["symbol"] = symbol
-            result["direction"] = setup["direction"]
-            result["timeframe"] = setup.get("timeframe", "intraday")
-            result["setup_type"] = setup.get("setup_type", "other")
-            result["confidence"] = setup.get("confidence", "medium")
-            result["predicted_rr"] = setup.get("predicted_rr", 0)
-            result["tf_confluence"] = setup.get("tf_confluence", 0)
-            result["rank"] = setup.get("rank", 0)
-            eval_results.append(result)
+                time.sleep(0.1)
 
-            status = result["status"]
-            if status == "evaluated":
-                icon = "✓" if result["won"] else "✗"
-                print(f"{icon} R:R {result['actual_rr']} ({result['exit_reason']})")
-            else:
-                print(f"— {result['reason']}")
+            if skipped:
+                continue
 
-            time.sleep(0.1)
+            eval_record = {
+                "run_tag": run_tag,
+                "run_timestamp_utc": run_ts,
+                "model": model,
+                "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "results": eval_results,
+            }
 
-        if skipped:
-            continue
-
-        eval_record = {
-            "run_tag": run_tag,
-            "run_timestamp_utc": run_ts,
-            "model": model,
-            "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
-            "results": eval_results,
-        }
-
-        eval_file = EVALS_DIR / f"eval_{run_tag}.json"
-        eval_file.write_text(json.dumps(eval_record, indent=2), encoding="utf-8")
-        all_evals.append(eval_record)
-        new_count += 1
-        print(f"  Saved to {eval_file}")
+            eval_file = EVALS_DIR / f"eval_{run_tag}.json"
+            eval_file.write_text(json.dumps(eval_record, indent=2), encoding="utf-8")
+            all_evals.append(eval_record)
+            new_count += 1
+            print(f"  Saved to {eval_file}")
 
     print(f"\n{'='*40}")
-    print(f"Evaluated {new_count} new run(s). Total: {len(all_evals)} run(s).")
+    print(f"Evaluated {new_count} new run(s). Total evaluations in history: {len(all_evals)}.")
 
-    # Generate performance summary
+    # --- Phase 3: Generate summary from ALL evaluations (full history) ---
+    # This ensures the model learns from all past results, not just recent ones.
     generate_summary(all_evals)
+
+
+def load_manual_trades():
+    """Load the user's manual trade history from logs/trades/my_trades.json."""
+    if not TRADES_FILE.exists():
+        return []
+    try:
+        trades = json.loads(TRADES_FILE.read_text(encoding="utf-8"))
+        return trades if isinstance(trades, list) else []
+    except Exception as e:
+        print(f"  Warning: Could not load manual trades: {e}")
+        return []
 
 
 def generate_summary(all_evals):
@@ -307,6 +335,9 @@ def generate_summary(all_evals):
     if not all_evals:
         print("No evaluations to summarize.")
         return
+
+    # Load manual trade history
+    manual_trades = load_manual_trades()
 
     # Flatten all results, carrying model info from the eval record
     all_results = []
@@ -446,6 +477,42 @@ def generate_summary(all_evals):
             wr = s["wins"] / s["count"] * 100 if s["count"] else 0
             ar = s["rr_sum"] / s["count"] if s["count"] else 0
             lines.append(f"| {model} | {s['count']} | {s['wins']} | {s['losses']} | {wr:.0f}% | {ar:.2f} |")
+
+    # Manual trade history section
+    if manual_trades:
+        my_wins = [t for t in manual_trades if t.get("result") == "win"]
+        my_losses = [t for t in manual_trades if t.get("result") == "loss"]
+        my_total = len(manual_trades)
+        my_wr = len(my_wins) / my_total * 100 if my_total else 0
+
+        lines += [
+            "",
+            "## Trader's Actual Trades (Manual Log)",
+            f"- Total trades taken: {my_total}",
+            f"- Wins: {len(my_wins)}, Losses: {len(my_losses)}",
+            f"- Win rate: {my_wr:.0f}%",
+            "",
+            "### Trade-by-Trade Log",
+            "| Date | Symbol | Dir | Entry | Exit | Result | Note |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for t in manual_trades:
+            note_short = (t.get("note", "")[:80] + "...") if len(t.get("note", "")) > 80 else t.get("note", "")
+            lines.append(
+                f"| {t.get('date', '?')} | {t.get('symbol', '?')} | {t.get('direction', '?')} "
+                f"| {t.get('entry_price', '?')} | {t.get('actual_exit', '?')} "
+                f"| {t.get('result', '?')} | {note_short} |"
+            )
+
+        # Compare: did the trader's outcome differ from the API eval?
+        lines += [
+            "",
+            "### Trader Notes & Lessons (USE THESE TO IMPROVE FUTURE SETUPS)",
+        ]
+        for t in manual_trades:
+            note = t.get("note", "").strip()
+            if note:
+                lines.append(f"- **{t.get('symbol', '?')}** ({t.get('date', '?')}): {note}")
 
     # Actionable insights
     lines += [

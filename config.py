@@ -13,7 +13,8 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # === Claude Settings ===
-CLAUDE_MODEL = "claude-sonnet-4-6"   # Cheap for daily use; switch to sonnet when tuning
+# CLAUDE_MODEL = "claude-sonnet-4-6"   # use sonnet when tuning
+CLAUDE_MODEL = "claude-haiku-4-5"      # Cheap for daily use;
 MAX_TOKENS_OUTPUT = 8000             # 5 detailed setups + JSON block needs ~6-7k tokens
 
 # === Bybit Settings ===
