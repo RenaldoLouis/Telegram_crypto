@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-04-22_
+_Last updated: 2026-04-25_
 
 ---
 
@@ -19,7 +19,8 @@ Python pre-filter (knowledge-based scoring, free)
 Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
     → RSI(14), EMA 20/50, volume spike ratio, breakout flags per TF
     ↓
-Claude (Sonnet 4.6) analyzes against full knowledge base (9 files)
+Claude (Haiku 4.5 daily / Sonnet for tuning) analyzes as professional trader
+    → Professional trader mindset (don't chase, trap awareness, realistic targets)
     → Multi-TF confluence scoring (4/4=High, 3/4=Medium, 2/4=Low)
     → Outputs 5 ranked setups (readable brief) + structured JSON
     ↓
@@ -30,11 +31,14 @@ Brief archived to logs/briefs/ (clean, no JSON)
 Telegram delivery (HTML formatted, retry on failure, plain text fallback)
     ↓
 Weekly eval (weekly_eval.py, run Sundays)
+    → Evaluates NEW setups from last 7 weeks only (not all-time)
+    → Loads ALL past evaluations for cumulative learning
     → Fetches actual prices from Bybit for each past setup
     → Scores: triggered? stop or target hit first? actual R:R?
     → Aggregates by: setup type, confidence, rank, MODEL
+    → Merges manual trade log (logs/trades/my_trades.json) + trader notes
     → Writes logs/performance/summary.md
-    → Claude reads summary on next run → feedback loop
+    → Claude reads summary + trader lessons on next run → feedback loop
 ```
 
 ---
@@ -47,10 +51,10 @@ Weekly eval (weekly_eval.py, run Sundays)
 | `config.py` | 41 | Settings: API keys, model, limits, timeframes, watchlist |
 | `fetchers/bybit_data.py` | 288 | Bybit API: 50 tickers → knowledge-based scoring → top 25 → multi-TF klines |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 161 | System prompt + knowledge loader + performance feedback injection |
+| `analyzer/prompts.py` | 185 | Professional trader prompt + knowledge + performance + trader notes injection |
 | `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `weekly_eval.py` | 495 | Evaluation engine: scores setups, tracks by model, generates summary |
+| `weekly_eval.py` | 580 | Evaluation engine: 7-week window, partial eval support, enriched trade analysis, generates summary |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
 | `progress.md` | — | This file — project progress tracker |
 
@@ -61,8 +65,10 @@ logs/
   briefs/         → Archived markdown briefs (one per run)
   setups/         → Structured JSON per run (symbol, entry, stop, target, model)
   evaluations/    → Scored results per run (win/loss, actual R:R, exit reason)
+  trades/
+    my_trades.json → Manual trade log with notes/lessons (user-edited)
   performance/
-    summary.md    → Rolling stats — Claude reads this on every future run
+    summary.md    → Rolling stats + trader notes — Claude reads this on every future run
 ```
 
 ---
@@ -71,7 +77,7 @@ logs/
 
 | Setting | Value |
 |---|---|
-| Model | `claude-sonnet-4-6` |
+| Model | `claude-haiku-4-5` (daily) / `claude-sonnet-4-6` (tuning) |
 | Max output tokens | 8000 |
 | Broad scan pool | 50 tickers (by turnover) |
 | Pre-filter to | 25 coins (by knowledge-based interest score + watchlist) |
@@ -112,7 +118,14 @@ The weekly eval needs price data after each brief before scoring:
 - Intraday setups: scored after 2 days
 - Swing setups: scored after 7 days
 
-**First evaluation possible: ~2026-04-29** (run `python weekly_eval.py`)
+**Intraday setups from April 22 are now evaluable** — run `python weekly_eval.py`
+**First swing eval possible: ~2026-04-29**
+
+### Manual Trades Logged
+| Date | Symbol | Direction | Result | Failure Reason |
+|---|---|---|---|---|
+| 2026-04-23 | SPKUSDT | long | loss | target_too_far |
+| 2026-04-25 | ENJUSDT | long | open | sl_too_tight |
 
 ### What the eval tracks
 - Overall win rate (W/L, avg R:R)
@@ -151,6 +164,66 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-04-25 — Eval Bug Fix, Enriched Trade Journal & Token Cost Control
+
+**Weekly Eval Bug Fix — Partial Evaluation Support**
+- Fixed bug where a single "too early" setup would skip the entire run (swing setups blocked intraday setups from being evaluated)
+- Changed from `break` (abort run) to `continue` (skip individual setup, evaluate the rest)
+- Added partial eval tracking: runs with some setups still "too early" are re-queued on next eval run
+- Merges new results into existing eval files — no duplicates, no missed setups
+- Example: April 22 run has 3 intraday setups (2-day window) that were blocked by 2 swing setups (7-day window). Now the intraday ones get evaluated immediately, swing ones merge in later.
+
+**Enriched Trade Journal Format**
+- Each manual trade in `my_trades.json` now includes a `claude_recommendation` object linking back to Claude's original suggestion:
+  - rank, model, setup_type, timeframe, confidence, tf_confluence
+  - Full entry zone, SL, T1, T2, predicted R:R
+- Added `failure_reason` tag per trade (e.g. `sl_too_tight`, `target_too_far`) for pattern aggregation
+- Added `"open"` as a valid trade result (not counted in win/loss stats)
+- Summary now shows:
+  - **Recurring Failure Patterns** — aggregated failure categories so Claude sees what keeps going wrong
+  - **Trade-by-Trade Analysis** — trader's actual execution side-by-side with Claude's recommendation, showing exactly where and why setups failed
+  - Each trade entry: trader's execution, Claude's recommendation, lesson learned, failure category
+
+**Token Cost Control for Feedback Loop**
+- Capped trade-by-trade analysis in `summary.md` to last 10 trades (was unbounded)
+- Capped trader notes injection in `prompts.py` to last 10 notes (was unbounded)
+- Aggregate stats (win rate tables, failure patterns) remain uncapped — they summarize all history in fixed-size tables
+- Without cap: 100 trades would add ~3,000–5,000 tokens per run. With cap: stays ~1,000–1,500 tokens regardless of history size
+- Older trades still contribute to aggregate stats, just not shown individually to Claude
+
+**New Trade Logged: ENJUSDT**
+- Entry 0.06060, SL 0.0595 (from run 20260425_0751, Claude rank #3, haiku-4.5)
+- Note: SL too tight — only 1.8% from entry, high risk of noise stop-out
+- Tagged as `failure_reason: sl_too_tight`
+
+### 2026-04-24 — Professional Trader Prompt & Trade Journal
+
+**System Prompt Overhaul — Professional Trader Mindset**
+- Rewrote Claude's identity from "disciplined analyst" to "professional crypto derivatives trader"
+- Added 6 professional trading rules enforced in every analysis:
+  - **Don't Chase**: rejects entries after >5% moves without pullback, respects overbought RSI
+  - **BTC Correlation**: flags all alt longs as suspect when BTC drops >3%
+  - **Liquidity & Trap Awareness**: warns about stop hunts at obvious levels, liquidity sweeps
+  - **Realistic Targets**: Target 1 must be next actual S/R, not a dream level (learned from SPK trade)
+  - **Position Management**: breakeven levels, partial TP guidance for every setup
+  - **When to Skip**: extended moves, low-volume breakouts, crowded funding, news spikes
+- Added "trap check" field to every setup output (what could go wrong)
+- Added conflict resolution rules for disagreeing timeframes
+- Market structure phase identification now mandatory (Accumulation/Markup/Distribution/Markdown)
+- Token impact: ~800 tokens extra (~2300 vs ~1500), still within budget
+
+**Manual Trade Journal**
+- Created `logs/trades/my_trades.json` — user logs actual trades with entry, exit, result, and free-text notes
+- Notes/lessons are injected directly into Claude's system prompt on every run
+- First entry: SPKUSDT loss — "targets were too far, should have TP'd at 0.05255"
+
+**Weekly Eval Improvements**
+- Eval now only fetches klines for setups from last 7 weeks (prevents bloat after months of running)
+- But always loads ALL past evaluation results for cumulative learning (summary uses full history)
+- Three-phase design: (1) load all past evals, (2) evaluate new setups within 7-week window, (3) generate summary from everything
+- Summary now includes "Trader's Actual Trades" section with manual log table
+- Summary includes "Trader Notes & Lessons" section — fed back to Claude for self-improvement
 
 ### 2026-04-22 — Major Upgrade Session
 
@@ -216,7 +289,14 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ### Short Term (next 1-2 weeks)
 - [ ] Run first weekly evaluation (~2026-04-29)
 - [ ] Review first eval results, adjust prompt if needed
-- [ ] Try a few runs on Haiku to start model comparison data
+- [ ] Update ENJ trade result once closed (win/loss, actual exit)
+- [x] Fix eval bug: partial evaluation support (swing no longer blocks intraday)
+- [x] Enrich trade journal: link each trade to Claude's recommendation + failure categories
+- [x] Cap feedback loop token cost: last 10 trades/notes in prompt, aggregates uncapped
+- [x] Try a few runs on Haiku to start model comparison data (switched daily to Haiku 4.5)
+- [x] Upgrade system prompt to professional trader mindset
+- [x] Add manual trade journal with notes/lessons fed back to Claude
+- [x] Weekly eval: 7-week window for new evals + cumulative learning from all history
 
 ### Medium Term (next 1-2 months)
 - [ ] Enable Telegram signal group reading (add groups to config)

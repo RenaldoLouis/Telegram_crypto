@@ -243,9 +243,18 @@ def run_evaluation():
         except Exception:
             setup_files.append(sf)  # include if we can't parse date
 
-    # Count how many actually need evaluation
-    pending = [sf for sf in setup_files
-               if json.loads(sf.read_text(encoding="utf-8"))["run_tag"] not in evaluated_tags]
+    # Count how many actually need evaluation (new or partially evaluated)
+    pending = []
+    for sf in setup_files:
+        record = json.loads(sf.read_text(encoding="utf-8"))
+        run_tag = record["run_tag"]
+        if run_tag not in evaluated_tags:
+            pending.append(sf)
+        else:
+            # Re-evaluate if previous run was partial (some setups were "too early")
+            existing = next((e for e in all_evals if e["run_tag"] == run_tag), None)
+            if existing and len(existing["results"]) < len(record["setups"]):
+                pending.append(sf)
     print(f"Found {len(setup_files)} setup file(s) within last {EVAL_LOOKBACK_WEEKS} weeks, "
           f"{len(pending)} need evaluation.")
 
@@ -261,18 +270,27 @@ def run_evaluation():
             setups = record["setups"]
             print(f"\nEvaluating {run_tag} [{model}] ({len(setups)} setups)...")
 
+            # Find already-evaluated symbols for this run (from partial eval)
+            existing_eval = next((e for e in all_evals if e["run_tag"] == run_tag), None)
+            already_evaluated = set()
+            if existing_eval:
+                already_evaluated = {r["symbol"] for r in existing_eval["results"]}
+
             eval_results = []
-            skipped = False
 
             for setup in setups:
                 symbol = setup["symbol"]
+
+                # Skip if already evaluated in a previous partial run
+                if symbol in already_evaluated:
+                    continue
+
                 print(f"  → {symbol} ({setup['direction']} {setup['timeframe']})...", end=" ")
 
                 result = evaluate_setup(client, setup, run_ts)
                 if result is None:
                     print("too early to evaluate")
-                    skipped = True
-                    break
+                    continue  # skip this setup, evaluate others
 
                 result["symbol"] = symbol
                 result["direction"] = setup["direction"]
@@ -293,20 +311,26 @@ def run_evaluation():
 
                 time.sleep(0.1)
 
-            if skipped:
-                continue
+            if not eval_results:
+                continue  # all setups either already done or too early
 
-            eval_record = {
-                "run_tag": run_tag,
-                "run_timestamp_utc": run_ts,
-                "model": model,
-                "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
-                "results": eval_results,
-            }
+            # Merge with existing partial eval or create new
+            if existing_eval:
+                existing_eval["results"].extend(eval_results)
+                existing_eval["evaluated_at_utc"] = datetime.now(timezone.utc).isoformat()
+                eval_record = existing_eval
+            else:
+                eval_record = {
+                    "run_tag": run_tag,
+                    "run_timestamp_utc": run_ts,
+                    "model": model,
+                    "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "results": eval_results,
+                }
+                all_evals.append(eval_record)
 
             eval_file = EVALS_DIR / f"eval_{run_tag}.json"
             eval_file.write_text(json.dumps(eval_record, indent=2), encoding="utf-8")
-            all_evals.append(eval_record)
             new_count += 1
             print(f"  Saved to {eval_file}")
 
@@ -480,39 +504,64 @@ def generate_summary(all_evals):
 
     # Manual trade history section
     if manual_trades:
-        my_wins = [t for t in manual_trades if t.get("result") == "win"]
-        my_losses = [t for t in manual_trades if t.get("result") == "loss"]
-        my_total = len(manual_trades)
+        closed = [t for t in manual_trades if t.get("result") in ("win", "loss")]
+        my_wins = [t for t in closed if t.get("result") == "win"]
+        my_losses = [t for t in closed if t.get("result") == "loss"]
+        my_open = [t for t in manual_trades if t.get("result") == "open"]
+        my_total = len(closed)
         my_wr = len(my_wins) / my_total * 100 if my_total else 0
 
         lines += [
             "",
             "## Trader's Actual Trades (Manual Log)",
-            f"- Total trades taken: {my_total}",
-            f"- Wins: {len(my_wins)}, Losses: {len(my_losses)}",
-            f"- Win rate: {my_wr:.0f}%",
-            "",
-            "### Trade-by-Trade Log",
-            "| Date | Symbol | Dir | Entry | Exit | Result | Note |",
-            "|---|---|---|---|---|---|---|",
+            f"- Closed trades: {my_total} ({len(my_wins)}W / {len(my_losses)}L)",
+            f"- Open trades: {len(my_open)}",
+            f"- Win rate (closed): {my_wr:.0f}%",
         ]
-        for t in manual_trades:
-            note_short = (t.get("note", "")[:80] + "...") if len(t.get("note", "")) > 80 else t.get("note", "")
-            lines.append(
-                f"| {t.get('date', '?')} | {t.get('symbol', '?')} | {t.get('direction', '?')} "
-                f"| {t.get('entry_price', '?')} | {t.get('actual_exit', '?')} "
-                f"| {t.get('result', '?')} | {note_short} |"
-            )
 
-        # Compare: did the trader's outcome differ from the API eval?
-        lines += [
-            "",
-            "### Trader Notes & Lessons (USE THESE TO IMPROVE FUTURE SETUPS)",
-        ]
+        # Failure pattern analysis
+        failure_reasons = {}
         for t in manual_trades:
+            fr = t.get("failure_reason")
+            if fr:
+                failure_reasons[fr] = failure_reasons.get(fr, 0) + 1
+        if failure_reasons:
+            lines += ["", "### Recurring Failure Patterns"]
+            for reason, count in sorted(failure_reasons.items(), key=lambda x: x[1], reverse=True):
+                lines.append(f"- **{reason}**: {count} occurrence(s)")
+
+        # Detailed trade-by-trade with Claude recommendation context (last 10 only to control token cost)
+        recent_trades = manual_trades[-10:]
+        if len(manual_trades) > 10:
+            lines += [
+                "",
+                f"### Trade-by-Trade Analysis (last 10 of {len(manual_trades)} — USE THESE TO IMPROVE FUTURE SETUPS)",
+            ]
+        else:
+            lines += [
+                "",
+                "### Trade-by-Trade Analysis (USE THESE TO IMPROVE FUTURE SETUPS)",
+            ]
+        for t in recent_trades:
+            rec = t.get("claude_recommendation", {})
+            symbol = t.get("symbol", "?")
+            lines.append(f"")
+            lines.append(f"**{symbol}** ({t.get('date', '?')}) — {t.get('result', '?').upper()}")
+            lines.append(f"- Trader: entry {t.get('entry_price', '?')}, SL {t.get('stop_loss', '?')}, "
+                         f"exit {t.get('actual_exit', 'open')}, reason: {t.get('exit_reason', 'n/a')}")
+            if rec:
+                lines.append(f"- Claude recommended: {rec.get('setup_type', '?')} ({rec.get('timeframe', '?')}), "
+                             f"rank #{rec.get('rank', '?')}, confidence {rec.get('confidence', '?')}, "
+                             f"model {rec.get('model', '?')}")
+                lines.append(f"  Entry zone {rec.get('entry_low', '?')}–{rec.get('entry_high', '?')}, "
+                             f"SL {rec.get('stop_loss', '?')}, T1 {rec.get('target_1', '?')}, "
+                             f"T2 {rec.get('target_2', '?')}, predicted R:R {rec.get('predicted_rr', '?')}")
             note = t.get("note", "").strip()
+            fr = t.get("failure_reason", "")
             if note:
-                lines.append(f"- **{t.get('symbol', '?')}** ({t.get('date', '?')}): {note}")
+                lines.append(f"- **Lesson**: {note}")
+            if fr:
+                lines.append(f"- **Failure category**: {fr}")
 
     # Actionable insights
     lines += [
