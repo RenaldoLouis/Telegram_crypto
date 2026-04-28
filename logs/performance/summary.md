@@ -1,40 +1,44 @@
 # Performance Summary
-_Last updated: 2026-04-26 05:24 UTC_
-_Total runs evaluated: 3_
+_Last updated: 2026-04-28 02:05 UTC_
+_Total runs evaluated: 5_
 
 ## Overall Stats
-- Total setups: 7
-- Triggered: 6 (86%)
+- Total setups: 14
+- Triggered: 13 (93%)
 - Not triggered: 1
-- **Win rate: 16.7%** (1W / 5L)
-- Avg actual R:R: -0.64
+- **Win rate: 7.7%** (1W / 12L)
+- Avg actual R:R: -0.79
 - Avg winning R:R: 0.08
-- Avg losing R:R: -0.78
+- Avg losing R:R: -0.87
 
 ## By Setup Type
 | Setup Type | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
-| trend_pullback | 6 | 1 | 5 | 17% | -0.64 |
+| trend_pullback | 11 | 1 | 10 | 9% | -0.80 |
+| range_breakout | 1 | 0 | 1 | 0% | -0.50 |
+| failed_breakout | 1 | 0 | 1 | 0% | -1.00 |
 
 ## By Confidence Level
 | Confidence | Trades | Wins | Losses | Win Rate |
 |---|---|---|---|---|
-| high | 1 | 1 | 0 | 100% |
-| medium | 4 | 0 | 4 | 0% |
+| high | 2 | 1 | 1 | 50% |
+| medium | 10 | 0 | 10 | 0% |
 | low | 1 | 0 | 1 | 0% |
 
 ## By Rank Position
 | Rank | Trades | Win Rate |
 |---|---|---|
-| #3 | 2 | 50% |
-| #4 | 2 | 0% |
-| #5 | 2 | 0% |
+| #1 | 1 | 0% |
+| #2 | 1 | 0% |
+| #3 | 4 | 25% |
+| #4 | 4 | 0% |
+| #5 | 3 | 0% |
 
 ## By Model
 | Model | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
-| claude-haiku-4-5 | 1 | 0 | 1 | 0% | -1.00 |
-| claude-sonnet-4-6 | 3 | 0 | 3 | 0% | -0.79 |
+| claude-haiku-4-5 | 4 | 0 | 4 | 0% | -0.88 |
+| claude-sonnet-4-6 | 7 | 0 | 7 | 0% | -0.91 |
 | unknown | 2 | 1 | 1 | 50% | -0.23 |
 
 ## Trader's Actual Trades (Manual Log)
@@ -64,4 +68,5 @@ _Total runs evaluated: 3_
 
 ## Key Insights for Future Briefs
 - WARNING: Overall win rate below 40%. Consider stricter entry criteria.
-- Best setup type: **trend_pullback** (1/6 wins)
+- Best setup type: **trend_pullback** (1/11 wins)
+- claude-sonnet-4-6: 0% win rate, -0.91 avg R:R over 7 trades

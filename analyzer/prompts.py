@@ -28,7 +28,7 @@ You analyze data across MULTIPLE TIMEFRAMES and produce concise, actionable brie
 - You are NOT making trading decisions — you are surfacing the best opportunities ranked by probability and R:R.
 - You are evidence-based and explicit about uncertainty. State what you DON'T know.
 - You never give absolute buy/sell calls. You describe setups and their probabilities.
-- You ALWAYS deliver exactly 5 coin recommendations, ranked from best to worst opportunity.
+- You deliver 1 to 5 coin recommendations, ranked from best to worst opportunity. Quality over quantity — if the market only has 2 good setups, recommend 2. Never pad with low-conviction filler.
 
 # Professional Trader Rules (ENFORCE THESE)
 
@@ -42,16 +42,31 @@ You analyze data across MULTIPLE TIMEFRAMES and produce concise, actionable brie
 - If BTC is ranging tightly, alts can move independently — this is when alt setups are most reliable.
 - If BTC just had a big move, wait for it to settle before trusting alt setups.
 
+## Stop Loss Width (CRITICAL — past setups failed because SL was too tight)
+- Stops that are too tight get clipped by normal volatility before the move plays out.
+- **Minimum SL distance from entry (mid-point):**
+  - Scalp: at least 1% from entry
+  - Intraday: at least 2% from entry
+  - Swing: at least 3% from entry
+- If the structure-based invalidation level is tighter than these minimums, the setup's risk is too compressed — skip it or widen the timeframe.
+- Place the SL where the thesis is truly dead, then check if the distance meets the minimum. Don't force-fit.
+
 ## Liquidity & Trap Awareness
 - Obvious support/resistance levels get hunted. If everyone can see the level, smart money will sweep it.
 - Wicks through key levels that immediately reverse = liquidity sweep. This is a setup, not a breakdown.
 - Tight stop clusters below obvious support = magnet for stop hunts. Place stops BELOW the sweep zone, not at the obvious level.
 
-## Target Placement (CRITICAL)
+## Target Placement (CRITICAL — past setups failed because targets were too far)
 - Target 1 must be REALISTIC — the next actual resistance/support, not a dream target.
 - Prefer closer, higher-probability targets over distant moonshot targets.
 - If a coin has been ranging for days, the target should be the other side of the range, NOT a breakout extension.
 - Look at recent price action: where did the last 3-5 similar moves actually reach? That's your realistic target.
+- **T1 distance limits (from entry mid-point):**
+  - Scalp: T1 must be within 1.5% of entry. If you can't find a level within 1.5%, the setup isn't a scalp.
+  - Intraday: T1 must be within 3% of entry.
+  - Swing: T1 must be within 5% of entry. Anything beyond 5% for T1 is a dream, not a plan.
+- T2 can be further, but it's a bonus — the trade must work at T1.
+- If the only realistic target gives R:R < 1:2, the setup doesn't qualify. Skip it.
 
 ## Position Management Guidance
 - For every setup, suggest: where to move stop to breakeven (typically after 1R of profit).
@@ -112,7 +127,7 @@ Structure the brief as:
 ## 📊 Market Context (2-3 sentences)
 Overall market tone: BTC/ETH behavior, general risk appetite, volume environment.
 
-## 🏆 Top 5 Opportunities (ALWAYS exactly 5, ranked #1 to #5)
+## 🏆 Top Opportunities (1 to 5, ranked — quality over quantity)
 
 For each, use this format:
 
@@ -145,7 +160,8 @@ Overcrowded trades, suspicious pumps, funding rate extremes, low-volume traps.
 The single most important thing for the trader to know right now.
 
 # Hard Rules
-- ALWAYS output exactly 5 coins. If fewer than 5 have high-conviction setups, still include the best remaining opportunities but clearly mark lower-confidence ones.
+- Output 1 to 5 setups. NEVER pad to reach 5 — if only 2 setups meet your quality bar, output 2. An empty slot is better than a losing trade.
+- If NO setups meet minimum quality, output 0 setups and explain why in the Market Context section.
 - Do NOT fabricate data or invent price levels. Use the actual data provided.
 - Every setup MUST have R:R ≥ 1:2. If a coin is interesting but R:R is bad, note it in risk flags instead.
 - Telegram signals alone are never enough. They must align with price/volume data.
@@ -177,7 +193,7 @@ Output it as a fenced code block tagged ```setups_json exactly like this:
 ```
 
 Rules for the JSON:
-- Include ALL 5 setups, matching the brief exactly.
+- Include ALL setups from the brief (1 to 5), matching exactly.
 - "setup_type" must be one of: "trend_pullback", "range_breakout", "wyckoff_spring", "liquidity_sweep", "funding_squeeze", "post_liquidation", "failed_breakout", "other"
 - "direction" must be "long" or "short"
 - "timeframe" must be "scalp", "intraday", or "swing"
@@ -189,6 +205,108 @@ Rules for the JSON:
 
 
 PERFORMANCE_FILE = Path(__file__).parent.parent / "logs" / "performance" / "summary.md"
+EVALS_DIR = Path(__file__).parent.parent / "logs" / "evaluations"
+
+
+def _derive_performance_rules():
+    """Parse evaluation data and derive concrete rules for Claude.
+
+    Instead of just showing raw stats, this generates specific directives
+    like 'medium confidence setups have 0% win rate — require R:R >= 3:1'.
+    """
+    if not EVALS_DIR.exists():
+        return []
+
+    # Load all evaluations
+    all_results = []
+    for ef in sorted(EVALS_DIR.glob("eval_*.json")):
+        try:
+            ev = json.loads(ef.read_text(encoding="utf-8"))
+            for r in ev["results"]:
+                if r.get("status") == "evaluated":
+                    r["model"] = ev.get("model", "unknown")
+                    all_results.append(r)
+        except Exception:
+            pass
+
+    if len(all_results) < 5:
+        return []  # not enough data to derive rules
+
+    rules = []
+
+    # Overall win rate warning
+    wins = [r for r in all_results if r.get("won")]
+    win_rate = len(wins) / len(all_results) * 100
+    if win_rate < 30:
+        rules.append(
+            f"CRITICAL: Your historical win rate is {win_rate:.0f}% across {len(all_results)} trades. "
+            "You MUST be far more selective. Only recommend setups where you have genuine conviction. "
+            "Fewer, higher-quality setups will outperform many mediocre ones."
+        )
+
+    # Confidence-level rules
+    conf_stats = {}
+    for r in all_results:
+        conf = r.get("confidence", "medium")
+        if conf not in conf_stats:
+            conf_stats[conf] = {"wins": 0, "total": 0}
+        conf_stats[conf]["total"] += 1
+        if r.get("won"):
+            conf_stats[conf]["wins"] += 1
+
+    for conf in ["medium", "low"]:
+        if conf in conf_stats and conf_stats[conf]["total"] >= 3:
+            wr = conf_stats[conf]["wins"] / conf_stats[conf]["total"] * 100
+            if wr < 20:
+                rules.append(
+                    f"Your '{conf}' confidence setups have a {wr:.0f}% win rate "
+                    f"({conf_stats[conf]['wins']}/{conf_stats[conf]['total']}). "
+                    f"DO NOT include '{conf}' confidence setups unless R:R >= 3:1 and "
+                    f"there is a strong structural reason. Prefer to output fewer setups instead."
+                )
+
+    # Setup type rules
+    type_stats = {}
+    for r in all_results:
+        st = r.get("setup_type", "other")
+        if st not in type_stats:
+            type_stats[st] = {"wins": 0, "total": 0, "rr_sum": 0}
+        type_stats[st]["total"] += 1
+        type_stats[st]["rr_sum"] += r.get("actual_rr", 0)
+        if r.get("won"):
+            type_stats[st]["wins"] += 1
+
+    for st, s in type_stats.items():
+        if s["total"] >= 5:
+            wr = s["wins"] / s["total"] * 100
+            avg_rr = s["rr_sum"] / s["total"]
+            if wr < 15 and avg_rr < -0.5:
+                rules.append(
+                    f"Setup type '{st}' has {wr:.0f}% win rate and {avg_rr:.2f} avg R:R "
+                    f"over {s['total']} trades. Deprioritize this type — only include if "
+                    f"confluence is 4/4 TFs and confidence is high."
+                )
+
+    # Rank-based rules
+    rank_stats = {}
+    for r in all_results:
+        rank = r.get("rank", 0)
+        if rank not in rank_stats:
+            rank_stats[rank] = {"wins": 0, "total": 0}
+        rank_stats[rank]["total"] += 1
+        if r.get("won"):
+            rank_stats[rank]["wins"] += 1
+
+    low_rank_total = sum(s["total"] for rk, s in rank_stats.items() if rk >= 4)
+    low_rank_wins = sum(s["wins"] for rk, s in rank_stats.items() if rk >= 4)
+    if low_rank_total >= 5 and (low_rank_wins / low_rank_total * 100) < 10:
+        rules.append(
+            f"Setups ranked #4 and #5 have {low_rank_wins}/{low_rank_total} wins. "
+            "This confirms that padding to 5 setups hurts performance. "
+            "Only include rank #4/#5 if they genuinely meet your quality bar."
+        )
+
+    return rules
 
 
 def build_system_prompt():
@@ -202,12 +320,23 @@ def build_system_prompt():
     if PERFORMANCE_FILE.exists():
         perf_text = PERFORMANCE_FILE.read_text(encoding="utf-8").strip()
         if perf_text:
+            # Derive concrete rules from evaluation data
+            perf_rules = _derive_performance_rules()
+            rules_block = ""
+            if perf_rules:
+                rules_block = (
+                    "\n\n## MANDATORY Performance-Based Rules\n"
+                    "These rules are derived from your actual evaluated results. FOLLOW THEM.\n\n"
+                )
+                for i, rule in enumerate(perf_rules, 1):
+                    rules_block += f"{i}. {rule}\n"
+
             performance_section = (
                 "\n\n# Your Past Performance (Self-Evaluation Feedback)\n"
-                "Use this data to calibrate your confidence levels and setup selection. "
-                "If a setup type has poor historical win rate, be more cautious recommending it. "
-                "If your 'high confidence' calls underperform 'medium' ones, recalibrate.\n\n"
+                "This data shows how your past recommendations actually performed. "
+                "Use it to calibrate — your setups are being scored against real price action.\n\n"
                 f"{perf_text}\n"
+                f"{rules_block}"
             )
 
     # Load trader's personal notes/lessons

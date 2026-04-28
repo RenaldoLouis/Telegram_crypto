@@ -569,10 +569,43 @@ def generate_summary(all_evals):
         "## Key Insights for Future Briefs",
     ]
 
-    if win_rate < 40:
-        lines.append("- WARNING: Overall win rate below 40%. Consider stricter entry criteria.")
-    if win_rate >= 50:
+    if win_rate < 20:
+        lines.append(
+            f"- CRITICAL: Win rate is {win_rate:.0f}% — nearly all setups lose. "
+            "REDUCE quantity: only recommend setups with 4/4 TF confluence or high confidence. "
+            "1-2 high-quality setups is better than 5 mediocre ones."
+        )
+    elif win_rate < 40:
+        lines.append(
+            f"- WARNING: Win rate is {win_rate:.0f}% (below 40%). "
+            "Apply stricter entry criteria — prefer fewer, higher-conviction setups."
+        )
+    elif win_rate >= 50:
         lines.append("- Win rate is healthy. Maintain current setup selection approach.")
+
+    # Target distance analysis — check if targets are systematically too far
+    t1_hits = [r for r in evaluated if r.get("target_1_hit")]
+    t1_miss_losses = [r for r in evaluated if not r.get("target_1_hit") and r.get("stop_hit")]
+    if len(evaluated) >= 5 and len(t1_hits) < len(evaluated) * 0.3:
+        lines.append(
+            f"- TARGET ISSUE: Only {len(t1_hits)}/{len(evaluated)} setups hit T1. "
+            "Targets are set too far. Use closer, more realistic T1 levels."
+        )
+
+    # SL analysis — check if stops are hit too quickly
+    stop_hits = [r for r in evaluated if r.get("stop_hit")]
+    if len(evaluated) >= 5 and len(stop_hits) > len(evaluated) * 0.7:
+        lines.append(
+            f"- STOP LOSS ISSUE: {len(stop_hits)}/{len(evaluated)} setups hit stop loss. "
+            "Stops may be too tight or entries too imprecise. Widen SL or wait for better entries."
+        )
+
+    # Avg R:R analysis
+    if avg_rr < -0.5:
+        lines.append(
+            f"- R:R ISSUE: Average actual R:R is {avg_rr:.2f}. "
+            "Losses are large relative to wins. Tighten targets and/or widen stops."
+        )
 
     # Find best/worst setup types
     if setup_types:
@@ -581,18 +614,51 @@ def generate_summary(all_evals):
         if best[1]["count"] >= 3:
             lines.append(f"- Best setup type: **{best[0]}** ({best[1]['wins']}/{best[1]['count']} wins)")
         if worst[1]["count"] >= 3 and worst[0] != best[0]:
-            lines.append(f"- Worst setup type: **{worst[0]}** ({worst[1]['wins']}/{worst[1]['count']} wins) — consider deprioritizing")
+            wr = worst[1]["wins"] / worst[1]["count"] * 100
+            lines.append(
+                f"- Worst setup type: **{worst[0]}** ({worst[1]['wins']}/{worst[1]['count']} wins, {wr:.0f}%) "
+                "— deprioritize unless 4/4 TF confluence"
+            )
 
     # Confidence calibration check
     high_stats = confidence_stats.get("high", {"wins": 0, "count": 0})
     med_stats = confidence_stats.get("medium", {"wins": 0, "count": 0})
+    low_stats = confidence_stats.get("low", {"wins": 0, "count": 0})
+
+    if med_stats["count"] >= 3:
+        med_wr = med_stats["wins"] / med_stats["count"] * 100
+        if med_wr < 20:
+            lines.append(
+                f"- MEDIUM CONFIDENCE FAILING: {med_stats['wins']}/{med_stats['count']} wins ({med_wr:.0f}%). "
+                "Stop recommending medium-confidence setups unless R:R >= 3:1."
+            )
+
+    if low_stats["count"] >= 3:
+        low_wr = low_stats["wins"] / low_stats["count"] * 100
+        if low_wr < 20:
+            lines.append(
+                f"- LOW CONFIDENCE FAILING: {low_stats['wins']}/{low_stats['count']} wins ({low_wr:.0f}%). "
+                "Do NOT include low-confidence setups."
+            )
+
     if high_stats["count"] >= 3 and med_stats["count"] >= 3:
         high_wr = high_stats["wins"] / high_stats["count"]
-        med_wr = med_stats["wins"] / med_stats["count"]
-        if high_wr <= med_wr:
+        med_wr_ratio = med_stats["wins"] / med_stats["count"]
+        if high_wr <= med_wr_ratio:
             lines.append("- CALIBRATION ISSUE: 'High' confidence setups don't outperform 'Medium'. Recalibrate confidence scoring.")
-        else:
+        elif high_wr > 0.4:
             lines.append("- Confidence calibration looks good: High > Medium win rates.")
+
+    # Rank-based insight
+    low_rank_count = sum(s["count"] for rk, s in rank_stats.items() if rk >= 4)
+    low_rank_wins = sum(s["wins"] for rk, s in rank_stats.items() if rk >= 4)
+    if low_rank_count >= 4:
+        low_rank_wr = low_rank_wins / low_rank_count * 100
+        if low_rank_wr < 15:
+            lines.append(
+                f"- RANK #4-5 FAILING: {low_rank_wins}/{low_rank_count} wins ({low_rank_wr:.0f}%). "
+                "These are filler setups. Recommend fewer, better setups instead of padding to 5."
+            )
 
     # Model comparison
     if len(model_stats) >= 2:
