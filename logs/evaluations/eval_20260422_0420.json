@@ -2,7 +2,7 @@
   "run_tag": "20260422_0420",
   "run_timestamp_utc": "2026-04-22T04:20:22.902966+00:00",
   "model": "claude-sonnet-4-6",
-  "evaluated_at_utc": "2026-04-25T08:17:19.082204+00:00",
+  "evaluated_at_utc": "2026-04-29T06:29:32.773433+00:00",
   "results": [
     {
       "status": "evaluated",
@@ -63,6 +63,46 @@
       "predicted_rr": 2.0,
       "tf_confluence": 4,
       "rank": 5
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 86.76,
+      "exit_price": 84.2,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 2.0,
+      "tf_confluence": 4,
+      "rank": 1
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 2332.69,
+      "exit_price": 2278.0,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "ETHUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 2.0,
+      "tf_confluence": 4,
+      "rank": 2
     }
   ]
 }

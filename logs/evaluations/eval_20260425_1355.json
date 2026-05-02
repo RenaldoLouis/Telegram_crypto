@@ -2,7 +2,7 @@
   "run_tag": "20260425_1355",
   "run_timestamp_utc": "2026-04-25T13:55:39.408798+00:00",
   "model": "claude-sonnet-4-6",
-  "evaluated_at_utc": "2026-04-28T02:05:44.148418+00:00",
+  "evaluated_at_utc": "2026-05-02T18:33:10.154625+00:00",
   "results": [
     {
       "status": "evaluated",
@@ -83,6 +83,26 @@
       "predicted_rr": 2.4,
       "tf_confluence": 3,
       "rank": 4
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 85.8,
+      "exit_price": 84.5,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 2.0,
+      "tf_confluence": 3,
+      "rank": 5
     }
   ]
 }

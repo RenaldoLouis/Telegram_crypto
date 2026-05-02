@@ -2,7 +2,7 @@
   "run_tag": "20260422_0240",
   "run_timestamp_utc": "2026-04-22T02:40:19.958600+00:00",
   "model": "unknown",
-  "evaluated_at_utc": "2026-04-25T08:17:18.230378+00:00",
+  "evaluated_at_utc": "2026-04-29T06:29:32.095747+00:00",
   "results": [
     {
       "status": "not_triggered",
@@ -55,6 +55,46 @@
       "predicted_rr": 2.0,
       "tf_confluence": 4,
       "rank": 5
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 2330.0,
+      "exit_price": 2265.0,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "ETHUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "confidence": "high",
+      "predicted_rr": 2.2,
+      "tf_confluence": 4,
+      "rank": 1
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 86.07,
+      "exit_price": 83.8,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "confidence": "high",
+      "predicted_rr": 2.2,
+      "tf_confluence": 4,
+      "rank": 4
     }
   ]
 }

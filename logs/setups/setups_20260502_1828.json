@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-05-02T18:28:42.437606+00:00",
+  "run_tag": "20260502_1828",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "WLFIUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "post_liquidation",
+      "entry_low": 0.0542,
+      "entry_high": 0.0558,
+      "stop_loss": 0.051,
+      "target_1": 0.059,
+      "target_2": 0.062,
+      "predicted_rr": 2.1,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": true
+    },
+    {
+      "rank": 2,
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1015,
+      "entry_high": 0.103,
+      "stop_loss": 0.0975,
+      "target_1": 0.106,
+      "target_2": 0.111,
+      "predicted_rr": 2.1,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false
+    }
+  ]
+}

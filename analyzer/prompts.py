@@ -160,12 +160,23 @@ Overcrowded trades, suspicious pumps, funding rate extremes, low-volume traps.
 The single most important thing for the trader to know right now.
 
 # Hard Rules
-- Output 1 to 5 setups. NEVER pad to reach 5 — if only 2 setups meet your quality bar, output 2. An empty slot is better than a losing trade.
+- Output 0 to 5 setups. NEVER pad to reach 5 — if only 1-2 setups meet your quality bar, output 1-2. An empty slot is better than a losing trade. 0 setups is a VALID output.
 - If NO setups meet minimum quality, output 0 setups and explain why in the Market Context section.
 - Do NOT fabricate data or invent price levels. Use the actual data provided.
 - Every setup MUST have R:R ≥ 1:2. If a coin is interesting but R:R is bad, note it in risk flags instead.
 - Telegram signals alone are never enough. They must align with price/volume data.
 - You speak in Bahasa Indonesia or English depending on the knowledge file preference.
+- **MANDATORY PERFORMANCE RULES OVERRIDE**: If the "MANDATORY Performance-Based Rules" section exists below, those rules are NON-NEGOTIABLE. You must NOT include a setup that violates any mandatory rule, even if you think the setup looks good. Your past judgment has been evaluated against real prices — trust the data over your instinct.
+
+# Pre-Inclusion Validation Checklist (RUN FOR EVERY SETUP)
+Before including ANY setup in your output, verify ALL of these. If any check fails, DROP the setup:
+1. Does this setup's confidence level + R:R pass the mandatory performance rules? (e.g., if medium confidence requires R:R >= 3:1, check this)
+2. Is TF confluence at least 3/4? If only 2/4, this setup needs exceptional justification in the brief.
+3. Is T1 within the distance limits? (scalp <1.5%, intraday <3%, swing <5% from entry midpoint)
+4. Is stop loss wide enough? (scalp ≥1%, intraday ≥2%, swing ≥3% from entry midpoint)
+5. Is this a chase? (already moved >5% in setup direction without pullback → DROP)
+6. Does this setup type have a proven track record in the performance data, or is it a losing type?
+If you cannot pass all 6 checks, move the coin to Risk Flags instead of including it as a setup.
 
 # Structured JSON Output (MANDATORY)
 After the readable brief, you MUST append a structured JSON block for evaluation tracking.
@@ -206,6 +217,7 @@ Rules for the JSON:
 
 PERFORMANCE_FILE = Path(__file__).parent.parent / "logs" / "performance" / "summary.md"
 EVALS_DIR = Path(__file__).parent.parent / "logs" / "evaluations"
+WIN_RATE_HISTORY_FILE = Path(__file__).parent.parent / "logs" / "performance" / "win_rate_history.json"
 
 
 def _derive_performance_rules():
@@ -306,6 +318,63 @@ def _derive_performance_rules():
             "Only include rank #4/#5 if they genuinely meet your quality bar."
         )
 
+    # Prediction accuracy gap — how far off are predictions from reality
+    pred_rrs = [r.get("predicted_rr", 0) for r in all_results if r.get("predicted_rr")]
+    actual_rrs = [r.get("actual_rr", 0) for r in all_results]
+    if pred_rrs and len(pred_rrs) >= 5:
+        avg_pred = sum(pred_rrs) / len(pred_rrs)
+        avg_actual = sum(actual_rrs) / len(actual_rrs)
+        gap = avg_pred - avg_actual
+        if gap > 1.5:
+            rules.append(
+                f"PREDICTION ACCURACY: You predict avg R:R of {avg_pred:.1f} but actual is {avg_actual:.2f} "
+                f"(gap of {gap:.1f}R). Your targets are SYSTEMATICALLY too optimistic. "
+                "Use the T1 distance limits strictly: scalp <1.5%, intraday <3%, swing <5% from entry."
+            )
+
+    # Direction accuracy using MFE
+    mfe_results = [r for r in all_results if r.get("max_favorable_rr") is not None]
+    if len(mfe_results) >= 5:
+        direction_right = [r for r in mfe_results if r["max_favorable_rr"] >= 0.5]
+        dir_acc = len(direction_right) / len(mfe_results) * 100
+        if dir_acc >= 50 and win_rate < 30:
+            rules.append(
+                f"DIRECTION IS RIGHT BUT EXECUTION IS WRONG: {dir_acc:.0f}% of your trades reach "
+                "0.5R favorable before outcome, but you're still losing. "
+                "Your stops are TOO TIGHT — widen them. Your targets are TOO FAR — bring T1 closer. "
+                "The direction calls have value; the levels need work."
+            )
+        elif dir_acc < 40:
+            rules.append(
+                f"DIRECTION CALLS ARE WRONG: Only {dir_acc:.0f}% of trades reach 0.5R favorable. "
+                "This means most setups move AGAINST you immediately. "
+                "You need much stronger confirmation before recommending: require 4/4 TF confluence, "
+                "volume confirmation, and a clear structural level."
+            )
+
+    # Win rate trend — alert if not improving
+    if WIN_RATE_HISTORY_FILE.exists():
+        try:
+            history = json.loads(WIN_RATE_HISTORY_FILE.read_text(encoding="utf-8"))
+            if len(history) >= 2:
+                prev_wr = history[-2]["win_rate"] if len(history) >= 2 else None
+                curr_wr = history[-1]["win_rate"]
+                if prev_wr is not None and curr_wr <= prev_wr:
+                    rules.append(
+                        f"WIN RATE NOT IMPROVING: Previous eval was {prev_wr}%, current is {curr_wr}%. "
+                        "Your adjustments are not working. You must make BIGGER changes: "
+                        "output FEWER setups (1-2 max), require 4/4 TF confluence, require HIGH confidence only, "
+                        "and use CLOSER targets. Incremental tweaks have failed — be drastically more selective."
+                    )
+                elif prev_wr is not None and curr_wr > prev_wr:
+                    rules.append(
+                        f"WIN RATE IMPROVING: {prev_wr}% → {curr_wr}%. "
+                        "Your recent adjustments are working. Continue the current approach — "
+                        "maintain selectivity and don't loosen criteria."
+                    )
+        except Exception:
+            pass
+
     return rules
 
 
@@ -333,35 +402,15 @@ def build_system_prompt():
 
             performance_section = (
                 "\n\n# Your Past Performance (Self-Evaluation Feedback)\n"
-                "This data shows how your past recommendations actually performed. "
-                "Use it to calibrate — your setups are being scored against real price action.\n\n"
+                "This data shows how your past recommendations actually performed against real price data. "
+                "Study the 'Predictions vs Reality' table carefully — each row is YOUR recommendation and its outcome. "
+                "Your setups are being scored and tracked. LEARN FROM SPECIFIC FAILURES, not just aggregate stats.\n\n"
                 f"{perf_text}\n"
                 f"{rules_block}"
             )
 
-    # Load trader's personal notes/lessons
-    trader_notes_section = ""
-    if TRADES_FILE.exists():
-        try:
-            trades = json.loads(TRADES_FILE.read_text(encoding="utf-8"))
-            notes = [t for t in trades if t.get("note", "").strip()]
-            if notes:
-                # Only inject last 10 notes to control token cost
-                recent_notes = notes[-10:]
-                trader_notes_section = (
-                    "\n\n# Trader's Personal Notes & Lessons\n"
-                    "The trader has logged actual trades and lessons. Use these to calibrate your recommendations.\n"
-                    "Pay special attention to target placement feedback — if the trader says targets were too far, "
-                    "prefer closer, more realistic targets in future setups.\n\n"
-                )
-                if len(notes) > 10:
-                    trader_notes_section += f"_(Showing last 10 of {len(notes)} notes)_\n\n"
-                for t in recent_notes:
-                    trader_notes_section += (
-                        f"- **{t.get('symbol', '?')}** ({t.get('date', '?')}, {t.get('result', '?')}): "
-                        f"{t['note']}\n"
-                    )
-        except Exception:
-            pass
+    # NOTE: Trader's manual trade notes + lessons are already included in the
+    # performance summary's "Trade-by-Trade Analysis" section (loaded from
+    # my_trades.json during generate_summary). No need to duplicate here.
 
-    return SYSTEM_PROMPT + knowledge_section + performance_section + trader_notes_section
+    return SYSTEM_PROMPT + knowledge_section + performance_section

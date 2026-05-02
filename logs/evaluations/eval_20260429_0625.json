@@ -1,0 +1,60 @@
+{
+  "run_tag": "20260429_0625",
+  "run_timestamp_utc": "2026-04-29T06:25:01.567625+00:00",
+  "model": "claude-sonnet-4-6",
+  "evaluated_at_utc": "2026-05-02T18:33:11.371178+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 1.3845,
+      "exit_price": 1.345,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "high",
+      "predicted_rr": 2.5,
+      "tf_confluence": 3,
+      "rank": 1
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 76513.8,
+      "exit_price": 74900.0,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "symbol": "BTCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "high",
+      "predicted_rr": 2.7,
+      "tf_confluence": 3,
+      "rank": 2
+    },
+    {
+      "status": "not_triggered",
+      "reason": "Price never reached entry zone",
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "high",
+      "predicted_rr": 2.1,
+      "tf_confluence": 4,
+      "rank": 3
+    }
+  ]
+}

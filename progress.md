@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-04-25_
+_Last updated: 2026-05-03_
 
 ---
 
@@ -34,11 +34,15 @@ Weekly eval (weekly_eval.py, run Sundays)
     → Evaluates NEW setups from last 7 weeks only (not all-time)
     → Loads ALL past evaluations for cumulative learning
     → Fetches actual prices from Bybit for each past setup
-    → Scores: triggered? stop or target hit first? actual R:R?
+    → Scores: triggered? stop or target hit first? actual R:R? MFE?
+    → Per-trade prediction vs reality table (Claude sees each failure)
+    → Win rate trend: per-run + cumulative + previous vs current comparison
+    → Prediction accuracy gap + direction accuracy (via MFE)
     → Aggregates by: setup type, confidence, rank, MODEL
     → Merges manual trade log (logs/trades/my_trades.json) + trader notes
-    → Writes logs/performance/summary.md
-    → Claude reads summary + trader lessons on next run → feedback loop
+    → Writes logs/performance/summary.md + win_rate_history.json
+    → Derives mandatory rules from data (auto-escalates if not improving)
+    → Claude reads summary + rules + validation checklist on next run → feedback loop
 ```
 
 ---
@@ -51,10 +55,10 @@ Weekly eval (weekly_eval.py, run Sundays)
 | `config.py` | 41 | Settings: API keys, model, limits, timeframes, watchlist |
 | `fetchers/bybit_data.py` | 288 | Bybit API: 50 tickers → knowledge-based scoring → top 25 → multi-TF klines |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 185 | Professional trader prompt + knowledge + performance + trader notes injection |
+| `analyzer/prompts.py` | 195 | Professional trader prompt + knowledge + performance feedback + validation checklist + derived rules |
 | `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `weekly_eval.py` | 580 | Evaluation engine: 7-week window, partial eval support, enriched trade analysis, generates summary |
+| `weekly_eval.py` | 700 | Evaluation engine: MFE tracking, per-trade results table, win rate trend, enriched summary |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
 | `progress.md` | — | This file — project progress tracker |
 
@@ -68,7 +72,8 @@ logs/
   trades/
     my_trades.json → Manual trade log with notes/lessons (user-edited)
   performance/
-    summary.md    → Rolling stats + trader notes — Claude reads this on every future run
+    summary.md            → Rolling stats, per-trade results, win rate trend — Claude reads this
+    win_rate_history.json  → Persistent win rate snapshots across eval runs (tracks improvement)
 ```
 
 ---
@@ -77,7 +82,7 @@ logs/
 
 | Setting | Value |
 |---|---|
-| Model | `claude-haiku-4-5` (daily) / `claude-sonnet-4-6` (tuning) |
+| Model | `claude-sonnet-4-6` (current) — model name tracked per setup for comparison |
 | Max output tokens | 8000 |
 | Broad scan pool | 50 tickers (by turnover) |
 | Pre-filter to | 25 coins (by knowledge-based interest score + watchlist) |
@@ -111,15 +116,50 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 
 ## Performance & Win Rate
 
-**Status: Tracking started 2026-04-22. No evaluated setups yet.**
+**Status: 8 runs evaluated (32 setups, 28 triggered). Active since 2026-04-22.**
 
-The weekly eval needs price data after each brief before scoring:
-- Scalp setups: scored after 1 day
-- Intraday setups: scored after 2 days
-- Swing setups: scored after 7 days
+### Current Stats (as of 2026-05-03)
+| Metric | Value |
+|---|---|
+| Overall win rate | **10.7%** (3W / 25L) |
+| Avg actual R:R | -0.62 |
+| Avg predicted R:R | 2.0 |
+| **Prediction gap** | **2.7R** (targets systematically too optimistic) |
+| T1 hit rate | 2/28 (7%) — targets are too far |
+| Stop loss hit rate | 21/28 (75%) — stops too tight or direction wrong |
 
-**Intraday setups from April 22 are now evaluable** — run `python weekly_eval.py`
-**First swing eval possible: ~2026-04-29**
+### By Confidence Level
+| Confidence | Win Rate | Note |
+|---|---|---|
+| High | 22% (2/9) | Only confidence level with wins |
+| Medium | **0% (0/14)** | Zero wins — mandatory rule: R:R >= 3:1 or drop |
+| Low | 20% (1/5) | Small sample |
+
+### By Model
+| Model | Win Rate | Avg R:R | Trades |
+|---|---|---|---|
+| claude-haiku-4-5 | 12% | -0.25 | 8 |
+| claude-sonnet-4-6 | 6% | -0.81 | 16 |
+
+### Win Rate Trend (per eval run)
+| Run Date | Run Win Rate | Cumulative |
+|---|---|---|
+| 2026-04-22 | 25% | 25.0% |
+| 2026-04-22 | 0% | 11.1% |
+| 2026-04-23 | 33% | 16.7% |
+| 2026-04-25 | 0% | 11.8% |
+| 2026-04-25 | 0% | 9.1% |
+| 2026-04-26 | 50% | 12.5% |
+| 2026-04-28 | 0% | 11.5% |
+| 2026-04-29 | 0% | 10.7% |
+
+**⚠️ Win rate is NOT improving. Last 3 runs have 0% win rate.**
+
+### Key Diagnosis
+1. **Targets too far**: Only 2/28 setups hit T1. Avg predicted R:R is 2.0 but actual is -0.62.
+2. **Stops too tight**: 21/28 hit stop loss. Need MFE data (now tracking) to determine if direction was right but stops too narrow.
+3. **Medium confidence = 0% win rate**: 14 trades, 0 wins. Claude now has mandatory rule to drop these unless R:R >= 3:1.
+4. **Rank #4-5 are filler**: 1/11 wins (9%). Claude now limited to 1-2 high-conviction setups.
 
 ### Manual Trades Logged
 | Date | Symbol | Direction | Result | Failure Reason |
@@ -129,15 +169,16 @@ The weekly eval needs price data after each brief before scoring:
 
 ### What the eval tracks
 - Overall win rate (W/L, avg R:R)
-- Win rate by setup type (trend pullback, range breakout, spring, etc.)
-- Win rate by confidence level (high/medium/low)
-- Win rate by rank position (#1 through #5)
-- **Win rate by model** (Sonnet vs Haiku comparison)
-- Avg predicted R:R vs actual R:R
-- Confidence calibration (do "high" calls actually win more?)
-- Actionable insights auto-generated for Claude's future runs
+- Win rate by setup type, confidence level, rank position, **model**
+- **Per-trade prediction vs reality table** (predicted R:R vs actual, exit reason, MFE)
+- **Win rate trend** per eval run with cumulative tracking
+- **Prediction accuracy gap** (avg predicted vs avg actual R:R)
+- **Direction accuracy via MFE** (% of trades reaching 0.5R favorable — tracks if direction is right but execution wrong)
+- **Entry timing analysis** (flags if stops hit within 2 hours)
+- Confidence calibration, recurring failure patterns, trader notes/lessons
+- Mandatory performance-based rules auto-derived and injected into Claude's prompt
 
-Results live in `logs/performance/summary.md` and are injected into Claude's system prompt.
+Results live in `logs/performance/summary.md` + `win_rate_history.json` and are injected into Claude's system prompt.
 
 ---
 
@@ -164,6 +205,58 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-05-03 — Feedback Loop Overhaul: Per-Trade Learning, MFE Tracking & Win Rate Trend
+
+**Problem identified**: Claude received aggregate stats ("10.7% win rate") but never saw its specific trade failures. Token-saving changes had compressed all 28 evaluations into summaries, stripping the case-by-case data Claude needs to learn specific patterns. Claude also acknowledged mandatory rules in text but still violated them (e.g., including medium-confidence setups with R:R < 3:1).
+
+**Per-Trade Prediction vs Reality Table** (`weekly_eval.py`)
+- New "Your Predictions vs Reality" section in summary.md showing every individual evaluated trade
+- Each row: date, symbol, direction, timeframe, confidence, TF confluence, predicted R:R, actual R:R, exit reason, MFE
+- Claude now sees exactly which trades failed and by how much — not just aggregate stats
+- Shows last 20 evaluated trades (compact table format, ~500 tokens)
+
+**Max Favorable Excursion (MFE) Tracking** (`weekly_eval.py`)
+- `evaluate_setup()` now tracks `max_favorable_rr` — how far price moved in Claude's predicted direction before the outcome
+- Also tracks `candles_to_exit` — how quickly the stop was hit
+- This is the critical diagnostic: if MFE is high but trades still lose → direction is right, stops too tight. If MFE is low → direction calls are wrong.
+- Old evaluations show "n/a" (backward compatible). New evals will populate going forward.
+
+**Prediction Accuracy Gap Metric**
+- Computed and displayed: avg predicted R:R (2.0) vs avg actual R:R (-0.62) = **2.7R gap**
+- Auto-generates mandatory rule when gap > 1.5R: "Your targets are SYSTEMATICALLY too optimistic"
+- Direction accuracy diagnosis auto-generated once MFE data accumulates
+
+**Entry Timing Analysis**
+- Flags when >40% of stop-outs happen within 2 hours (8 candles on 15m) — indicates entries are too early
+
+**Win Rate Trend Tracking**
+- New `logs/performance/win_rate_history.json` — persistent snapshots of win rate after each eval run
+- New "Win Rate Trend" table in summary.md — per-run win rate + cumulative win rate, chronologically
+- Previous vs current comparison in overall stats: `**Win rate: 10.7%** (↓ -2.0% from previous eval) ⚠️ REGRESSION`
+- Auto-alerts: flags "last 3 runs 0% win rate" or "win rate NOT improving"
+- Mandatory rule derived from trend: if win rate not improving → "make BIGGER changes, not incremental tweaks"
+- If win rate IS improving → "maintain current approach, don't loosen criteria"
+
+**Pre-Inclusion Validation Checklist** (`prompts.py`)
+- Added 6-point mandatory checklist Claude must run for EVERY setup before including it:
+  1. Confidence + R:R pass performance rules
+  2. TF confluence >= 3/4
+  3. T1 within distance limits (scalp <1.5%, intraday <3%, swing <5%)
+  4. Stop loss wide enough (scalp >=1%, intraday >=2%, swing >=3%)
+  5. Not a chase (>5% move without pullback)
+  6. Setup type has proven track record
+- Failing any check → setup must be dropped to Risk Flags, not included
+
+**Stronger Rule Enforcement** (`prompts.py`)
+- Added explicit override clause: "MANDATORY Performance-Based Rules are NON-NEGOTIABLE. You must NOT include a setup that violates any mandatory rule, even if you think the setup looks good."
+- Changed "Output 1 to 5 setups" → "Output 0 to 5 setups" with emphasis that 0 is valid
+
+**Duplicate Elimination**
+- Removed standalone trader notes section from `build_system_prompt()` — same data was already in summary.md's trade-by-trade section
+- Saves ~300 tokens per run with no information loss
+
+**Token Impact**: +700 tokens net (from ~19.3k to ~20k). Minimal cost increase for dramatically better learning signal.
 
 ### 2026-04-25 — Eval Bug Fix, Enriched Trade Journal & Token Cost Control
 
@@ -287,9 +380,17 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
-- [ ] Run first weekly evaluation (~2026-04-29)
-- [ ] Review first eval results, adjust prompt if needed
+- [ ] Wait for pending evals to mature (swing setups from Apr 26, 28, May 2 need 7 days)
+- [ ] Run eval after May 5 to get first MFE data and see if validation checklist improves results
 - [ ] Update ENJ trade result once closed (win/loss, actual exit)
+- [ ] Review MFE data once available: is direction right but stops too tight, or are direction calls wrong?
+- [ ] If win rate still not improving after 2 more evals, consider: switching to higher-TF-only setups, reducing to max 1-2 setups, or adding volume spike as hard requirement
+- [x] Fix feedback loop: add per-trade results table so Claude sees specific failures
+- [x] Add MFE tracking to diagnose direction vs execution problems
+- [x] Add win rate trend tracking with previous vs current comparison
+- [x] Add validation checklist to enforce rules Claude was violating
+- [x] Fix duplicate trader notes wasting tokens
+- [x] Add prediction accuracy gap metric
 - [x] Fix eval bug: partial evaluation support (swing no longer blocks intraday)
 - [x] Enrich trade journal: link each trade to Claude's recommendation + failure categories
 - [x] Cap feedback loop token cost: last 10 trades/notes in prompt, aggregates uncapped

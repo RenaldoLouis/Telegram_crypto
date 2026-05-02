@@ -1,0 +1,55 @@
+{
+  "run_timestamp_utc": "2026-04-29T06:25:01.567625+00:00",
+  "run_tag": "20260429_0625",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.375,
+      "entry_high": 1.385,
+      "stop_loss": 1.345,
+      "target_1": 1.4,
+      "target_2": 1.411,
+      "predicted_rr": 2.5,
+      "confidence": "high",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "BTCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 76200.0,
+      "entry_high": 76800.0,
+      "stop_loss": 74900.0,
+      "target_1": 78500.0,
+      "target_2": 80000.0,
+      "predicted_rr": 2.7,
+      "confidence": "high",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 3,
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.099,
+      "entry_high": 0.1005,
+      "stop_loss": 0.0965,
+      "target_1": 0.1065,
+      "target_2": 0.112,
+      "predicted_rr": 2.1,
+      "confidence": "high",
+      "tf_confluence": 4,
+      "volume_confirmed": true
+    }
+  ]
+}

@@ -33,6 +33,7 @@ SETUPS_DIR = Path("logs/setups")
 EVALS_DIR = Path("logs/evaluations")
 PERFORMANCE_DIR = Path("logs/performance")
 TRADES_FILE = Path("logs/trades/my_trades.json")
+WIN_RATE_HISTORY_FILE = Path("logs/performance/win_rate_history.json")
 
 # Only evaluate setups from the last N weeks
 EVAL_LOOKBACK_WEEKS = 7
@@ -141,13 +142,29 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         return {"status": "not_triggered", "reason": "Price never reached entry zone"}
 
     # Phase 2: After entry, did stop or target hit first?
+    # Also track MFE (max favorable excursion) — how far price moved in our
+    # direction before the outcome. This tells us if direction was right but
+    # stop was too tight.
     stop_hit = False
     t1_hit = False
     t2_hit = False
     exit_price = None
     exit_reason = None
+    risk = abs(entry_price - stop_loss)
+    max_favorable_rr = 0.0  # best R:R reached before exit
+    candles_to_exit = 0
 
     for c in candles[entry_candle_idx:]:
+        candles_to_exit += 1
+
+        # Track MFE before checking exit conditions
+        if risk > 0:
+            if direction == "long":
+                favorable = (c["high"] - entry_price) / risk
+            else:
+                favorable = (entry_price - c["low"]) / risk
+            max_favorable_rr = max(max_favorable_rr, favorable)
+
         if direction == "long":
             if c["low"] <= stop_loss:
                 stop_hit = True
@@ -186,7 +203,6 @@ def evaluate_setup(client, setup, run_timestamp_utc):
             exit_reason = "expired"
 
     # Calculate actual R:R
-    risk = abs(entry_price - stop_loss)
     if risk == 0:
         actual_rr = 0
     else:
@@ -208,6 +224,8 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         "stop_hit": stop_hit,
         "actual_rr": actual_rr,
         "won": won,
+        "max_favorable_rr": round(max_favorable_rr, 2),
+        "candles_to_exit": candles_to_exit,
     }
 
 
@@ -389,6 +407,26 @@ def generate_summary(all_evals):
     avg_win_rr = sum(r["actual_rr"] for r in wins) / len(wins) if wins else 0
     avg_loss_rr = sum(r["actual_rr"] for r in losses) / len(losses) if losses else 0
 
+    # --- Win rate history: load previous snapshots ---
+    win_rate_history = []
+    if WIN_RATE_HISTORY_FILE.exists():
+        try:
+            win_rate_history = json.loads(WIN_RATE_HISTORY_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            win_rate_history = []
+
+    # Compute per-run win rates for trend display
+    per_run_stats = {}
+    for r in evaluated:
+        tag = r.get("run_tag", "unknown")
+        if tag not in per_run_stats:
+            per_run_stats[tag] = {"wins": 0, "losses": 0, "total": 0}
+        per_run_stats[tag]["total"] += 1
+        if r["won"]:
+            per_run_stats[tag]["wins"] += 1
+        else:
+            per_run_stats[tag]["losses"] += 1
+
     # Stats by setup type
     setup_types = {}
     for r in evaluated:
@@ -440,6 +478,19 @@ def generate_summary(all_evals):
             model_stats[model]["losses"] += 1
 
     # Build summary
+    # Determine previous win rate from history for comparison
+    prev_wr_str = ""
+    if win_rate_history:
+        prev = win_rate_history[-1]
+        prev_wr = prev["win_rate"]
+        delta = win_rate - prev_wr
+        if delta > 0:
+            prev_wr_str = f"  (**↑ {delta:+.1f}%** from previous eval: {prev_wr:.1f}%)"
+        elif delta < 0:
+            prev_wr_str = f"  (**↓ {delta:+.1f}%** from previous eval: {prev_wr:.1f}%) ⚠️ REGRESSION"
+        else:
+            prev_wr_str = f"  (unchanged from previous eval: {prev_wr:.1f}%) ⚠️ NO IMPROVEMENT"
+
     lines = [
         "# Performance Summary",
         f"_Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}_",
@@ -449,10 +500,50 @@ def generate_summary(all_evals):
         f"- Total setups: {total}",
         f"- Triggered: {len(evaluated)} ({len(evaluated)/total*100:.0f}%)" if total else "",
         f"- Not triggered: {len(not_triggered)}",
-        f"- **Win rate: {win_rate:.1f}%** ({len(wins)}W / {len(losses)}L)",
+        f"- **Win rate: {win_rate:.1f}%** ({len(wins)}W / {len(losses)}L){prev_wr_str}",
         f"- Avg actual R:R: {avg_rr:.2f}",
         f"- Avg winning R:R: {avg_win_rr:.2f}",
         f"- Avg losing R:R: {avg_loss_rr:.2f}",
+        "",
+        "## Win Rate Trend (per eval run)",
+        "This tracks whether recommendations are IMPROVING over time. If not trending up, something needs to change.",
+        "",
+        "| Run Date | Setups | W | L | Run Win Rate | Cumulative Win Rate |",
+        "|---|---|---|---|---|---|",
+    ]
+
+    # Add per-run rows chronologically with running cumulative win rate
+    cum_wins = 0
+    cum_total = 0
+    for tag in sorted(per_run_stats.keys()):
+        s = per_run_stats[tag]
+        cum_wins += s["wins"]
+        cum_total += s["total"]
+        run_wr = s["wins"] / s["total"] * 100 if s["total"] else 0
+        cum_wr = cum_wins / cum_total * 100 if cum_total else 0
+        date_str = f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}" if len(tag) >= 8 else tag
+        lines.append(f"| {date_str} | {s['total']} | {s['wins']} | {s['losses']} | {run_wr:.0f}% | {cum_wr:.1f}% |")
+
+    # Flag if no improvement trend
+    sorted_tags = sorted(per_run_stats.keys())
+    if len(sorted_tags) >= 3:
+        # Check last 3 runs
+        recent_runs = sorted_tags[-3:]
+        recent_wrs = []
+        for tag in recent_runs:
+            s = per_run_stats[tag]
+            recent_wrs.append(s["wins"] / s["total"] * 100 if s["total"] else 0)
+        if all(wr == 0 for wr in recent_wrs):
+            lines.append("")
+            lines.append("**⚠️ ALERT: Last 3 runs have 0% win rate. The current approach is NOT working. "
+                         "Major changes needed: tighter setup criteria, wider stops, closer targets, "
+                         "or fewer setups per run.**")
+        elif len(recent_wrs) >= 2 and recent_wrs[-1] <= recent_wrs[0]:
+            lines.append("")
+            lines.append("**⚠️ Win rate is NOT improving across recent runs. "
+                         "Review what changed and whether the feedback loop is being followed.**")
+
+    lines += [
         "",
         "## By Setup Type",
         "| Setup Type | Trades | Wins | Losses | Win Rate | Avg R:R |",
@@ -501,6 +592,66 @@ def generate_summary(all_evals):
             wr = s["wins"] / s["count"] * 100 if s["count"] else 0
             ar = s["rr_sum"] / s["count"] if s["count"] else 0
             lines.append(f"| {model} | {s['count']} | {s['wins']} | {s['losses']} | {wr:.0f}% | {ar:.2f} |")
+
+    # --- Per-trade prediction vs reality table ---
+    # This is the KEY learning signal: Claude sees each individual trade outcome.
+    # Show last 20 evaluated trades so Claude can spot specific patterns.
+    recent_evaluated = sorted(evaluated, key=lambda r: r.get("run_tag", ""), reverse=True)[:20]
+    if recent_evaluated:
+        lines += [
+            "",
+            "## Your Predictions vs Reality (LEARN FROM EACH ONE)",
+            "Each row is a setup YOU recommended. Study the gap between predicted and actual R:R.",
+            "",
+            "| Date | Symbol | Dir | TF | Conf | TF-Conf | Pred R:R | Actual R:R | Exit | MFE |",
+            "|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for r in recent_evaluated:
+            tag = r.get("run_tag", "?")
+            date_str = f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}" if len(tag) >= 8 else tag
+            sym = r.get("symbol", "?")[:8]  # truncate for table width
+            d = "L" if r.get("direction") == "long" else "S"
+            tf = r.get("timeframe", "?")[:5]
+            conf = r.get("confidence", "?")[:3]
+            tfc = r.get("tf_confluence", "?")
+            pred = r.get("predicted_rr", "?")
+            actual = r.get("actual_rr", "?")
+            exit_r = r.get("exit_reason", "?")
+            mfe = r.get("max_favorable_rr")
+            mfe_str = f"{mfe}R" if mfe is not None else "n/a"
+            lines.append(f"| {date_str} | {sym} | {d} | {tf} | {conf} | {tfc}/4 | {pred} | {actual} | {exit_r} | {mfe_str} |")
+
+        # Prediction accuracy gap
+        pred_rrs = [r.get("predicted_rr", 0) for r in evaluated if r.get("predicted_rr")]
+        actual_rrs = [r.get("actual_rr", 0) for r in evaluated]
+        if pred_rrs:
+            avg_pred = sum(pred_rrs) / len(pred_rrs)
+            avg_act = sum(actual_rrs) / len(actual_rrs)
+            lines.append(f"")
+            lines.append(f"**Prediction gap: avg predicted R:R = {avg_pred:.1f}, avg actual = {avg_act:.2f} (gap of {avg_pred - avg_act:.1f}R)**")
+
+        # Direction accuracy using MFE
+        mfe_results = [r for r in evaluated if r.get("max_favorable_rr") is not None]
+        if mfe_results:
+            direction_right = [r for r in mfe_results if r["max_favorable_rr"] >= 0.5]
+            dir_acc = len(direction_right) / len(mfe_results) * 100
+            avg_mfe = sum(r["max_favorable_rr"] for r in mfe_results) / len(mfe_results)
+            lines.append(f"**Direction accuracy: {len(direction_right)}/{len(mfe_results)} ({dir_acc:.0f}%) reached 0.5R+ favorable. Avg MFE: {avg_mfe:.2f}R**")
+            if dir_acc >= 50 and win_rate < 30:
+                lines.append("**DIAGNOSIS: Direction is often right but stops are too tight or targets too far. Focus on WIDER STOPS and CLOSER TARGETS.**")
+            elif dir_acc < 40:
+                lines.append("**DIAGNOSIS: Direction calls are wrong most of the time. Be far more selective — only trade when multi-TF confluence is 4/4.**")
+
+        # Quick stop analysis — how fast stops are hit
+        quick_stops = [r for r in evaluated if r.get("stop_hit") and r.get("candles_to_exit") is not None]
+        if quick_stops:
+            avg_candles = sum(r["candles_to_exit"] for r in quick_stops) / len(quick_stops)
+            fast_stops = [r for r in quick_stops if r["candles_to_exit"] <= 8]  # <= 2 hours on 15m
+            if fast_stops and len(fast_stops) > len(quick_stops) * 0.4:
+                lines.append(
+                    f"**ENTRY TIMING: {len(fast_stops)}/{len(quick_stops)} stop-outs happened within 2 hours "
+                    f"(avg {avg_candles:.0f} candles). Entries are too early — wait for confirmation on 15m before entering.**"
+                )
 
     # Manual trade history section
     if manual_trades:
@@ -680,6 +831,24 @@ def generate_summary(all_evals):
     summary_file = PERFORMANCE_DIR / "summary.md"
     summary_file.write_text(summary_text, encoding="utf-8")
     print(f"Performance summary written to {summary_file}")
+
+    # --- Save win rate history snapshot ---
+    # Each eval run appends a snapshot so we can track improvement over time.
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    snapshot = {
+        "date": now_str,
+        "total_evaluated": len(evaluated),
+        "wins": len(wins),
+        "losses": len(losses),
+        "win_rate": round(win_rate, 1),
+        "avg_rr": round(avg_rr, 2),
+    }
+    # Only append if different from last snapshot (avoid duplicates from re-runs
+    # that didn't add new evaluations)
+    if not win_rate_history or win_rate_history[-1]["total_evaluated"] != len(evaluated):
+        win_rate_history.append(snapshot)
+        WIN_RATE_HISTORY_FILE.write_text(json.dumps(win_rate_history, indent=2), encoding="utf-8")
+        print(f"Win rate history updated: {len(win_rate_history)} snapshots")
 
 
 if __name__ == "__main__":
