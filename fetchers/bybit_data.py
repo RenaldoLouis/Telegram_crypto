@@ -70,6 +70,14 @@ class BybitFetcher:
         df["ema_20"] = df["close"].ewm(span=20, adjust=False).mean()
         df["ema_50"] = df["close"].ewm(span=50, adjust=False).mean()
 
+        # --- ATR (14) for volatility-aware stop/target placement ---
+        tr = pd.concat([
+            df["high"] - df["low"],
+            (df["high"] - df["close"].shift()).abs(),
+            (df["low"] - df["close"].shift()).abs(),
+        ], axis=1).max(axis=1)
+        df["atr_14"] = tr.rolling(14).mean()
+
         latest = df.iloc[-1]
 
         return {
@@ -80,6 +88,8 @@ class BybitFetcher:
             "breaking_20_low": bool(latest["close"] <= latest["low_20"]) if pd.notna(latest["low_20"]) else None,
             "ema_20": round(float(latest["ema_20"]), 6) if pd.notna(latest["ema_20"]) else None,
             "ema_50": round(float(latest["ema_50"]), 6) if pd.notna(latest["ema_50"]) else None,
+            "atr_14": round(float(latest["atr_14"]), 6) if pd.notna(latest["atr_14"]) else None,
+            "atr_pct": round(float(latest["atr_14"] / latest["close"] * 100), 2) if pd.notna(latest["atr_14"]) and latest["close"] > 0 else None,
             "trend": "bullish" if pd.notna(latest["ema_20"]) and pd.notna(latest["ema_50"]) and latest["ema_20"] > latest["ema_50"] else "bearish",
             "last_3_candles_pct": [
                 round(float((df.iloc[-i]["close"] - df.iloc[-i]["open"]) / df.iloc[-i]["open"] * 100), 2)

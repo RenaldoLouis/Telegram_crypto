@@ -1,0 +1,23 @@
+{
+  "run_timestamp_utc": "2026-05-03T05:28:23.149874+00:00",
+  "run_tag": "20260503_0528",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "TRXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.335,
+      "entry_high": 0.337,
+      "stop_loss": 0.343,
+      "target_1": 0.327,
+      "target_2": 0.322,
+      "predicted_rr": 2.3,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    }
+  ]
+}

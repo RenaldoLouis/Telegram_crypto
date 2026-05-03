@@ -530,6 +530,12 @@ def generate_strategic_rules():
 
     These rules are what Claude reads every run — the distilled wisdom from
     all historical evaluations. ~500 tokens regardless of how long you've run.
+
+    IMPORTANT: Rules are calibrated by sample size:
+    - <30 trades per category: ADVISORY only (note the small sample)
+    - 30-50 trades: STRONG guidance
+    - 50+ trades: HARD rules
+    Never ban entire confidence levels or setup types from small samples.
     """
     if not LIFETIME_STATS_FILE.exists():
         return
@@ -543,8 +549,16 @@ def generate_strategic_rules():
     win_rate = overall["wins"] / total * 100
     avg_rr = overall["rr_sum"] / total
 
+    # Determine confidence tier based on total sample size
+    if total >= 50:
+        sample_label = "solid sample"
+    elif total >= 30:
+        sample_label = "moderate sample"
+    else:
+        sample_label = "small sample — treat all rules as advisory"
+
     lines = [
-        f"# Strategic Rules (derived from {total} evaluated trades)",
+        f"# Strategic Rules (derived from {total} evaluated trades — {sample_label})",
         f"_Last updated: {stats['last_updated']}_",
         "",
     ]
@@ -552,13 +566,14 @@ def generate_strategic_rules():
     # --- Overall selectivity ---
     if win_rate < 20:
         lines.append(
-            f"1. **CRITICAL SELECTIVITY**: Win rate is {win_rate:.0f}% — nearly all setups lose. "
-            "Output 1-2 high-quality setups MAX. Fewer is better. 0 setups is valid."
+            f"1. **SELECTIVITY NEEDED**: Win rate is {win_rate:.0f}% over {total} trades. "
+            "Prioritize quality over quantity — prefer 2-3 strong setups over 5 mediocre ones. "
+            "But DO include setups that have clear structure and R:R >= 2:1."
         )
     elif win_rate < 40:
         lines.append(
-            f"1. **SELECTIVITY**: Win rate is {win_rate:.0f}%. Apply strict entry criteria — "
-            "prefer fewer, higher-conviction setups. 1-3 setups per run."
+            f"1. **MODERATE SELECTIVITY**: Win rate is {win_rate:.0f}%. Apply strict entry criteria — "
+            "prefer fewer, higher-conviction setups. 2-4 setups per run."
         )
     else:
         lines.append(
@@ -567,15 +582,25 @@ def generate_strategic_rules():
 
     rule_num = 2
 
-    # --- Confidence rules ---
+    # --- Confidence rules (only make hard bans with 30+ trades per category) ---
     for conf in ["medium", "low"]:
         cs = stats["by_confidence"].get(conf)
-        if cs and cs["total"] >= 3:
+        if cs and cs["total"] >= 5:
             wr = cs["wins"] / cs["total"] * 100
-            if wr < 20:
+            avg = cs["rr_sum"] / cs["total"]
+            if cs["total"] >= 30 and wr < 15:
+                # Hard rule — enough data
                 lines.append(
-                    f"{rule_num}. **{conf.upper()} CONFIDENCE BANNED**: {cs['wins']}/{cs['total']} wins ({wr:.0f}%). "
-                    f"DO NOT include '{conf}' confidence setups unless R:R >= 3:1."
+                    f"{rule_num}. **{conf.upper()} CONFIDENCE WEAK**: {cs['wins']}/{cs['total']} wins ({wr:.0f}%). "
+                    f"Require R:R >= 3:1 for '{conf}' confidence setups."
+                )
+                rule_num += 1
+            elif wr < 20:
+                # Advisory — small sample
+                lines.append(
+                    f"{rule_num}. **{conf.upper()} CONFIDENCE UNDERPERFORMING** (small sample: {cs['total']} trades): "
+                    f"{cs['wins']}/{cs['total']} wins ({wr:.0f}%). Be extra selective with '{conf}' setups — "
+                    "prefer R:R >= 2.5:1 and 3/4+ TF confluence. Do NOT ban outright."
                 )
                 rule_num += 1
 
@@ -583,21 +608,30 @@ def generate_strategic_rules():
     best_type = None
     best_type_wr = 0
     for st, s in stats["by_setup_type"].items():
-        if s["total"] >= 3:
+        if s["total"] >= 5:
             wr = s["wins"] / s["total"] * 100
             avg = s["rr_sum"] / s["total"]
             if wr > best_type_wr:
                 best_type = st
                 best_type_wr = wr
-            if wr < 15 and avg < -0.5 and s["total"] >= 5:
-                lines.append(
-                    f"{rule_num}. **DEPRIORITIZE '{st}'**: {wr:.0f}% WR, {avg:.2f} avg R:R over "
-                    f"{s['total']} trades. Only include if 4/4 TF confluence + high confidence."
-                )
+            if wr < 15 and avg < -0.5:
+                if s["total"] >= 30:
+                    lines.append(
+                        f"{rule_num}. **DEPRIORITIZE '{st}'**: {wr:.0f}% WR, {avg:.2f} avg R:R over "
+                        f"{s['total']} trades. Require 3/4+ TF confluence + high confidence."
+                    )
+                else:
+                    lines.append(
+                        f"{rule_num}. **'{st}' STRUGGLING** (small sample: {s['total']} trades): "
+                        f"{wr:.0f}% WR, {avg:.2f} avg R:R. Apply extra scrutiny — check if entries "
+                        "were too early or stops too tight, not just the setup type."
+                    )
                 rule_num += 1
-    if best_type and best_type_wr >= 30:
+    if best_type and best_type_wr >= 25 and stats["by_setup_type"][best_type]["total"] >= 5:
+        bt = stats["by_setup_type"][best_type]
         lines.append(
-            f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR — prioritize this setup type."
+            f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR over {bt['total']} trades — "
+            "prioritize this setup type."
         )
         rule_num += 1
 
@@ -608,67 +642,64 @@ def generate_strategic_rules():
     low_rank_wins = sum(
         s["wins"] for rk, s in stats["by_rank"].items() if int(rk) >= 4
     )
-    if low_rank_total >= 4:
+    if low_rank_total >= 8:
         lr_wr = low_rank_wins / low_rank_total * 100
         if lr_wr < 15:
             lines.append(
-                f"{rule_num}. **STOP PADDING**: Rank #4-5 have {low_rank_wins}/{low_rank_total} wins ({lr_wr:.0f}%). "
-                "Don't pad to 5 setups. Only include #4/#5 if they genuinely qualify."
+                f"{rule_num}. **QUALITY OVER QUANTITY**: Rank #4-5 have {low_rank_wins}/{low_rank_total} wins ({lr_wr:.0f}%). "
+                "Don't pad to 5 setups — only include #4/#5 if they have strong structure and R:R >= 2.5:1."
             )
             rule_num += 1
 
     # --- Prediction accuracy ---
     pg = stats["prediction_gap"]
-    if pg["count"] >= 5:
+    if pg["count"] >= 10:
         avg_pred = pg["sum_predicted"] / pg["count"]
         avg_act = pg["sum_actual"] / pg["count"]
         gap = avg_pred - avg_act
         if gap > 1.5:
             lines.append(
-                f"{rule_num}. **TARGETS TOO FAR**: Predicted avg {avg_pred:.1f}R but actual is {avg_act:.2f}R "
-                f"(gap: {gap:.1f}R). Use T1 limits strictly: scalp <1.5%, intraday <3%, swing <5%."
+                f"{rule_num}. **TARGETS OPTIMISTIC**: Predicted avg {avg_pred:.1f}R but actual is {avg_act:.2f}R "
+                f"(gap: {gap:.1f}R). Place T1 at the nearest real structural level, not a dream target. "
+                "Use ATR as sanity check: T1 should be 1.5-3× ATR from entry."
             )
             rule_num += 1
 
     # --- Direction accuracy (MFE) ---
     mfe = stats["mfe_stats"]
-    if mfe["total_with_mfe"] >= 5:
+    if mfe["total_with_mfe"] >= 10:
         dir_acc = mfe["reached_05r"] / mfe["total_with_mfe"] * 100
         avg_mfe = mfe["mfe_sum"] / mfe["total_with_mfe"]
         if dir_acc >= 50 and win_rate < 30:
             lines.append(
                 f"{rule_num}. **DIRECTION RIGHT, EXECUTION WRONG**: {dir_acc:.0f}% reach 0.5R+ favorable "
                 f"(avg MFE: {avg_mfe:.2f}R) but win rate is {win_rate:.0f}%. "
-                "Widen stops, bring T1 closer."
+                "Use ATR-based stops (2-3× ATR), bring T1 to nearest structural level."
             )
             rule_num += 1
         elif dir_acc < 40:
             lines.append(
-                f"{rule_num}. **DIRECTION WRONG**: Only {dir_acc:.0f}% reach 0.5R favorable. "
-                "Require 4/4 TF confluence + volume confirmation before recommending."
+                f"{rule_num}. **DIRECTION OFTEN WRONG**: Only {dir_acc:.0f}% reach 0.5R favorable. "
+                "Be more selective — prefer setups with 3/4+ TF confluence + volume confirmation."
             )
             rule_num += 1
 
     # --- Stop loss analysis ---
-    if total >= 5:
-        stop_rate = sum(
-            s["losses"] for s in stats["by_setup_type"].values()
-        )  # losses ≈ stops in most cases
-        st = stats["stop_timing"]
-        if st["total_stops"] >= 3 and st["fast_stops"] > st["total_stops"] * 0.4:
-            avg_candles = st["candles_sum"] / st["total_stops"]
-            lines.append(
-                f"{rule_num}. **ENTRY TIMING**: {st['fast_stops']}/{st['total_stops']} stops hit within "
-                f"2 hours (avg {avg_candles:.0f} candles). Wait for 15m confirmation before entering."
-            )
-            rule_num += 1
+    st = stats["stop_timing"]
+    if st["total_stops"] >= 5 and st["fast_stops"] > st["total_stops"] * 0.4:
+        avg_candles = st["candles_sum"] / st["total_stops"]
+        lines.append(
+            f"{rule_num}. **STOPS HIT TOO FAST**: {st['fast_stops']}/{st['total_stops']} stops hit within "
+            f"2 hours (avg {avg_candles:.0f} candles). Use ATR-based stops and wait for 15m confirmation."
+        )
+        rule_num += 1
 
     # --- Target hit rate ---
     ts = stats["target_stats"]
-    if total >= 5 and ts["t1_hits"] < total * 0.3:
+    if total >= 10 and ts["t1_hits"] < total * 0.2:
         lines.append(
             f"{rule_num}. **T1 RARELY HIT**: Only {ts['t1_hits']}/{total} setups hit T1. "
-            "Targets are set too far. Use closer, more realistic T1 levels."
+            "T1 should be at the nearest structural level (prior S/R, EMA cluster), not a projected move."
         )
         rule_num += 1
 
@@ -677,20 +708,21 @@ def generate_strategic_rules():
     if len(months) >= 2:
         last_month = stats["monthly_trend"][months[-1]]
         prev_month = stats["monthly_trend"][months[-2]]
-        if last_month["total"] >= 3 and prev_month["total"] >= 3:
+        if last_month["total"] >= 5 and prev_month["total"] >= 5:
             last_wr = last_month["wins"] / last_month["total"] * 100
             prev_wr = prev_month["wins"] / prev_month["total"] * 100
-            if last_wr > prev_wr:
+            if last_wr > prev_wr + 10:
                 lines.append(
                     f"{rule_num}. **IMPROVING**: {months[-2]} was {prev_wr:.0f}% → {months[-1]} is {last_wr:.0f}%. "
-                    "Current approach is working — maintain selectivity."
+                    "Current approach is working — maintain it."
                 )
-            elif last_wr <= prev_wr and last_wr < 30:
+                rule_num += 1
+            elif last_wr < prev_wr - 10 and last_wr < 30:
                 lines.append(
-                    f"{rule_num}. **NOT IMPROVING**: {months[-2]} was {prev_wr:.0f}% → {months[-1]} is {last_wr:.0f}%. "
-                    "Make bigger changes: output fewer setups, require higher confluence."
+                    f"{rule_num}. **DECLINING**: {months[-2]} was {prev_wr:.0f}% → {months[-1]} is {last_wr:.0f}%. "
+                    "Review entry precision and stop placement. Consider ATR-based stops."
                 )
-            rule_num += 1
+                rule_num += 1
 
     # --- Model comparison ---
     model_stats = stats["by_model"]
