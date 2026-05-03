@@ -1,0 +1,173 @@
+{
+  "last_updated": "2026-05-03 05:19 UTC",
+  "total_setups": 32,
+  "total_evaluated": 28,
+  "total_not_triggered": 4,
+  "overall": {
+    "wins": 3,
+    "losses": 25,
+    "rr_sum": -17.46
+  },
+  "by_setup_type": {
+    "trend_pullback": {
+      "wins": 3,
+      "losses": 22,
+      "total": 25,
+      "rr_sum": -14.959999999999999
+    },
+    "range_breakout": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": -0.5
+    },
+    "failed_breakout": {
+      "wins": 0,
+      "losses": 2,
+      "total": 2,
+      "rr_sum": -2.0
+    }
+  },
+  "by_confidence": {
+    "high": {
+      "wins": 2,
+      "losses": 7,
+      "total": 9,
+      "rr_sum": -2.42
+    },
+    "medium": {
+      "wins": 0,
+      "losses": 14,
+      "total": 14,
+      "rr_sum": -12.41
+    },
+    "low": {
+      "wins": 1,
+      "losses": 4,
+      "total": 5,
+      "rr_sum": -2.63
+    }
+  },
+  "by_rank": {
+    "3": {
+      "wins": 1,
+      "losses": 4,
+      "total": 5,
+      "rr_sum": -3.92
+    },
+    "5": {
+      "wins": 0,
+      "losses": 5,
+      "total": 5,
+      "rr_sum": -3.71
+    },
+    "1": {
+      "wins": 0,
+      "losses": 6,
+      "total": 6,
+      "rr_sum": -6.0
+    },
+    "4": {
+      "wins": 1,
+      "losses": 5,
+      "total": 6,
+      "rr_sum": -3.33
+    },
+    "2": {
+      "wins": 1,
+      "losses": 5,
+      "total": 6,
+      "rr_sum": -0.5
+    }
+  },
+  "by_model": {
+    "unknown": {
+      "wins": 1,
+      "losses": 3,
+      "total": 4,
+      "rr_sum": -2.46
+    },
+    "claude-sonnet-4-6": {
+      "wins": 1,
+      "losses": 15,
+      "total": 16,
+      "rr_sum": -13.000000000000002
+    },
+    "claude-haiku-4-5": {
+      "wins": 1,
+      "losses": 7,
+      "total": 8,
+      "rr_sum": -2.0
+    }
+  },
+  "by_timeframe": {
+    "intraday": {
+      "wins": 2,
+      "losses": 16,
+      "total": 18,
+      "rr_sum": -12.959999999999999
+    },
+    "swing": {
+      "wins": 1,
+      "losses": 8,
+      "total": 9,
+      "rr_sum": -3.5
+    },
+    "scalp": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": -1.0
+    }
+  },
+  "by_direction": {
+    "long": {
+      "wins": 3,
+      "losses": 23,
+      "total": 26,
+      "rr_sum": -15.459999999999999
+    },
+    "short": {
+      "wins": 0,
+      "losses": 2,
+      "total": 2,
+      "rr_sum": -2.0
+    }
+  },
+  "monthly_trend": {
+    "2026-04": {
+      "wins": 3,
+      "losses": 25,
+      "total": 28
+    }
+  },
+  "prediction_gap": {
+    "sum_predicted": 57.26000000000001,
+    "sum_actual": -17.46,
+    "count": 28
+  },
+  "mfe_stats": {
+    "reached_05r": 0,
+    "total_with_mfe": 0,
+    "mfe_sum": 0.0
+  },
+  "stop_timing": {
+    "total_stops": 0,
+    "fast_stops": 0,
+    "candles_sum": 0
+  },
+  "target_stats": {
+    "t1_hits": 2,
+    "t2_hits": 1
+  },
+  "processed_run_tags": [
+    "20260422_0240",
+    "20260422_0420",
+    "20260423_1634",
+    "20260425_0751",
+    "20260425_1355",
+    "20260426_0516",
+    "20260428_0201",
+    "20260429_0625"
+  ]
+}

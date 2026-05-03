@@ -34,9 +34,15 @@ EVALS_DIR = Path("logs/evaluations")
 PERFORMANCE_DIR = Path("logs/performance")
 TRADES_FILE = Path("logs/trades/my_trades.json")
 WIN_RATE_HISTORY_FILE = Path("logs/performance/win_rate_history.json")
+LIFETIME_STATS_FILE = Path("logs/performance/lifetime_stats.json")
+STRATEGIC_RULES_FILE = Path("logs/performance/strategic_rules.md")
+RECENT_PERFORMANCE_FILE = Path("logs/performance/recent_performance.md")
 
 # Only evaluate setups from the last N weeks
 EVAL_LOOKBACK_WEEKS = 7
+
+# Rolling window for recent performance (sent to Claude)
+RECENT_WINDOW_WEEKS = 4
 
 
 def get_bybit_client():
@@ -355,8 +361,14 @@ def run_evaluation():
     print(f"\n{'='*40}")
     print(f"Evaluated {new_count} new run(s). Total evaluations in history: {len(all_evals)}.")
 
-    # --- Phase 3: Generate summary from ALL evaluations (full history) ---
-    # This ensures the model learns from all past results, not just recent ones.
+    # --- Phase 3: Update tiered knowledge system ---
+    # Layer 1: Update lifetime stats incrementally
+    update_lifetime_stats(all_evals)
+    # Layer 2: Generate strategic rules from lifetime stats (for Claude)
+    generate_strategic_rules()
+    # Layer 3: Generate recent performance window (for Claude)
+    generate_recent_performance(all_evals)
+    # Human report: regenerate summary.md for human readability
     generate_summary(all_evals)
 
 
@@ -370,6 +382,453 @@ def load_manual_trades():
     except Exception as e:
         print(f"  Warning: Could not load manual trades: {e}")
         return []
+
+
+def _empty_lifetime_stats():
+    """Return a fresh lifetime stats structure."""
+    return {
+        "last_updated": "",
+        "total_setups": 0,
+        "total_evaluated": 0,
+        "total_not_triggered": 0,
+        "overall": {"wins": 0, "losses": 0, "rr_sum": 0.0},
+        "by_setup_type": {},
+        "by_confidence": {},
+        "by_rank": {},
+        "by_model": {},
+        "by_timeframe": {},
+        "by_direction": {},
+        "monthly_trend": {},
+        "prediction_gap": {"sum_predicted": 0.0, "sum_actual": 0.0, "count": 0},
+        "mfe_stats": {"reached_05r": 0, "total_with_mfe": 0, "mfe_sum": 0.0},
+        "stop_timing": {"total_stops": 0, "fast_stops": 0, "candles_sum": 0},
+        "target_stats": {"t1_hits": 0, "t2_hits": 0},
+        "processed_run_tags": [],
+    }
+
+
+def _increment_bucket(bucket, key, result):
+    """Increment a stats bucket (by_setup_type, by_confidence, etc.) with one result."""
+    if key not in bucket:
+        bucket[key] = {"wins": 0, "losses": 0, "total": 0, "rr_sum": 0.0}
+    bucket[key]["total"] += 1
+    bucket[key]["rr_sum"] += result.get("actual_rr", 0)
+    if result.get("won"):
+        bucket[key]["wins"] += 1
+    else:
+        bucket[key]["losses"] += 1
+
+
+def update_lifetime_stats(all_evals):
+    """Incrementally update lifetime_stats.json with only new evaluation data.
+
+    On first run, bootstraps from all existing evals. On subsequent runs,
+    only processes run_tags not yet in processed_run_tags.
+    """
+    PERFORMANCE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Load existing stats or start fresh
+    if LIFETIME_STATS_FILE.exists():
+        try:
+            stats = json.loads(LIFETIME_STATS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            stats = _empty_lifetime_stats()
+    else:
+        stats = _empty_lifetime_stats()
+
+    processed = set(stats.get("processed_run_tags", []))
+
+    new_count = 0
+    for ev in all_evals:
+        run_tag = ev["run_tag"]
+        if run_tag in processed:
+            continue
+
+        model = ev.get("model", "unknown")
+        # Extract month from run_tag (format: YYYYMMDD_HHMM)
+        month_key = f"{run_tag[:4]}-{run_tag[4:6]}" if len(run_tag) >= 6 else "unknown"
+
+        if month_key not in stats["monthly_trend"]:
+            stats["monthly_trend"][month_key] = {"wins": 0, "losses": 0, "total": 0}
+
+        for r in ev["results"]:
+            stats["total_setups"] += 1
+
+            if r.get("status") == "not_triggered":
+                stats["total_not_triggered"] += 1
+                continue
+
+            if r.get("status") != "evaluated":
+                continue
+
+            stats["total_evaluated"] += 1
+            actual_rr = r.get("actual_rr", 0)
+            won = r.get("won", False)
+
+            # Overall
+            stats["overall"]["rr_sum"] += actual_rr
+            if won:
+                stats["overall"]["wins"] += 1
+            else:
+                stats["overall"]["losses"] += 1
+
+            # Bucketed stats
+            _increment_bucket(stats["by_setup_type"], r.get("setup_type", "other"), r)
+            _increment_bucket(stats["by_confidence"], r.get("confidence", "medium"), r)
+            _increment_bucket(stats["by_rank"], str(r.get("rank", 0)), r)
+            _increment_bucket(stats["by_model"], model, r)
+            _increment_bucket(stats["by_timeframe"], r.get("timeframe", "intraday"), r)
+            _increment_bucket(stats["by_direction"], r.get("direction", "long"), r)
+
+            # Monthly trend
+            stats["monthly_trend"][month_key]["total"] += 1
+            if won:
+                stats["monthly_trend"][month_key]["wins"] += 1
+            else:
+                stats["monthly_trend"][month_key]["losses"] += 1
+
+            # Prediction gap
+            pred_rr = r.get("predicted_rr", 0)
+            if pred_rr:
+                stats["prediction_gap"]["sum_predicted"] += pred_rr
+                stats["prediction_gap"]["sum_actual"] += actual_rr
+                stats["prediction_gap"]["count"] += 1
+
+            # MFE stats
+            mfe = r.get("max_favorable_rr")
+            if mfe is not None:
+                stats["mfe_stats"]["total_with_mfe"] += 1
+                stats["mfe_stats"]["mfe_sum"] += mfe
+                if mfe >= 0.5:
+                    stats["mfe_stats"]["reached_05r"] += 1
+
+            # Stop timing
+            if r.get("stop_hit") and r.get("candles_to_exit") is not None:
+                stats["stop_timing"]["total_stops"] += 1
+                stats["stop_timing"]["candles_sum"] += r["candles_to_exit"]
+                if r["candles_to_exit"] <= 8:
+                    stats["stop_timing"]["fast_stops"] += 1
+
+            # Target stats
+            if r.get("target_1_hit"):
+                stats["target_stats"]["t1_hits"] += 1
+            if r.get("target_2_hit"):
+                stats["target_stats"]["t2_hits"] += 1
+
+        processed.add(run_tag)
+        new_count += 1
+
+    stats["processed_run_tags"] = sorted(processed)
+    stats["last_updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    LIFETIME_STATS_FILE.write_text(json.dumps(stats, indent=2), encoding="utf-8")
+    print(f"Lifetime stats updated: {new_count} new run(s) processed, "
+          f"{stats['total_evaluated']} total evaluated trades.")
+
+
+def generate_strategic_rules():
+    """Derive compact, durable rules from lifetime_stats.json.
+
+    These rules are what Claude reads every run — the distilled wisdom from
+    all historical evaluations. ~500 tokens regardless of how long you've run.
+    """
+    if not LIFETIME_STATS_FILE.exists():
+        return
+
+    stats = json.loads(LIFETIME_STATS_FILE.read_text(encoding="utf-8"))
+    total = stats["total_evaluated"]
+    if total < 5:
+        return  # not enough data
+
+    overall = stats["overall"]
+    win_rate = overall["wins"] / total * 100
+    avg_rr = overall["rr_sum"] / total
+
+    lines = [
+        f"# Strategic Rules (derived from {total} evaluated trades)",
+        f"_Last updated: {stats['last_updated']}_",
+        "",
+    ]
+
+    # --- Overall selectivity ---
+    if win_rate < 20:
+        lines.append(
+            f"1. **CRITICAL SELECTIVITY**: Win rate is {win_rate:.0f}% — nearly all setups lose. "
+            "Output 1-2 high-quality setups MAX. Fewer is better. 0 setups is valid."
+        )
+    elif win_rate < 40:
+        lines.append(
+            f"1. **SELECTIVITY**: Win rate is {win_rate:.0f}%. Apply strict entry criteria — "
+            "prefer fewer, higher-conviction setups. 1-3 setups per run."
+        )
+    else:
+        lines.append(
+            f"1. **MAINTAIN APPROACH**: Win rate is {win_rate:.0f}%. Current selectivity is working."
+        )
+
+    rule_num = 2
+
+    # --- Confidence rules ---
+    for conf in ["medium", "low"]:
+        cs = stats["by_confidence"].get(conf)
+        if cs and cs["total"] >= 3:
+            wr = cs["wins"] / cs["total"] * 100
+            if wr < 20:
+                lines.append(
+                    f"{rule_num}. **{conf.upper()} CONFIDENCE BANNED**: {cs['wins']}/{cs['total']} wins ({wr:.0f}%). "
+                    f"DO NOT include '{conf}' confidence setups unless R:R >= 3:1."
+                )
+                rule_num += 1
+
+    # --- Setup type rules ---
+    best_type = None
+    best_type_wr = 0
+    for st, s in stats["by_setup_type"].items():
+        if s["total"] >= 3:
+            wr = s["wins"] / s["total"] * 100
+            avg = s["rr_sum"] / s["total"]
+            if wr > best_type_wr:
+                best_type = st
+                best_type_wr = wr
+            if wr < 15 and avg < -0.5 and s["total"] >= 5:
+                lines.append(
+                    f"{rule_num}. **DEPRIORITIZE '{st}'**: {wr:.0f}% WR, {avg:.2f} avg R:R over "
+                    f"{s['total']} trades. Only include if 4/4 TF confluence + high confidence."
+                )
+                rule_num += 1
+    if best_type and best_type_wr >= 30:
+        lines.append(
+            f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR — prioritize this setup type."
+        )
+        rule_num += 1
+
+    # --- Rank padding rule ---
+    low_rank_total = sum(
+        s["total"] for rk, s in stats["by_rank"].items() if int(rk) >= 4
+    )
+    low_rank_wins = sum(
+        s["wins"] for rk, s in stats["by_rank"].items() if int(rk) >= 4
+    )
+    if low_rank_total >= 4:
+        lr_wr = low_rank_wins / low_rank_total * 100
+        if lr_wr < 15:
+            lines.append(
+                f"{rule_num}. **STOP PADDING**: Rank #4-5 have {low_rank_wins}/{low_rank_total} wins ({lr_wr:.0f}%). "
+                "Don't pad to 5 setups. Only include #4/#5 if they genuinely qualify."
+            )
+            rule_num += 1
+
+    # --- Prediction accuracy ---
+    pg = stats["prediction_gap"]
+    if pg["count"] >= 5:
+        avg_pred = pg["sum_predicted"] / pg["count"]
+        avg_act = pg["sum_actual"] / pg["count"]
+        gap = avg_pred - avg_act
+        if gap > 1.5:
+            lines.append(
+                f"{rule_num}. **TARGETS TOO FAR**: Predicted avg {avg_pred:.1f}R but actual is {avg_act:.2f}R "
+                f"(gap: {gap:.1f}R). Use T1 limits strictly: scalp <1.5%, intraday <3%, swing <5%."
+            )
+            rule_num += 1
+
+    # --- Direction accuracy (MFE) ---
+    mfe = stats["mfe_stats"]
+    if mfe["total_with_mfe"] >= 5:
+        dir_acc = mfe["reached_05r"] / mfe["total_with_mfe"] * 100
+        avg_mfe = mfe["mfe_sum"] / mfe["total_with_mfe"]
+        if dir_acc >= 50 and win_rate < 30:
+            lines.append(
+                f"{rule_num}. **DIRECTION RIGHT, EXECUTION WRONG**: {dir_acc:.0f}% reach 0.5R+ favorable "
+                f"(avg MFE: {avg_mfe:.2f}R) but win rate is {win_rate:.0f}%. "
+                "Widen stops, bring T1 closer."
+            )
+            rule_num += 1
+        elif dir_acc < 40:
+            lines.append(
+                f"{rule_num}. **DIRECTION WRONG**: Only {dir_acc:.0f}% reach 0.5R favorable. "
+                "Require 4/4 TF confluence + volume confirmation before recommending."
+            )
+            rule_num += 1
+
+    # --- Stop loss analysis ---
+    if total >= 5:
+        stop_rate = sum(
+            s["losses"] for s in stats["by_setup_type"].values()
+        )  # losses ≈ stops in most cases
+        st = stats["stop_timing"]
+        if st["total_stops"] >= 3 and st["fast_stops"] > st["total_stops"] * 0.4:
+            avg_candles = st["candles_sum"] / st["total_stops"]
+            lines.append(
+                f"{rule_num}. **ENTRY TIMING**: {st['fast_stops']}/{st['total_stops']} stops hit within "
+                f"2 hours (avg {avg_candles:.0f} candles). Wait for 15m confirmation before entering."
+            )
+            rule_num += 1
+
+    # --- Target hit rate ---
+    ts = stats["target_stats"]
+    if total >= 5 and ts["t1_hits"] < total * 0.3:
+        lines.append(
+            f"{rule_num}. **T1 RARELY HIT**: Only {ts['t1_hits']}/{total} setups hit T1. "
+            "Targets are set too far. Use closer, more realistic T1 levels."
+        )
+        rule_num += 1
+
+    # --- Monthly trend ---
+    months = sorted(stats["monthly_trend"].keys())
+    if len(months) >= 2:
+        last_month = stats["monthly_trend"][months[-1]]
+        prev_month = stats["monthly_trend"][months[-2]]
+        if last_month["total"] >= 3 and prev_month["total"] >= 3:
+            last_wr = last_month["wins"] / last_month["total"] * 100
+            prev_wr = prev_month["wins"] / prev_month["total"] * 100
+            if last_wr > prev_wr:
+                lines.append(
+                    f"{rule_num}. **IMPROVING**: {months[-2]} was {prev_wr:.0f}% → {months[-1]} is {last_wr:.0f}%. "
+                    "Current approach is working — maintain selectivity."
+                )
+            elif last_wr <= prev_wr and last_wr < 30:
+                lines.append(
+                    f"{rule_num}. **NOT IMPROVING**: {months[-2]} was {prev_wr:.0f}% → {months[-1]} is {last_wr:.0f}%. "
+                    "Make bigger changes: output fewer setups, require higher confluence."
+                )
+            rule_num += 1
+
+    # --- Model comparison ---
+    model_stats = stats["by_model"]
+    models_with_data = {m: s for m, s in model_stats.items() if s["total"] >= 5}
+    if len(models_with_data) >= 2:
+        best_model = max(models_with_data.items(), key=lambda x: x[1]["wins"] / x[1]["total"])
+        bm_wr = best_model[1]["wins"] / best_model[1]["total"] * 100
+        bm_rr = best_model[1]["rr_sum"] / best_model[1]["total"]
+        lines.append(
+            f"{rule_num}. **BEST MODEL**: {best_model[0]} ({bm_wr:.0f}% WR, {bm_rr:.2f} avg R:R). "
+            "Consider using this model for production runs."
+        )
+        rule_num += 1
+
+    lines.append("")
+    STRATEGIC_RULES_FILE.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Strategic rules written ({rule_num - 1} rules) to {STRATEGIC_RULES_FILE}")
+
+
+def generate_recent_performance(all_evals):
+    """Generate a rolling-window recent performance summary for Claude.
+
+    Shows trade-by-trade outcomes from the last RECENT_WINDOW_WEEKS weeks.
+    Fixed size regardless of total history — ~800 tokens.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(weeks=RECENT_WINDOW_WEEKS)
+
+    # Collect recent evaluated results
+    recent_results = []
+    for ev in all_evals:
+        try:
+            run_dt = datetime.fromisoformat(ev["run_timestamp_utc"])
+        except Exception:
+            continue
+        if run_dt < cutoff:
+            continue
+        model = ev.get("model", "unknown")
+        for r in ev["results"]:
+            if r.get("status") == "evaluated":
+                r["run_tag"] = ev["run_tag"]
+                r["model"] = model
+                recent_results.append(r)
+
+    if not recent_results:
+        RECENT_PERFORMANCE_FILE.write_text(
+            "# Recent Performance\nNo evaluated trades in the last "
+            f"{RECENT_WINDOW_WEEKS} weeks.\n",
+            encoding="utf-8",
+        )
+        return
+
+    wins = [r for r in recent_results if r.get("won")]
+    losses = [r for r in recent_results if not r.get("won")]
+    win_rate = len(wins) / len(recent_results) * 100
+    avg_rr = sum(r.get("actual_rr", 0) for r in recent_results) / len(recent_results)
+
+    lines = [
+        f"# Recent Performance (last {RECENT_WINDOW_WEEKS} weeks)",
+        f"_{len(recent_results)} trades: {len(wins)}W / {len(losses)}L "
+        f"({win_rate:.0f}% WR, {avg_rr:.2f} avg R:R)_",
+        "",
+        "## Trade-by-Trade (LEARN FROM EACH ONE)",
+        "| Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Exit | MFE |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+
+    # Show all recent trades (capped by the window, not by count)
+    for r in sorted(recent_results, key=lambda x: x.get("run_tag", ""), reverse=True):
+        tag = r.get("run_tag", "?")
+        date_str = f"{tag[:4]}-{tag[4:6]}-{tag[6:8]}" if len(tag) >= 8 else tag
+        sym = r.get("symbol", "?")[:10]
+        d = "L" if r.get("direction") == "long" else "S"
+        tf = r.get("timeframe", "?")[:5]
+        st = r.get("setup_type", "?")[:12]
+        conf = r.get("confidence", "?")[:3]
+        tfc = r.get("tf_confluence", "?")
+        pred = r.get("predicted_rr", "?")
+        actual = r.get("actual_rr", "?")
+        exit_r = r.get("exit_reason", "?")
+        mfe = r.get("max_favorable_rr")
+        mfe_str = f"{mfe}R" if mfe is not None else "n/a"
+        icon = "W" if r.get("won") else "L"
+        lines.append(
+            f"| {date_str} | {sym} | {d} | {tf} | {st} | {conf} | {tfc}/4 "
+            f"| {pred} | {actual} ({icon}) | {exit_r} | {mfe_str} |"
+        )
+
+    # Recent patterns
+    lines.append("")
+
+    # Best/worst recent setup type
+    recent_types = {}
+    for r in recent_results:
+        st = r.get("setup_type", "other")
+        if st not in recent_types:
+            recent_types[st] = {"wins": 0, "total": 0}
+        recent_types[st]["total"] += 1
+        if r.get("won"):
+            recent_types[st]["wins"] += 1
+
+    for st, s in recent_types.items():
+        if s["total"] >= 2:
+            wr = s["wins"] / s["total"] * 100
+            lines.append(f"- Recent '{st}': {s['wins']}/{s['total']} ({wr:.0f}% WR)")
+
+    # Manual trades context
+    manual_trades = load_manual_trades()
+    if manual_trades:
+        # Only include recent manual trades
+        recent_manual = []
+        for t in manual_trades:
+            t_date = t.get("date", "")
+            try:
+                if datetime.fromisoformat(t_date) >= cutoff:
+                    recent_manual.append(t)
+            except Exception:
+                recent_manual.append(t)  # include if can't parse date
+
+        if recent_manual:
+            closed = [t for t in recent_manual if t.get("result") in ("win", "loss")]
+            lines += [
+                "",
+                "## Trader's Recent Actual Trades",
+            ]
+            for t in recent_manual[-5:]:  # last 5 manual trades
+                symbol = t.get("symbol", "?")
+                result = t.get("result", "?").upper()
+                note = t.get("note", "").strip()
+                fr = t.get("failure_reason", "")
+                lines.append(f"- **{symbol}** ({t.get('date', '?')}) — {result}")
+                if note:
+                    lines.append(f"  Lesson: {note}")
+                if fr:
+                    lines.append(f"  Failure: {fr}")
+
+    lines.append("")
+    RECENT_PERFORMANCE_FILE.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Recent performance written ({len(recent_results)} trades) to {RECENT_PERFORMANCE_FILE}")
 
 
 def generate_summary(all_evals):

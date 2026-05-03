@@ -1,8 +1,6 @@
-import json
 from pathlib import Path
 
 KNOWLEDGE_DIR = Path(__file__).parent.parent / "knowledge"
-TRADES_FILE = Path(__file__).parent.parent / "logs" / "trades" / "my_trades.json"
 
 
 def load_knowledge():
@@ -215,167 +213,8 @@ Rules for the JSON:
 """
 
 
-PERFORMANCE_FILE = Path(__file__).parent.parent / "logs" / "performance" / "summary.md"
-EVALS_DIR = Path(__file__).parent.parent / "logs" / "evaluations"
-WIN_RATE_HISTORY_FILE = Path(__file__).parent.parent / "logs" / "performance" / "win_rate_history.json"
-
-
-def _derive_performance_rules():
-    """Parse evaluation data and derive concrete rules for Claude.
-
-    Instead of just showing raw stats, this generates specific directives
-    like 'medium confidence setups have 0% win rate — require R:R >= 3:1'.
-    """
-    if not EVALS_DIR.exists():
-        return []
-
-    # Load all evaluations
-    all_results = []
-    for ef in sorted(EVALS_DIR.glob("eval_*.json")):
-        try:
-            ev = json.loads(ef.read_text(encoding="utf-8"))
-            for r in ev["results"]:
-                if r.get("status") == "evaluated":
-                    r["model"] = ev.get("model", "unknown")
-                    all_results.append(r)
-        except Exception:
-            pass
-
-    if len(all_results) < 5:
-        return []  # not enough data to derive rules
-
-    rules = []
-
-    # Overall win rate warning
-    wins = [r for r in all_results if r.get("won")]
-    win_rate = len(wins) / len(all_results) * 100
-    if win_rate < 30:
-        rules.append(
-            f"CRITICAL: Your historical win rate is {win_rate:.0f}% across {len(all_results)} trades. "
-            "You MUST be far more selective. Only recommend setups where you have genuine conviction. "
-            "Fewer, higher-quality setups will outperform many mediocre ones."
-        )
-
-    # Confidence-level rules
-    conf_stats = {}
-    for r in all_results:
-        conf = r.get("confidence", "medium")
-        if conf not in conf_stats:
-            conf_stats[conf] = {"wins": 0, "total": 0}
-        conf_stats[conf]["total"] += 1
-        if r.get("won"):
-            conf_stats[conf]["wins"] += 1
-
-    for conf in ["medium", "low"]:
-        if conf in conf_stats and conf_stats[conf]["total"] >= 3:
-            wr = conf_stats[conf]["wins"] / conf_stats[conf]["total"] * 100
-            if wr < 20:
-                rules.append(
-                    f"Your '{conf}' confidence setups have a {wr:.0f}% win rate "
-                    f"({conf_stats[conf]['wins']}/{conf_stats[conf]['total']}). "
-                    f"DO NOT include '{conf}' confidence setups unless R:R >= 3:1 and "
-                    f"there is a strong structural reason. Prefer to output fewer setups instead."
-                )
-
-    # Setup type rules
-    type_stats = {}
-    for r in all_results:
-        st = r.get("setup_type", "other")
-        if st not in type_stats:
-            type_stats[st] = {"wins": 0, "total": 0, "rr_sum": 0}
-        type_stats[st]["total"] += 1
-        type_stats[st]["rr_sum"] += r.get("actual_rr", 0)
-        if r.get("won"):
-            type_stats[st]["wins"] += 1
-
-    for st, s in type_stats.items():
-        if s["total"] >= 5:
-            wr = s["wins"] / s["total"] * 100
-            avg_rr = s["rr_sum"] / s["total"]
-            if wr < 15 and avg_rr < -0.5:
-                rules.append(
-                    f"Setup type '{st}' has {wr:.0f}% win rate and {avg_rr:.2f} avg R:R "
-                    f"over {s['total']} trades. Deprioritize this type — only include if "
-                    f"confluence is 4/4 TFs and confidence is high."
-                )
-
-    # Rank-based rules
-    rank_stats = {}
-    for r in all_results:
-        rank = r.get("rank", 0)
-        if rank not in rank_stats:
-            rank_stats[rank] = {"wins": 0, "total": 0}
-        rank_stats[rank]["total"] += 1
-        if r.get("won"):
-            rank_stats[rank]["wins"] += 1
-
-    low_rank_total = sum(s["total"] for rk, s in rank_stats.items() if rk >= 4)
-    low_rank_wins = sum(s["wins"] for rk, s in rank_stats.items() if rk >= 4)
-    if low_rank_total >= 5 and (low_rank_wins / low_rank_total * 100) < 10:
-        rules.append(
-            f"Setups ranked #4 and #5 have {low_rank_wins}/{low_rank_total} wins. "
-            "This confirms that padding to 5 setups hurts performance. "
-            "Only include rank #4/#5 if they genuinely meet your quality bar."
-        )
-
-    # Prediction accuracy gap — how far off are predictions from reality
-    pred_rrs = [r.get("predicted_rr", 0) for r in all_results if r.get("predicted_rr")]
-    actual_rrs = [r.get("actual_rr", 0) for r in all_results]
-    if pred_rrs and len(pred_rrs) >= 5:
-        avg_pred = sum(pred_rrs) / len(pred_rrs)
-        avg_actual = sum(actual_rrs) / len(actual_rrs)
-        gap = avg_pred - avg_actual
-        if gap > 1.5:
-            rules.append(
-                f"PREDICTION ACCURACY: You predict avg R:R of {avg_pred:.1f} but actual is {avg_actual:.2f} "
-                f"(gap of {gap:.1f}R). Your targets are SYSTEMATICALLY too optimistic. "
-                "Use the T1 distance limits strictly: scalp <1.5%, intraday <3%, swing <5% from entry."
-            )
-
-    # Direction accuracy using MFE
-    mfe_results = [r for r in all_results if r.get("max_favorable_rr") is not None]
-    if len(mfe_results) >= 5:
-        direction_right = [r for r in mfe_results if r["max_favorable_rr"] >= 0.5]
-        dir_acc = len(direction_right) / len(mfe_results) * 100
-        if dir_acc >= 50 and win_rate < 30:
-            rules.append(
-                f"DIRECTION IS RIGHT BUT EXECUTION IS WRONG: {dir_acc:.0f}% of your trades reach "
-                "0.5R favorable before outcome, but you're still losing. "
-                "Your stops are TOO TIGHT — widen them. Your targets are TOO FAR — bring T1 closer. "
-                "The direction calls have value; the levels need work."
-            )
-        elif dir_acc < 40:
-            rules.append(
-                f"DIRECTION CALLS ARE WRONG: Only {dir_acc:.0f}% of trades reach 0.5R favorable. "
-                "This means most setups move AGAINST you immediately. "
-                "You need much stronger confirmation before recommending: require 4/4 TF confluence, "
-                "volume confirmation, and a clear structural level."
-            )
-
-    # Win rate trend — alert if not improving
-    if WIN_RATE_HISTORY_FILE.exists():
-        try:
-            history = json.loads(WIN_RATE_HISTORY_FILE.read_text(encoding="utf-8"))
-            if len(history) >= 2:
-                prev_wr = history[-2]["win_rate"] if len(history) >= 2 else None
-                curr_wr = history[-1]["win_rate"]
-                if prev_wr is not None and curr_wr <= prev_wr:
-                    rules.append(
-                        f"WIN RATE NOT IMPROVING: Previous eval was {prev_wr}%, current is {curr_wr}%. "
-                        "Your adjustments are not working. You must make BIGGER changes: "
-                        "output FEWER setups (1-2 max), require 4/4 TF confluence, require HIGH confidence only, "
-                        "and use CLOSER targets. Incremental tweaks have failed — be drastically more selective."
-                    )
-                elif prev_wr is not None and curr_wr > prev_wr:
-                    rules.append(
-                        f"WIN RATE IMPROVING: {prev_wr}% → {curr_wr}%. "
-                        "Your recent adjustments are working. Continue the current approach — "
-                        "maintain selectivity and don't loosen criteria."
-                    )
-        except Exception:
-            pass
-
-    return rules
+STRATEGIC_RULES_FILE = Path(__file__).parent.parent / "logs" / "performance" / "strategic_rules.md"
+RECENT_PERFORMANCE_FILE = Path(__file__).parent.parent / "logs" / "performance" / "recent_performance.md"
 
 
 def build_system_prompt():
@@ -384,33 +223,35 @@ def build_system_prompt():
     for name, content in knowledge.items():
         knowledge_section += f"\n## {name}\n{content}\n"
 
-    # Load performance feedback if available (self-evaluation loop)
+    # Load tiered performance feedback (compact, fixed-size regardless of history)
     performance_section = ""
-    if PERFORMANCE_FILE.exists():
-        perf_text = PERFORMANCE_FILE.read_text(encoding="utf-8").strip()
-        if perf_text:
-            # Derive concrete rules from evaluation data
-            perf_rules = _derive_performance_rules()
-            rules_block = ""
-            if perf_rules:
-                rules_block = (
-                    "\n\n## MANDATORY Performance-Based Rules\n"
-                    "These rules are derived from your actual evaluated results. FOLLOW THEM.\n\n"
-                )
-                for i, rule in enumerate(perf_rules, 1):
-                    rules_block += f"{i}. {rule}\n"
 
-            performance_section = (
-                "\n\n# Your Past Performance (Self-Evaluation Feedback)\n"
-                "This data shows how your past recommendations actually performed against real price data. "
-                "Study the 'Predictions vs Reality' table carefully — each row is YOUR recommendation and its outcome. "
-                "Your setups are being scored and tracked. LEARN FROM SPECIFIC FAILURES, not just aggregate stats.\n\n"
-                f"{perf_text}\n"
-                f"{rules_block}"
+    # Layer 2: Strategic rules — durable wisdom from ALL historical data (~500 tokens)
+    strategic_text = ""
+    if STRATEGIC_RULES_FILE.exists():
+        strategic_text = STRATEGIC_RULES_FILE.read_text(encoding="utf-8").strip()
+
+    # Layer 3: Recent performance — rolling window of trade outcomes (~800 tokens)
+    recent_text = ""
+    if RECENT_PERFORMANCE_FILE.exists():
+        recent_text = RECENT_PERFORMANCE_FILE.read_text(encoding="utf-8").strip()
+
+    if strategic_text or recent_text:
+        performance_section = (
+            "\n\n# Your Past Performance (Self-Evaluation Feedback)\n"
+            "Your setups are scored against real price data. The strategic rules below are "
+            "derived from ALL historical evaluations. The recent performance shows your last "
+            "few weeks of specific outcomes. LEARN FROM BOTH.\n"
+        )
+        if strategic_text:
+            performance_section += (
+                "\n## MANDATORY Performance-Based Rules\n"
+                "These rules are derived from your actual evaluated results. FOLLOW THEM.\n\n"
+                f"{strategic_text}\n"
             )
-
-    # NOTE: Trader's manual trade notes + lessons are already included in the
-    # performance summary's "Trade-by-Trade Analysis" section (loaded from
-    # my_trades.json during generate_summary). No need to duplicate here.
+        if recent_text:
+            performance_section += (
+                f"\n{recent_text}\n"
+            )
 
     return SYSTEM_PROMPT + knowledge_section + performance_section

@@ -40,14 +40,21 @@ main.py  (orchestrator, async)
   │
   ├── delivery/telegram_bot.py     → MD→HTML converter, smart chunking, retry with backoff
   │
-  ├── weekly_eval.py               → Evaluation engine: scores past setups, tracks by model
+  ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation
+  ├── quarterly_analysis.py        → Claude-powered deep pattern analysis (run every ~3 months)
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
         ├── briefs/*.md            → Archived readable briefs
         ├── setups/*.json          → Structured setup JSONs (with model name)
         ├── evaluations/*.json     → Scored results (win/loss, actual R:R)
-        └── performance/summary.md → Rolling stats, injected into Claude's prompt
+        └── performance/
+              ├── lifetime_stats.json    → Layer 1: Incremental running counters (never re-reads old evals)
+              ├── strategic_rules.md     → Layer 2: Compact rules from all history (~500 tokens, sent to Claude)
+              ├── recent_performance.md  → Layer 3: Rolling 4-week trade details (~800 tokens, sent to Claude)
+              ├── summary.md             → Human-readable report (NOT sent to Claude)
+              ├── win_rate_history.json   → Win rate snapshots over time
+              └── quarterly/             → Deep analysis logs from quarterly_analysis.py
 ```
 
 ### Data Flow
@@ -58,8 +65,13 @@ main.py  (orchestrator, async)
 4. `ClaudeAnalyzer.analyze(market, messages)` → readable brief + `setups_json` block
 5. `main.py` parses JSON block → saves to `logs/setups/` (includes model name)
 6. Clean brief (JSON stripped) → archived to `logs/briefs/` + delivered via Telegram
-7. Weekly: `weekly_eval.py` scores past setups → `logs/performance/summary.md`
-8. Next run: `build_system_prompt()` loads performance summary → Claude self-calibrates
+7. Weekly: `weekly_eval.py` scores past setups → updates tiered knowledge:
+   - `lifetime_stats.json` — incremental counters (O(1) per new eval, no file re-reads)
+   - `strategic_rules.md` — compact algorithmic rules from lifetime stats (~500 tokens)
+   - `recent_performance.md` — rolling 4-week trade details (~800 tokens)
+   - `summary.md` — full human-readable report (NOT sent to Claude)
+8. Next run: `build_system_prompt()` loads strategic_rules + recent_performance → Claude self-calibrates
+9. Quarterly: `quarterly_analysis.py` uses Claude to find deep patterns → appends to strategic_rules.md
 
 ### Pre-Filter Scoring (Python, free)
 
@@ -136,6 +148,10 @@ python main.py
 # Weekly evaluation (run Sundays or whenever)
 source venv/bin/activate
 python weekly_eval.py
+
+# Quarterly deep analysis (run every ~3 months or after 50+ new trades)
+source venv/bin/activate
+python quarterly_analysis.py
 ```
 
 ### Scheduled Runs
@@ -184,15 +200,41 @@ Do NOT migrate to cron — launchd handles wake-from-sleep better.
 3. Fetches 15m klines from Bybit for the evaluation window
 4. Checks: entry triggered? → stop or target hit first? → actual R:R
 5. Saves to `logs/evaluations/eval_*.json`
-6. Aggregates into `logs/performance/summary.md`:
-   - Win rate overall, by setup type, by confidence, by rank, **by model**
-   - Confidence calibration check
-   - Actionable insights for Claude
-7. `build_system_prompt()` loads summary.md → Claude reads on next run
+6. Updates tiered knowledge distillation (see below)
+7. `build_system_prompt()` loads strategic_rules + recent_performance → Claude reads on next run
+
+### Tiered Knowledge Distillation
+
+Instead of sending all historical data to Claude every run (which would grow unboundedly), the system distills evaluation data into three layers:
+
+| Layer | File | Sent to Claude? | Size | Scales with time? |
+|---|---|---|---|---|
+| 1. Lifetime Stats | `lifetime_stats.json` | No (backing data) | Grows slowly | Yes but compact |
+| 2. Strategic Rules | `strategic_rules.md` | **Yes** | ~500 tokens | **No** — fixed size |
+| 3. Recent Performance | `recent_performance.md` | **Yes** | ~800 tokens | **No** — rolling 4-week window |
+| Human Report | `summary.md` | No | ~2K tokens | Yes |
+
+**Layer 1** (`lifetime_stats.json`): Incrementally updated running counters — win rate by setup type, confidence, rank, model, timeframe, direction, monthly trends, prediction gap, MFE stats. Updated O(1) per new eval (no need to re-read old eval files).
+
+**Layer 2** (`strategic_rules.md`): Compact, durable rules derived algorithmically from Layer 1. Examples: "medium confidence has 0% WR — ban unless R:R >= 3:1", "targets are 2.7R too optimistic — use closer T1". Regenerated weekly but only changes when stats shift meaningfully.
+
+**Layer 3** (`recent_performance.md`): Rolling 4-week window of individual trade outcomes. Gives Claude fresh context about what's working NOW without unbounded growth. Old trades fall off automatically.
+
+**Total prompt overhead**: ~1300 tokens regardless of whether you've run for 1 month or 3 years.
+
+### Quarterly Deep Analysis
+
+`quarterly_analysis.py` uses Claude to find non-obvious patterns that algorithms can't detect:
+- Temporal patterns (certain days/times perform better)
+- Setup interaction effects (type + confidence + timeframe combos)
+- Symbol-specific patterns (consistently winning/losing symbols)
+- Sequence effects (overconfidence after wins, selectivity after losses)
+
+Run manually every ~3 months or after 50+ new evaluated trades. Findings are appended to `strategic_rules.md` under a "Quarterly Deep Insights" section.
 
 ### Model Comparison
 
-Every setup JSON includes `"model": "claude-sonnet-4-6"` (or whichever was used). The eval tracks win rate and avg R:R per model. When enough data accumulates (5+ trades per model), the summary includes a model comparison with recommendation.
+Every setup JSON includes `"model": "claude-sonnet-4-6"` (or whichever was used). The eval tracks win rate and avg R:R per model in `lifetime_stats.json`. When enough data accumulates (5+ trades per model), the strategic rules include a model comparison.
 
 ---
 

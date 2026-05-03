@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-05-03_
+_Last updated: 2026-05-03 (v2)_
 
 ---
 
@@ -35,14 +35,18 @@ Weekly eval (weekly_eval.py, run Sundays)
     → Loads ALL past evaluations for cumulative learning
     → Fetches actual prices from Bybit for each past setup
     → Scores: triggered? stop or target hit first? actual R:R? MFE?
-    → Per-trade prediction vs reality table (Claude sees each failure)
-    → Win rate trend: per-run + cumulative + previous vs current comparison
-    → Prediction accuracy gap + direction accuracy (via MFE)
-    → Aggregates by: setup type, confidence, rank, MODEL
-    → Merges manual trade log (logs/trades/my_trades.json) + trader notes
-    → Writes logs/performance/summary.md + win_rate_history.json
-    → Derives mandatory rules from data (auto-escalates if not improving)
-    → Claude reads summary + rules + validation checklist on next run → feedback loop
+    → Tiered Knowledge Distillation:
+      Layer 1: lifetime_stats.json — incremental running counters (O(1) update, no file re-reads)
+      Layer 2: strategic_rules.md — compact algorithmic rules (~500 tokens, sent to Claude)
+      Layer 3: recent_performance.md — rolling 4-week trade details (~800 tokens, sent to Claude)
+      Human:  summary.md — full report with all tables (NOT sent to Claude)
+    → Claude reads strategic_rules + recent_performance + validation checklist → feedback loop
+    → Total performance tokens: ~1,300 (FIXED regardless of history length)
+    ↓
+Quarterly deep analysis (quarterly_analysis.py, run every ~3 months)
+    → Feeds lifetime_stats.json + recent trades to Claude
+    → Finds non-obvious patterns: temporal, symbol-specific, interaction effects
+    → Appends qualitative insights to strategic_rules.md
 ```
 
 ---
@@ -55,10 +59,11 @@ Weekly eval (weekly_eval.py, run Sundays)
 | `config.py` | 41 | Settings: API keys, model, limits, timeframes, watchlist |
 | `fetchers/bybit_data.py` | 288 | Bybit API: 50 tickers → knowledge-based scoring → top 25 → multi-TF klines |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 195 | Professional trader prompt + knowledge + performance feedback + validation checklist + derived rules |
+| `analyzer/prompts.py` | 60 | Professional trader prompt + knowledge + tiered performance feedback (strategic rules + recent window) |
 | `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `weekly_eval.py` | 700 | Evaluation engine: MFE tracking, per-trade results table, win rate trend, enriched summary |
+| `weekly_eval.py` | 900 | Evaluation engine + tiered knowledge distillation (lifetime stats, strategic rules, recent window, summary) |
+| `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
 | `progress.md` | — | This file — project progress tracker |
 
@@ -72,8 +77,12 @@ logs/
   trades/
     my_trades.json → Manual trade log with notes/lessons (user-edited)
   performance/
-    summary.md            → Rolling stats, per-trade results, win rate trend — Claude reads this
-    win_rate_history.json  → Persistent win rate snapshots across eval runs (tracks improvement)
+    lifetime_stats.json    → Layer 1: Incremental running counters (backing data, not sent to Claude)
+    strategic_rules.md     → Layer 2: Compact algorithmic rules (~500 tokens, sent to Claude)
+    recent_performance.md  → Layer 3: Rolling 4-week trade details (~800 tokens, sent to Claude)
+    summary.md             → Human-readable full report (NOT sent to Claude)
+    win_rate_history.json  → Persistent win rate snapshots across eval runs
+    quarterly/             → Deep analysis logs from quarterly_analysis.py
 ```
 
 ---
@@ -169,16 +178,26 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 
 ### What the eval tracks
 - Overall win rate (W/L, avg R:R)
-- Win rate by setup type, confidence level, rank position, **model**
+- Win rate by setup type, confidence level, rank position, **model**, timeframe, direction
 - **Per-trade prediction vs reality table** (predicted R:R vs actual, exit reason, MFE)
-- **Win rate trend** per eval run with cumulative tracking
+- **Win rate trend** per eval run with cumulative tracking + monthly trends
 - **Prediction accuracy gap** (avg predicted vs avg actual R:R)
 - **Direction accuracy via MFE** (% of trades reaching 0.5R favorable — tracks if direction is right but execution wrong)
 - **Entry timing analysis** (flags if stops hit within 2 hours)
 - Confidence calibration, recurring failure patterns, trader notes/lessons
-- Mandatory performance-based rules auto-derived and injected into Claude's prompt
+- Mandatory performance-based rules auto-derived from `lifetime_stats.json`
 
-Results live in `logs/performance/summary.md` + `win_rate_history.json` and are injected into Claude's system prompt.
+### How evaluation data reaches Claude (Tiered Knowledge Distillation)
+
+| Layer | File | Tokens | Scales? | Purpose |
+|---|---|---|---|---|
+| 1. Lifetime Stats | `lifetime_stats.json` | N/A (backing data) | Grows slowly | Incremental counters — O(1) update per eval |
+| 2. Strategic Rules | `strategic_rules.md` | ~500 | **Fixed** | Compact algorithmic rules from all history |
+| 3. Recent Window | `recent_performance.md` | ~800 | **Fixed** (rolling) | Last 4 weeks of trade-by-trade outcomes |
+| Human Report | `summary.md` | ~2K+ | Grows | Full tables for human review (NOT sent to Claude) |
+| Quarterly Insights | Appended to `strategic_rules.md` | ~300 | **Fixed** | Claude-powered deep patterns every ~3 months |
+
+**Total performance context in Claude's prompt: ~1,300 tokens** — regardless of running for 1 month or 3 years. Previous approach would grow to ~6K+ tokens after a year.
 
 ---
 
@@ -205,6 +224,55 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-05-03 (v2) — Tiered Knowledge Distillation: Scalable Evaluation Feedback
+
+**Problem**: The evaluation feedback system sent all historical data to Claude every run via `summary.md` + `_derive_performance_rules()`. At 28 trades this was ~2K tokens, but it would grow to ~6K+ after a year (52 runs × 5 setups). The `_derive_performance_rules()` function re-read ALL eval JSON files on every nightly run — O(n) in the number of runs.
+
+**Solution**: Replaced the monolithic approach with a 3-layer tiered knowledge distillation system.
+
+**Layer 1: Lifetime Stats** (`lifetime_stats.json`) — New incremental running counters:
+- Tracks wins/losses/R:R by: setup type, confidence, rank, model, timeframe, direction, monthly trend
+- Also tracks: prediction gap (sum of predicted vs actual R:R), MFE stats, stop timing, target hit rates
+- Updated O(1) per new eval — adds to running totals, never re-reads old eval files
+- Uses `processed_run_tags` to know which evals are already counted (supports bootstrap + incremental)
+
+**Layer 2: Strategic Rules** (`strategic_rules.md`, ~500 tokens → sent to Claude):
+- Compact, durable rules derived algorithmically from Layer 1
+- 7-15 numbered rules like: "MEDIUM CONFIDENCE BANNED: 0/14 wins", "TARGETS TOO FAR: gap of 2.7R"
+- Only changes when statistics shift meaningfully — not every week
+- Replaces the old `_derive_performance_rules()` which read every eval file
+
+**Layer 3: Recent Performance** (`recent_performance.md`, ~800 tokens → sent to Claude):
+- Rolling 4-week window of trade-by-trade outcomes
+- Old trades fall off automatically — fixed size regardless of history
+- Includes manual trade notes/lessons from the rolling window
+- Replaces the "last 20 trades" table that was in summary.md
+
+**Quarterly Deep Analysis** (`quarterly_analysis.py`) — New script:
+- Uses Claude to find non-obvious patterns in evaluation data every ~3 months
+- Feeds `lifetime_stats.json` + last 20 trades to Claude for qualitative analysis
+- Looks for: temporal patterns, setup interaction effects, symbol patterns, sequence effects, direction bias
+- Appends findings to `strategic_rules.md` under "Quarterly Deep Insights" section
+- Keeps logs in `logs/performance/quarterly/`
+
+**Prompt Size Comparison** (performance section):
+| Timeframe | Old approach | New approach |
+|---|---|---|
+| Now (28 trades) | ~2K tokens | ~1,300 tokens |
+| 6 months (130 trades) | ~4K+ tokens | ~1,300 tokens |
+| 1 year (260 trades) | ~6K+ tokens | **~1,300 tokens** |
+
+**Simplification of `prompts.py`**:
+- Deleted `_derive_performance_rules()` — 170 lines of code that re-read all eval files
+- `build_system_prompt()` now just reads 2 small files: `strategic_rules.md` + `recent_performance.md`
+- File went from 195 to 60 lines
+
+**What's preserved**:
+- `summary.md` still generated as human-readable report (unchanged format)
+- `win_rate_history.json` still maintained
+- All existing eval JSONs untouched
+- Full backward compatibility — first `update_lifetime_stats()` call bootstraps from existing evals
 
 ### 2026-05-03 — Feedback Loop Overhaul: Per-Trade Learning, MFE Tracking & Win Rate Trend
 
@@ -385,6 +453,10 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 - [ ] Update ENJ trade result once closed (win/loss, actual exit)
 - [ ] Review MFE data once available: is direction right but stops too tight, or are direction calls wrong?
 - [ ] If win rate still not improving after 2 more evals, consider: switching to higher-TF-only setups, reducing to max 1-2 setups, or adding volume spike as hard requirement
+- [ ] Run first quarterly analysis once 50+ trades evaluated (`python quarterly_analysis.py`)
+- [x] Tiered knowledge distillation: lifetime_stats.json + strategic_rules.md + recent_performance.md
+- [x] Quarterly deep analysis script (quarterly_analysis.py) for Claude-powered pattern detection
+- [x] Decouple summary.md (human report) from Claude's prompt (now reads compact tiered files)
 - [x] Fix feedback loop: add per-trade results table so Claude sees specific failures
 - [x] Add MFE tracking to diagnose direction vs execution problems
 - [x] Add win rate trend tracking with previous vs current comparison
