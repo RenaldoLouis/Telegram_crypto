@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 28 evaluated trades — small sample — treat all rules as advisory)
-_Last updated: 2026-05-03 12:08 UTC_
+_Last updated: 2026-05-04 00:50 UTC_
 
 1. **SELECTIVITY NEEDED**: Win rate is 11% over 28 trades. Prioritize quality over quantity — prefer 2-3 strong setups over 5 mediocre ones. But DO include setups that have clear structure and R:R >= 2:1.
 2. **MEDIUM CONFIDENCE UNDERPERFORMING** (small sample: 14 trades): 0/14 wins (0%). Be extra selective with 'medium' setups — prefer R:R >= 2.5:1 and 3/4+ TF confluence. Do NOT ban outright.
