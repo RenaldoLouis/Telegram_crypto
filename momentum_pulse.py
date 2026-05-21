@@ -30,11 +30,7 @@ SNAPSHOT_FILE = Path(config.MOMENTUM_SNAPSHOT_PATH)
 def fetch_tickers():
     """Fetch top 50 USDT perps by 24h turnover. Single API call."""
     try:
-        client = HTTP(
-            testnet=False,
-            api_key=config.BYBIT_API_KEY,
-            api_secret=config.BYBIT_API_SECRET,
-        )
+        client = HTTP(testnet=False, domain="bytick")
         res = client.get_tickers(category=config.BYBIT_CATEGORY)
         tickers = res["result"]["list"]
 
