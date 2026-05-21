@@ -20,26 +20,14 @@ jobs:
           # Fetch full history so git push works
           fetch-depth: 0
 
-      - name: Setup Cloudflare WARP
+      - name: Setup WireGuard VPN
         run: |
-          # Install Cloudflare WARP
-          curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg \
-            | sudo gpg --yes --dearmor -o /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" \
-            | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq cloudflare-warp
-
-          # Start service and register
-          sudo systemctl start warp-svc
+          sudo apt-get install -y -qq wireguard-tools
+          echo "${{ secrets.WG_CONF }}" | base64 -d | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
           sleep 2
-          warp-cli --accept-tos registration new
-          warp-cli --accept-tos mode warp
-          warp-cli --accept-tos connect
-
-          # Wait for tunnel to establish
-          sleep 5
-          echo "WARP connected — exit IP: $(curl -s ifconfig.me)"
+          echo "VPN connected — exit IP: $(curl -s ifconfig.me)"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -57,9 +45,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python momentum_pulse.py
 
-      - name: Disconnect WARP
+      - name: Disconnect VPN
         if: always()
-        run: warp-cli disconnect || true
+        run: sudo wg-quick down wg0 || true
 
       - name: Commit and push hot list
         run: |
