@@ -1,21 +1,21 @@
 {
-  "generated_utc": "2026-05-21T16:27:03.991520+00:00",
+  "generated_utc": "2026-05-21T18:06:28.238145+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
-      "flagged_utc": "2026-05-21T16:27:03.990975+00:00",
-      "expires_utc": "2026-05-23T16:27:03.990975+00:00",
+      "flagged_utc": "2026-05-21T18:06:28.237517+00:00",
+      "expires_utc": "2026-05-23T18:06:28.237517+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 59.775,
-      "price_change_24h_pct": 16.113,
-      "turnover_24h_usd": 1086378659.4365,
+      "last_price": 58.947,
+      "price_change_24h_pct": 13.6787,
+      "turnover_24h_usd": 1130292641.9694,
       "funding_rate_pct": 0.01,
-      "open_interest": 4361704.44,
-      "volume_acceleration": 1.495155222459656,
-      "price_acceleration_pct": 0.3559000000000001
+      "open_interest": 4280848.24,
+      "volume_acceleration": 1.0404223538003572,
+      "price_acceleration_pct": -2.4343000000000004
     },
     {
       "symbol": "ZECUSDT",
@@ -35,19 +35,19 @@
     },
     {
       "symbol": "BSBUSDT",
-      "flagged_utc": "2026-05-21T16:27:03.990975+00:00",
-      "expires_utc": "2026-05-23T16:27:03.990975+00:00",
+      "flagged_utc": "2026-05-21T18:06:28.237517+00:00",
+      "expires_utc": "2026-05-23T18:06:28.237517+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 1.0728,
-      "price_change_24h_pct": 10.7692,
-      "turnover_24h_usd": 336804729.2692,
-      "funding_rate_pct": -0.031327999999999995,
-      "open_interest": 17282842.0,
-      "volume_acceleration": 1.1697724270892778,
-      "price_acceleration_pct": -12.4137
+      "last_price": 1.0528,
+      "price_change_24h_pct": -10.6812,
+      "turnover_24h_usd": 315540960.5308,
+      "funding_rate_pct": 0.005,
+      "open_interest": 16835690.0,
+      "volume_acceleration": 0.9368661812304767,
+      "price_acceleration_pct": -0.08799999999999919
     },
     {
       "symbol": "PROVEUSDT",
