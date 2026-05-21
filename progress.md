@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-05-19 (v4)_
+_Last updated: 2026-05-21 (v5)_
 
 ---
 
@@ -9,12 +9,21 @@ _Last updated: 2026-05-19 (v4)_
 A personal, automated crypto analyst that runs once a night and delivers the **5 best trading opportunities** on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It self-evaluates past recommendations against actual price data and feeds results back to Claude.
 
 ```
+Momentum Pulse (every 4h, GitHub Actions, free)
+    → Bybit API: fetch 50 tickers (single call)
+    → Compare vs previous snapshot → detect volume/price acceleration
+    → Flag coins: big move (>8% + >$200M), vol accel (>3x), funding squeeze
+    → Save to logs/momentum/hot_list.json (48h expiry)
+    → Telegram alert for new flags
+    ↓
 Bybit API (50 tickers, single call)
     ↓
 Python pre-filter (knowledge-based scoring, free)
+    → Load hot list (dynamic watchlist from pulse)
     → Disqualify: <$10M turnover or <$50M OI
     → Score by: price action, funding extremes, liquidity, OI+move combos
-    → Keep top 25 + watchlist (BTC, ETH, SOL)
+    → Volume acceleration bonus: hot list coins get +2 (>2x) or +4 (>5x)
+    → Keep top 25 + watchlist (BTC, ETH, SOL) + hot list
     ↓
 Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
     → RSI(14), EMA 20/50, volume spike ratio, breakout flags per TF
@@ -59,15 +68,17 @@ Quarterly deep analysis (quarterly_analysis.py, run every ~3 months)
 | File | Lines | Purpose |
 |---|---|---|
 | `main.py` | 88 | Orchestrator — fetch → analyze → parse JSON → archive → deliver |
-| `config.py` | 41 | Settings: API keys, model, limits, timeframes, watchlist |
-| `fetchers/bybit_data.py` | 288 | Bybit API: 50 tickers → knowledge-based scoring → top 25 → multi-TF klines |
+| `config.py` | 51 | Settings: API keys, model, limits, timeframes, watchlist, momentum thresholds |
+| `fetchers/bybit_data.py` | 340 | Bybit API: 50 tickers → scoring + hot list → top 25 → multi-TF klines |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 60 | Professional trader prompt + knowledge + tiered performance feedback (strategic rules + recent window) |
+| `analyzer/prompts.py` | 60 | Professional trader prompt + knowledge + tiered performance feedback |
 | `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
+| `momentum_pulse.py` | 170 | Lightweight momentum detector — runs every 4h on GitHub Actions (zero Claude tokens) |
 | `weekly_eval.py` | 1630 | Evaluation engine + BE stop/partial profit model + tiered knowledge distillation |
 | `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
+| `.github/workflows/` | — | GitHub Actions: momentum pulse every 4h (secrets via repo settings) |
 | `progress.md` | — | This file — project progress tracker |
 
 ### Directory Structure
@@ -79,6 +90,9 @@ logs/
   evaluations/    → Scored results per run (win/loss, actual R:R, exit reason)
   trades/
     my_trades.json → Manual trade log with notes/lessons (user-edited)
+  momentum/
+    hot_list.json      → Active momentum-flagged coins (dynamic watchlist, 48h expiry)
+    last_snapshot.json  → Previous pulse data (for delta detection between runs)
   performance/
     lifetime_stats.json    → Layer 1: Incremental running counters (backing data, not sent to Claude)
     strategic_rules.md     → Layer 2: Compact algorithmic rules (~500 tokens, sent to Claude)
@@ -97,11 +111,12 @@ logs/
 | Model | `claude-sonnet-4-6` (current) — model name tracked per setup for comparison |
 | Max output tokens | 8000 |
 | Broad scan pool | 50 tickers (by turnover) |
-| Pre-filter to | 25 coins (by knowledge-based interest score + watchlist) |
+| Pre-filter to | 25 coins (by knowledge-based interest score + watchlist + hot list) |
 | Timeframes | 15m, 1h, 4h, 1D |
 | Indicators per TF | RSI(14), EMA 20, EMA 50, volume spike ratio, 20-candle breakout |
-| Watchlist (always included) | BTCUSDT, ETHUSDT, SOLUSDT |
-| Schedule | Once nightly (launchd, 9pm local) |
+| Watchlist (always included) | BTCUSDT, ETHUSDT, SOLUSDT + momentum pulse hot list |
+| Momentum pulse | Every 4h on GitHub Actions (zero Claude tokens) |
+| Schedule | Nightly screener (launchd, 9pm local) + momentum pulse (GitHub Actions, every 4h) |
 | Delivery | Telegram bot (HTML formatted) |
 
 ---
@@ -121,6 +136,14 @@ logs/
 |---|---|
 | **Sonnet 4.6 (current)** | **$4.50-5.40/month** |
 | Haiku 4.5 | $1.20-1.50/month |
+
+### Momentum Pulse Cost (separate from main scan)
+| Resource | Per Run | Monthly (180 runs) | Cost |
+|---|---|---|---|
+| Bybit API | 1 call | 180 calls | $0 |
+| Claude API | 0 calls | 0 | **$0** |
+| Telegram | 0-1 msg | ~30-60 msgs | $0 |
+| GitHub Actions | ~45 sec | ~135 min | **$0** (free tier: 2,000 min/month) |
 
 _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nightly runs always have cold cache._
 
@@ -227,10 +250,65 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 | High OI + big move | $200M+ OI and >5% change | 2 | `04_volume_analysis` |
 | Funding squeeze buildup | Extreme funding but price flat (<3%) | 3 | `06_setup_playbook` Setup 5 |
 | Post-liquidation candidate | >10% move + >$200M turnover | 2 | `06_setup_playbook` Setup 6 |
+| Volume acceleration | Hot list coin with >2x→+2, >5x→+4 | 4 | `momentum_pulse.py` hot list |
 
 ---
 
 ## Changelog
+
+### 2026-05-21 (v5) — Momentum Pulse: Intra-Day Momentum Detection via GitHub Actions
+
+**Problem**: The system only scanned 1-2x daily. Fast-moving coins (like HYPE's +15.8% spike) were missed entirely because they started moving between scans. By the time the nightly scan ran, the move was already extended. The static watchlist (BTC/ETH/SOL) couldn't adapt to new momentum.
+
+**3 Features (all zero Claude cost)**:
+
+**1. Momentum Pulse Scanner** (`momentum_pulse.py`, new file)
+- Standalone script that runs every 4 hours on GitHub Actions (free tier, ~135 min/month of 2,000 min quota)
+- Single Bybit API call per run — fetches 50 tickers, compares against previous snapshot
+- Three detection criteria (any one triggers a flag):
+  - **Big move**: >8% price change AND >$200M turnover
+  - **Volume acceleration**: turnover >3x the previous pulse (detects ramping volume before it's obvious)
+  - **Funding squeeze**: |funding| >0.05% AND price moving >3%
+- Saves flagged coins to `logs/momentum/hot_list.json` (48h auto-expiry)
+- Saves snapshot to `logs/momentum/last_snapshot.json` for next comparison
+- Sends Telegram alert immediately for newly flagged coins
+- First run caught: HYPEUSDT (+15.8%), ZECUSDT (+15.6%), BSBUSDT (+23.2%)
+
+**2. Dynamic Watchlist — Hot List Integration** (`fetchers/bybit_data.py`)
+- `get_full_market_snapshot()` now loads `hot_list.json` at the start via `_load_hot_list()`
+- Hot list symbols merged into watchlist alongside BTC/ETH/SOL
+- Hot list coins bypass disqualification filters (same protection as static watchlist)
+- Expired entries (>48h) automatically pruned on load
+
+**3. Volume Acceleration Bonus in Pre-Filter** (`fetchers/bybit_data.py`)
+- `_ticker_interest_score()` now accepts optional `hot_map` parameter
+- Coins on the hot list with volume acceleration >2x get +2 bonus points
+- Coins with >5x acceleration get +4 bonus points
+- This prioritizes coins that are ramping up even if their absolute metrics are moderate
+
+**GitHub Actions Deployment** (`.github/workflows/momentum_pulse.yml`)
+- Runs on `cron: '0 */4 * * *'` (every 4h UTC) + manual trigger via `workflow_dispatch`
+- Secrets stored as GitHub repository secrets (BYBIT_API_KEY, BYBIT_API_SECRET, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+- Auto-commits `hot_list.json` and `last_snapshot.json` back to the repo
+- `scan` alias updated to `git pull` first, so local runs get the latest hot list
+
+**Security Hardening**
+- Scrubbed `screener_session.session`, `.DS_Store`, and all `__pycache__/*.pyc` files from entire git history using `git-filter-repo`
+- Enhanced `.gitignore`: added `__pycache__/`, `*.pyc`, `venv/`, `.DS_Store`, `screener_session.session`
+- Fixed error handlers in `telegram_bot.py` and `momentum_pulse.py` to print only status codes, not full `r.text` (prevents metadata leakage)
+- All secrets verified: no hardcoded values in any `.py` file, GitHub Actions uses `${{ secrets.X }}` only
+
+**New terminal shortcuts** (`~/.zshrc`):
+- `scan` — now includes `git pull --quiet` to sync hot list before running
+- `pulse` — run momentum pulse locally
+
+**Config additions** (`config.py`):
+- `MOMENTUM_PULSE_EXPIRY_HOURS = 48`
+- `MOMENTUM_BIG_MOVE_PCT = 8.0`, `MOMENTUM_BIG_MOVE_TURNOVER = 200M`
+- `MOMENTUM_VOLUME_ACCEL_THRESHOLD = 3.0`
+- `MOMENTUM_FUNDING_EXTREME_PCT = 0.05`, `MOMENTUM_FUNDING_MOVE_PCT = 3.0`
+
+**Cost impact**: Zero. Momentum pulse uses zero Claude tokens, 1 Bybit API call/run, GitHub Actions free tier. Main scan token usage unchanged (~28k/run) — hot list is only used for Python pre-filtering, not sent to Claude.
 
 ### 2026-05-19 (v4) — Execution Fix: Breakeven Stops, Partial Profits & Realistic R:R Floor
 
@@ -518,11 +596,19 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
+- [ ] Add GitHub secrets (BYBIT_API_KEY, BYBIT_API_SECRET, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID) and push to enable pulse
+- [ ] Monitor momentum pulse alerts for 1 week — verify thresholds catch real opportunities without spam
+- [ ] Verify hot list integration: run `scan` and confirm "Hot list: N active coins" prints in output
 - [ ] Run `quarterly-scan` — 101 trades is enough for deep pattern analysis
 - [ ] Run 2-3 eval cycles to populate blended_rr data with new BE stop + partial profit model
 - [ ] Compare blended WR vs raw WR after new data comes in — validate that partial profit model shows edge
 - [ ] Monitor if 1.5:1 R:R floor lets Claude set more realistic T1 levels (T1 hit rate should increase from 33%)
 - [ ] Review per-symbol stats — XRPUSDT (67% WR) and SOLUSDT (0/3) trends continue?
+- [x] **Momentum pulse scanner** — intra-day momentum detection every 4h on GitHub Actions, zero Claude cost (v5)
+- [x] **Dynamic watchlist (hot list)** — pulse-flagged coins auto-included in main scan (v5)
+- [x] **Volume acceleration bonus** — hot list coins get +2/+4 pre-filter scoring bonus (v5)
+- [x] **GitHub Actions deployment** — automated pulse with secrets, auto-commit back to repo (v5)
+- [x] **Security hardening** — scrubbed session/pyc/.DS_Store from git history, enhanced .gitignore (v5)
 - [x] **Breakeven stop model** — T1 hit → stop moves to entry, not full loss (v4)
 - [x] **Partial profit model** — blended_rr: 50% at T1 + 50% trails with BE stop (v4)
 - [x] **R:R floor lowered to 1.5:1** — based on 98-trade backtest showing avg MFE 1.15R (v4)
