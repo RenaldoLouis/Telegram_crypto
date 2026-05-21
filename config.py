@@ -40,3 +40,13 @@ TELEGRAM_LOOKBACK_HOURS = 12         # Read messages from last N hours
 
 # === Watchlist (your personal focus) ===
 WATCHLIST = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]  # Always include these
+
+# === Momentum Pulse Settings ===
+MOMENTUM_PULSE_EXPIRY_HOURS = 48          # Hot list entries expire after this
+MOMENTUM_BIG_MOVE_PCT = 8.0              # Flag if price moved > this %
+MOMENTUM_BIG_MOVE_TURNOVER = 200_000_000 # ... AND turnover above this ($200M)
+MOMENTUM_VOLUME_ACCEL_THRESHOLD = 3.0    # Flag if turnover is Nx the previous pulse
+MOMENTUM_FUNDING_EXTREME_PCT = 0.05      # Flag if |funding| > this %
+MOMENTUM_FUNDING_MOVE_PCT = 3.0          # ... AND price moving > this %
+MOMENTUM_HOT_LIST_PATH = "logs/momentum/hot_list.json"
+MOMENTUM_SNAPSHOT_PATH = "logs/momentum/last_snapshot.json"

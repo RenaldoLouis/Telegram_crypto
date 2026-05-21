@@ -1,1 +1,13 @@
+# Secrets
 .env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# macOS
+.DS_Store
+
+# Telethon session (contains auth tokens)
+screener_session.session

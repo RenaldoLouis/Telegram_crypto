@@ -1,6 +1,8 @@
 from pybit.unified_trading import HTTP
 from datetime import datetime, timezone
+from pathlib import Path
 import pandas as pd
+import json
 import time
 import config
 
@@ -141,7 +143,7 @@ class BybitFetcher:
         return result
 
     @staticmethod
-    def _ticker_interest_score(ticker):
+    def _ticker_interest_score(ticker, hot_map=None):
         """Score a ticker using knowledge-based rules. Uses only ticker-level data (free).
 
         Scoring is derived from the knowledge files:
@@ -149,6 +151,10 @@ class BybitFetcher:
         - 04_volume_analysis.md: funding rate thresholds (±0.03%, ±0.05%)
         - 05_crypto_specifics.md: BTC correlation, extreme moves
         - 06_setup_playbook.md: setup triggers (funding squeeze, liquidation cascade)
+
+        Args:
+            ticker: dict with symbol, price_change_24h_pct, turnover_24h_usd, etc.
+            hot_map: optional dict {symbol: hot_list_entry} from momentum pulse.
 
         Returns (score, disqualified). Disqualified coins are dropped entirely.
         """
@@ -221,29 +227,67 @@ class BybitFetcher:
         if abs_pct > 10 and turnover > 200_000_000:
             score += 2  # post-liquidation reversal candidate
 
+        # ===== VOLUME ACCELERATION BONUS (from momentum pulse hot list) =====
+        if hot_map and ticker.get("symbol") in hot_map:
+            hot_entry = hot_map[ticker["symbol"]]
+            vol_accel = hot_entry.get("volume_acceleration")
+            if vol_accel is not None:
+                if vol_accel > 5:
+                    score += 4  # extreme volume ramp-up
+                elif vol_accel > 2:
+                    score += 2  # significant volume ramp-up
+
         return score, False
+
+    @staticmethod
+    def _load_hot_list():
+        """Load momentum pulse hot list, removing expired entries."""
+        hot_list_path = Path(config.MOMENTUM_HOT_LIST_PATH)
+        if not hot_list_path.exists():
+            return []
+        try:
+            data = json.loads(hot_list_path.read_text(encoding="utf-8"))
+            now = datetime.now(timezone.utc)
+            active = []
+            for coin in data.get("coins", []):
+                expires = datetime.fromisoformat(coin["expires_utc"])
+                if expires > now:
+                    active.append(coin)
+            return active
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            print(f"  Warning: could not load hot list: {e}")
+            return []
 
     def get_full_market_snapshot(self):
         """Main entry — returns everything Claude needs with multi-TF data.
 
         Flow:
           1. Fetch top 50 tickers by turnover (single API call, free)
-          2. Disqualify illiquid coins ($10M volume, $50M OI minimums)
-          3. Score remaining by knowledge-based rules (free)
-          4. Keep top 25 by score + watchlist
-          5. Fetch multi-TF klines only for those ~25
-          6. Send all with full detail to Claude
+          2. Load momentum pulse hot list (dynamic watchlist)
+          3. Disqualify illiquid coins ($10M volume, $50M OI minimums)
+          4. Score remaining by knowledge-based rules (free), with hot list bonus
+          5. Keep top 25 by score + watchlist + hot list
+          6. Fetch multi-TF klines only for those ~25
+          7. Send all with full detail to Claude
         """
         # Step 1: Get broad pool of 50 tickers
         broad_pool = self.get_top_movers(50)
         print(f"  Fetched {len(broad_pool)} tickers from Bybit")
 
-        # Step 2: Score, disqualify illiquid, and rank
-        watchlist_syms = set(config.WATCHLIST)
+        # Step 2: Load momentum pulse hot list (dynamic watchlist)
+        hot_coins = self._load_hot_list()
+        hot_syms = {coin["symbol"] for coin in hot_coins}
+        hot_map = {coin["symbol"]: coin for coin in hot_coins}
+        if hot_coins:
+            print(f"  Hot list: {len(hot_coins)} active coins "
+                  f"({', '.join(sorted(hot_syms))})")
+
+        # Step 3: Score, disqualify illiquid, and rank
+        watchlist_syms = set(config.WATCHLIST) | hot_syms
         scored = []
         disqualified = 0
         for t in broad_pool:
-            score, disq = self._ticker_interest_score(t)
+            score, disq = self._ticker_interest_score(t, hot_map=hot_map)
             if disq and t["symbol"] not in watchlist_syms:
                 disqualified += 1
                 continue
@@ -252,7 +296,7 @@ class BybitFetcher:
         scored.sort(key=lambda x: x[1], reverse=True)
         print(f"  Disqualified {disqualified} illiquid coins (< $10M vol or < $50M OI)")
 
-        # Step 3: Keep top 25 + watchlist (dedup)
+        # Step 4: Keep top 25 + watchlist + hot list (dedup)
         selected_symbols = set()
         selected_movers = []
 
@@ -280,7 +324,7 @@ class BybitFetcher:
         print(f"  Top 5 scores: {', '.join(f'{t['symbol']}={s}' for t, s in top_5)}")
         print(f"  Selected {len(selected_symbols)} symbols for multi-TF analysis")
 
-        # Step 4: Fetch multi-TF klines only for selected symbols
+        # Step 5: Fetch multi-TF klines only for selected symbols
         technicals = []
         symbols_list = sorted(selected_symbols)
         total = len(symbols_list)

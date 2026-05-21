@@ -1,0 +1,53 @@
+{
+  "generated_utc": "2026-05-21T05:00:50.866121+00:00",
+  "coins": [
+    {
+      "symbol": "HYPEUSDT",
+      "flagged_utc": "2026-05-21T05:00:50.864710+00:00",
+      "expires_utc": "2026-05-23T05:00:50.864710+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 55.979,
+      "price_change_24h_pct": 15.7571,
+      "turnover_24h_usd": 726599247.4342,
+      "funding_rate_pct": 0.009655,
+      "open_interest": 3989054.45,
+      "volume_acceleration": 1.0000451284929446,
+      "price_acceleration_pct": 0.004099999999999326
+    },
+    {
+      "symbol": "ZECUSDT",
+      "flagged_utc": "2026-05-21T05:00:50.864710+00:00",
+      "expires_utc": "2026-05-23T05:00:50.864710+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 671.65,
+      "price_change_24h_pct": 15.606300000000001,
+      "turnover_24h_usd": 348035637.5906,
+      "funding_rate_pct": -0.001868,
+      "open_interest": 239187.29,
+      "volume_acceleration": 1.000000984527446,
+      "price_acceleration_pct": 0.013700000000000045
+    },
+    {
+      "symbol": "BSBUSDT",
+      "flagged_utc": "2026-05-21T05:00:50.864710+00:00",
+      "expires_utc": "2026-05-23T05:00:50.864710+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 0.9745,
+      "price_change_24h_pct": 23.1829,
+      "turnover_24h_usd": 287923293.0009,
+      "funding_rate_pct": -0.028222,
+      "open_interest": 16547796.0,
+      "volume_acceleration": 0.9993051872474449,
+      "price_acceleration_pct": -0.3092000000000006
+    }
+  ]
+}

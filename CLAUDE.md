@@ -29,9 +29,10 @@ main.py  (orchestrator, async)
   │
   ├── fetchers/bybit_data.py       → BybitFetcher:
   │                                    get_top_movers(50) → single API call
-  │                                    _ticker_interest_score() → knowledge-based pre-filter
+  │                                    _ticker_interest_score() → knowledge-based pre-filter + hot list bonus
+  │                                    _load_hot_list() → reads momentum pulse hot list
   │                                    get_multi_tf_indicators() → 15m/1h/4h/1D klines
-  │                                    get_full_market_snapshot() → 50 → score → top 25 → multi-TF
+  │                                    get_full_market_snapshot() → 50 → score → top 25 + hot list → multi-TF
   │
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
   │
@@ -39,6 +40,10 @@ main.py  (orchestrator, async)
   ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, compact JSON
   │
   ├── delivery/telegram_bot.py     → MD→HTML converter, smart chunking, retry with backoff
+  │
+  ├── momentum_pulse.py            → Lightweight momentum detector (runs every 4h on GitHub Actions)
+  │                                    Fetches 50 tickers, detects acceleration vs previous snapshot,
+  │                                    flags coins to hot_list.json, sends Telegram alert. Zero Claude tokens.
   │
   ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation,
   │                                    simulated T1 backtest, per-symbol tracking, prescriptive rules
@@ -49,6 +54,9 @@ main.py  (orchestrator, async)
         ├── briefs/*.md            → Archived readable briefs
         ├── setups/*.json          → Structured setup JSONs (with model name)
         ├── evaluations/*.json     → Scored results (win/loss, actual R:R, MFE, simulated T1)
+        ├── momentum/
+        │     ├── hot_list.json    → Active momentum-flagged coins (dynamic watchlist)
+        │     └── last_snapshot.json → Previous pulse data (for delta detection)
         └── performance/
               ├── lifetime_stats.json    → Layer 1: Incremental running counters (incl. by_symbol, simulated_t1)
               ├── strategic_rules.md     → Layer 2: Prescriptive rules from all history (~600-800 tokens, sent to Claude)
@@ -60,12 +68,14 @@ main.py  (orchestrator, async)
 
 ### Data Flow
 
+0. Every 4h: `momentum_pulse.py` (GitHub Actions) → fetches 50 tickers, detects acceleration vs previous snapshot → flags coins to `logs/momentum/hot_list.json` → Telegram alert
 1. `BybitFetcher.get_top_movers(50)` → 50 tickers by turnover (single API call)
-2. `_ticker_interest_score()` → disqualify illiquid (<$10M vol, <$50M OI), score rest
-3. Keep top 25 by score + watchlist → `get_multi_tf_indicators()` for each (4 TFs × 25 = 100 kline calls)
-4. `ClaudeAnalyzer.analyze(market, messages)` → readable brief + `setups_json` block
-5. `main.py` parses JSON block → saves to `logs/setups/` (includes model name)
-6. Clean brief (JSON stripped) → archived to `logs/briefs/` + delivered via Telegram
+2. `_load_hot_list()` → loads momentum pulse hot list (dynamic watchlist, 48h expiry)
+3. `_ticker_interest_score()` → disqualify illiquid (<$10M vol, <$50M OI), score rest + volume acceleration bonus for hot list coins
+4. Keep top 25 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 25 = 100 kline calls)
+5. `ClaudeAnalyzer.analyze(market, messages)` → readable brief + `setups_json` block
+6. `main.py` parses JSON block → saves to `logs/setups/` (includes model name)
+7. Clean brief (JSON stripped) → archived to `logs/briefs/` + delivered via Telegram
 7. Weekly: `weekly_eval.py` scores past setups (incl. simulated closer-T1 backtest) → updates tiered knowledge:
    - `lifetime_stats.json` — incremental counters incl. by_symbol, simulated_t1 (O(1) per new eval)
    - `strategic_rules.md` — prescriptive rules with ACTION lines (~600-800 tokens)
@@ -87,6 +97,20 @@ Runs on ticker-level data before any kline fetching. Rules from knowledge files:
 | OI + big move | `04_volume_analysis` | $200M+ OI and >5% change → +2 |
 | Funding squeeze | `06_setup_playbook` Setup 5 | Extreme funding + price flat (<3%) → +3 |
 | Post-liquidation | `06_setup_playbook` Setup 6 | >10% move + >$200M turnover → +2 |
+| Volume acceleration | `momentum_pulse.py` hot list | >2x previous pulse → +2, >5x → +4 |
+
+### Momentum Pulse (GitHub Actions, free)
+
+Runs every 4 hours on GitHub Actions. Zero Claude tokens, single Bybit API call per run.
+Detects intra-day momentum that the nightly scan would miss.
+
+**Detection criteria** (any one triggers a flag):
+- **Big move**: >8% price change AND >$200M turnover
+- **Volume acceleration**: turnover >3x the previous pulse (4h earlier)
+- **Funding squeeze**: |funding| >0.05% AND price moving >3%
+
+Flagged coins are saved to `logs/momentum/hot_list.json` (48h expiry) and included as a
+dynamic watchlist in the next main scan. A Telegram alert is sent immediately for new flags.
 
 ---
 
@@ -142,9 +166,12 @@ TELEGRAM_CHAT_ID=...             # user's personal chat ID
 ## How to Run
 
 ```bash
-# Nightly screener
+# Nightly screener (git pull first to get latest hot list from GitHub Actions)
+git pull && source venv/bin/activate && python main.py
+
+# Momentum pulse (runs automatically on GitHub Actions every 4h, but can also run locally)
 source venv/bin/activate
-python main.py
+python momentum_pulse.py
 
 # Weekly evaluation (run Sundays or whenever)
 source venv/bin/activate
@@ -156,14 +183,16 @@ python quarterly_analysis.py
 ```
 
 **Terminal shortcuts** (defined in `~/.zshrc`):
-- `scan` — run nightly screener
+- `scan` — run nightly screener (includes git pull for latest hot list)
+- `pulse` — run momentum pulse locally
 - `eval-scan` — run weekly evaluation
 - `quarterly-scan` — run quarterly deep analysis
 
 ### Scheduled Runs
 
-macOS: `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`). Default: 9pm local.
-Do NOT migrate to cron — launchd handles wake-from-sleep better.
+- **Momentum pulse**: GitHub Actions, every 4 hours (`.github/workflows/momentum_pulse.yml`). Zero Claude tokens. Auto-commits hot_list.json back to repo. Secrets stored as GitHub repository secrets.
+- **Nightly screener**: macOS `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`). Default: 9pm local.
+- Do NOT migrate to cron — launchd handles wake-from-sleep better.
 
 ---
 
@@ -179,9 +208,11 @@ Do NOT migrate to cron — launchd handles wake-from-sleep better.
 ### Files That Should NOT Drift Without Discussion
 
 - `analyzer/prompts.py` → risk framework, R:R floor, output format, JSON schema
-- `config.py` → model choice, token limits, scan limits
+- `config.py` → model choice, token limits, scan limits, momentum pulse thresholds
 - `weekly_eval.py` → evaluation logic, scoring rules, strategic rules generator, simulated T1 backtest
 - `bybit_data.py::_ticker_interest_score()` → pre-filter rules tied to knowledge
+- `momentum_pulse.py` → momentum detection criteria, hot list expiry
+- `.github/workflows/momentum_pulse.yml` → GitHub Actions schedule, secrets mapping
 
 ---
 
