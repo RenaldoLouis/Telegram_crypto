@@ -1,21 +1,21 @@
 {
-  "generated_utc": "2026-05-21T18:06:28.238145+00:00",
+  "generated_utc": "2026-05-21T21:39:39.202092+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
-      "flagged_utc": "2026-05-21T18:06:28.237517+00:00",
-      "expires_utc": "2026-05-23T18:06:28.237517+00:00",
+      "flagged_utc": "2026-05-21T21:39:39.201516+00:00",
+      "expires_utc": "2026-05-23T21:39:39.201516+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 58.947,
-      "price_change_24h_pct": 13.6787,
-      "turnover_24h_usd": 1130292641.9694,
+      "last_price": 57.827,
+      "price_change_24h_pct": 9.626700000000001,
+      "turnover_24h_usd": 1239642146.2317,
       "funding_rate_pct": 0.01,
-      "open_interest": 4280848.24,
-      "volume_acceleration": 1.0404223538003572,
-      "price_acceleration_pct": -2.4343000000000004
+      "open_interest": 4150431.61,
+      "volume_acceleration": 1.096744418393958,
+      "price_acceleration_pct": -4.051999999999998
     },
     {
       "symbol": "ZECUSDT",
@@ -51,19 +51,19 @@
     },
     {
       "symbol": "PROVEUSDT",
-      "flagged_utc": "2026-05-21T16:27:03.990975+00:00",
-      "expires_utc": "2026-05-23T16:27:03.990975+00:00",
+      "flagged_utc": "2026-05-21T21:39:39.201516+00:00",
+      "expires_utc": "2026-05-23T21:39:39.201516+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.3329,
-      "price_change_24h_pct": 43.3677,
-      "turnover_24h_usd": 78207813.0751,
-      "funding_rate_pct": -0.193598,
-      "open_interest": 27325173.0,
-      "volume_acceleration": null,
-      "price_acceleration_pct": null
+      "last_price": 0.3259,
+      "price_change_24h_pct": 39.9914,
+      "turnover_24h_usd": 91297372.2546,
+      "funding_rate_pct": -0.259965,
+      "open_interest": 26918320.0,
+      "volume_acceleration": 1.1058916498456903,
+      "price_acceleration_pct": -0.8862999999999985
     }
   ]
 }
