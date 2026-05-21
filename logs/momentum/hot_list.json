@@ -1,21 +1,21 @@
 {
-  "generated_utc": "2026-05-21T05:00:50.866121+00:00",
+  "generated_utc": "2026-05-21T16:27:03.991520+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
-      "flagged_utc": "2026-05-21T05:00:50.864710+00:00",
-      "expires_utc": "2026-05-23T05:00:50.864710+00:00",
+      "flagged_utc": "2026-05-21T16:27:03.990975+00:00",
+      "expires_utc": "2026-05-23T16:27:03.990975+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 55.979,
-      "price_change_24h_pct": 15.7571,
-      "turnover_24h_usd": 726599247.4342,
-      "funding_rate_pct": 0.009655,
-      "open_interest": 3989054.45,
-      "volume_acceleration": 1.0000451284929446,
-      "price_acceleration_pct": 0.004099999999999326
+      "last_price": 59.775,
+      "price_change_24h_pct": 16.113,
+      "turnover_24h_usd": 1086378659.4365,
+      "funding_rate_pct": 0.01,
+      "open_interest": 4361704.44,
+      "volume_acceleration": 1.495155222459656,
+      "price_acceleration_pct": 0.3559000000000001
     },
     {
       "symbol": "ZECUSDT",
@@ -35,19 +35,35 @@
     },
     {
       "symbol": "BSBUSDT",
-      "flagged_utc": "2026-05-21T05:00:50.864710+00:00",
-      "expires_utc": "2026-05-23T05:00:50.864710+00:00",
+      "flagged_utc": "2026-05-21T16:27:03.990975+00:00",
+      "expires_utc": "2026-05-23T16:27:03.990975+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 0.9745,
-      "price_change_24h_pct": 23.1829,
-      "turnover_24h_usd": 287923293.0009,
-      "funding_rate_pct": -0.028222,
-      "open_interest": 16547796.0,
-      "volume_acceleration": 0.9993051872474449,
-      "price_acceleration_pct": -0.3092000000000006
+      "last_price": 1.0728,
+      "price_change_24h_pct": 10.7692,
+      "turnover_24h_usd": 336804729.2692,
+      "funding_rate_pct": -0.031327999999999995,
+      "open_interest": 17282842.0,
+      "volume_acceleration": 1.1697724270892778,
+      "price_acceleration_pct": -12.4137
+    },
+    {
+      "symbol": "PROVEUSDT",
+      "flagged_utc": "2026-05-21T16:27:03.990975+00:00",
+      "expires_utc": "2026-05-23T16:27:03.990975+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.3329,
+      "price_change_24h_pct": 43.3677,
+      "turnover_24h_usd": 78207813.0751,
+      "funding_rate_pct": -0.193598,
+      "open_interest": 27325173.0,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
     }
   ]
 }
