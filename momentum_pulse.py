@@ -208,7 +208,7 @@ def send_telegram_alert(flagged_coins):
             if r.status_code == 200:
                 print("  Telegram alert sent")
                 return
-            print(f"  Telegram alert failed: {r.text}")
+            print(f"  Telegram alert failed with status {r.status_code}")
             return
         except (ConnectionError, Timeout) as e:
             if attempt < 3:

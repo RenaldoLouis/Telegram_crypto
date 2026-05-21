@@ -143,7 +143,7 @@ def send_brief(brief_text, usage=None):
             r = _send_with_retry(url, payload_plain)
 
         if r and r.status_code != 200:
-            print(f"Telegram send failed: {r.text}")
+            print(f"Telegram send failed with status {r.status_code}")
 
     # Send cost footer
     if usage:
