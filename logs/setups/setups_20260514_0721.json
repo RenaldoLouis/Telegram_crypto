@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-05-14T07:21:29.288924+00:00",
+  "run_tag": "20260514_0721",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1135,
+      "entry_high": 0.1142,
+      "stop_loss": 0.111,
+      "target_1": 0.1183,
+      "target_2": 0.121,
+      "predicted_rr": 2.1,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.425,
+      "entry_high": 1.433,
+      "stop_loss": 1.406,
+      "target_1": 1.468,
+      "target_2": 1.49,
+      "predicted_rr": 2.1,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    }
+  ]
+}

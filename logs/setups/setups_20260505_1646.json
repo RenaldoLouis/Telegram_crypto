@@ -1,0 +1,55 @@
+{
+  "run_timestamp_utc": "2026-05-05T16:46:07.912978+00:00",
+  "run_tag": "20260505_1646",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 80950.0,
+      "entry_high": 81150.0,
+      "stop_loss": 80300.0,
+      "target_1": 82200.0,
+      "target_2": 83500.0,
+      "predicted_rr": 2.0,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "SUIUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.955,
+      "entry_high": 0.96,
+      "stop_loss": 0.942,
+      "target_1": 0.978,
+      "target_2": 0.998,
+      "predicted_rr": 2.1,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 3,
+      "symbol": "ETHUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 2355.0,
+      "entry_high": 2370.0,
+      "stop_loss": 2338.0,
+      "target_1": 2415.0,
+      "target_2": 2470.0,
+      "predicted_rr": 2.0,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    }
+  ]
+}

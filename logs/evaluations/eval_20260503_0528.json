@@ -1,0 +1,30 @@
+{
+  "run_tag": "20260503_0528",
+  "run_timestamp_utc": "2026-05-03T05:28:23.149874+00:00",
+  "model": "claude-sonnet-4-6",
+  "evaluated_at_utc": "2026-05-06T02:39:39.003081+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.337,
+      "exit_price": 0.343,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "actual_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.05,
+      "candles_to_exit": 1,
+      "symbol": "TRXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 2.3,
+      "tf_confluence": 3,
+      "rank": 1
+    }
+  ]
+}

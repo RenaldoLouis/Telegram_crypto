@@ -14,5 +14,53 @@
     "losses": 26,
     "win_rate": 10.3,
     "avg_rr": -0.64
+  },
+  {
+    "date": "2026-05-06 02:39 UTC",
+    "total_evaluated": 35,
+    "wins": 8,
+    "losses": 27,
+    "win_rate": 22.9,
+    "avg_rr": -0.4
+  },
+  {
+    "date": "2026-05-07 10:36 UTC",
+    "total_evaluated": 37,
+    "wins": 10,
+    "losses": 27,
+    "win_rate": 27.0,
+    "avg_rr": -0.34
+  },
+  {
+    "date": "2026-05-10 06:49 UTC",
+    "total_evaluated": 56,
+    "wins": 20,
+    "losses": 36,
+    "win_rate": 35.7,
+    "avg_rr": -0.17
+  },
+  {
+    "date": "2026-05-14 06:48 UTC",
+    "total_evaluated": 80,
+    "wins": 31,
+    "losses": 49,
+    "win_rate": 38.8,
+    "avg_rr": -0.06
+  },
+  {
+    "date": "2026-05-16 10:17 UTC",
+    "total_evaluated": 96,
+    "wins": 38,
+    "losses": 58,
+    "win_rate": 39.6,
+    "avg_rr": -0.02
+  },
+  {
+    "date": "2026-05-19 02:38 UTC",
+    "total_evaluated": 101,
+    "wins": 38,
+    "losses": 63,
+    "win_rate": 37.6,
+    "avg_rr": -0.06
   }
 ]

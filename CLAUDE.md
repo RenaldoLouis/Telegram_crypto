@@ -16,7 +16,7 @@ Claude analyzes data and surfaces setups. The human makes every trading decision
 - Do NOT add order execution logic, even if asked casually.
 - Do NOT wire Claude output directly to the Bybit write API.
 - Do NOT expand the Bybit API key permissions beyond Read-Only.
-- Do NOT weaken R:R 1:2 minimum floor or remove risk flags from output.
+- Do NOT weaken R:R below 1.5:1 minimum floor or remove risk flags from output. (Lowered from 2:1 to 1.5:1 based on 98-trade backtest showing avg MFE of 1.15R — the old 2:1 floor forced unreachable targets.)
 
 Auto-execution will only be considered after: (a) 60+ days of evaluated Phase A data, (b) a separate hard-coded risk engine (not Claude) for position sizing, (c) model comparison data (Sonnet vs Haiku), and (d) explicit user approval.
 
@@ -40,17 +40,18 @@ main.py  (orchestrator, async)
   │
   ├── delivery/telegram_bot.py     → MD→HTML converter, smart chunking, retry with backoff
   │
-  ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation
+  ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation,
+  │                                    simulated T1 backtest, per-symbol tracking, prescriptive rules
   ├── quarterly_analysis.py        → Claude-powered deep pattern analysis (run every ~3 months)
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
         ├── briefs/*.md            → Archived readable briefs
         ├── setups/*.json          → Structured setup JSONs (with model name)
-        ├── evaluations/*.json     → Scored results (win/loss, actual R:R)
+        ├── evaluations/*.json     → Scored results (win/loss, actual R:R, MFE, simulated T1)
         └── performance/
-              ├── lifetime_stats.json    → Layer 1: Incremental running counters (never re-reads old evals)
-              ├── strategic_rules.md     → Layer 2: Compact rules from all history (~500 tokens, sent to Claude)
+              ├── lifetime_stats.json    → Layer 1: Incremental running counters (incl. by_symbol, simulated_t1)
+              ├── strategic_rules.md     → Layer 2: Prescriptive rules from all history (~600-800 tokens, sent to Claude)
               ├── recent_performance.md  → Layer 3: Rolling 4-week trade details (~800 tokens, sent to Claude)
               ├── summary.md             → Human-readable report (NOT sent to Claude)
               ├── win_rate_history.json   → Win rate snapshots over time
@@ -65,9 +66,9 @@ main.py  (orchestrator, async)
 4. `ClaudeAnalyzer.analyze(market, messages)` → readable brief + `setups_json` block
 5. `main.py` parses JSON block → saves to `logs/setups/` (includes model name)
 6. Clean brief (JSON stripped) → archived to `logs/briefs/` + delivered via Telegram
-7. Weekly: `weekly_eval.py` scores past setups → updates tiered knowledge:
-   - `lifetime_stats.json` — incremental counters (O(1) per new eval, no file re-reads)
-   - `strategic_rules.md` — compact algorithmic rules from lifetime stats (~500 tokens)
+7. Weekly: `weekly_eval.py` scores past setups (incl. simulated closer-T1 backtest) → updates tiered knowledge:
+   - `lifetime_stats.json` — incremental counters incl. by_symbol, simulated_t1 (O(1) per new eval)
+   - `strategic_rules.md` — prescriptive rules with ACTION lines (~600-800 tokens)
    - `recent_performance.md` — rolling 4-week trade details (~800 tokens)
    - `summary.md` — full human-readable report (NOT sent to Claude)
 8. Next run: `build_system_prompt()` loads strategic_rules + recent_performance → Claude self-calibrates
@@ -154,6 +155,11 @@ source venv/bin/activate
 python quarterly_analysis.py
 ```
 
+**Terminal shortcuts** (defined in `~/.zshrc`):
+- `scan` — run nightly screener
+- `eval-scan` — run weekly evaluation
+- `quarterly-scan` — run quarterly deep analysis
+
 ### Scheduled Runs
 
 macOS: `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`). Default: 9pm local.
@@ -166,7 +172,7 @@ Do NOT migrate to cron — launchd handles wake-from-sleep better.
 1. **Never add write-path Bybit calls** (place_order, cancel_order, etc.). Confirm Phase B preconditions first.
 2. **Never let free-text output drive actions.** Use structured JSON (`setups_json`) with validated fields.
 3. **New data sources welcome** — wire into `fetchers/`, pass to Claude context. Estimate token impact first.
-4. **Prompt changes**: update `analyzer/prompts.py`. Never weaken R:R floor, remove risk framework, or make Claude more aggressive about calling trades.
+4. **Prompt changes**: update `analyzer/prompts.py`. Never weaken R:R below 1.5:1 floor, remove risk framework, or make Claude more aggressive about calling trades.
 5. **Knowledge files** in `/knowledge/*.md` are user-editable. Keep human-readable. Claude loads all `*.md` files on every run.
 6. **Pre-filter scoring** in `bybit_data.py::_ticker_interest_score()` should reflect knowledge file rules. When knowledge changes, update scoring thresholds to match.
 
@@ -174,7 +180,7 @@ Do NOT migrate to cron — launchd handles wake-from-sleep better.
 
 - `analyzer/prompts.py` → risk framework, R:R floor, output format, JSON schema
 - `config.py` → model choice, token limits, scan limits
-- `weekly_eval.py` → evaluation logic, scoring rules
+- `weekly_eval.py` → evaluation logic, scoring rules, strategic rules generator, simulated T1 backtest
 - `bybit_data.py::_ticker_interest_score()` → pre-filter rules tied to knowledge
 
 ---
@@ -199,9 +205,12 @@ Do NOT migrate to cron — launchd handles wake-from-sleep better.
 2. Waits appropriate time: scalp=1d, intraday=2d, swing=7d
 3. Fetches 15m klines from Bybit for the evaluation window
 4. Checks: entry triggered? → stop or target hit first? → actual R:R
-5. Saves to `logs/evaluations/eval_*.json`
-6. Updates tiered knowledge distillation (see below)
-7. `build_system_prompt()` loads strategic_rules + recent_performance → Claude reads on next run
+5. **Breakeven stop model**: once T1 is hit, the simulated stop moves to entry (breakeven). If price reverses after T1, worst case is 0R, not -1.0R.
+6. **Partial profit model**: calculates `blended_rr` = 50% closed at T1 + 50% trails with BE stop to T2/expiry. This models realistic position management.
+7. **Simulated closer-T1 backtest**: also checks if T1 at 0.75R and 1.0R would have been hit before stop
+8. Saves to `logs/evaluations/eval_*.json` (includes `blended_rr`, `be_stop_hit`, `sim_t1_*` fields)
+9. Updates tiered knowledge distillation (see below)
+10. `build_system_prompt()` loads strategic_rules + recent_performance → Claude reads on next run
 
 ### Tiered Knowledge Distillation
 
@@ -210,17 +219,23 @@ Instead of sending all historical data to Claude every run (which would grow unb
 | Layer | File | Sent to Claude? | Size | Scales with time? |
 |---|---|---|---|---|
 | 1. Lifetime Stats | `lifetime_stats.json` | No (backing data) | Grows slowly | Yes but compact |
-| 2. Strategic Rules | `strategic_rules.md` | **Yes** | ~500 tokens | **No** — fixed size |
+| 2. Strategic Rules | `strategic_rules.md` | **Yes** | ~600-800 tokens | **No** — fixed size |
 | 3. Recent Performance | `recent_performance.md` | **Yes** | ~800 tokens | **No** — rolling 4-week window |
 | Human Report | `summary.md` | No | ~2K tokens | Yes |
 
-**Layer 1** (`lifetime_stats.json`): Incrementally updated running counters — win rate by setup type, confidence, rank, model, timeframe, direction, monthly trends, prediction gap, MFE stats. Updated O(1) per new eval (no need to re-read old eval files).
+**Layer 1** (`lifetime_stats.json`): Incrementally updated running counters — win rate by setup type, confidence, rank, model, timeframe, direction, **symbol**, monthly trends, prediction gap, MFE stats, **simulated T1 results**. Updated O(1) per new eval (no need to re-read old eval files).
 
-**Layer 2** (`strategic_rules.md`): Compact, durable rules derived algorithmically from Layer 1. Examples: "medium confidence has 0% WR — ban unless R:R >= 3:1", "targets are 2.7R too optimistic — use closer T1". Regenerated weekly but only changes when stats shift meaningfully.
+**Layer 2** (`strategic_rules.md`): **Prescriptive** rules derived from Layer 1. Each rule includes an "ACTION:" line telling Claude exactly what to do. Examples:
+- "CONFIDENCE MISCALIBRATED: High is 22% but Medium is 43%. ACTION: Only label 'high' if 4/4 TF confluence + volume."
+- "TARGETS TOO FAR: avg MFE is 1.3R. Backtest: T1 at 0.75R hits 65% vs current 28%. ACTION: Set T1 at max 1.0R."
+- "AVOID SWING: 11% WR. ACTION: Do not recommend swing setups."
+- "WINNING SYMBOLS: DOGEUSDT (4/6). ACTION: Give priority when in scan."
+
+Rules cover: selectivity, confidence calibration, timeframe/direction performance, setup types, rank anomalies, T1 placement (MFE-based), per-symbol patterns, stop timing, model comparison.
 
 **Layer 3** (`recent_performance.md`): Rolling 4-week window of individual trade outcomes. Gives Claude fresh context about what's working NOW without unbounded growth. Old trades fall off automatically.
 
-**Total prompt overhead**: ~1300 tokens regardless of whether you've run for 1 month or 3 years.
+**Total prompt overhead**: ~1500-1800 tokens regardless of whether you've run for 1 month or 3 years.
 
 ### Quarterly Deep Analysis
 
@@ -230,7 +245,7 @@ Instead of sending all historical data to Claude every run (which would grow unb
 - Symbol-specific patterns (consistently winning/losing symbols)
 - Sequence effects (overconfidence after wins, selectivity after losses)
 
-Run manually every ~3 months or after 50+ new evaluated trades. Findings are appended to `strategic_rules.md` under a "Quarterly Deep Insights" section.
+Run via `quarterly-scan` terminal command, or manually every ~3 months / after 50+ new evaluated trades. Findings are appended to `strategic_rules.md` under a "Quarterly Deep Insights" section.
 
 ### Model Comparison
 
@@ -252,10 +267,14 @@ See `progress.md` for:
 ## Glossary
 
 - **Brief**: the structured output Claude produces per run (Market Context, Top 5 Opportunities, Risk Flags, Takeaway).
-- **Setup**: a trading opportunity with entry zone, stop, target 1+2, R:R, and confidence. Must have R:R >= 1:2.
+- **Setup**: a trading opportunity with entry zone, stop, target 1+2, R:R, and confidence. Must have R:R >= 1.5:1.
 - **setups_json**: structured JSON block Claude appends to every brief for machine-readable tracking.
 - **Pre-filter**: Python scoring of 50 tickers down to 25 before kline fetching, using knowledge-derived rules.
 - **Multi-TF confluence**: how many of 4 timeframes agree on direction. 4/4=High, 3/4=Medium, 2/4=Low.
 - **Watchlist**: symbols always analyzed regardless of pre-filter score (BTC, ETH, SOL).
 - **Phase A / Phase B**: analyst-only (current) vs. auto-execution (future, requires preconditions).
 - **Interest score**: numeric score from `_ticker_interest_score()` used to rank 50 tickers for pre-filtering.
+- **MFE (Max Favorable Excursion)**: how far price moved in Claude's predicted direction before outcome. Used to diagnose "direction right, execution wrong" and compute optimal T1 distance.
+- **Simulated T1 backtest**: per-trade check of whether a closer T1 (at 0.75R or 1.0R) would have been hit before stop. Aggregated to quantify optimal T1 distance.
+- **Blended R:R**: the partial profit model result. 50% of position closed at T1, remaining 50% trails with breakeven stop. Calculated as `0.5 * T1_rr + 0.5 * actual_rr`. More realistic than all-or-nothing scoring.
+- **BE stop (breakeven stop)**: after T1 is hit in the eval, the stop moves to entry price. If price reverses, the worst case is 0R instead of -1.0R. Tracked as `be_stop_hit` in eval results.

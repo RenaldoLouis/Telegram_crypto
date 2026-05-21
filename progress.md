@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-05-03 (v2)_
+_Last updated: 2026-05-19 (v4)_
 
 ---
 
@@ -19,10 +19,11 @@ Python pre-filter (knowledge-based scoring, free)
 Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
     → RSI(14), EMA 20/50, volume spike ratio, breakout flags per TF
     ↓
-Claude (Haiku 4.5 daily / Sonnet for tuning) analyzes as professional trader
+Claude (Sonnet 4.6 daily) analyzes as professional trader
     → Professional trader mindset (don't chase, trap awareness, realistic targets)
     → Multi-TF confluence scoring (4/4=High, 3/4=Medium, 2/4=Low)
-    → Outputs 5 ranked setups (readable brief) + structured JSON
+    → R:R floor: 1.5:1 minimum (lowered from 2:1 based on 98-trade backtest)
+    → Outputs 1-5 ranked setups (readable brief) + structured JSON
     ↓
 main.py parses JSON → saves to logs/setups/
     ↓
@@ -35,6 +36,8 @@ Weekly eval (weekly_eval.py, run Sundays)
     → Loads ALL past evaluations for cumulative learning
     → Fetches actual prices from Bybit for each past setup
     → Scores: triggered? stop or target hit first? actual R:R? MFE?
+    → Breakeven stop model: after T1 hit, stop moves to entry (0R worst case, not -1R)
+    → Partial profit model: blended_rr = 50% at T1 + 50% trails with BE stop
     → Tiered Knowledge Distillation:
       Layer 1: lifetime_stats.json — incremental running counters (O(1) update, no file re-reads)
       Layer 2: strategic_rules.md — compact algorithmic rules (~500 tokens, sent to Claude)
@@ -62,7 +65,7 @@ Quarterly deep analysis (quarterly_analysis.py, run every ~3 months)
 | `analyzer/prompts.py` | 60 | Professional trader prompt + knowledge + tiered performance feedback (strategic rules + recent window) |
 | `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `weekly_eval.py` | 900 | Evaluation engine + tiered knowledge distillation (lifetime stats, strategic rules, recent window, summary) |
+| `weekly_eval.py` | 1630 | Evaluation engine + BE stop/partial profit model + tiered knowledge distillation |
 | `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
 | `progress.md` | — | This file — project progress tracker |
@@ -125,67 +128,71 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 
 ## Performance & Win Rate
 
-**Status: 8 runs evaluated (32 setups, 28 triggered). Active since 2026-04-22.**
+**Status: 28 runs evaluated (101 trades triggered, 111 total setups). Active since 2026-04-22.**
 
-### Current Stats (as of 2026-05-03)
+### Current Stats (as of 2026-05-19)
 | Metric | Value |
 |---|---|
-| Overall win rate | **10.7%** (3W / 25L) |
-| Avg actual R:R | -0.62 |
-| Avg predicted R:R | 2.0 |
-| **Prediction gap** | **2.7R** (targets systematically too optimistic) |
-| T1 hit rate | 2/28 (7%) — targets are too far |
-| Stop loss hit rate | 21/28 (75%) — stops too tight or direction wrong |
+| Overall win rate | **37.6%** (38W / 63L) |
+| Avg actual R:R | -0.06 |
+| Avg predicted R:R | 2.1 |
+| **Prediction gap** | **2.2R** (targets still optimistic — R:R floor lowered to 1.5:1 to address) |
+| T1 hit rate | 33/101 (33%) |
+| Direction accuracy (MFE ≥ 0.5R) | **65%** (56/70 with MFE data) — direction usually right |
+| Avg MFE | 1.2R |
+| Simulated T1 at 0.75R | **76% hit rate** (vs 33% current) |
+| Simulated T1 at 1.0R | **62% hit rate** |
 
 ### By Confidence Level
-| Confidence | Win Rate | Note |
-|---|---|---|
-| High | 22% (2/9) | Only confidence level with wins |
-| Medium | **0% (0/14)** | Zero wins — mandatory rule: R:R >= 3:1 or drop |
-| Low | 20% (1/5) | Small sample |
+| Confidence | Win Rate | Trades | Note |
+|---|---|---|---|
+| High | 22% (2/9) | 9 | Worse than medium — calibration issue |
+| Medium | **41% (30/73)** | 73 | Best performing |
+| Low | 32% (6/19) | 19 | Acceptable |
 
 ### By Model
 | Model | Win Rate | Avg R:R | Trades |
 |---|---|---|---|
+| claude-sonnet-4-6 | **40%** | -0.02 | 89 |
 | claude-haiku-4-5 | 12% | -0.25 | 8 |
-| claude-sonnet-4-6 | 6% | -0.81 | 16 |
 
-### Win Rate Trend (per eval run)
-| Run Date | Run Win Rate | Cumulative |
-|---|---|---|
-| 2026-04-22 | 25% | 25.0% |
-| 2026-04-22 | 0% | 11.1% |
-| 2026-04-23 | 33% | 16.7% |
-| 2026-04-25 | 0% | 11.8% |
-| 2026-04-25 | 0% | 9.1% |
-| 2026-04-26 | 50% | 12.5% |
-| 2026-04-28 | 0% | 11.5% |
-| 2026-04-29 | 0% | 10.7% |
+### Win Rate Trajectory
+| Date | Total Evaluated | Win Rate | Avg R:R |
+|---|---|---|---|
+| 2026-05-02 | 28 | 10.7% | -0.62 |
+| 2026-05-04 | 29 | 10.3% | -0.64 |
+| 2026-05-06 | 35 | 22.9% | -0.40 |
+| 2026-05-07 | 37 | 27.0% | -0.34 |
+| 2026-05-10 | 56 | 35.7% | -0.17 |
+| 2026-05-14 | 80 | 38.8% | -0.06 |
+| 2026-05-16 | 96 | 39.6% | -0.02 |
+| 2026-05-19 | 101 | **37.6%** | **-0.06** |
 
-**⚠️ Win rate is NOT improving. Last 3 runs have 0% win rate.**
+**Win rate dramatically improved from 10.7% → peak 39.6%. Recent dip to 37.6% from 0/5 streak (May 16-17). Monthly: April 16% → May 47%. Feedback loop working.**
 
 ### Key Diagnosis
-1. **Targets too far**: Only 2/28 setups hit T1. Avg predicted R:R is 2.0 but actual is -0.62.
-2. **Stops too tight**: 21/28 hit stop loss. Need MFE data (now tracking) to determine if direction was right but stops too narrow.
-3. **Medium confidence = 0% win rate**: 14 trades, 0 wins. Claude now has mandatory rule to drop these unless R:R >= 3:1.
-4. **Rank #4-5 are filler**: 1/11 wins (9%). Claude now limited to 1-2 high-conviction setups.
-
-### Manual Trades Logged
-| Date | Symbol | Direction | Result | Failure Reason |
-|---|---|---|---|---|
-| 2026-04-23 | SPKUSDT | long | loss | target_too_far |
-| 2026-04-25 | ENJUSDT | long | open | sl_too_tight |
+1. **Direction is right (65% reach 0.5R+ MFE)** but targets too far — execution problem, not analysis problem. R:R floor lowered from 2:1 to 1.5:1 to allow realistic T1 placement.
+2. **High confidence is miscalibrated**: 22% WR vs medium at 41%. Flagged in strategic rules.
+3. **Swing trades failing**: 11% WR (1/9). Short trades: 0% WR (0/3). Both flagged to avoid.
+4. **Rank #2 outperforms #1**: 48% vs 32% WR. Ranking criteria flagged for review.
+5. **T1 hit rate at 33%** but simulated backtest shows 76% at 0.75R, 62% at 1.0R — proving targets are the bottleneck.
+6. **Partial profit model introduced**: 50% at T1 + BE stop should convert many "direction right, target missed" losses into breakeven or small wins. Data will accumulate from next eval run.
 
 ### What the eval tracks
 - Overall win rate (W/L, avg R:R)
-- Win rate by setup type, confidence level, rank position, **model**, timeframe, direction
-- **Per-trade prediction vs reality table** (predicted R:R vs actual, exit reason, MFE)
+- **Blended R:R (partial profit model)**: 50% at T1 + 50% trails with BE stop → blended win rate and avg R:R
+- **Breakeven stop model**: after T1 hit, stop moves to entry — trades scored as BE (0R) not full loss (-1R)
+- Win rate by setup type, confidence level, rank position, **model**, timeframe, direction, **symbol**
+- **Per-trade prediction vs reality table** (predicted R:R vs actual vs blended, exit reason, MFE)
+- **Simulated closer-T1 backtest** — what would happen if T1 were at 0.75R and 1.0R
 - **Win rate trend** per eval run with cumulative tracking + monthly trends
 - **Prediction accuracy gap** (avg predicted vs avg actual R:R)
-- **Direction accuracy via MFE** (% of trades reaching 0.5R favorable — tracks if direction is right but execution wrong)
+- **Direction accuracy via MFE** (% of trades reaching 0.5R favorable)
+- **Per-symbol performance** — tracks which coins consistently win/lose
 - **Entry timing analysis** (flags if stops hit within 2 hours)
+- **Partial profit breakdown**: t1_then_t2, t1_then_be, t1_then_expire counts
 - Confidence calibration, recurring failure patterns, trader notes/lessons
-- Mandatory performance-based rules auto-derived from `lifetime_stats.json`
+- Prescriptive rules auto-derived from `lifetime_stats.json` with specific ACTIONs
 
 ### How evaluation data reaches Claude (Tiered Knowledge Distillation)
 
@@ -224,6 +231,69 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-05-19 (v4) — Execution Fix: Breakeven Stops, Partial Profits & Realistic R:R Floor
+
+**Problem**: After 98 evaluated trades, the data showed a clear pattern: Claude picks direction correctly 65% of the time (avg MFE 1.15R), but targets at 2.0-2.5R are unreachable for most trades. T1 hit rate was only 33%. Worse, trades where T1 was hit but price later reversed to stop were scored as full -1.0R losses — even though in real trading you'd move stop to breakeven after T1. The hard R:R >= 2:1 rule in the prompt was forcing Claude to set unrealistic targets, contradicting the strategic rules that said "set T1 at max 1.0R."
+
+**3 Changes**:
+
+**1. Breakeven Stop After T1 Hit** (`weekly_eval.py::evaluate_setup()`)
+- Once T1 is hit during evaluation, the simulated stop moves from original stop_loss to entry price (breakeven)
+- If price reverses to entry after T1 → exit reason `be_stop` at 0R, not `stop_loss` at -1.0R
+- Example: DOGEUSDT (May 17) had MFE of 1.6R and T1 was hit, but reversed to stop → was -1.0R loss, now would be 0R breakeven
+- New field `be_stop_hit` in eval results
+
+**2. Partial Profit Model** (`weekly_eval.py`)
+- New `blended_rr` field per trade: `0.5 * T1_rr + 0.5 * actual_rr` when T1 is hit, otherwise `actual_rr`
+- Models realistic position management: take 50% profit at T1, trail remainder with BE stop
+- New lifetime stats tracking: `blended_rr_sum`, `blended_wins/losses`, `be_stops`, `t1_then_t2/be/expire`
+- Recent performance table now includes "Blended" column alongside raw Actual R:R
+- Summary includes "Partial Profit Model" section with blended WR and avg R:R
+- Strategic rules auto-generate "PARTIAL PROFIT HELPS" rule when blended WR exceeds raw WR by 5%+
+
+**3. R:R Floor Lowered from 2:1 to 1.5:1** (`analyzer/prompts.py`)
+- Data justification: avg MFE is 1.15R. Simulated T1 at 1.0R hits 62%, T1 at 0.75R hits 76% — vs 33% for current ~2.0R targets
+- Expected value: T1 at 1.0R → EV +0.24R/trade. T1 at 0.75R → EV +0.33R/trade. Current → EV -0.06R/trade
+- All prompt references updated: target placement, hard rules, validation checklist, ranking criteria, risk framework
+- Still prefers 2:1+ when structure supports it, but 1.5:1 at a real structural level is now valid
+- Position management section rewritten to emphasize "50% at T1 + BE stop" as default strategy
+
+**CLAUDE.md updated**: R:R floor guardrail, evaluation system docs, glossary (blended R:R, BE stop).
+
+**Lifetime stats reset**: `processed_run_tags` cleared to rebuild all stats from existing eval files with new fields. Old eval files show `n/a` for blended_rr (they were scored with old logic). Partial profit data will accumulate from next eval run forward.
+
+**Expected impact**: The combination of realistic targets (1.5:1 floor) + partial profit scoring should show a meaningful improvement in blended win rate once new eval data comes in. The direction accuracy (65%) suggests the system has real edge that was being masked by unreachable targets.
+
+### 2026-05-14 (v3) — Accuracy Overhaul: Prescriptive Rules, MFE-Based T1, Per-Symbol Tracking
+
+**Problem**: The learning loop was identifying problems (targets too far, confidence miscalibrated, swing losing) but not telling Claude **what to do about them**. Rules were descriptive ("targets are optimistic") not prescriptive ("set T1 at max 1.0R from entry"). Several critical patterns were not flagged at all (high confidence underperformance, losing timeframes, losing directions, rank anomalies, symbol patterns).
+
+**7 Improvements to the Strategic Rules Generator** (`weekly_eval.py::generate_strategic_rules()`):
+
+1. **High confidence calibration check**: Detects when 'high' confidence underperforms 'medium' (currently 22% vs 43% WR) and instructs Claude to recalibrate what deserves 'high' label.
+
+2. **Timeframe performance rules**: Flags underperforming timeframes (e.g., swing at 11% WR → "avoid swing setups"). Previously only tracked in stats, never surfaced as a rule.
+
+3. **Direction performance rules**: Flags losing directions (e.g., shorts at 0/3 WR → "avoid short setups until data improves"). Prevents Claude from recommending proven losing patterns.
+
+4. **Rank anomaly detection**: Detects when Rank #2 outperforms Rank #1 (53% vs 37%) and instructs Claude to re-evaluate ranking criteria — prioritize structural clarity over headline appeal.
+
+5. **Per-symbol tracking**: New `by_symbol` bucket in `lifetime_stats.json`. Surfaces consistently winning symbols (priority boost) and losing symbols (require extra confluence). Tracks win rate per coin.
+
+6. **MFE-based optimal T1 calculation**: Uses average MFE (1.34R) to compute a specific maximum T1 distance (0.75 × avg MFE = 1.0R). Claude sees the exact number, not just "targets too far."
+
+7. **Simulated closer-T1 backtest**: `evaluate_setup()` now backtests what would happen if T1 were at 0.75R and 1.0R. Results aggregated in `lifetime_stats.json::simulated_t1` and included in strategic rules: "T1 at 0.75R would hit X% of trades vs current Y%."
+
+**All rules now prescriptive**: Every rule includes an "ACTION:" line telling Claude exactly what to do, not just what's wrong. Example: old rule said "TARGETS OPTIMISTIC: gap is 2.2R". New rule says "TARGETS TOO FAR: avg MFE is 1.3R, so set T1 at max 1.0R from entry. Backtest shows T1 at 0.75R would hit 65% vs current 28.6%. ACTION: Place T1 at nearest real structural level, use 1.5-2× ATR."
+
+**Terminal shortcut**: Added `quarterly-scan` alias to `~/.zshrc` (alongside existing `scan` and `eval-scan`).
+
+**New eval JSON fields**: `sim_t1_075r_hit`, `sim_t1_100r_hit` — boolean flags per evaluated trade.
+
+**New lifetime_stats fields**: `by_symbol` (per-symbol win/loss/R:R), `simulated_t1` (aggregate sim results).
+
+**Token impact**: Strategic rules grow from ~500 to ~600-800 tokens due to more prescriptive rules. Justified by dramatically better specificity.
 
 ### 2026-05-03 (v2) — Tiered Knowledge Distillation: Scalable Evaluation Feedback
 
@@ -448,12 +518,22 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
-- [ ] Wait for pending evals to mature (swing setups from Apr 26, 28, May 2 need 7 days)
-- [ ] Run eval after May 5 to get first MFE data and see if validation checklist improves results
-- [ ] Update ENJ trade result once closed (win/loss, actual exit)
-- [ ] Review MFE data once available: is direction right but stops too tight, or are direction calls wrong?
-- [ ] If win rate still not improving after 2 more evals, consider: switching to higher-TF-only setups, reducing to max 1-2 setups, or adding volume spike as hard requirement
-- [ ] Run first quarterly analysis once 50+ trades evaluated (`python quarterly_analysis.py`)
+- [ ] Run `quarterly-scan` — 101 trades is enough for deep pattern analysis
+- [ ] Run 2-3 eval cycles to populate blended_rr data with new BE stop + partial profit model
+- [ ] Compare blended WR vs raw WR after new data comes in — validate that partial profit model shows edge
+- [ ] Monitor if 1.5:1 R:R floor lets Claude set more realistic T1 levels (T1 hit rate should increase from 33%)
+- [ ] Review per-symbol stats — XRPUSDT (67% WR) and SOLUSDT (0/3) trends continue?
+- [x] **Breakeven stop model** — T1 hit → stop moves to entry, not full loss (v4)
+- [x] **Partial profit model** — blended_rr: 50% at T1 + 50% trails with BE stop (v4)
+- [x] **R:R floor lowered to 1.5:1** — based on 98-trade backtest showing avg MFE 1.15R (v4)
+- [x] **Prescriptive strategic rules** — all rules now include ACTION lines (v3)
+- [x] **MFE-based optimal T1** — uses avg MFE to compute specific T1 distance ceiling (v3)
+- [x] **Simulated closer-T1 backtest** — backtests T1 at 0.75R and 1.0R per trade (v3)
+- [x] **Per-symbol tracking** — by_symbol bucket in lifetime_stats (v3)
+- [x] **High confidence calibration** — detects when high underperforms medium (v3)
+- [x] **Timeframe/direction rules** — flags swing (11% WR) and shorts (0% WR) (v3)
+- [x] **Rank anomaly detection** — flags when #2 beats #1 (v3)
+- [x] **`quarterly-scan` terminal alias** — run quarterly_analysis.py with one command (v3)
 - [x] Tiered knowledge distillation: lifetime_stats.json + strategic_rules.md + recent_performance.md
 - [x] Quarterly deep analysis script (quarterly_analysis.py) for Claude-powered pattern detection
 - [x] Decouple summary.md (human report) from Claude's prompt (now reads compact tiered files)

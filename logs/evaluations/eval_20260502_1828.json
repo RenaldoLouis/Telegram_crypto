@@ -1,0 +1,32 @@
+{
+  "run_tag": "20260502_1828",
+  "run_timestamp_utc": "2026-05-02T18:28:42.437606+00:00",
+  "model": "claude-sonnet-4-6",
+  "evaluated_at_utc": "2026-05-10T06:49:33.355036+00:00",
+  "results": [
+    {
+      "status": "not_triggered",
+      "reason": "Price never reached entry zone",
+      "symbol": "WLFIUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "post_liquidation",
+      "confidence": "low",
+      "predicted_rr": 2.1,
+      "tf_confluence": 2,
+      "rank": 1
+    },
+    {
+      "status": "not_triggered",
+      "reason": "Price never reached entry zone",
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "swing",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 2.1,
+      "tf_confluence": 2,
+      "rank": 2
+    }
+  ]
+}

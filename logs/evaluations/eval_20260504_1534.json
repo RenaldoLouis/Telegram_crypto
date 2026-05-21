@@ -1,0 +1,52 @@
+{
+  "run_tag": "20260504_1534",
+  "run_timestamp_utc": "2026-05-04T15:34:06.980509+00:00",
+  "model": "claude-sonnet-4-6",
+  "evaluated_at_utc": "2026-05-07T10:36:49.262683+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 79700.0,
+      "exit_price": 81500.0,
+      "exit_reason": "target_1",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "actual_rr": 1.2,
+      "won": true,
+      "max_favorable_rr": 2.07,
+      "candles_to_exit": 192,
+      "symbol": "BTCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 2.0,
+      "tf_confluence": 3,
+      "rank": 1
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 2348.86,
+      "exit_price": 2358.18,
+      "exit_reason": "expired",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "actual_rr": 0.12,
+      "won": true,
+      "max_favorable_rr": 0.94,
+      "candles_to_exit": 192,
+      "symbol": "ETHUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 2.1,
+      "tf_confluence": 3,
+      "rank": 2
+    }
+  ]
+}

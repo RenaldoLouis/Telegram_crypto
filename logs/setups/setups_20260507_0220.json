@@ -1,0 +1,71 @@
+{
+  "run_timestamp_utc": "2026-05-07T02:20:44.336718+00:00",
+  "run_tag": "20260507_0220",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 87.4,
+      "entry_high": 88.2,
+      "stop_loss": 85.8,
+      "target_1": 91.0,
+      "target_2": 93.5,
+      "predicted_rr": 3.2,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.2615,
+      "entry_high": 0.265,
+      "stop_loss": 0.2545,
+      "target_1": 0.275,
+      "target_2": 0.284,
+      "predicted_rr": 2.1,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 3,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.4,
+      "entry_high": 1.415,
+      "stop_loss": 1.368,
+      "target_1": 1.46,
+      "target_2": 1.5,
+      "predicted_rr": 2.1,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 4,
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1095,
+      "entry_high": 0.1115,
+      "stop_loss": 0.106,
+      "target_1": 0.1165,
+      "target_2": 0.12,
+      "predicted_rr": 2.0,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    }
+  ]
+}

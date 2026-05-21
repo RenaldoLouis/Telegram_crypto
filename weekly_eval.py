@@ -148,12 +148,15 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         return {"status": "not_triggered", "reason": "Price never reached entry zone"}
 
     # Phase 2: After entry, did stop or target hit first?
+    # Models realistic position management:
+    #   - Once T1 is hit, stop moves to breakeven (entry price)
+    #   - Partial profit: 50% closed at T1, remaining 50% trails with BE stop
     # Also track MFE (max favorable excursion) — how far price moved in our
-    # direction before the outcome. This tells us if direction was right but
-    # stop was too tight.
+    # direction before the outcome.
     stop_hit = False
     t1_hit = False
     t2_hit = False
+    be_stop_hit = False  # breakeven stop hit after T1
     exit_price = None
     exit_reason = None
     risk = abs(entry_price - stop_loss)
@@ -172,34 +175,51 @@ def evaluate_setup(client, setup, run_timestamp_utc):
             max_favorable_rr = max(max_favorable_rr, favorable)
 
         if direction == "long":
-            if c["low"] <= stop_loss:
-                stop_hit = True
-                exit_price = stop_loss
-                exit_reason = "stop_loss"
-                break
-            if c["high"] >= target_1 and not t1_hit:
-                t1_hit = True
+            if not t1_hit:
+                # Before T1: original stop applies
+                if c["low"] <= stop_loss:
+                    stop_hit = True
+                    exit_price = stop_loss
+                    exit_reason = "stop_loss"
+                    break
+                if c["high"] >= target_1:
+                    t1_hit = True
+                    # Don't break — continue to check for T2 with BE stop
+            else:
+                # After T1: stop is now at breakeven (entry price)
+                if c["low"] <= entry_price:
+                    be_stop_hit = True
+                    exit_price = entry_price
+                    exit_reason = "be_stop"
+                    break
             if target_2 and c["high"] >= target_2:
                 t2_hit = True
                 exit_price = target_2
                 exit_reason = "target_2"
                 break
         else:  # short
-            if c["high"] >= stop_loss:
-                stop_hit = True
-                exit_price = stop_loss
-                exit_reason = "stop_loss"
-                break
-            if c["low"] <= target_1 and not t1_hit:
-                t1_hit = True
+            if not t1_hit:
+                if c["high"] >= stop_loss:
+                    stop_hit = True
+                    exit_price = stop_loss
+                    exit_reason = "stop_loss"
+                    break
+                if c["low"] <= target_1:
+                    t1_hit = True
+            else:
+                if c["high"] >= entry_price:
+                    be_stop_hit = True
+                    exit_price = entry_price
+                    exit_reason = "be_stop"
+                    break
             if target_2 and c["low"] <= target_2:
                 t2_hit = True
                 exit_price = target_2
                 exit_reason = "target_2"
                 break
 
-    # If neither stop nor target_2 hit, check if target_1 was hit
-    if not stop_hit and not t2_hit:
+    # If no definitive exit, determine outcome
+    if not stop_hit and not be_stop_hit and not t2_hit:
         if t1_hit:
             exit_price = target_1
             exit_reason = "target_1"
@@ -208,7 +228,7 @@ def evaluate_setup(client, setup, run_timestamp_utc):
             exit_price = candles[-1]["close"]
             exit_reason = "expired"
 
-    # Calculate actual R:R
+    # Calculate actual R:R (raw, without partial profit model)
     if risk == 0:
         actual_rr = 0
     else:
@@ -219,6 +239,50 @@ def evaluate_setup(client, setup, run_timestamp_utc):
 
     won = actual_rr > 0
 
+    # Partial profit model (blended R:R):
+    # 50% of position closed at T1 if hit, remaining 50% trails with BE stop.
+    # This models realistic trading where you take partial at T1 and let rest run.
+    if risk > 0:
+        t1_rr = 0.0
+        if direction == "long":
+            t1_rr = (target_1 - entry_price) / risk
+        else:
+            t1_rr = (entry_price - target_1) / risk
+
+        if t1_hit:
+            # 50% closed at T1 + 50% at final exit
+            blended_rr = round(0.5 * t1_rr + 0.5 * actual_rr, 2)
+        else:
+            # T1 never hit — full position exits at actual price
+            blended_rr = actual_rr
+    else:
+        blended_rr = 0
+
+    # Simulated closer-T1 backtest: would tighter targets have won?
+    # Check if T1 at 0.75R and 1.0R from entry would have been hit before stop.
+    sim_t1_075r = False
+    sim_t1_100r = False
+    if risk > 0 and entry_candle_idx is not None:
+        t1_at_075r = entry_price + (0.75 * risk) if direction == "long" else entry_price - (0.75 * risk)
+        t1_at_100r = entry_price + (1.0 * risk) if direction == "long" else entry_price - (1.0 * risk)
+        for c in candles[entry_candle_idx:]:
+            if direction == "long":
+                if c["low"] <= stop_loss:
+                    break  # stop hit first
+                if c["high"] >= t1_at_075r:
+                    sim_t1_075r = True
+                if c["high"] >= t1_at_100r:
+                    sim_t1_100r = True
+                    break  # both checked
+            else:
+                if c["high"] >= stop_loss:
+                    break
+                if c["low"] <= t1_at_075r:
+                    sim_t1_075r = True
+                if c["low"] <= t1_at_100r:
+                    sim_t1_100r = True
+                    break
+
     return {
         "status": "evaluated",
         "entry_triggered": True,
@@ -228,10 +292,14 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         "target_1_hit": t1_hit,
         "target_2_hit": t2_hit,
         "stop_hit": stop_hit,
+        "be_stop_hit": be_stop_hit,
         "actual_rr": actual_rr,
+        "blended_rr": blended_rr,
         "won": won,
         "max_favorable_rr": round(max_favorable_rr, 2),
         "candles_to_exit": candles_to_exit,
+        "sim_t1_075r_hit": sim_t1_075r,
+        "sim_t1_100r_hit": sim_t1_100r,
     }
 
 
@@ -403,6 +471,17 @@ def _empty_lifetime_stats():
         "mfe_stats": {"reached_05r": 0, "total_with_mfe": 0, "mfe_sum": 0.0},
         "stop_timing": {"total_stops": 0, "fast_stops": 0, "candles_sum": 0},
         "target_stats": {"t1_hits": 0, "t2_hits": 0},
+        "by_symbol": {},
+        "simulated_t1": {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0},
+        "partial_profit": {
+            "blended_rr_sum": 0.0,
+            "blended_wins": 0,
+            "blended_losses": 0,
+            "be_stops": 0,
+            "t1_then_t2": 0,
+            "t1_then_be": 0,
+            "t1_then_expire": 0,
+        },
         "processed_run_tags": [],
     }
 
@@ -435,6 +514,17 @@ def update_lifetime_stats(all_evals):
             stats = _empty_lifetime_stats()
     else:
         stats = _empty_lifetime_stats()
+
+    # Ensure newer stat keys exist for backward compatibility
+    if "by_symbol" not in stats:
+        stats["by_symbol"] = {}
+    if "simulated_t1" not in stats:
+        stats["simulated_t1"] = {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0}
+    if "partial_profit" not in stats:
+        stats["partial_profit"] = {
+            "blended_rr_sum": 0.0, "blended_wins": 0, "blended_losses": 0,
+            "be_stops": 0, "t1_then_t2": 0, "t1_then_be": 0, "t1_then_expire": 0,
+        }
 
     processed = set(stats.get("processed_run_tags", []))
 
@@ -479,6 +569,7 @@ def update_lifetime_stats(all_evals):
             _increment_bucket(stats["by_model"], model, r)
             _increment_bucket(stats["by_timeframe"], r.get("timeframe", "intraday"), r)
             _increment_bucket(stats["by_direction"], r.get("direction", "long"), r)
+            _increment_bucket(stats["by_symbol"], r.get("symbol", "unknown"), r)
 
             # Monthly trend
             stats["monthly_trend"][month_key]["total"] += 1
@@ -515,6 +606,36 @@ def update_lifetime_stats(all_evals):
             if r.get("target_2_hit"):
                 stats["target_stats"]["t2_hits"] += 1
 
+            # Simulated closer-T1 stats
+            if "simulated_t1" not in stats:
+                stats["simulated_t1"] = {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0}
+            if r.get("sim_t1_075r_hit") is not None:
+                stats["simulated_t1"]["sim_total"] += 1
+                if r.get("sim_t1_075r_hit"):
+                    stats["simulated_t1"]["sim_075r_hits"] += 1
+                if r.get("sim_t1_100r_hit"):
+                    stats["simulated_t1"]["sim_100r_hits"] += 1
+
+            # Partial profit tracking
+            pp = stats["partial_profit"]
+            blended = r.get("blended_rr")
+            if blended is not None:
+                pp["blended_rr_sum"] += blended
+                if blended > 0:
+                    pp["blended_wins"] += 1
+                else:
+                    pp["blended_losses"] += 1
+            if r.get("be_stop_hit"):
+                pp["be_stops"] += 1
+            if r.get("target_1_hit"):
+                exit_r = r.get("exit_reason", "")
+                if exit_r == "target_2":
+                    pp["t1_then_t2"] += 1
+                elif exit_r == "be_stop":
+                    pp["t1_then_be"] += 1
+                elif exit_r in ("target_1", "expired"):
+                    pp["t1_then_expire"] += 1
+
         processed.add(run_tag)
         new_count += 1
 
@@ -526,16 +647,19 @@ def update_lifetime_stats(all_evals):
 
 
 def generate_strategic_rules():
-    """Derive compact, durable rules from lifetime_stats.json.
+    """Derive compact, prescriptive rules from lifetime_stats.json.
 
     These rules are what Claude reads every run — the distilled wisdom from
-    all historical evaluations. ~500 tokens regardless of how long you've run.
+    all historical evaluations. ~600-800 tokens regardless of how long you've run.
 
-    IMPORTANT: Rules are calibrated by sample size:
+    Rules are PRESCRIPTIVE (tell Claude exactly what to do), not just
+    DESCRIPTIVE (tell Claude what's wrong). Each rule includes a specific
+    actionable instruction.
+
+    Sample size calibration:
     - <30 trades per category: ADVISORY only (note the small sample)
     - 30-50 trades: STRONG guidance
     - 50+ trades: HARD rules
-    Never ban entire confidence levels or setup types from small samples.
     """
     if not LIFETIME_STATS_FILE.exists():
         return
@@ -567,13 +691,12 @@ def generate_strategic_rules():
     if win_rate < 20:
         lines.append(
             f"1. **SELECTIVITY NEEDED**: Win rate is {win_rate:.0f}% over {total} trades. "
-            "Prioritize quality over quantity — prefer 2-3 strong setups over 5 mediocre ones. "
-            "But DO include setups that have clear structure and R:R >= 2:1."
+            "ACTION: Output max 2-3 setups per run. Only include setups with 3/4+ TF confluence AND R:R >= 2.5:1."
         )
     elif win_rate < 40:
         lines.append(
-            f"1. **MODERATE SELECTIVITY**: Win rate is {win_rate:.0f}%. Apply strict entry criteria — "
-            "prefer fewer, higher-conviction setups. 2-4 setups per run."
+            f"1. **MODERATE SELECTIVITY**: Win rate is {win_rate:.0f}%. "
+            "ACTION: Output 2-4 setups per run. Prefer fewer, higher-conviction setups over padding to 5."
         )
     else:
         lines.append(
@@ -582,25 +705,73 @@ def generate_strategic_rules():
 
     rule_num = 2
 
-    # --- Confidence rules (only make hard bans with 30+ trades per category) ---
+    # --- Confidence calibration (check ALL levels including high) ---
+    conf_stats = {}
+    for conf in ["high", "medium", "low"]:
+        cs = stats["by_confidence"].get(conf)
+        if cs and cs["total"] >= 3:
+            conf_stats[conf] = {
+                "wr": cs["wins"] / cs["total"] * 100,
+                "total": cs["total"],
+                "wins": cs["wins"],
+            }
+
+    # Check if high confidence underperforms medium (calibration issue)
+    if "high" in conf_stats and "medium" in conf_stats:
+        high_wr = conf_stats["high"]["wr"]
+        med_wr = conf_stats["medium"]["wr"]
+        if high_wr < med_wr and conf_stats["high"]["total"] >= 5:
+            lines.append(
+                f"{rule_num}. **CONFIDENCE MISCALIBRATED**: 'High' confidence is {conf_stats['high']['wins']}/{conf_stats['high']['total']} "
+                f"({high_wr:.0f}% WR) but 'Medium' is {conf_stats['medium']['wins']}/{conf_stats['medium']['total']} ({med_wr:.0f}% WR). "
+                "ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + "
+                "clean structure. If unsure, label 'medium' — it actually performs better."
+            )
+            rule_num += 1
+
     for conf in ["medium", "low"]:
         cs = stats["by_confidence"].get(conf)
         if cs and cs["total"] >= 5:
             wr = cs["wins"] / cs["total"] * 100
-            avg = cs["rr_sum"] / cs["total"]
             if cs["total"] >= 30 and wr < 15:
-                # Hard rule — enough data
                 lines.append(
                     f"{rule_num}. **{conf.upper()} CONFIDENCE WEAK**: {cs['wins']}/{cs['total']} wins ({wr:.0f}%). "
-                    f"Require R:R >= 3:1 for '{conf}' confidence setups."
+                    f"ACTION: Require R:R >= 3:1 for '{conf}' confidence setups."
                 )
                 rule_num += 1
             elif wr < 20:
-                # Advisory — small sample
                 lines.append(
-                    f"{rule_num}. **{conf.upper()} CONFIDENCE UNDERPERFORMING** (small sample: {cs['total']} trades): "
-                    f"{cs['wins']}/{cs['total']} wins ({wr:.0f}%). Be extra selective with '{conf}' setups — "
-                    "prefer R:R >= 2.5:1 and 3/4+ TF confluence. Do NOT ban outright."
+                    f"{rule_num}. **{conf.upper()} CONFIDENCE UNDERPERFORMING** ({cs['total']} trades): "
+                    f"{cs['wins']}/{cs['total']} wins ({wr:.0f}%). "
+                    f"ACTION: Be extra selective — require R:R >= 2.5:1 and 3/4+ TF confluence for '{conf}' setups."
+                )
+                rule_num += 1
+
+    # --- Timeframe performance (NEW) ---
+    for tf, ts in stats.get("by_timeframe", {}).items():
+        if ts["total"] >= 3:
+            wr = ts["wins"] / ts["total"] * 100
+            if wr < 20 and ts["total"] >= 5:
+                lines.append(
+                    f"{rule_num}. **AVOID {tf.upper()} TIMEFRAME**: {ts['wins']}/{ts['total']} wins ({wr:.0f}% WR). "
+                    f"ACTION: Do not recommend '{tf}' setups until data improves. Stick to better-performing timeframes."
+                )
+                rule_num += 1
+
+    # --- Direction performance (NEW) ---
+    for direction, ds in stats.get("by_direction", {}).items():
+        if ds["total"] >= 3:
+            wr = ds["wins"] / ds["total"] * 100
+            if wr == 0:
+                lines.append(
+                    f"{rule_num}. **NO {direction.upper()} WINS**: 0/{ds['total']} {direction} trades won. "
+                    f"ACTION: Avoid {direction} setups until market conditions change. Only include if 4/4 TF confluence."
+                )
+                rule_num += 1
+            elif wr < 15 and ds["total"] >= 10:
+                lines.append(
+                    f"{rule_num}. **{direction.upper()} UNDERPERFORMING**: {ds['wins']}/{ds['total']} ({wr:.0f}% WR). "
+                    f"ACTION: Be extra selective with {direction} setups — require 3/4+ TF confluence + volume confirmation."
                 )
                 rule_num += 1
 
@@ -618,55 +789,88 @@ def generate_strategic_rules():
                 if s["total"] >= 30:
                     lines.append(
                         f"{rule_num}. **DEPRIORITIZE '{st}'**: {wr:.0f}% WR, {avg:.2f} avg R:R over "
-                        f"{s['total']} trades. Require 3/4+ TF confluence + high confidence."
+                        f"{s['total']} trades. ACTION: Require 3/4+ TF confluence + volume confirmed."
                     )
                 else:
                     lines.append(
-                        f"{rule_num}. **'{st}' STRUGGLING** (small sample: {s['total']} trades): "
-                        f"{wr:.0f}% WR, {avg:.2f} avg R:R. Apply extra scrutiny — check if entries "
-                        "were too early or stops too tight, not just the setup type."
+                        f"{rule_num}. **'{st}' STRUGGLING** ({s['total']} trades): "
+                        f"{wr:.0f}% WR, {avg:.2f} avg R:R. ACTION: Apply extra scrutiny — check entries and stops."
                     )
                 rule_num += 1
     if best_type and best_type_wr >= 25 and stats["by_setup_type"][best_type]["total"] >= 5:
         bt = stats["by_setup_type"][best_type]
         lines.append(
-            f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR over {bt['total']} trades — "
-            "prioritize this setup type."
+            f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR over {bt['total']} trades. "
+            "ACTION: Prioritize this setup type. At least 2 of your top setups should be this type if available."
         )
         rule_num += 1
 
-    # --- Rank padding rule ---
-    low_rank_total = sum(
-        s["total"] for rk, s in stats["by_rank"].items() if int(rk) >= 4
-    )
-    low_rank_wins = sum(
-        s["wins"] for rk, s in stats["by_rank"].items() if int(rk) >= 4
-    )
-    if low_rank_total >= 8:
-        lr_wr = low_rank_wins / low_rank_total * 100
-        if lr_wr < 15:
+    # --- Rank anomaly detection (NEW) ---
+    rank_stats = stats.get("by_rank", {})
+    r1 = rank_stats.get("1", {})
+    r2 = rank_stats.get("2", {})
+    if r1.get("total", 0) >= 5 and r2.get("total", 0) >= 5:
+        r1_wr = r1["wins"] / r1["total"] * 100
+        r2_wr = r2["wins"] / r2["total"] * 100
+        if r2_wr > r1_wr + 10:
             lines.append(
-                f"{rule_num}. **QUALITY OVER QUANTITY**: Rank #4-5 have {low_rank_wins}/{low_rank_total} wins ({lr_wr:.0f}%). "
-                "Don't pad to 5 setups — only include #4/#5 if they have strong structure and R:R >= 2.5:1."
+                f"{rule_num}. **RANK #1 UNDERPERFORMS #2**: Rank #1 is {r1['wins']}/{r1['total']} ({r1_wr:.0f}% WR) "
+                f"but Rank #2 is {r2['wins']}/{r2['total']} ({r2_wr:.0f}% WR). "
+                "ACTION: Your top-ranked setup may be the most 'obvious' one, not the best one. "
+                "Re-evaluate ranking — prioritize setup quality and structural clarity over headline appeal."
             )
             rule_num += 1
 
-    # --- Prediction accuracy ---
+    # --- Rank padding rule ---
+    low_rank_total = sum(
+        s["total"] for rk, s in rank_stats.items() if int(rk) >= 4
+    )
+    low_rank_wins = sum(
+        s["wins"] for rk, s in rank_stats.items() if int(rk) >= 4
+    )
+    if low_rank_total >= 8:
+        lr_wr = low_rank_wins / low_rank_total * 100
+        if lr_wr < 20:
+            lines.append(
+                f"{rule_num}. **STOP PADDING TO 5**: Rank #4-5 have {low_rank_wins}/{low_rank_total} wins ({lr_wr:.0f}%). "
+                "ACTION: Only include #4/#5 if they have R:R >= 2.5:1 and 3/4+ TF confluence. "
+                "2-3 good setups beats 5 mediocre ones."
+            )
+            rule_num += 1
+
+    # --- Prediction accuracy + MFE-based optimal T1 (ENHANCED) ---
     pg = stats["prediction_gap"]
+    mfe = stats["mfe_stats"]
+    sim_t1 = stats.get("simulated_t1", {})
     if pg["count"] >= 10:
         avg_pred = pg["sum_predicted"] / pg["count"]
         avg_act = pg["sum_actual"] / pg["count"]
         gap = avg_pred - avg_act
         if gap > 1.5:
+            # Build a prescriptive T1 rule using MFE data
+            t1_guidance = ""
+            if mfe["total_with_mfe"] >= 10:
+                avg_mfe = mfe["mfe_sum"] / mfe["total_with_mfe"]
+                t1_guidance = f" Average MFE is {avg_mfe:.1f}R, so set T1 at max {avg_mfe * 0.75:.1f}R from entry."
+            # Add simulated T1 evidence if available
+            sim_evidence = ""
+            if sim_t1.get("sim_total", 0) >= 5:
+                hit_075 = sim_t1["sim_075r_hits"] / sim_t1["sim_total"] * 100
+                hit_100 = sim_t1["sim_100r_hits"] / sim_t1["sim_total"] * 100
+                sim_evidence = (
+                    f" Backtest: T1 at 0.75R would hit {hit_075:.0f}% of trades, "
+                    f"T1 at 1.0R would hit {hit_100:.0f}% (vs current T1 hit rate of "
+                    f"{stats['target_stats']['t1_hits']}/{total} = "
+                    f"{stats['target_stats']['t1_hits'] / total * 100:.0f}%)."
+                )
             lines.append(
-                f"{rule_num}. **TARGETS OPTIMISTIC**: Predicted avg {avg_pred:.1f}R but actual is {avg_act:.2f}R "
-                f"(gap: {gap:.1f}R). Place T1 at the nearest real structural level, not a dream target. "
-                "Use ATR as sanity check: T1 should be 1.5-3× ATR from entry."
+                f"{rule_num}. **TARGETS TOO FAR**: Predicted avg {avg_pred:.1f}R but actual is {avg_act:.2f}R "
+                f"(gap: {gap:.1f}R).{t1_guidance}{sim_evidence} "
+                "ACTION: Place T1 at the nearest REAL structural level. Use ATR: T1 should be 1.5-2× ATR from entry, NOT 3×+."
             )
             rule_num += 1
 
     # --- Direction accuracy (MFE) ---
-    mfe = stats["mfe_stats"]
     if mfe["total_with_mfe"] >= 10:
         dir_acc = mfe["reached_05r"] / mfe["total_with_mfe"] * 100
         avg_mfe = mfe["mfe_sum"] / mfe["total_with_mfe"]
@@ -674,13 +878,13 @@ def generate_strategic_rules():
             lines.append(
                 f"{rule_num}. **DIRECTION RIGHT, EXECUTION WRONG**: {dir_acc:.0f}% reach 0.5R+ favorable "
                 f"(avg MFE: {avg_mfe:.2f}R) but win rate is {win_rate:.0f}%. "
-                "Use ATR-based stops (2-3× ATR), bring T1 to nearest structural level."
+                "ACTION: Widen stops by 0.5× ATR and bring T1 closer. The direction is correct — fix the execution."
             )
             rule_num += 1
         elif dir_acc < 40:
             lines.append(
                 f"{rule_num}. **DIRECTION OFTEN WRONG**: Only {dir_acc:.0f}% reach 0.5R favorable. "
-                "Be more selective — prefer setups with 3/4+ TF confluence + volume confirmation."
+                "ACTION: Only trade with 3/4+ TF confluence + volume confirmation. Skip unclear setups."
             )
             rule_num += 1
 
@@ -690,16 +894,48 @@ def generate_strategic_rules():
         avg_candles = st["candles_sum"] / st["total_stops"]
         lines.append(
             f"{rule_num}. **STOPS HIT TOO FAST**: {st['fast_stops']}/{st['total_stops']} stops hit within "
-            f"2 hours (avg {avg_candles:.0f} candles). Use ATR-based stops and wait for 15m confirmation."
+            f"2 hours (avg {avg_candles:.0f} candles). "
+            "ACTION: Use wider ATR-based stops (2.5-3× ATR for intraday). Wait for 15m candle close confirmation."
         )
         rule_num += 1
 
     # --- Target hit rate ---
     ts = stats["target_stats"]
-    if total >= 10 and ts["t1_hits"] < total * 0.2:
+    if total >= 10 and ts["t1_hits"] < total * 0.3:
+        t1_pct = ts["t1_hits"] / total * 100
         lines.append(
-            f"{rule_num}. **T1 RARELY HIT**: Only {ts['t1_hits']}/{total} setups hit T1. "
-            "T1 should be at the nearest structural level (prior S/R, EMA cluster), not a projected move."
+            f"{rule_num}. **T1 HIT RATE LOW**: Only {ts['t1_hits']}/{total} ({t1_pct:.0f}%) setups hit T1. "
+            "ACTION: T1 must be at the nearest real structural level (prior S/R, EMA cluster, order block). "
+            "Not a projected move. If nearest structure gives R:R < 1.5:1, skip the setup."
+        )
+        rule_num += 1
+
+    # --- Per-symbol performance (NEW) ---
+    by_symbol = stats.get("by_symbol", {})
+    # Find consistently winning and losing symbols
+    winning_symbols = []
+    losing_symbols = []
+    for sym, ss in by_symbol.items():
+        if ss["total"] >= 3:
+            wr = ss["wins"] / ss["total"] * 100
+            if wr >= 60:
+                winning_symbols.append((sym, ss["wins"], ss["total"], wr))
+            elif wr == 0:
+                losing_symbols.append((sym, ss["total"]))
+
+    if winning_symbols:
+        winners_str = ", ".join(f"{s[0]} ({s[1]}/{s[2]})" for s in sorted(winning_symbols, key=lambda x: -x[3])[:5])
+        lines.append(
+            f"{rule_num}. **WINNING SYMBOLS**: {winners_str}. "
+            "ACTION: Give these symbols slight priority when they appear in the scan."
+        )
+        rule_num += 1
+
+    if losing_symbols and len(losing_symbols) >= 2:
+        losers_str = ", ".join(f"{s[0]} (0/{s[1]})" for s in sorted(losing_symbols, key=lambda x: -x[1])[:5])
+        lines.append(
+            f"{rule_num}. **LOSING SYMBOLS**: {losers_str}. "
+            "ACTION: Require 4/4 TF confluence + volume confirmed for these symbols. Do not include as filler."
         )
         rule_num += 1
 
@@ -720,9 +956,23 @@ def generate_strategic_rules():
             elif last_wr < prev_wr - 10 and last_wr < 30:
                 lines.append(
                     f"{rule_num}. **DECLINING**: {months[-2]} was {prev_wr:.0f}% → {months[-1]} is {last_wr:.0f}%. "
-                    "Review entry precision and stop placement. Consider ATR-based stops."
+                    "ACTION: Tighten entries and widen stops. Review if market regime changed."
                 )
                 rule_num += 1
+
+    # --- Partial profit model insight ---
+    pp = stats.get("partial_profit", {})
+    pp_total = pp.get("blended_wins", 0) + pp.get("blended_losses", 0)
+    if pp_total >= 10:
+        blended_wr = pp["blended_wins"] / pp_total * 100
+        blended_avg = pp["blended_rr_sum"] / pp_total
+        if blended_wr > win_rate + 5:
+            lines.append(
+                f"{rule_num}. **PARTIAL PROFIT HELPS**: With 50% close at T1 + BE stop, "
+                f"blended WR is {blended_wr:.0f}% (vs raw {win_rate:.0f}%), avg blended R:R {blended_avg:.2f}. "
+                "ACTION: Always recommend taking 50% profit at T1 and moving stop to breakeven."
+            )
+            rule_num += 1
 
     # --- Model comparison ---
     model_stats = stats["by_model"]
@@ -779,14 +1029,27 @@ def generate_recent_performance(all_evals):
     win_rate = len(wins) / len(recent_results) * 100
     avg_rr = sum(r.get("actual_rr", 0) for r in recent_results) / len(recent_results)
 
+    # Blended stats (partial profit model)
+    blended_rrs = [r.get("blended_rr") for r in recent_results if r.get("blended_rr") is not None]
+    blended_wins = sum(1 for b in blended_rrs if b > 0)
+    blended_avg = sum(blended_rrs) / len(blended_rrs) if blended_rrs else avg_rr
+    blended_wr = blended_wins / len(blended_rrs) * 100 if blended_rrs else win_rate
+
     lines = [
         f"# Recent Performance (last {RECENT_WINDOW_WEEKS} weeks)",
         f"_{len(recent_results)} trades: {len(wins)}W / {len(losses)}L "
         f"({win_rate:.0f}% WR, {avg_rr:.2f} avg R:R)_",
+    ]
+    if blended_rrs:
+        lines.append(
+            f"_Partial profit model (50% at T1 + BE stop): "
+            f"{blended_wr:.0f}% WR, {blended_avg:.2f} avg blended R:R_"
+        )
+    lines += [
         "",
         "## Trade-by-Trade (LEARN FROM EACH ONE)",
-        "| Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Exit | MFE |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
 
     # Show all recent trades (capped by the window, not by count)
@@ -801,13 +1064,15 @@ def generate_recent_performance(all_evals):
         tfc = r.get("tf_confluence", "?")
         pred = r.get("predicted_rr", "?")
         actual = r.get("actual_rr", "?")
+        blended = r.get("blended_rr")
+        blended_str = f"{blended}" if blended is not None else "n/a"
         exit_r = r.get("exit_reason", "?")
         mfe = r.get("max_favorable_rr")
         mfe_str = f"{mfe}R" if mfe is not None else "n/a"
         icon = "W" if r.get("won") else "L"
         lines.append(
             f"| {date_str} | {sym} | {d} | {tf} | {st} | {conf} | {tfc}/4 "
-            f"| {pred} | {actual} ({icon}) | {exit_r} | {mfe_str} |"
+            f"| {pred} | {actual} ({icon}) | {blended_str} | {exit_r} | {mfe_str} |"
         )
 
     # Recent patterns
@@ -982,6 +1247,13 @@ def generate_summary(all_evals):
         else:
             prev_wr_str = f"  (unchanged from previous eval: {prev_wr:.1f}%) ⚠️ NO IMPROVEMENT"
 
+    # Blended (partial profit) stats
+    blended_rrs = [r.get("blended_rr") for r in evaluated if r.get("blended_rr") is not None]
+    blended_wins_count = sum(1 for b in blended_rrs if b > 0)
+    blended_avg = sum(blended_rrs) / len(blended_rrs) if blended_rrs else 0
+    blended_wr = blended_wins_count / len(blended_rrs) * 100 if blended_rrs else 0
+    be_stops = sum(1 for r in evaluated if r.get("be_stop_hit"))
+
     lines = [
         "# Performance Summary",
         f"_Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}_",
@@ -995,7 +1267,17 @@ def generate_summary(all_evals):
         f"- Avg actual R:R: {avg_rr:.2f}",
         f"- Avg winning R:R: {avg_win_rr:.2f}",
         f"- Avg losing R:R: {avg_loss_rr:.2f}",
-        "",
+    ]
+    if blended_rrs:
+        lines += [
+            "",
+            "### Partial Profit Model (50% at T1 + BE stop)",
+            f"- **Blended win rate: {blended_wr:.1f}%** ({blended_wins_count}W / {len(blended_rrs) - blended_wins_count}L)",
+            f"- Avg blended R:R: {blended_avg:.2f}",
+            f"- BE stops (T1 hit then reversed to entry): {be_stops}",
+        ]
+    lines.append("")
+    lines += [
         "## Win Rate Trend (per eval run)",
         "This tracks whether recommendations are IMPROVING over time. If not trending up, something needs to change.",
         "",
