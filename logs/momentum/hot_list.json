@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-22T17:55:53.607708+00:00",
+  "generated_utc": "2026-05-22T21:15:08.286745+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
@@ -19,19 +19,19 @@
     },
     {
       "symbol": "ZECUSDT",
-      "flagged_utc": "2026-05-21T05:00:50.864710+00:00",
-      "expires_utc": "2026-05-23T05:00:50.864710+00:00",
+      "flagged_utc": "2026-05-22T21:15:08.286129+00:00",
+      "expires_utc": "2026-05-24T21:15:08.286129+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 671.65,
-      "price_change_24h_pct": 15.606300000000001,
-      "turnover_24h_usd": 348035637.5906,
-      "funding_rate_pct": -0.001868,
-      "open_interest": 239187.29,
-      "volume_acceleration": 1.000000984527446,
-      "price_acceleration_pct": 0.013700000000000045
+      "last_price": 604.18,
+      "price_change_24h_pct": -10.5978,
+      "turnover_24h_usd": 213969554.7166,
+      "funding_rate_pct": 0.01,
+      "open_interest": 241600.07,
+      "volume_acceleration": 1.1893940147302038,
+      "price_acceleration_pct": 2.6719999999999997
     },
     {
       "symbol": "BSBUSDT",
@@ -67,19 +67,19 @@
     },
     {
       "symbol": "NEARUSDT",
-      "flagged_utc": "2026-05-22T17:55:53.607028+00:00",
-      "expires_utc": "2026-05-24T17:55:53.607028+00:00",
+      "flagged_utc": "2026-05-22T21:15:08.286129+00:00",
+      "expires_utc": "2026-05-24T21:15:08.286129+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 2.1846,
-      "price_change_24h_pct": 17.1932,
-      "turnover_24h_usd": 365541484.2426,
-      "funding_rate_pct": -0.00385,
-      "open_interest": 50458818.1,
-      "volume_acceleration": 1.0520009703815378,
-      "price_acceleration_pct": -11.082899999999999
+      "last_price": 2.113,
+      "price_change_24h_pct": 8.4423,
+      "turnover_24h_usd": 396528581.1865,
+      "funding_rate_pct": -0.017068,
+      "open_interest": 52363704.2,
+      "volume_acceleration": 1.0847703975599516,
+      "price_acceleration_pct": -8.750900000000001
     },
     {
       "symbol": "FIDAUSDT",
@@ -99,35 +99,35 @@
     },
     {
       "symbol": "BOBBOBUSDT",
-      "flagged_utc": "2026-05-22T17:55:53.607028+00:00",
-      "expires_utc": "2026-05-24T17:55:53.607028+00:00",
+      "flagged_utc": "2026-05-22T21:15:08.286129+00:00",
+      "expires_utc": "2026-05-24T21:15:08.286129+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.009917,
-      "price_change_24h_pct": 54.25410000000001,
-      "turnover_24h_usd": 50398136.4988,
-      "funding_rate_pct": -0.173051,
-      "open_interest": 172127770.0,
-      "volume_acceleration": 1.2610431409456313,
-      "price_acceleration_pct": -32.924899999999994
+      "last_price": 0.010245,
+      "price_change_24h_pct": 56.4122,
+      "turnover_24h_usd": 56562205.5341,
+      "funding_rate_pct": -1.435874,
+      "open_interest": 190622290.0,
+      "volume_acceleration": 1.122307479274492,
+      "price_acceleration_pct": 2.1580999999999904
     },
     {
       "symbol": "ALTUSDT",
-      "flagged_utc": "2026-05-22T17:55:53.607028+00:00",
-      "expires_utc": "2026-05-24T17:55:53.607028+00:00",
+      "flagged_utc": "2026-05-22T21:15:08.286129+00:00",
+      "expires_utc": "2026-05-24T21:15:08.286129+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.009091,
-      "price_change_24h_pct": 25.5836,
-      "turnover_24h_usd": 37758376.7728,
-      "funding_rate_pct": -0.054844,
-      "open_interest": 442294965.0,
-      "volume_acceleration": 1.1541117030753323,
-      "price_acceleration_pct": -7.588400000000004
+      "last_price": 0.008556,
+      "price_change_24h_pct": 17.285800000000002,
+      "turnover_24h_usd": 41288155.34,
+      "funding_rate_pct": -0.11804,
+      "open_interest": 421690477.0,
+      "volume_acceleration": 1.0934833239373456,
+      "price_acceleration_pct": -8.297799999999999
     }
   ]
 }
