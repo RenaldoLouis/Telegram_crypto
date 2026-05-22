@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-21T21:39:39.202092+00:00",
+  "generated_utc": "2026-05-22T03:57:34.737097+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
@@ -51,19 +51,19 @@
     },
     {
       "symbol": "PROVEUSDT",
-      "flagged_utc": "2026-05-21T21:39:39.201516+00:00",
-      "expires_utc": "2026-05-23T21:39:39.201516+00:00",
+      "flagged_utc": "2026-05-22T03:57:34.736541+00:00",
+      "expires_utc": "2026-05-24T03:57:34.736541+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.3259,
-      "price_change_24h_pct": 39.9914,
-      "turnover_24h_usd": 91297372.2546,
-      "funding_rate_pct": -0.259965,
-      "open_interest": 26918320.0,
-      "volume_acceleration": 1.1058916498456903,
-      "price_acceleration_pct": -0.8862999999999985
+      "last_price": 0.3072,
+      "price_change_24h_pct": 24.5237,
+      "turnover_24h_usd": 113116636.1724,
+      "funding_rate_pct": -0.117404,
+      "open_interest": 29560271.0,
+      "volume_acceleration": 1.2389911492408878,
+      "price_acceleration_pct": -15.467699999999997
     }
   ]
 }
