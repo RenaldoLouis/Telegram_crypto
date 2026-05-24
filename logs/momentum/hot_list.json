@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-23T20:57:31.363918+00:00",
+  "generated_utc": "2026-05-24T03:56:10.598363+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
@@ -35,19 +35,19 @@
     },
     {
       "symbol": "BSBUSDT",
-      "flagged_utc": "2026-05-23T20:57:31.363203+00:00",
-      "expires_utc": "2026-05-25T20:57:31.363203+00:00",
+      "flagged_utc": "2026-05-24T03:56:10.597672+00:00",
+      "expires_utc": "2026-05-26T03:56:10.597672+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 1.1343,
-      "price_change_24h_pct": 17.0346,
-      "turnover_24h_usd": 197963854.4553,
-      "funding_rate_pct": 0.06005,
-      "open_interest": 16298148.0,
-      "volume_acceleration": 0.8886604251823627,
-      "price_acceleration_pct": -64.6641
+      "last_price": 1.2304,
+      "price_change_24h_pct": 4.1123,
+      "turnover_24h_usd": 175176370.0892,
+      "funding_rate_pct": 0.10553699999999999,
+      "open_interest": 15606523.0,
+      "volume_acceleration": 0.8848906815398192,
+      "price_acceleration_pct": -12.9223
     },
     {
       "symbol": "PROVEUSDT",
@@ -67,19 +67,19 @@
     },
     {
       "symbol": "NEARUSDT",
-      "flagged_utc": "2026-05-23T20:57:31.363203+00:00",
-      "expires_utc": "2026-05-25T20:57:31.363203+00:00",
+      "flagged_utc": "2026-05-24T03:56:10.597672+00:00",
+      "expires_utc": "2026-05-26T03:56:10.597672+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 2.4024,
-      "price_change_24h_pct": 14.1228,
-      "turnover_24h_usd": 319870958.5111,
-      "funding_rate_pct": -0.02211,
-      "open_interest": 52887956.2,
-      "volume_acceleration": 1.134731688508896,
-      "price_acceleration_pct": 4.545999999999999
+      "last_price": 2.3884,
+      "price_change_24h_pct": 13.2909,
+      "turnover_24h_usd": 339450677.485,
+      "funding_rate_pct": 0.01,
+      "open_interest": 52043652.2,
+      "volume_acceleration": 1.0612113055372001,
+      "price_acceleration_pct": -0.8318999999999992
     },
     {
       "symbol": "FIDAUSDT",
