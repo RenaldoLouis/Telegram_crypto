@@ -1,21 +1,21 @@
 {
-  "generated_utc": "2026-05-24T03:56:10.598363+00:00",
+  "generated_utc": "2026-05-24T07:25:18.451734+00:00",
   "coins": [
     {
       "symbol": "HYPEUSDT",
-      "flagged_utc": "2026-05-23T13:42:49.923994+00:00",
-      "expires_utc": "2026-05-25T13:42:49.923994+00:00",
+      "flagged_utc": "2026-05-24T07:25:18.451047+00:00",
+      "expires_utc": "2026-05-26T07:25:18.451047+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 55.149,
-      "price_change_24h_pct": -10.7823,
-      "turnover_24h_usd": 651899876.6031,
-      "funding_rate_pct": 0.01,
-      "open_interest": 3804980.08,
-      "volume_acceleration": 0.8844316414337987,
-      "price_acceleration_pct": 4.2499
+      "last_price": 61.381,
+      "price_change_24h_pct": 10.9562,
+      "turnover_24h_usd": 586152486.2506,
+      "funding_rate_pct": -0.011005000000000001,
+      "open_interest": 3894216.46,
+      "volume_acceleration": 1.1205389058221438,
+      "price_acceleration_pct": 3.019400000000001
     },
     {
       "symbol": "ZECUSDT",
@@ -35,19 +35,19 @@
     },
     {
       "symbol": "BSBUSDT",
-      "flagged_utc": "2026-05-24T03:56:10.597672+00:00",
-      "expires_utc": "2026-05-26T03:56:10.597672+00:00",
+      "flagged_utc": "2026-05-24T07:25:18.451047+00:00",
+      "expires_utc": "2026-05-26T07:25:18.451047+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 1.2304,
-      "price_change_24h_pct": 4.1123,
-      "turnover_24h_usd": 175176370.0892,
-      "funding_rate_pct": 0.10553699999999999,
-      "open_interest": 15606523.0,
-      "volume_acceleration": 0.8848906815398192,
-      "price_acceleration_pct": -12.9223
+      "last_price": 1.2782,
+      "price_change_24h_pct": 13.2854,
+      "turnover_24h_usd": 168098851.2737,
+      "funding_rate_pct": 0.132939,
+      "open_interest": 15790202.0,
+      "volume_acceleration": 0.9595977538985646,
+      "price_acceleration_pct": 9.173099999999998
     },
     {
       "symbol": "PROVEUSDT",
@@ -67,19 +67,19 @@
     },
     {
       "symbol": "NEARUSDT",
-      "flagged_utc": "2026-05-24T03:56:10.597672+00:00",
-      "expires_utc": "2026-05-26T03:56:10.597672+00:00",
+      "flagged_utc": "2026-05-24T07:25:18.451047+00:00",
+      "expires_utc": "2026-05-26T07:25:18.451047+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 2.3884,
-      "price_change_24h_pct": 13.2909,
-      "turnover_24h_usd": 339450677.485,
+      "last_price": 2.3874,
+      "price_change_24h_pct": 17.2823,
+      "turnover_24h_usd": 350562678.1388,
       "funding_rate_pct": 0.01,
-      "open_interest": 52043652.2,
-      "volume_acceleration": 1.0612113055372001,
-      "price_acceleration_pct": -0.8318999999999992
+      "open_interest": 52112275.2,
+      "volume_acceleration": 1.0327352437064765,
+      "price_acceleration_pct": 3.9913999999999987
     },
     {
       "symbol": "FIDAUSDT",
@@ -208,6 +208,22 @@
       "open_interest": 198646.03,
       "volume_acceleration": 1.1313028145633122,
       "price_acceleration_pct": 6.5473
+    },
+    {
+      "symbol": "MEUSDT",
+      "flagged_utc": "2026-05-24T07:25:18.451047+00:00",
+      "expires_utc": "2026-05-26T07:25:18.451047+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.10336,
+      "price_change_24h_pct": 7.5434,
+      "turnover_24h_usd": 19090097.5202,
+      "funding_rate_pct": -0.33765599999999996,
+      "open_interest": 27551759.0,
+      "volume_acceleration": 1.0791271156409583,
+      "price_acceleration_pct": -0.8686000000000007
     }
   ]
 }
