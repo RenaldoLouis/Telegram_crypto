@@ -241,22 +241,26 @@ class BybitFetcher:
 
     @staticmethod
     def _load_hot_list():
-        """Load momentum pulse hot list, removing expired entries."""
+        """Load momentum pulse hot list, removing expired entries.
+
+        Returns (active_coins, market_regime_dict_or_None).
+        """
         hot_list_path = Path(config.MOMENTUM_HOT_LIST_PATH)
         if not hot_list_path.exists():
-            return []
+            return [], None
         try:
             data = json.loads(hot_list_path.read_text(encoding="utf-8"))
+            regime = data.get("market_regime")
             now = datetime.now(timezone.utc)
             active = []
             for coin in data.get("coins", []):
                 expires = datetime.fromisoformat(coin["expires_utc"])
                 if expires > now:
                     active.append(coin)
-            return active
+            return active, regime
         except (json.JSONDecodeError, KeyError, ValueError) as e:
             print(f"  Warning: could not load hot list: {e}")
-            return []
+            return [], None
 
     def get_full_market_snapshot(self):
         """Main entry — returns everything Claude needs with multi-TF data.
@@ -274,8 +278,8 @@ class BybitFetcher:
         broad_pool = self.get_top_movers(50)
         print(f"  Fetched {len(broad_pool)} tickers from Bybit")
 
-        # Step 2: Load momentum pulse hot list (dynamic watchlist)
-        hot_coins = self._load_hot_list()
+        # Step 2: Load momentum pulse hot list (dynamic watchlist) + market regime
+        hot_coins, market_regime = self._load_hot_list()
         hot_syms = {coin["symbol"] for coin in hot_coins}
         hot_map = {coin["symbol"]: coin for coin in hot_coins}
         if hot_coins:
@@ -339,4 +343,5 @@ class BybitFetcher:
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             "top_movers": selected_movers,
             "technicals": technicals,
+            "market_regime": market_regime,
         }

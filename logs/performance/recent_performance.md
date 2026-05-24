@@ -1,9 +1,38 @@
 # Recent Performance (last 4 weeks)
-_101 trades: 38W / 63L (38% WR, -0.06 avg R:R)_
+_104 trades: 43W / 61L (41% WR, 0.02 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 39% WR, -0.20 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-05-22 | ADAUSDT | L | intra | trend_pullba | med | 3/4 | 2.0 | -1.0 (L) | -1.0 | stop_loss | 0.83R |
+| 2026-05-22 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 1.7 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
+| 2026-05-22 | SOLUSDT | L | intra | trend_pullba | med | 3/4 | 1.8 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
+| 2026-05-22 | ENAUSDT | L | intra | trend_pullba | med | 3/4 | 2.1 | -1.0 (L) | -1.0 | stop_loss | 1.29R |
+| 2026-05-22 | PENGUUSDT | L | intra | trend_pullba | med | 4/4 | 1.8 | -1.0 (L) | -1.0 | stop_loss | 0.34R |
+| 2026-05-22 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 1.8 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
+| 2026-05-22 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 1.9 | -1.0 (L) | -1.0 | stop_loss | 0.16R |
+| 2026-05-22 | ENAUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.99R |
+| 2026-05-21 | SOLUSDT | L | intra | trend_pullba | med | 3/4 | 1.9 | 0.0 (L) | 0.6 | be_stop | 1.52R |
+| 2026-05-21 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 1.8 | -1.0 (L) | -1.0 | stop_loss | 1.36R |
+| 2026-05-21 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 1.7 | -1.0 (L) | -1.0 | stop_loss | 0.54R |
+| 2026-05-21 | SUIUSDT | L | intra | trend_pullba | med | 3/4 | 1.9 | 0.0 (L) | 0.53 | be_stop | 1.77R |
+| 2026-05-21 | ADAUSDT | L | intra | trend_pullba | low | 2/4 | 1.7 | 0.0 (L) | 0.27 | be_stop | 0.96R |
+| 2026-05-20 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 1.7 | -0.34 (L) | -0.34 | expired | 0.61R |
+| 2026-05-20 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 1.7 | 0.47 (W) | 0.47 | expired | 0.87R |
+| 2026-05-20 | SOLUSDT | L | intra | trend_pullba | med | 2/4 | 1.6 | 0.95 (W) | 0.95 | target_1 | 1.53R |
+| 2026-05-20 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 1.6 | 1.68 (W) | 1.68 | target_1 | 1.72R |
+| 2026-05-20 | ADAUSDT | L | intra | trend_pullba | med | 3/4 | 1.7 | 0.47 (W) | 0.47 | expired | 1.09R |
+| 2026-05-20 | PENGUUSDT | L | intra | trend_pullba | med | 3/4 | 2.5 | 2.66 (W) | 2.11 | target_2 | 2.75R |
+| 2026-05-20 | SOLUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | 1.92 (W) | 1.6 | target_2 | 2.04R |
+| 2026-05-20 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 1.7 | 1.14 (W) | 1.14 | expired | 1.49R |
+| 2026-05-19 | SUIUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
+| 2026-05-19 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 1.52 | -0.7 (L) | -0.7 | expired | 0.3R |
+| 2026-05-19 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 2.1 | -1.0 (L) | -1.0 | stop_loss | 0.36R |
+| 2026-05-19 | ADAUSDT | L | intra | trend_pullba | med | 3/4 | 2.0 | 0.16 (W) | 0.16 | expired | 0.33R |
+| 2026-05-18 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 2.0 | -1.0 (L) | -1.0 | stop_loss | 0.49R |
+| 2026-05-18 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 2.5 | -1.0 (L) | -1.0 | stop_loss | 0.0R |
+| 2026-05-18 | ENAUSDT | L | intra | trend_pullba | med | 3/4 | 2.3 | -0.49 (L) | -0.49 | expired | 0.87R |
 | 2026-05-17 | XRPUSDT | L | intra | trend_pullba | med | 3/4 | 2.1 | -1.0 (L) | n/a | stop_loss | 0.77R |
 | 2026-05-17 | DOGEUSDT | L | intra | trend_pullba | med | 3/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 1.6R |
 | 2026-05-17 | SOLUSDT | L | intra | trend_pullba | med | 2/4 | 2.1 | -1.0 (L) | n/a | stop_loss | 0.47R |
@@ -80,35 +109,9 @@ _101 trades: 38W / 63L (38% WR, -0.06 avg R:R)_
 | 2026-04-28 | XCNUSDT | S | scalp | failed_break | low | 2/4 | 2.1 | -1.0 (L) | n/a | stop_loss | 1.33R |
 | 2026-04-28 | XRPUSDT | L | swing | trend_pullba | low | 2/4 | 1.6 | 0.24 (W) | n/a | expired | 1.11R |
 | 2026-04-28 | ADAUSDT | L | swing | trend_pullba | low | 1/4 | 1.5 | 2.03 (W) | n/a | target_2 | 2.22R |
-| 2026-04-26 | SOLUSDT | L | swing | trend_pullba | med | 3/4 | 2.2 | -1.0 (L) | n/a | stop_loss | 0.0R |
-| 2026-04-26 | ALGOUSDT | L | intra | trend_pullba | low | 3/4 | 2.1 | 1.04 (W) | n/a | target_1 | 1.27R |
-| 2026-04-26 | XRPUSDT | L | intra | trend_pullba | low | 2/4 | 2.1 | -0.67 (L) | n/a | expired | 0.48R |
-| 2026-04-25 | HYPERUSDT | S | intra | failed_break | med | 4/4 | 2.2 | -1.0 (L) | n/a | stop_loss | 0.34R |
-| 2026-04-25 | OPUSDT | L | intra | trend_pullba | med | 3/4 | 2.2 | -1.0 (L) | n/a | stop_loss | 0.13R |
-| 2026-04-25 | GALAUSDT | L | intra | trend_pullba | med | 3/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.28R |
-| 2026-04-25 | ADAUSDT | L | intra | trend_pullba | med | 3/4 | 2.4 | -1.0 (L) | n/a | stop_loss | 1.0R |
-| 2026-04-25 | SOLUSDT | L | swing | trend_pullba | low | 3/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.0R |
-| 2026-04-25 | BTCUSDT | L | swing | trend_pullba | hig | 4/4 | 1.6 | -1.0 (L) | n/a | stop_loss | 0.0R |
-| 2026-04-25 | SOLUSDT | L | swing | trend_pullba | med | 3/4 | 1.3 | -1.0 (L) | n/a | stop_loss | 0.0R |
-| 2026-04-25 | ENJUSDT | L | intra | trend_pullba | hig | 4/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.16R |
-| 2026-04-25 | ARBUSDT | L | intra | trend_pullba | med | 4/4 | 1.4 | -1.0 (L) | n/a | stop_loss | 0.08R |
-| 2026-04-25 | DOGEUSDT | L | intra | range_breako | med | 4/4 | 1.5 | -0.5 (L) | n/a | expired | 1.62R |
-| 2026-04-23 | SPKUSDT | L | swing | trend_pullba | hig | 4/4 | 1.44 | -1.0 (L) | n/a | stop_loss | 0.0R |
-| 2026-04-23 | BIOUSDT | L | swing | trend_pullba | hig | 4/4 | 2.75 | 4.5 (W) | n/a | target_2 | 4.71R |
-| 2026-04-23 | ARBUSDT | L | intra | trend_pullba | med | 4/4 | 2.27 | -1.0 (L) | n/a | stop_loss | 0.05R |
-| 2026-04-22 | SOLUSDT | L | swing | trend_pullba | med | 4/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.29R |
-| 2026-04-22 | ETHUSDT | L | swing | trend_pullba | med | 4/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.54R |
-| 2026-04-22 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.32R |
-| 2026-04-22 | XRPUSDT | L | intra | trend_pullba | med | 4/4 | 2.1 | -0.37 (L) | n/a | expired | 0.38R |
-| 2026-04-22 | 1000PEPEUS | L | intra | trend_pullba | low | 4/4 | 2.0 | -1.0 (L) | n/a | stop_loss | 0.17R |
-| 2026-04-22 | ETHUSDT | L | swing | trend_pullba | hig | 4/4 | 2.2 | -1.0 (L) | n/a | stop_loss | 0.49R |
-| 2026-04-22 | XRPUSDT | L | intra | trend_pullba | hig | 4/4 | 2.0 | 0.08 (W) | n/a | expired | 0.22R |
-| 2026-04-22 | SOLUSDT | L | swing | trend_pullba | hig | 4/4 | 2.2 | -1.0 (L) | n/a | stop_loss | 0.31R |
-| 2026-04-22 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 2.0 | -0.54 (L) | n/a | expired | 0.6R |
 
-- Recent 'trend_pullback': 36/92 (39% WR)
-- Recent 'range_breakout': 1/2 (50% WR)
-- Recent 'failed_breakout': 0/3 (0% WR)
+- Recent 'trend_pullback': 41/97 (42% WR)
+- Recent 'failed_breakout': 0/2 (0% WR)
 - Recent 'post_liquidation': 0/3 (0% WR)
 
 ## Trader's Recent Actual Trades

@@ -19,8 +19,22 @@ class ClaudeAnalyzer:
                 entry[tf_label] = indicators
             compact_technicals.append(entry)
 
-        user_content = f"""# Market Data ({market_snapshot['timestamp_utc']})
+        # Build regime context (only when non-neutral to save tokens)
+        regime_section = ""
+        regime = market_snapshot.get("market_regime")
+        if regime and regime.get("regime") != "neutral":
+            m = regime.get("metrics", {})
+            regime_section = (
+                f"\n## Market Regime: {regime['regime'].upper()}\n"
+                f"- {m.get('pct_declining', '?')}% of top 50 coins declining\n"
+                f"- BTC 24h: {m.get('btc_change_pct', '?')}%\n"
+                f"- Median 24h: {m.get('median_change_pct', '?')}%\n"
+                f"- Avg funding: {m.get('avg_funding_pct', '?')}%\n"
+                f"- Coins >5% decline: {m.get('large_decline_count', '?')}\n"
+            )
 
+        user_content = f"""# Market Data ({market_snapshot['timestamp_utc']})
+{regime_section}
 ## Top Movers ({len(market_snapshot['top_movers'])} pre-filtered by turnover + interest score)
 ```json
 {json.dumps(market_snapshot['top_movers'], separators=(',', ':'))}

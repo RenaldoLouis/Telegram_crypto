@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-05-23T07:40:07.019938+00:00",
+  "run_tag": "20260523_0740",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.328,
+      "entry_high": 1.34,
+      "stop_loss": 1.305,
+      "target_1": 1.365,
+      "target_2": 1.385,
+      "predicted_rr": 1.6,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "SUIUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.01,
+      "entry_high": 1.025,
+      "stop_loss": 0.99,
+      "target_1": 1.042,
+      "target_2": 1.065,
+      "predicted_rr": 1.6,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false
+    }
+  ]
+}

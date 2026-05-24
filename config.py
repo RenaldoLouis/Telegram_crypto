@@ -50,3 +50,18 @@ MOMENTUM_FUNDING_EXTREME_PCT = 0.05      # Flag if |funding| > this %
 MOMENTUM_FUNDING_MOVE_PCT = 3.0          # ... AND price moving > this %
 MOMENTUM_HOT_LIST_PATH = "logs/momentum/hot_list.json"
 MOMENTUM_SNAPSHOT_PATH = "logs/momentum/last_snapshot.json"
+
+# === Market Regime Detection ===
+REGIME_BEARISH_DECLINE_PCT = 70        # % of tickers declining to trigger risk_off
+REGIME_BEARISH_MEDIAN_CHANGE = -2.0    # median change threshold for risk_off
+REGIME_BEARISH_BTC_CHANGE = -4.0       # BTC change alone triggers risk_off
+REGIME_BEARISH_COMBO_DECLINE = 60      # softer decline % when combined with BTC drop
+REGIME_BEARISH_COMBO_BTC = -3.0        # softer BTC threshold when combined with decline %
+REGIME_BULLISH_DECLINE_PCT = 30        # % declining ceiling for risk_on
+REGIME_BULLISH_MEDIAN_CHANGE = 2.0     # median change threshold for risk_on
+REGIME_BULLISH_BTC_CHANGE = 4.0        # BTC change alone triggers risk_on
+REGIME_BULLISH_COMBO_DECLINE = 40
+REGIME_BULLISH_COMBO_BTC = 3.0
+
+# Minimum trades before "avoid direction" rule becomes hard
+DIRECTION_RULE_MIN_TRADES = 15

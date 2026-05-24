@@ -62,5 +62,21 @@
     "losses": 63,
     "win_rate": 37.6,
     "avg_rr": -0.06
+  },
+  {
+    "date": "2026-05-22 08:23 UTC",
+    "total_evaluated": 116,
+    "wins": 46,
+    "losses": 70,
+    "win_rate": 39.7,
+    "avg_rr": -0.02
+  },
+  {
+    "date": "2026-05-24 09:37 UTC",
+    "total_evaluated": 129,
+    "wins": 46,
+    "losses": 83,
+    "win_rate": 35.7,
+    "avg_rr": -0.09
   }
 ]

@@ -758,9 +758,10 @@ def generate_strategic_rules():
                 )
                 rule_num += 1
 
-    # --- Direction performance (NEW) ---
+    # --- Direction performance ---
     for direction, ds in stats.get("by_direction", {}).items():
-        if ds["total"] >= 3:
+        if ds["total"] >= config.DIRECTION_RULE_MIN_TRADES:
+            # Enough data for hard rules
             wr = ds["wins"] / ds["total"] * 100
             if wr == 0:
                 lines.append(
@@ -768,12 +769,35 @@ def generate_strategic_rules():
                     f"ACTION: Avoid {direction} setups until market conditions change. Only include if 4/4 TF confluence."
                 )
                 rule_num += 1
-            elif wr < 15 and ds["total"] >= 10:
+            elif wr < 15:
                 lines.append(
                     f"{rule_num}. **{direction.upper()} UNDERPERFORMING**: {ds['wins']}/{ds['total']} ({wr:.0f}% WR). "
                     f"ACTION: Be extra selective with {direction} setups — require 3/4+ TF confluence + volume confirmation."
                 )
                 rule_num += 1
+        elif ds["total"] >= 3:
+            # Small sample — informational only, do NOT block the direction
+            wr = ds["wins"] / ds["total"] * 100
+            if wr == 0:
+                lines.append(
+                    f"{rule_num}. **{direction.upper()} NEEDS DATA**: 0/{ds['total']} {direction} trades won, "
+                    f"but sample is too small ({ds['total']} trades, need {config.DIRECTION_RULE_MIN_TRADES}+). "
+                    f"ACTION: Include {direction} setups when the market regime supports it and structure is clear. "
+                    f"Do NOT avoid {direction} based on this small sample."
+                )
+                rule_num += 1
+
+    # Directional blind spot: flag if one direction is massively underrepresented
+    short_stats = stats.get("by_direction", {}).get("short", {})
+    long_stats = stats.get("by_direction", {}).get("long", {})
+    if short_stats.get("total", 0) < 10 and long_stats.get("total", 0) > 30:
+        lines.append(
+            f"{rule_num}. **DIRECTIONAL BLIND SPOT**: Only {short_stats.get('total', 0)} short trades "
+            f"vs {long_stats.get('total', 0)} long trades in history. "
+            f"ACTION: When the market regime is RISK_OFF, actively consider short setups to build data. "
+            f"Do not default to longs in a declining market."
+        )
+        rule_num += 1
 
     # --- Setup type rules ---
     best_type = None
