@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-05-24T17:06:30.145391+00:00",
+  "generated_utc": "2026-05-24T21:00:22.879007+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 20.0,
-      "median_change_pct": 1.18,
-      "btc_change_pct": 1.69,
-      "avg_funding_pct": -0.003,
-      "large_decline_count": 4
+      "pct_declining": 68.0,
+      "median_change_pct": -2.59,
+      "btc_change_pct": -0.89,
+      "avg_funding_pct": -0.0103,
+      "large_decline_count": 13
     },
-    "detected_utc": "2026-05-24T17:06:30.144824+00:00",
-    "previous_regime": "risk_on"
+    "detected_utc": "2026-05-24T21:00:22.878421+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
