@@ -36,14 +36,16 @@ main.py  (orchestrator, async)
   │
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
   │
-  ├── analyzer/prompts.py          → SYSTEM_PROMPT + load_knowledge() + performance feedback
-  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, compact JSON
+  ├── analyzer/prompts.py          → SYSTEM_PROMPT + load_knowledge() + performance feedback + regime awareness
+  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, compact JSON, regime injection
   │
   ├── delivery/telegram_bot.py     → MD→HTML converter, smart chunking, retry with backoff
   │
   ├── momentum_pulse.py            → Lightweight momentum detector (runs every 4h on GitHub Actions)
   │                                    Fetches 50 tickers, detects acceleration vs previous snapshot,
   │                                    flags coins to hot_list.json, sends Telegram alert. Zero Claude tokens.
+  │                                    detect_market_regime() → classifies market as risk_off/neutral/risk_on
+  │                                    Sends regime change alerts to Telegram. Regime saved in hot_list.json.
   │
   ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation,
   │                                    simulated T1 backtest, per-symbol tracking, prescriptive rules
@@ -55,8 +57,8 @@ main.py  (orchestrator, async)
         ├── setups/*.json          → Structured setup JSONs (with model name)
         ├── evaluations/*.json     → Scored results (win/loss, actual R:R, MFE, simulated T1)
         ├── momentum/
-        │     ├── hot_list.json    → Active momentum-flagged coins (dynamic watchlist)
-        │     └── last_snapshot.json → Previous pulse data (for delta detection)
+        │     ├── hot_list.json    → Active momentum-flagged coins + market regime (dynamic watchlist)
+        │     └── last_snapshot.json → Previous pulse data + regime (for delta detection)
         └── performance/
               ├── lifetime_stats.json    → Layer 1: Incremental running counters (incl. by_symbol, simulated_t1)
               ├── strategic_rules.md     → Layer 2: Prescriptive rules from all history (~600-800 tokens, sent to Claude)
@@ -68,12 +70,12 @@ main.py  (orchestrator, async)
 
 ### Data Flow
 
-0. Every 4h: `momentum_pulse.py` (GitHub Actions) → fetches 50 tickers, detects acceleration vs previous snapshot → flags coins to `logs/momentum/hot_list.json` → Telegram alert
+0. Every 4h: `momentum_pulse.py` (GitHub Actions) → fetches 50 tickers, detects acceleration vs previous snapshot → flags coins to `logs/momentum/hot_list.json` + classifies market regime (`risk_off`/`neutral`/`risk_on`) → Telegram alert (regime changes + new flags)
 1. `BybitFetcher.get_top_movers(50)` → 50 tickers by turnover (single API call)
-2. `_load_hot_list()` → loads momentum pulse hot list (dynamic watchlist, 48h expiry)
+2. `_load_hot_list()` → loads momentum pulse hot list (dynamic watchlist, 48h expiry) + market regime
 3. `_ticker_interest_score()` → disqualify illiquid (<$10M vol, <$50M OI), score rest + volume acceleration bonus for hot list coins
 4. Keep top 25 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 25 = 100 kline calls)
-5. `ClaudeAnalyzer.analyze(market, messages)` → readable brief + `setups_json` block
+5. `ClaudeAnalyzer.analyze(market, messages)` → injects market regime into user content (when non-neutral) → readable brief + `setups_json` block
 6. `main.py` parses JSON block → saves to `logs/setups/` (includes model name)
 7. Clean brief (JSON stripped) → archived to `logs/briefs/` + delivered via Telegram
 8. Weekly: `weekly_eval.py` scores past setups (incl. simulated closer-T1 backtest) → updates tiered knowledge:
@@ -104,13 +106,25 @@ Runs on ticker-level data before any kline fetching. Rules from knowledge files:
 Runs every 4 hours on GitHub Actions. Zero Claude tokens, single Bybit API call per run.
 Detects intra-day momentum that the nightly scan would miss.
 
-**Detection criteria** (any one triggers a flag):
+**Per-coin detection criteria** (any one triggers a flag):
 - **Big move**: >8% price change AND >$200M turnover
 - **Volume acceleration**: turnover >3x the previous pulse (4h earlier)
 - **Funding squeeze**: |funding| >0.05% AND price moving >3%
 
 Flagged coins are saved to `logs/momentum/hot_list.json` (48h expiry) and included as a
 dynamic watchlist in the next main scan. A Telegram alert is sent immediately for new flags.
+
+**Market regime detection** (aggregate, from the same 50-ticker data):
+- Classifies overall market as `risk_off`, `neutral`, or `risk_on`
+- Metrics: % of coins declining, median 24h change, BTC 24h change, avg funding rate, large decline count
+- Classification thresholds (tunable in config):
+  - `risk_off`: (≥70% declining AND median ≤ -2%) OR (BTC ≤ -4%) OR (≥60% declining AND BTC ≤ -3%)
+  - `risk_on`: (≤30% declining AND median ≥ +2%) OR (BTC ≥ +4%) OR (≤40% declining AND BTC ≥ +3%)
+  - `neutral`: everything else
+- Regime saved in `hot_list.json` (read by main scan) and `last_snapshot.json` (for transition detection)
+- Telegram alert sent on regime transitions (e.g., neutral → risk_off)
+- During `risk_off`: Claude is instructed to be skeptical of longs and actively look for short setups
+- During `risk_on`: Claude favors trend-following longs, shorts only with clear distribution
 
 ---
 
@@ -208,10 +222,10 @@ python quarterly_analysis.py
 ### Files That Should NOT Drift Without Discussion
 
 - `analyzer/prompts.py` → risk framework, R:R floor, output format, JSON schema
-- `config.py` → model choice, token limits, scan limits, momentum pulse thresholds
+- `config.py` → model choice, token limits, scan limits, momentum pulse thresholds, regime detection thresholds
 - `weekly_eval.py` → evaluation logic, scoring rules, strategic rules generator, simulated T1 backtest
 - `bybit_data.py::_ticker_interest_score()` → pre-filter rules tied to knowledge
-- `momentum_pulse.py` → momentum detection criteria, hot list expiry
+- `momentum_pulse.py` → momentum detection criteria, hot list expiry, regime detection logic
 - `.github/workflows/momentum_pulse.yml` → GitHub Actions schedule, secrets mapping
 
 ---
@@ -262,7 +276,9 @@ Instead of sending all historical data to Claude every run (which would grow unb
 - "AVOID SWING: 11% WR. ACTION: Do not recommend swing setups."
 - "WINNING SYMBOLS: DOGEUSDT (4/6). ACTION: Give priority when in scan."
 
-Rules cover: selectivity, confidence calibration, timeframe/direction performance, setup types, rank anomalies, T1 placement (MFE-based), per-symbol patterns, stop timing, model comparison.
+Rules cover: selectivity, confidence calibration, timeframe/direction performance, setup types, rank anomalies, T1 placement (MFE-based), per-symbol patterns, stop timing, model comparison, directional blind spots.
+
+**Direction rule safeguard**: "Avoid direction" rules require 15+ trades (`DIRECTION_RULE_MIN_TRADES`) before becoming hard rules. With fewer trades, the rule says "NEEDS DATA" instead of "avoid" — this prevents a self-reinforcing feedback loop where a direction (e.g., shorts) gets permanently blocked by a statistically insignificant sample size.
 
 **Layer 3** (`recent_performance.md`): Rolling 4-week window of individual trade outcomes. Gives Claude fresh context about what's working NOW without unbounded growth. Old trades fall off automatically.
 
@@ -312,3 +328,5 @@ See `progress.md` for:
 - **Momentum pulse**: lightweight scanner (`momentum_pulse.py`) that runs every 4h on GitHub Actions. Fetches 50 tickers, compares against previous snapshot to detect volume/price acceleration. Zero Claude tokens. Flags coins to `logs/momentum/hot_list.json`.
 - **Hot list**: dynamic watchlist generated by the momentum pulse. Coins flagged for big moves, volume acceleration, or funding squeezes. Entries expire after 48h. Main scan merges hot list into watchlist automatically.
 - **Volume acceleration**: ratio of a coin's current turnover vs its turnover at the previous pulse (4h earlier). >3x triggers a flag. >2x gives a scoring bonus in the pre-filter. Detects coins that are ramping up before they appear in the top 50 by absolute turnover.
+- **Market regime**: overall market classification detected by the momentum pulse from 50-ticker aggregate data. Three states: `risk_off` (broad sell-off, favor shorts), `neutral` (no directional bias), `risk_on` (broad rally, favor longs). Saved in `hot_list.json` and injected into Claude's user content when non-neutral.
+- **Risk off / Risk on**: market regime labels. `risk_off` = bearish (≥70% declining or BTC ≤ -4%), Claude prioritizes shorts and limits to 2 setups max. `risk_on` = bullish (≤30% declining or BTC ≥ +4%), Claude favors trend-following longs.

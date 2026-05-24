@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-05-21 (v5)_
+_Last updated: 2026-05-24 (v6)_
 
 ---
 
@@ -13,13 +13,14 @@ Momentum Pulse (every 4h, GitHub Actions, free)
     → Bybit API: fetch 50 tickers (single call)
     → Compare vs previous snapshot → detect volume/price acceleration
     → Flag coins: big move (>8% + >$200M), vol accel (>3x), funding squeeze
-    → Save to logs/momentum/hot_list.json (48h expiry)
-    → Telegram alert for new flags
+    → Market regime detection: risk_off / neutral / risk_on (from 50-ticker aggregate)
+    → Save to logs/momentum/hot_list.json (48h expiry + regime)
+    → Telegram alert: regime changes + new coin flags
     ↓
 Bybit API (50 tickers, single call)
     ↓
 Python pre-filter (knowledge-based scoring, free)
-    → Load hot list (dynamic watchlist from pulse)
+    → Load hot list (dynamic watchlist from pulse) + market regime
     → Disqualify: <$10M turnover or <$50M OI
     → Score by: price action, funding extremes, liquidity, OI+move combos
     → Volume acceleration bonus: hot list coins get +2 (>2x) or +4 (>5x)
@@ -29,6 +30,7 @@ Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
     → RSI(14), EMA 20/50, volume spike ratio, breakout flags per TF
     ↓
 Claude (Sonnet 4.6 daily) analyzes as professional trader
+    → Market regime awareness: risk_off → favor shorts, risk_on → favor longs
     → Professional trader mindset (don't chase, trap awareness, realistic targets)
     → Multi-TF confluence scoring (4/4=High, 3/4=Medium, 2/4=Low)
     → R:R floor: 1.5:1 minimum (lowered from 2:1 based on 98-trade backtest)
@@ -68,13 +70,13 @@ Quarterly deep analysis (quarterly_analysis.py, run every ~3 months)
 | File | Lines | Purpose |
 |---|---|---|
 | `main.py` | 88 | Orchestrator — fetch → analyze → parse JSON → archive → deliver |
-| `config.py` | 51 | Settings: API keys, model, limits, timeframes, watchlist, momentum thresholds |
-| `fetchers/bybit_data.py` | 340 | Bybit API: 50 tickers → scoring + hot list → top 25 → multi-TF klines |
+| `config.py` | 67 | Settings: API keys, model, limits, timeframes, watchlist, momentum + regime thresholds |
+| `fetchers/bybit_data.py` | 345 | Bybit API: 50 tickers → scoring + hot list + regime → top 25 → multi-TF klines |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 60 | Professional trader prompt + knowledge + tiered performance feedback |
+| `analyzer/prompts.py` | 75 | Professional trader prompt + knowledge + tiered performance feedback + regime awareness |
 | `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `momentum_pulse.py` | 170 | Lightweight momentum detector — runs every 4h on GitHub Actions (zero Claude tokens) |
+| `momentum_pulse.py` | 385 | Momentum detector + market regime detection — runs every 4h on GitHub Actions (zero Claude tokens) |
 | `weekly_eval.py` | 1630 | Evaluation engine + BE stop/partial profit model + tiered knowledge distillation |
 | `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
@@ -91,8 +93,8 @@ logs/
   trades/
     my_trades.json → Manual trade log with notes/lessons (user-edited)
   momentum/
-    hot_list.json      → Active momentum-flagged coins (dynamic watchlist, 48h expiry)
-    last_snapshot.json  → Previous pulse data (for delta detection between runs)
+    hot_list.json      → Active momentum-flagged coins + market regime (dynamic watchlist, 48h expiry)
+    last_snapshot.json  → Previous pulse data + regime (for delta + regime transition detection)
   performance/
     lifetime_stats.json    → Layer 1: Incremental running counters (backing data, not sent to Claude)
     strategic_rules.md     → Layer 2: Compact algorithmic rules (~500 tokens, sent to Claude)
@@ -196,7 +198,7 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 ### Key Diagnosis
 1. **Direction is right (65% reach 0.5R+ MFE)** but targets too far — execution problem, not analysis problem. R:R floor lowered from 2:1 to 1.5:1 to allow realistic T1 placement.
 2. **High confidence is miscalibrated**: 22% WR vs medium at 41%. Flagged in strategic rules.
-3. **Swing trades failing**: 11% WR (1/9). Short trades: 0% WR (0/3). Both flagged to avoid.
+3. **Swing trades failing**: 11% WR (1/9), flagged to avoid. Short trades: 0% WR (0/3), but sample too small — v6 fixed the feedback loop that permanently blocked shorts. Now requires 15+ trades before "avoid" rule.
 4. **Rank #2 outperforms #1**: 48% vs 32% WR. Ranking criteria flagged for review.
 5. **T1 hit rate at 33%** but simulated backtest shows 76% at 0.75R, 62% at 1.0R — proving targets are the bottleneck.
 6. **Partial profit model introduced**: 50% at T1 + BE stop should convert many "direction right, target missed" losses into breakeven or small wins. Data will accumulate from next eval run.
@@ -255,6 +257,49 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-05-24 (v6) — Market Regime Detection + Short Enablement
+
+**Problem**: May 21-22 produced 13 consecutive long-only trades that ALL hit stop loss (-1.0R each). The market reversed into a broad sell-off after a strong May 20, but the system had no concept of overall market direction — it analyzed each coin in isolation and kept recommending longs into a falling market. Additionally, a self-reinforcing feedback loop permanently blocked shorts: only 3 shorts were ever recommended (0% WR on tiny sample), so `strategic_rules.md` said "Avoid short setups", preventing Claude from ever trying shorts, preventing shorts from accumulating data.
+
+**3 Features**:
+
+**1. Market Regime Detection** (`momentum_pulse.py`, `config.py`)
+- New `detect_market_regime()` function aggregates the same 50 tickers already fetched (zero extra API calls)
+- Classifies market as `risk_off` (bearish), `neutral`, or `risk_on` (bullish) using 5 aggregate metrics:
+  - % of coins declining (breadth), median 24h change, BTC 24h change, avg funding rate, large decline count
+- Classification thresholds (tunable in config):
+  - `risk_off`: ≥70% declining AND median ≤ -2%, OR BTC ≤ -4%, OR ≥60% declining AND BTC ≤ -3%
+  - `risk_on`: ≤30% declining AND median ≥ +2%, OR BTC ≥ +4%, OR ≤40% declining AND BTC ≥ +3%
+- Regime saved in both `hot_list.json` (for main scan) and `last_snapshot.json` (for transition detection)
+- Telegram alert sent on regime transitions (e.g., "MARKET REGIME: NEUTRAL → RISK OFF")
+- Coin-level alerts now show current regime context when non-neutral
+
+**2. Regime-Aware Analysis** (`analyzer/prompts.py`, `analyzer/claude_client.py`, `fetchers/bybit_data.py`)
+- `_load_hot_list()` now returns `(coins, market_regime)` tuple
+- `get_full_market_snapshot()` passes `market_regime` through to Claude
+- `claude_client.py` injects a "Market Regime" section into user content when non-neutral (~100 tokens)
+- System prompt gains "Market Regime Awareness" instructions (~200 tokens, cached):
+  - **RISK_OFF**: Be skeptical of longs (require 4/4 TF confluence), actively look for shorts, max 2 setups
+  - **RISK_ON**: Favor trend-following longs, shorts only with clear distribution
+  - **NEUTRAL** (no section): Standard analysis without directional bias
+
+**3. Short Avoidance Feedback Loop Fix** (`weekly_eval.py`, `config.py`)
+- Direction "avoid" rules now require `DIRECTION_RULE_MIN_TRADES = 15` trades (was 3)
+- With <15 trades and 0% WR: rule says "NEEDS DATA — do NOT avoid based on small sample" instead of "Avoid"
+- New "DIRECTIONAL BLIND SPOT" rule: when shorts <10 and longs >30, explicitly tells Claude to consider shorts during RISK_OFF to build data
+- This breaks the permanent lock-out cycle: 3 losing shorts → "avoid shorts" → never try shorts → shorts stay at 0%
+
+**Config additions** (`config.py`):
+- `REGIME_BEARISH_DECLINE_PCT = 70`, `REGIME_BEARISH_MEDIAN_CHANGE = -2.0`, `REGIME_BEARISH_BTC_CHANGE = -4.0`
+- `REGIME_BEARISH_COMBO_DECLINE = 60`, `REGIME_BEARISH_COMBO_BTC = -3.0`
+- `REGIME_BULLISH_DECLINE_PCT = 30`, `REGIME_BULLISH_MEDIAN_CHANGE = 2.0`, `REGIME_BULLISH_BTC_CHANGE = 4.0`
+- `REGIME_BULLISH_COMBO_DECLINE = 40`, `REGIME_BULLISH_COMBO_BTC = 3.0`
+- `DIRECTION_RULE_MIN_TRADES = 15`
+
+**Cost impact**: ~+30-200 tokens per run (regime prompt is cached; data section only injected when non-neutral). Well below the 2x threshold. Regime detection itself is zero cost (uses same Bybit data already fetched). GitHub Actions workflow unchanged.
+
+**Expected impact**: During the May 21-22 sell-off, the regime detector would have classified the market as `risk_off` (BTC dropped >4%, >70% of coins declining). Claude would have been instructed to limit to 2 setups, be skeptical of longs, and actively look for shorts — instead of producing 13 long-only setups that all hit stop loss.
 
 ### 2026-05-21 (v5) — Momentum Pulse: Intra-Day Momentum Detection via GitHub Actions
 
@@ -596,14 +641,17 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
-- [ ] Add GitHub secrets (BYBIT_API_KEY, BYBIT_API_SECRET, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID) and push to enable pulse
-- [ ] Monitor momentum pulse alerts for 1 week — verify thresholds catch real opportunities without spam
-- [ ] Verify hot list integration: run `scan` and confirm "Hot list: N active coins" prints in output
-- [ ] Run `quarterly-scan` — 101 trades is enough for deep pattern analysis
-- [ ] Run 2-3 eval cycles to populate blended_rr data with new BE stop + partial profit model
+- [ ] Run `eval-scan` to regenerate `strategic_rules.md` with new direction rules (NEEDS DATA + BLIND SPOT)
+- [ ] Run `scan` during a market sell-off to verify regime detection triggers and Claude recommends shorts
+- [ ] Monitor regime alerts on Telegram — verify transitions are detected without false positives
+- [ ] Verify hot list integration includes regime: run `scan` and confirm market regime printed in output
+- [ ] Run `quarterly-scan` — 129 trades is enough for deep pattern analysis
 - [ ] Compare blended WR vs raw WR after new data comes in — validate that partial profit model shows edge
 - [ ] Monitor if 1.5:1 R:R floor lets Claude set more realistic T1 levels (T1 hit rate should increase from 33%)
 - [ ] Review per-symbol stats — XRPUSDT (67% WR) and SOLUSDT (0/3) trends continue?
+- [x] **Market regime detection** — risk_off/neutral/risk_on from 50-ticker aggregate, zero extra API calls (v6)
+- [x] **Regime-aware analysis** — Claude instructed per regime: shorts during risk_off, longs during risk_on (v6)
+- [x] **Short avoidance feedback loop fix** — direction rules require 15+ trades, NEEDS DATA for small samples (v6)
 - [x] **Momentum pulse scanner** — intra-day momentum detection every 4h on GitHub Actions, zero Claude cost (v5)
 - [x] **Dynamic watchlist (hot list)** — pulse-flagged coins auto-included in main scan (v5)
 - [x] **Volume acceleration bonus** — hot list coins get +2/+4 pre-filter scoring bonus (v5)
