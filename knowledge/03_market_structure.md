@@ -111,6 +111,20 @@ Every market moves through the same four phases. Identifying which phase you're 
 - Broken resistance becomes support.
 - This "flip" is one of the highest-probability re-entry zones.
 
+### Fibonacci Retracement Levels
+- Measured from a significant swing low to swing high (uptrend) or swing high to swing low (downtrend).
+- Key levels:
+  - **0.382 (38.2%)**: shallow retracement — strong trend, buyers/sellers stepping in early.
+  - **0.5 (50%)**: midpoint — not a true Fibonacci number but widely watched.
+  - **0.618 (61.8%) — the "Golden Pocket"**: the most important retracement level. Institutional re-accumulation zone. Where the strongest pullback entries occur.
+  - **0.786 (78.6%)**: deep retracement — last stand before full reversal. If this breaks, the move is likely fully retraced.
+- **Golden pocket zone (0.618–0.65)**: the highest-probability reversal area. When price retraces to this zone after an impulsive move, expect a strong reaction. Use as:
+  - Target for mean reversion / exhaustion setups (e.g., Setup 8 ATH Exhaustion T1)
+  - Entry zone for trend continuation after a pullback
+- **How to draw**: identify the swing low that initiated the move and the swing high where it ended. Apply Fibonacci from low to high (uptrend) or high to low (downtrend). The tool measures the percentage retracement between those points.
+- **In crypto**: Fibonacci levels are self-fulfilling because so many participants watch them. The golden pocket is especially reliable on 4H and 1D timeframes.
+- **Confluence**: a Fibonacci level that aligns with horizontal S/R, an EMA, or an order block is significantly stronger than a standalone Fibonacci level.
+
 ---
 
 ## Candlestick Patterns That Matter

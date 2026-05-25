@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-05-24 (v6)_
+_Last updated: 2026-05-25 (v7)_
 
 ---
 
@@ -257,6 +257,41 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-05-25 (v7) — ATH/ATL Exhaustion Setup + Fibonacci Framework + Short Unblock Fix
+
+**Problem**: HYPEUSDT hit ATH at ~$63 with RSI overbought across all 4 timeframes (83/79/64/74). The system correctly detected it via momentum pulse (big_move flag, $711M turnover) and included it in the May 24 scan. Claude flagged it as "DO NOT CHASE" in Risk Flags — but only warned against longs. It did NOT recommend a short, despite textbook exhaustion signals at ATH. HYPE subsequently fell toward the golden pocket (~$35.30). Root cause: (1) `strategic_rules.md` had stale "Avoid short setups" rule from before the v6 safeguard was added — the eval was never re-run to regenerate it; (2) no setup in the playbook covered ATH exhaustion reversals; (3) no Fibonacci retracement framework existed for target placement.
+
+**3 Fixes**:
+
+**1. Strategic Rules Regenerated** (`strategic_rules.md` — user ran `eval-scan`)
+- Rule 3 changed from "NO SHORT WINS: Avoid short setups" (hard block) to "SHORT NEEDS DATA: Do NOT avoid short based on this small sample" (permissive)
+- New Rule 4: "DIRECTIONAL BLIND SPOT: Only 3 short trades vs 126 long trades. ACTION: When market regime is RISK_OFF, actively consider short setups to build data"
+- The v6 safeguard code was correct (`DIRECTION_RULE_MIN_TRADES = 15`, 3 trades < 15 → "NEEDS DATA"), but the rules file was stale from before v6. Re-running eval-scan regenerated it properly.
+
+**2. Setup 8: ATH/ATL Exhaustion Reversal** (`knowledge/06_setup_playbook.md`)
+- Replaced the empty Setup 8 slot with a complete exhaustion reversal setup
+- Criteria: price at ATH + RSI >75 on 2+ TFs + volume divergence + rejection candle + parabolic approach
+- Entry: on rejection confirmation (shooting star, bearish engulfing), never before the turn
+- Stop: above ATH wick extreme + 0.5-1% buffer
+- T1: 0.618 Fibonacci golden pocket of the swing that produced the ATH
+- T2: 0.786 Fibonacci or prior 4H/1D structure support
+- Confidence boosters: crowded funding (>0.03%), 3/4+ TF overbought, BTC divergence
+- Includes ATL mirror for long setups (inverse logic)
+- Explicit safeguard: "This is NOT 'shorting because it went up a lot'" — requires multi-TF exhaustion confirmation
+- Updated "Setups to AVOID" #2 to reference Setup 8 exception
+
+**3. Fibonacci Retracement Framework** (`knowledge/03_market_structure.md`)
+- Added "Fibonacci Retracement Levels" subsection under Support & Resistance
+- Key levels documented: 0.382, 0.5, 0.618 (golden pocket), 0.786 with descriptions
+- Golden pocket zone (0.618–0.65) highlighted as highest-probability reversal area
+- Usage: target for mean reversion setups (Setup 8 T1), entry zone for trend pullbacks
+- How to draw, crypto-specific reliability (self-fulfilling), confluence rules
+- Cross-references Setup 8 for target usage
+
+**Cost impact**: Zero. Changes are in knowledge files that are already loaded every run (~16.7k tokens cached). Setup 8 adds ~400 tokens to the knowledge section, well within the existing cached block.
+
+**Expected impact**: On the HYPE scenario specifically — Claude would now: (1) not be blocked from shorts by strategic rules, (2) match HYPE's multi-TF overbought RSI + ATH against Setup 8 criteria, (3) recommend a short with T1 at the 0.618 golden pocket (~$35.30), (4) set stop above the ATH wick with tight risk. More broadly, any coin hitting ATH/ATL with exhaustion signals will now be a candidate for mean reversion setups.
 
 ### 2026-05-24 (v6) — Market Regime Detection + Short Enablement
 
@@ -641,14 +676,18 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
-- [ ] Run `eval-scan` to regenerate `strategic_rules.md` with new direction rules (NEEDS DATA + BLIND SPOT)
 - [ ] Run `scan` during a market sell-off to verify regime detection triggers and Claude recommends shorts
+- [ ] Run `scan` when a coin is at ATH with overbought RSI to verify Setup 8 triggers a short recommendation
 - [ ] Monitor regime alerts on Telegram — verify transitions are detected without false positives
 - [ ] Verify hot list integration includes regime: run `scan` and confirm market regime printed in output
 - [ ] Run `quarterly-scan` — 129 trades is enough for deep pattern analysis
 - [ ] Compare blended WR vs raw WR after new data comes in — validate that partial profit model shows edge
 - [ ] Monitor if 1.5:1 R:R floor lets Claude set more realistic T1 levels (T1 hit rate should increase from 33%)
 - [ ] Review per-symbol stats — XRPUSDT (67% WR) and SOLUSDT (0/3) trends continue?
+- [ ] Track Setup 8 (ATH/ATL Exhaustion) win rate once enough data accumulates
+- [x] **ATH/ATL Exhaustion Reversal setup** — Setup 8 in playbook: multi-TF overbought at ATH → short with golden pocket target (v7)
+- [x] **Fibonacci retracement framework** — golden pocket (0.618) + key levels added to market structure knowledge (v7)
+- [x] **Strategic rules short unblock** — re-ran eval-scan, "Avoid shorts" → "NEEDS DATA" + "DIRECTIONAL BLIND SPOT" (v7)
 - [x] **Market regime detection** — risk_off/neutral/risk_on from 50-ticker aggregate, zero extra API calls (v6)
 - [x] **Regime-aware analysis** — Claude instructed per regime: shorts during risk_off, longs during risk_on (v6)
 - [x] **Short avoidance feedback loop fix** — direction rules require 15+ trades, NEEDS DATA for small samples (v6)

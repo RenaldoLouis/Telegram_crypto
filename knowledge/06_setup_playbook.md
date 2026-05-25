@@ -8,7 +8,7 @@
 
 Each setup is a **template** Claude can match against market data. If current conditions match a setup's criteria, Claude includes it in the brief. If no setups match → "no trade today" is the correct output.
 
-Add, remove, or refine setups based on your own experience. The 7 starter setups below are the most commonly profitable structures in crypto.
+Add, remove, or refine setups based on your own experience. The 8 setups below are the most commonly profitable structures in crypto.
 
 ---
 
@@ -234,24 +234,55 @@ Add, remove, or refine setups based on your own experience. The 7 starter setups
 
 ---
 
-## Setup 8 — (Empty slot for YOUR own setup)
+## Setup 8: ATH/ATL Exhaustion Reversal
 
-Add your own setups here as you develop them. Format:
+**Thesis**: Parabolic move into ATH (or ATL) exhausts buyers (or sellers). Multi-timeframe overbought/oversold signals + volume divergence = high-probability mean reversion trade.
 
-```
-## Setup N: [Name]
+### Criteria (ALL must be true)
+- Price is at or within 2% of the all-time high (for short) or all-time low (for long)
+- RSI is overbought (>75) on at least 2 timeframes, ideally 3+ (short setup). Or oversold (<25) on 2+ TFs (long setup).
+- Volume divergence: price making new highs but volume declining compared to the prior leg up (distribution signal). Or volume spike on the final push (climactic/blow-off top).
+- At least one rejection signal: shooting star / long upper wick on 4H or 1D, bearish engulfing, or doji at the extreme.
+- The move into ATH was parabolic: 3+ consecutive strong candles in one direction, accelerating.
 
-**Thesis**: [One sentence]
+### Entry
+- On the first confirmed rejection candle close (shooting star, bearish engulfing on 4H or 1H)
+- Aggressive: at the first 1H ChoCH away from the ATH after the rejection
+- Conservative: wait for 4H ChoCH confirmation (lower high forming on 4H)
+- Do NOT short into strength before a rejection signal — wait for the turn
 
-### Criteria
-- [...]
+### Stop
+- Above the ATH wick extreme + small buffer (0.5-1% above the absolute high)
+- This is tight because if price makes a new ATH after your entry, the thesis is dead
 
-### Entry / Stop / Target
-- [...]
+### Target
+- T1: 0.618 Fibonacci retracement (golden pocket) of the most recent swing — measured from the swing low that started the parabolic move to the ATH. This is the highest-probability reversal zone.
+- T2: 0.786 Fibonacci retracement or the prior 4H/1D structure support (whichever is closer)
+- Minimum R:R: 2:1 (ATH setups should offer wide targets due to the extended nature of the move)
 
 ### Why This Works
-- [...]
-```
+- Parabolic moves are unsustainable. The last buyers at ATH are latecomers with tight stops.
+- Multi-TF overbought RSI means momentum is exhausted across all participant timeframes.
+- Volume divergence at ATH = smart money distributing while retail chases.
+- ATH is a psychological level where profit-taking accelerates.
+- The golden pocket (0.618 fib) is where institutional re-accumulation typically begins, making it a reliable T1.
+
+### Confidence Factors (+ higher conviction)
+- Funding rate highly positive (>0.03%) at ATH = longs extremely crowded, squeeze fuel for shorts
+- Multiple TFs showing RSI >80 simultaneously (3/4 or 4/4)
+- Daily candle closes as a shooting star or doji after the ATH touch
+- BTC is showing weakness while the alt is at ATH (correlation breakdown)
+
+### Warnings
+- **This is NOT "shorting because it went up a lot."** The criteria require multi-TF exhaustion confirmation + rejection signals. A coin at ATH with healthy RSI and rising volume is a breakout, not an exhaustion — do not short it.
+- Parabolic moves can extend further than expected. Never short before the rejection signal.
+- Works best on coins with established trading history (prior swing lows to measure Fibonacci from).
+- In strong bull markets (risk_on regime), ATH breakouts are more common than reversals — reduce conviction.
+
+### ATL Exhaustion (Mirror for Longs)
+- Same logic inverted: price at ATL, RSI <25 on 2+ TFs, volume divergence on the downside, hammer/bullish engulfing rejection.
+- Target: 0.618 fib retracement of the decline (golden pocket from the swing high to the ATL).
+- Works especially well during risk_off → neutral regime transitions.
 
 ---
 
@@ -260,7 +291,7 @@ Add your own setups here as you develop them. Format:
 These are common retail traps. Don't trade them, and Claude should never recommend them:
 
 1. **Buying because "it's gone down a lot"** — falling knife catching.
-2. **Shorting because "it's gone up a lot"** — fighting momentum.
+2. **Shorting because "it's gone up a lot"** — fighting momentum. (Exception: Setup 8 ATH Exhaustion requires multi-TF overbought RSI + rejection signal, not just "big move up.")
 3. **"Breakout" after 3+ green daily candles** — too late, already extended.
 4. **RSI oversold / overbought alone** — can stay extreme for weeks in strong trends.
 5. **Social media hype trades** — you're buying from the person who got in early.
