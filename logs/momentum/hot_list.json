@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-05-24T21:00:22.879007+00:00",
+  "generated_utc": "2026-05-25T04:07:15.581725+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 68.0,
-      "median_change_pct": -2.59,
-      "btc_change_pct": -0.89,
-      "avg_funding_pct": -0.0103,
-      "large_decline_count": 13
+      "pct_declining": 62.0,
+      "median_change_pct": -1.15,
+      "btc_change_pct": 0.3,
+      "avg_funding_pct": -0.0134,
+      "large_decline_count": 5
     },
-    "detected_utc": "2026-05-24T21:00:22.878421+00:00",
+    "detected_utc": "2026-05-25T04:07:15.581098+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -79,19 +79,19 @@
     },
     {
       "symbol": "FIDAUSDT",
-      "flagged_utc": "2026-05-24T17:06:30.144582+00:00",
-      "expires_utc": "2026-05-26T17:06:30.144582+00:00",
+      "flagged_utc": "2026-05-25T04:07:15.580805+00:00",
+      "expires_utc": "2026-05-27T04:07:15.580805+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.039067,
-      "price_change_24h_pct": 21.0441,
-      "turnover_24h_usd": 28133352.61,
-      "funding_rate_pct": -0.327918,
-      "open_interest": 167599627.0,
-      "volume_acceleration": 1.2429662047581538,
-      "price_acceleration_pct": 12.9449
+      "last_price": 0.038491,
+      "price_change_24h_pct": 16.2975,
+      "turnover_24h_usd": 33175868.7795,
+      "funding_rate_pct": -0.38151,
+      "open_interest": 168227310.0,
+      "volume_acceleration": 1.1010486509668524,
+      "price_acceleration_pct": 14.8568
     },
     {
       "symbol": "BOBBOBUSDT",
@@ -143,19 +143,19 @@
     },
     {
       "symbol": "EDENUSDT",
-      "flagged_utc": "2026-05-24T17:06:30.144582+00:00",
-      "expires_utc": "2026-05-26T17:06:30.144582+00:00",
+      "flagged_utc": "2026-05-25T04:07:15.580805+00:00",
+      "expires_utc": "2026-05-27T04:07:15.580805+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.10228,
-      "price_change_24h_pct": 6.7195,
-      "turnover_24h_usd": 20790960.7327,
-      "funding_rate_pct": -0.054277000000000006,
-      "open_interest": 51891894.0,
-      "volume_acceleration": 1.1679525422742276,
-      "price_acceleration_pct": -3.4159000000000006
+      "last_price": 0.08969,
+      "price_change_24h_pct": -5.3003,
+      "turnover_24h_usd": 17660884.0566,
+      "funding_rate_pct": -0.20379999999999998,
+      "open_interest": 50208340.0,
+      "volume_acceleration": 0.8845648677412868,
+      "price_acceleration_pct": -7.533800000000001
     },
     {
       "symbol": "10000NEXUSDT",
