@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-05-27T15:53:17.200928+00:00",
+  "generated_utc": "2026-05-27T18:29:20.349386+00:00",
   "market_regime": {
-    "regime": "neutral",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 56.0,
-      "median_change_pct": -0.24,
-      "btc_change_pct": -1.33,
-      "avg_funding_pct": 0.0078,
-      "large_decline_count": 8
+      "pct_declining": 72.0,
+      "median_change_pct": -1.34,
+      "btc_change_pct": -1.54,
+      "avg_funding_pct": 0.011,
+      "large_decline_count": 9
     },
-    "detected_utc": "2026-05-27T15:53:17.200379+00:00",
-    "previous_regime": "risk_off"
+    "detected_utc": "2026-05-27T18:29:20.348817+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
@@ -191,19 +191,19 @@
     },
     {
       "symbol": "ALTUSDT",
-      "flagged_utc": "2026-05-27T15:53:17.200118+00:00",
-      "expires_utc": "2026-05-29T15:53:17.200118+00:00",
+      "flagged_utc": "2026-05-27T18:29:20.348540+00:00",
+      "expires_utc": "2026-05-29T18:29:20.348540+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.007938,
-      "price_change_24h_pct": 11.3323,
-      "turnover_24h_usd": 28750897.5425,
-      "funding_rate_pct": -0.254317,
-      "open_interest": 572237559.0,
-      "volume_acceleration": 1.4022444564276906,
-      "price_acceleration_pct": -11.058
+      "last_price": 0.007855,
+      "price_change_24h_pct": 12.4069,
+      "turnover_24h_usd": 30199621.5424,
+      "funding_rate_pct": -0.14724700000000002,
+      "open_interest": 536392591.0,
+      "volume_acceleration": 1.0503888269143067,
+      "price_acceleration_pct": 1.0746000000000002
     }
   ]
 }
