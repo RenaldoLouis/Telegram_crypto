@@ -1,19 +1,19 @@
 {
-  "last_updated": "2026-05-25 04:36 UTC",
-  "total_setups": 139,
-  "total_evaluated": 129,
+  "last_updated": "2026-05-27 14:49 UTC",
+  "total_setups": 151,
+  "total_evaluated": 141,
   "total_not_triggered": 10,
   "overall": {
-    "wins": 46,
-    "losses": 83,
-    "rr_sum": -12.250000000000004
+    "wins": 47,
+    "losses": 94,
+    "rr_sum": -18.740000000000002
   },
   "by_setup_type": {
     "trend_pullback": {
-      "wins": 44,
-      "losses": 76,
-      "total": 120,
-      "rr_sum": -10.040000000000003
+      "wins": 45,
+      "losses": 86,
+      "total": 131,
+      "rr_sum": -15.530000000000003
     },
     "range_breakout": {
       "wins": 1,
@@ -38,6 +38,12 @@
       "losses": 0,
       "total": 1,
       "rr_sum": 2.82
+    },
+    "funding_squeeze": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": -1.0
     }
   },
   "by_confidence": {
@@ -49,47 +55,47 @@
     },
     "medium": {
       "wins": 38,
-      "losses": 62,
-      "total": 100,
-      "rr_sum": -2.3800000000000017
+      "losses": 73,
+      "total": 111,
+      "rr_sum": -10.380000000000003
     },
     "low": {
-      "wins": 6,
+      "wins": 7,
       "losses": 14,
-      "total": 20,
-      "rr_sum": -7.449999999999999
+      "total": 21,
+      "rr_sum": -5.9399999999999995
     }
   },
   "by_rank": {
     "1": {
       "wins": 9,
-      "losses": 24,
-      "total": 33,
-      "rr_sum": -6.71
+      "losses": 27,
+      "total": 36,
+      "rr_sum": -8.71
     },
     "3": {
       "wins": 10,
-      "losses": 17,
-      "total": 27,
-      "rr_sum": -3.49
+      "losses": 19,
+      "total": 29,
+      "rr_sum": -5.49
     },
     "4": {
       "wins": 8,
-      "losses": 14,
-      "total": 22,
-      "rr_sum": -4.26
+      "losses": 16,
+      "total": 24,
+      "rr_sum": -5.26
     },
     "5": {
-      "wins": 5,
-      "losses": 11,
-      "total": 16,
-      "rr_sum": -3.0200000000000005
+      "wins": 6,
+      "losses": 12,
+      "total": 18,
+      "rr_sum": -2.5100000000000007
     },
     "2": {
       "wins": 14,
-      "losses": 17,
-      "total": 31,
-      "rr_sum": 5.229999999999999
+      "losses": 20,
+      "total": 34,
+      "rr_sum": 3.2299999999999986
     }
   },
   "by_model": {
@@ -100,10 +106,10 @@
       "rr_sum": -2.46
     },
     "claude-sonnet-4-6": {
-      "wins": 44,
-      "losses": 73,
-      "total": 117,
-      "rr_sum": -7.7900000000000045
+      "wins": 45,
+      "losses": 84,
+      "total": 129,
+      "rr_sum": -14.280000000000005
     },
     "claude-haiku-4-5": {
       "wins": 1,
@@ -120,10 +126,10 @@
       "rr_sum": -2.23
     },
     "intraday": {
-      "wins": 43,
-      "losses": 73,
-      "total": 116,
-      "rr_sum": -9.020000000000003
+      "wins": 44,
+      "losses": 84,
+      "total": 128,
+      "rr_sum": -15.510000000000003
     },
     "scalp": {
       "wins": 0,
@@ -134,10 +140,10 @@
   },
   "by_direction": {
     "long": {
-      "wins": 46,
-      "losses": 80,
-      "total": 126,
-      "rr_sum": -9.250000000000002
+      "wins": 47,
+      "losses": 91,
+      "total": 138,
+      "rr_sum": -15.74
     },
     "short": {
       "wins": 0,
@@ -153,29 +159,29 @@
       "total": 31
     },
     "2026-05": {
-      "wins": 41,
-      "losses": 57,
-      "total": 98
+      "wins": 42,
+      "losses": 68,
+      "total": 110
     }
   },
   "prediction_gap": {
-    "sum_predicted": 264.3799999999998,
-    "sum_actual": -12.250000000000004,
-    "count": 129
+    "sum_predicted": 284.48999999999995,
+    "sum_actual": -18.740000000000002,
+    "count": 141
   },
   "mfe_stats": {
-    "reached_05r": 83,
-    "total_with_mfe": 129,
-    "mfe_sum": 142.59
+    "reached_05r": 90,
+    "total_with_mfe": 141,
+    "mfe_sum": 152.1
   },
   "stop_timing": {
-    "total_stops": 71,
-    "fast_stops": 9,
-    "candles_sum": 5375
+    "total_stops": 79,
+    "fast_stops": 11,
+    "candles_sum": 5847
   },
   "target_stats": {
-    "t1_hits": 40,
-    "t2_hits": 15
+    "t1_hits": 44,
+    "t2_hits": 16
   },
   "by_symbol": {
     "ETHUSDT": {
@@ -186,9 +192,9 @@
     },
     "XRPUSDT": {
       "wins": 13,
-      "losses": 15,
-      "total": 28,
-      "rr_sum": 5.799999999999999
+      "losses": 16,
+      "total": 29,
+      "rr_sum": 4.799999999999999
     },
     "SOLUSDT": {
       "wins": 8,
@@ -228,9 +234,9 @@
     },
     "BTCUSDT": {
       "wins": 1,
-      "losses": 5,
-      "total": 6,
-      "rr_sum": -3.8
+      "losses": 6,
+      "total": 7,
+      "rr_sum": -4.8
     },
     "ENJUSDT": {
       "wins": 0,
@@ -288,9 +294,9 @@
     },
     "SUIUSDT": {
       "wins": 2,
-      "losses": 2,
-      "total": 4,
-      "rr_sum": 3.3900000000000006
+      "losses": 4,
+      "total": 6,
+      "rr_sum": 1.3900000000000006
     },
     "ENAUSDT": {
       "wins": 1,
@@ -315,20 +321,50 @@
       "losses": 1,
       "total": 2,
       "rr_sum": 1.6600000000000001
+    },
+    "ONDOUSDT": {
+      "wins": 0,
+      "losses": 2,
+      "total": 2,
+      "rr_sum": -2.0
+    },
+    "ZECUSDT": {
+      "wins": 0,
+      "losses": 2,
+      "total": 2,
+      "rr_sum": 0.0
+    },
+    "NEARUSDT": {
+      "wins": 1,
+      "losses": 1,
+      "total": 2,
+      "rr_sum": 1.51
+    },
+    "WLDUSDT": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": -1.0
+    },
+    "FIDAUSDT": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": -1.0
     }
   },
   "simulated_t1": {
-    "sim_075r_hits": 31,
-    "sim_100r_hits": 23,
-    "sim_total": 49
+    "sim_075r_hits": 36,
+    "sim_100r_hits": 28,
+    "sim_total": 61
   },
   "partial_profit": {
-    "blended_rr_sum": -5.550000000000001,
-    "blended_wins": 11,
-    "blended_losses": 17,
-    "be_stops": 3,
-    "t1_then_t2": 15,
-    "t1_then_be": 3,
+    "blended_rr_sum": -10.89,
+    "blended_wins": 15,
+    "blended_losses": 25,
+    "be_stops": 6,
+    "t1_then_t2": 16,
+    "t1_then_be": 6,
     "t1_then_expire": 15
   },
   "processed_run_tags": [
@@ -367,6 +403,9 @@
     "20260520_0645",
     "20260521_1030",
     "20260522_0313",
-    "20260522_0820"
+    "20260522_0820",
+    "20260523_0740",
+    "20260524_0932",
+    "20260525_0421"
   ]
 }

@@ -52,11 +52,19 @@ MOMENTUM_HOT_LIST_PATH = "logs/momentum/hot_list.json"
 MOMENTUM_SNAPSHOT_PATH = "logs/momentum/last_snapshot.json"
 
 # === Market Regime Detection ===
+# risk_off (bearish) — broad sell-off, favor shorts, max 2 setups
 REGIME_BEARISH_DECLINE_PCT = 70        # % of tickers declining to trigger risk_off
 REGIME_BEARISH_MEDIAN_CHANGE = -2.0    # median change threshold for risk_off
 REGIME_BEARISH_BTC_CHANGE = -4.0       # BTC change alone triggers risk_off
 REGIME_BEARISH_COMBO_DECLINE = 60      # softer decline % when combined with BTC drop
 REGIME_BEARISH_COMBO_BTC = -3.0        # softer BTC threshold when combined with decline %
+# cautious — soft bearish, not a full sell-off but market leaning down, max 3 setups
+REGIME_CAUTIOUS_DECLINE_PCT = 55       # >55% of coins declining
+REGIME_CAUTIOUS_MEDIAN_CHANGE = -0.5   # median change slightly negative
+REGIME_CAUTIOUS_BTC_CHANGE = -2.0      # BTC down 2%+ alone triggers cautious
+REGIME_CAUTIOUS_COMBO_DECLINE = 50     # 50%+ declining when combined with BTC drop
+REGIME_CAUTIOUS_COMBO_BTC = -1.5       # BTC -1.5%+ when 50%+ declining
+# risk_on (bullish) — broad rally, favor longs
 REGIME_BULLISH_DECLINE_PCT = 30        # % declining ceiling for risk_on
 REGIME_BULLISH_MEDIAN_CHANGE = 2.0     # median change threshold for risk_on
 REGIME_BULLISH_BTC_CHANGE = 4.0        # BTC change alone triggers risk_on

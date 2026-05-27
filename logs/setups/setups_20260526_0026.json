@@ -1,0 +1,55 @@
+{
+  "run_timestamp_utc": "2026-05-26T00:26:32.720940+00:00",
+  "run_tag": "20260526_0026",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "TRXUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.3718,
+      "entry_high": 0.373,
+      "stop_loss": 0.367,
+      "target_1": 0.381,
+      "target_2": 0.39,
+      "predicted_rr": 1.7,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "ERAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1545,
+      "entry_high": 0.1565,
+      "stop_loss": 0.148,
+      "target_1": 0.168,
+      "target_2": 0.178,
+      "predicted_rr": 1.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    },
+    {
+      "rank": 3,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 1.344,
+      "entry_high": 1.35,
+      "stop_loss": 1.328,
+      "target_1": 1.37,
+      "target_2": 1.39,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false
+    }
+  ]
+}

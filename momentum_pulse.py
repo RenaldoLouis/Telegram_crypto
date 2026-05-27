@@ -201,7 +201,18 @@ def detect_market_regime(tickers, previous_regime="neutral"):
             and btc_change <= config.REGIME_BEARISH_COMBO_BTC):
         regime = "risk_off"
 
-    # Risk on: broad rally (only if not already risk_off)
+    # Cautious: soft bearish — not a full sell-off but market leaning down
+    if regime == "neutral":
+        if (pct_declining >= config.REGIME_CAUTIOUS_DECLINE_PCT
+                and median_change <= config.REGIME_CAUTIOUS_MEDIAN_CHANGE):
+            regime = "cautious"
+        elif btc_change <= config.REGIME_CAUTIOUS_BTC_CHANGE:
+            regime = "cautious"
+        elif (pct_declining >= config.REGIME_CAUTIOUS_COMBO_DECLINE
+                and btc_change <= config.REGIME_CAUTIOUS_COMBO_BTC):
+            regime = "cautious"
+
+    # Risk on: broad rally (only if not already risk_off or cautious)
     if regime == "neutral":
         if (pct_declining <= config.REGIME_BULLISH_DECLINE_PCT
                 and median_change >= config.REGIME_BULLISH_MEDIAN_CHANGE):
@@ -246,6 +257,8 @@ def send_regime_alert(regime):
 
     if regime["regime"] == "risk_off":
         lines.append("\n\u26a0\ufe0f Next scan will prioritize shorts / reduce long setups")
+    elif regime["regime"] == "cautious":
+        lines.append("\n\u26a0\ufe0f Next scan will limit to 3 setups, require volume or 4/4 TF confluence for longs")
     elif regime["regime"] == "risk_on":
         lines.append("\n\u2705 Next scan will favor trend-following longs")
 
