@@ -1,0 +1,55 @@
+{
+  "run_timestamp_utc": "2026-05-30T04:06:21.763828+00:00",
+  "run_tag": "20260530_0406",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "HBARUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0985,
+      "entry_high": 0.1006,
+      "stop_loss": 0.0955,
+      "target_1": 0.109,
+      "target_2": 0.114,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 1.34,
+      "entry_high": 1.355,
+      "stop_loss": 1.31,
+      "target_1": 1.39,
+      "target_2": 1.42,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 3,
+      "symbol": "INJUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 6.4,
+      "entry_high": 6.55,
+      "stop_loss": 6.1,
+      "target_1": 7.04,
+      "target_2": 7.5,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    }
+  ]
+}

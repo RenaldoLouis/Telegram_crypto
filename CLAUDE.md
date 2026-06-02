@@ -37,19 +37,21 @@ main.py  (orchestrator, async)
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
   │
   ├── analyzer/prompts.py          → SYSTEM_PROMPT + load_knowledge() + performance feedback + regime awareness
-  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, compact JSON, regime injection
+  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, compact JSON, regime injection,
+  │                                    BTC daily trend extraction, recent loss rate injection, losing streak detection
   │
   ├── delivery/telegram_bot.py     → MD→HTML converter, smart chunking, retry with backoff
   │
   ├── momentum_pulse.py            → Lightweight momentum detector (runs every 4h on GitHub Actions)
   │                                    Fetches 50 tickers, detects acceleration vs previous snapshot,
   │                                    flags coins to hot_list.json, sends Telegram alert. Zero Claude tokens.
-  │                                    detect_market_regime() → classifies market as risk_off/neutral/risk_on
+  │                                    detect_market_regime() → classifies market as risk_off/cautious/neutral/risk_on
   │                                    Sends regime change alerts to Telegram. Regime saved in hot_list.json.
   │
   ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation,
   │                                    simulated T1 backtest, per-symbol tracking, prescriptive rules
   ├── quarterly_analysis.py        → Claude-powered deep pattern analysis (run every ~3 months)
+  ├── trade_logger.py              → CLI tool for managing my_trades.json (open/close/list trades)
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
@@ -202,6 +204,11 @@ python weekly_eval.py
 # Quarterly deep analysis (run every ~3 months or after 50+ new trades)
 source venv/bin/activate
 python quarterly_analysis.py
+
+# Trade logger — manage manual trade journal
+python trade_logger.py open      # Pick a setup, enter your entry price
+python trade_logger.py close     # Close an open trade, enter exit price
+python trade_logger.py list      # Show all trades with summary
 ```
 
 **Terminal shortcuts** (defined in `~/.zshrc`):
@@ -209,6 +216,7 @@ python quarterly_analysis.py
 - `pulse` — run momentum pulse locally
 - `eval-scan` — run weekly evaluation
 - `quarterly-scan` — run quarterly deep analysis
+- `trade` — manage manual trade log (`trade open`, `trade close`, `trade list`)
 
 ### Scheduled Runs
 
@@ -338,7 +346,11 @@ See `progress.md` for:
 - **Volume acceleration**: ratio of a coin's current turnover vs its turnover at the previous pulse (4h earlier). >3x triggers a flag. >2x gives a scoring bonus in the pre-filter. Detects coins that are ramping up before they appear in the top 50 by absolute turnover.
 - **Market regime**: overall market classification detected by the momentum pulse from 50-ticker aggregate data. Four states: `risk_off` (broad sell-off, favor shorts, max 2 setups), `cautious` (soft bearish, max 3 setups, require volume/4TF for longs), `neutral` (no directional bias, max 3 setups), `risk_on` (broad rally, favor longs, max 5 setups). Saved in `hot_list.json` and always injected into Claude's user content with metrics.
 - **Risk off / Cautious / Risk on**: market regime labels. `risk_off` = bearish (≥70% declining or BTC ≤ -4%), max 2 setups. `cautious` = soft bearish (≥55% declining or BTC ≤ -2%), max 3 setups, longs need volume OR 4/4 TF. `risk_on` = bullish (≤30% declining or BTC ≥ +4%), favor longs.
-- **Losing streak circuit breaker**: `_detect_losing_streak()` in `claude_client.py` counts consecutive stop losses from recent evals. 5+ SLs → LOSING STREAK ALERT (max 2 setups, require volume/4TF). 3-4 SLs → CAUTION (max 3 setups).
+- **Losing streak circuit breaker**: `_detect_losing_streak()` in `claude_client.py` counts consecutive stop losses from recent evals. 5+ SLs → LOSING STREAK ALERT (max 2 setups, require volume/4TF). 3-4 SLs → CAUTION (max 3 setups). Also tracks total recent losses: 15+/20 → SEVERE DROUGHT (max 1-2 setups, prefer range setups). 12+/20 → HIGH LOSS RATE (max 2-3 setups).
+- **ADX (Average Directional Index)**: trend strength indicator computed per timeframe. ADX < 20 = ranging/choppy (trend_pullback WILL fail), 20-25 = weak trend, > 25 = trending. Used by Claude to choose between trend-following and range-based setups.
+- **range_pct**: 20-candle high-low range as % of price, computed per timeframe. < 5% on 4h = tight consolidation, 5-10% = standard range, > 10% = wide/volatile. Helps Claude gauge range width for target placement.
+- **Range mean reversion**: setup type for fading range extremes. Short near 20-candle high with RSI > 65, long near 20-candle low with RSI < 35. Target = range midpoint. Quick 4-8h hold. Only valid when ADX < 20.
+- **BTC Daily Trend Guard**: injected into Claude's user content when BTC daily trend is extracted. When BTC is bearish with RSI < 40, correlated alt longs are flagged as HIGH RISK. Only decoupled alts (moving opposite to BTC) are valid longs.
 - **Dead cat bounce**: a brief recovery bounce during a larger downtrend that gets sold into. Detected when daily RSI was sub-35 within last 3 candles. Must be labeled as "recovery_bounce" with LOW confidence, NOT as "trend_pullback" with medium confidence.
 - **ATH/ATL Exhaustion Reversal (Setup 8)**: mean reversion short at ATH (or long at ATL) when multi-TF RSI is overbought/oversold + rejection candle confirms the turn. Target: golden pocket (0.618 fib). Requires multi-TF confirmation — not just "it went up a lot."
 - **Golden pocket (0.618 Fibonacci)**: the 61.8% Fibonacci retracement level — highest-probability reversal zone. Used as T1 for Setup 8 (ATH Exhaustion) and as entry zone for trend pullback setups. Measured from the swing low that started the move to the swing high where it ended.

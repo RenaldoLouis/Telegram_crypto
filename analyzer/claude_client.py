@@ -88,8 +88,48 @@ class ClaudeAnalyzer:
                 f"Be more selective. Output MAXIMUM 3 setups. Increase quality bar.\n"
             )
 
+        # Inject recent loss rate (activates the previously-unused recent_losses counter)
+        recent_losses_section = ""
+        if recent_losses >= 15:
+            recent_losses_section = (
+                f"\n## ⚠️ SEVERE DROUGHT: {recent_losses}/20 recent trades lost\n"
+                f"The current approach is clearly not working. MANDATORY:\n"
+                f"- Output MAXIMUM 1-2 setups. Do NOT pad.\n"
+                f"- Every setup MUST have volume confirmed AND structural clarity.\n"
+                f"- Strongly prefer range setups (mean reversion, springs, sweeps) over trend-following.\n"
+                f"- Consider outputting 0 setups if conditions are choppy.\n"
+            )
+        elif recent_losses >= 12:
+            recent_losses_section = (
+                f"\n## ⚠️ HIGH LOSS RATE: {recent_losses}/20 recent trades lost\n"
+                f"Recent performance is poor. Be extra selective — max 2-3 setups, higher quality bar.\n"
+            )
+
+        # Extract BTC daily trend for prominent injection
+        btc_section = ""
+        for t in market_snapshot.get("technicals", []):
+            if t.get("symbol") == "BTCUSDT":
+                btc_1d = t.get("timeframes", {}).get("1D", {})
+                if btc_1d:
+                    btc_trend = btc_1d.get("trend", "unknown")
+                    btc_rsi = btc_1d.get("rsi_14", "?")
+                    btc_adx = btc_1d.get("adx_14", "?")
+                    btc_section = (
+                        f"\n## BTC Daily Trend: {btc_trend.upper()}\n"
+                        f"- BTC 1D RSI: {btc_rsi}\n"
+                        f"- BTC 1D ADX: {btc_adx}\n"
+                    )
+                    if btc_trend == "bearish" and isinstance(btc_rsi, (int, float)) and btc_rsi < 40:
+                        btc_section += (
+                            "- ⚠️ BTC daily downtrend with weak RSI. "
+                            "Correlated alt longs are HIGH RISK. "
+                            "Only recommend alt longs with independent momentum (decoupled from BTC) "
+                            "or 4/4 TF + volume confirmed.\n"
+                        )
+                break
+
         user_content = f"""# Market Data ({market_snapshot['timestamp_utc']})
-{regime_section}{streak_section}
+{regime_section}{btc_section}{streak_section}{recent_losses_section}
 ## Top Movers ({len(market_snapshot['top_movers'])} pre-filtered by turnover + interest score)
 ```json
 {json.dumps(market_snapshot['top_movers'], separators=(',', ':'))}

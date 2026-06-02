@@ -1,0 +1,23 @@
+{
+  "run_timestamp_utc": "2026-06-01T13:32:49.710967+00:00",
+  "run_tag": "20260601_1332",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "HYPEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 72.5,
+      "entry_high": 73.5,
+      "stop_loss": 70.8,
+      "target_1": 76.0,
+      "target_2": 79.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    }
+  ]
+}

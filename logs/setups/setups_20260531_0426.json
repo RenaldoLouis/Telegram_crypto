@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-05-31T04:26:02.361011+00:00",
+  "run_tag": "20260531_0426",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ONDOUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.368,
+      "entry_high": 0.372,
+      "stop_loss": 0.358,
+      "target_1": 0.39,
+      "target_2": 0.408,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "HBARUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.095,
+      "entry_high": 0.0956,
+      "stop_loss": 0.0927,
+      "target_1": 0.0984,
+      "target_2": 0.102,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    }
+  ]
+}

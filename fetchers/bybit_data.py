@@ -80,6 +80,19 @@ class BybitFetcher:
         ], axis=1).max(axis=1)
         df["atr_14"] = tr.rolling(14).mean()
 
+        # --- ADX (14) for trend strength (ranging vs trending) ---
+        plus_dm = df["high"].diff()
+        minus_dm = -df["low"].diff()
+        plus_dm = plus_dm.where((plus_dm > minus_dm) & (plus_dm > 0), 0.0)
+        minus_dm = minus_dm.where((minus_dm > plus_dm) & (minus_dm > 0), 0.0)
+        atr_wilder = tr.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
+        plus_di = 100 * plus_dm.ewm(alpha=1/14, min_periods=14, adjust=False).mean() / atr_wilder
+        minus_di = 100 * minus_dm.ewm(alpha=1/14, min_periods=14, adjust=False).mean() / atr_wilder
+        di_sum = plus_di + minus_di
+        di_sum = di_sum.replace(0, float('nan'))
+        dx = 100 * (plus_di - minus_di).abs() / di_sum
+        df["adx_14"] = dx.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
+
         latest = df.iloc[-1]
 
         return {
@@ -93,6 +106,8 @@ class BybitFetcher:
             "atr_14": round(float(latest["atr_14"]), 6) if pd.notna(latest["atr_14"]) else None,
             "atr_pct": round(float(latest["atr_14"] / latest["close"] * 100), 2) if pd.notna(latest["atr_14"]) and latest["close"] > 0 else None,
             "trend": "bullish" if pd.notna(latest["ema_20"]) and pd.notna(latest["ema_50"]) and latest["ema_20"] > latest["ema_50"] else "bearish",
+            "adx_14": round(float(latest["adx_14"]), 2) if pd.notna(latest["adx_14"]) else None,
+            "range_pct": round(float((latest["high_20"] - latest["low_20"]) / latest["close"] * 100), 2) if pd.notna(latest["high_20"]) and pd.notna(latest["low_20"]) and latest["close"] > 0 else None,
             "last_3_candles_pct": [
                 round(float((df.iloc[-i]["close"] - df.iloc[-i]["open"]) / df.iloc[-i]["open"] * 100), 2)
                 for i in [3, 2, 1]

@@ -1,14 +1,14 @@
-# Strategic Rules (derived from 141 evaluated trades — solid sample)
-_Last updated: 2026-05-27 manual review_
+# Strategic Rules (derived from 156 evaluated trades — solid sample)
+_Last updated: 2026-06-01 09:12 UTC_
 
-1. **STRICT SELECTIVITY**: Win rate is 33%. May 22-25 showed 16 SLs in 20 trades from over-recommending in poor conditions. ACTION: Default to 2-3 setups per run maximum. Only output 4+ if regime is RISK_ON with volume confirmation.
-2. **CONFIDENCE MISCALIBRATED**: 'High' confidence is 2/9 (22% WR) but 'Medium' is 38/111 (34% WR). ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + clean structure. If unsure, label 'medium' — it actually performs better.
-3. **SHORT NEEDS DATA**: 0/3 short trades won, but sample is too small (3 trades, need 15+). ACTION: Include short setups when >50% of coins are declining. Do NOT avoid shorts based on this tiny sample. Building short data is a priority.
-4. **DIRECTIONAL BLIND SPOT**: Only 3 short trades vs 138 long trades in history. ACTION: When >50% of coins are declining OR regime is CAUTIOUS/RISK_OFF, actively recommend at least 1 short setup if any coin shows clear bearish structure (breakdown, distribution, failed breakout). Do NOT default to all-long in a declining market.
-5. **BEST TYPE: 'trend_pullback'**: 34% WR over 131 trades. ACTION: Prioritize this setup type BUT only in genuine uptrends (daily EMAs stacked bullish, higher highs). Do NOT label dead-cat bounces as trend pullbacks.
-6. **DEAD CAT BOUNCE TRAP**: May 22-25 losses were longs labeled "trend_pullback" during BTC recovery from oversold (RSI ~30). Lower TFs showed bullish but daily was still in downtrend. ACTION: If daily RSI was sub-35 within last 3 candles, any long must be LOW confidence "recovery_bounce", not "trend_pullback".
-7. **RANK #1 UNDERPERFORMS #2**: Rank #1 is 9/36 (25% WR) but Rank #2 is 14/34 (41% WR). ACTION: Re-evaluate ranking — prioritize setup quality and structural clarity over headline appeal.
-8. **TARGETS TOO FAR — HARD CAP**: Predicted avg 2.0R but actual is -0.13R (gap: 2.2R). Average MFE is 1.1R. Backtest: T1 at 0.75R hits 59%, T1 at 1.0R hits 46% (vs current 31%). ACTION: Set predicted_rr to 1.5 for ALL setups. Do NOT set T1 at 1.8R, 2.0R, 2.5R — those targets are unreachable.
-9. **VOLUME IS A GATE, NOT A FLAG**: May 22-25: 8/10 setups had volume_confirmed=false, and the briefs flagged "dangerously low volume" but still output 5 setups each. ACTION: In low volume environments (most symbols <0.5x spike ratio), output MAXIMUM 2 setups. Do not recommend 5 setups with volume caveats — recommend 2 quality setups instead.
-10. **IMPROVING**: 2026-04 was 16% → 2026-05 is 38%. Current approach is working when market conditions align — maintain core approach but enforce selectivity in adverse conditions.
-11. **BEST MODEL**: claude-sonnet-4-6 (35% WR, -0.11 avg R:R). Consider using this model for production runs.
+1. **MODERATE SELECTIVITY**: Win rate is 31%. ACTION: Output 2-4 setups per run. Prefer fewer, higher-conviction setups over padding to 5.
+2. **CONFIDENCE MISCALIBRATED**: 'High' confidence is 2/9 (22% WR) but 'Medium' is 39/122 (32% WR). ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + clean structure. If unsure, label 'medium' — it actually performs better.
+3. **SHORT NEEDS DATA**: 0/6 short trades won, but sample is too small (6 trades, need 15+). ACTION: Include short setups when the market regime supports it and structure is clear. Do NOT avoid short based on this small sample.
+4. **DIRECTIONAL BLIND SPOT**: Only 6 short trades vs 150 long trades in history. ACTION: When the market regime is RISK_OFF, actively consider short setups to build data. Do not default to longs in a declining market.
+5. **'failed_breakout' STRUGGLING** (6 trades): 0% WR, -1.00 avg R:R. ACTION: Apply extra scrutiny — check entries and stops.
+6. **BEST TYPE: 'trend_pullback'**: 33% WR over 141 trades. ACTION: Prioritize this setup type. At least 2 of your top setups should be this type if available.
+7. **RANK #1 UNDERPERFORMS #2**: Rank #1 is 10/41 (24% WR) but Rank #2 is 14/39 (36% WR). ACTION: Your top-ranked setup may be the most 'obvious' one, not the best one. Re-evaluate ranking — prioritize setup quality and structural clarity over headline appeal.
+8. **TARGETS TOO FAR**: Predicted avg 2.0R but actual is -0.18R (gap: 2.2R). Average MFE is 1.0R, so set T1 at max 0.8R from entry. Backtest: T1 at 0.75R would hit 54% of trades, T1 at 1.0R would hit 42% (vs current T1 hit rate of 46/156 = 29%). ACTION: Place T1 at the nearest REAL structural level. Use ATR: T1 should be 1.5-2× ATR from entry, NOT 3×+.
+9. **T1 HIT RATE LOW**: Only 46/156 (29%) setups hit T1. ACTION: T1 must be at the nearest real structural level (prior S/R, EMA cluster, order block). Not a projected move. If nearest structure gives R:R < 1.5:1, skip the setup.
+10. **IMPROVING**: 2026-04 was 16% → 2026-05 is 34%. Current approach is working — maintain it.
+11. **BEST MODEL**: claude-sonnet-4-6 (32% WR, -0.17 avg R:R). Consider using this model for production runs.

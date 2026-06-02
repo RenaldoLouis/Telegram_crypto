@@ -1,0 +1,34 @@
+{
+  "run_tag": "20260528_0902",
+  "run_timestamp_utc": "2026-05-28T09:02:24.090767+00:00",
+  "model": "claude-sonnet-4-6",
+  "evaluated_at_utc": "2026-06-01T09:12:21.893233+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.171,
+      "exit_price": 0.179,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.33,
+      "candles_to_exit": 12,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "XLMUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 1.5,
+      "tf_confluence": 2,
+      "rank": 1
+    }
+  ]
+}

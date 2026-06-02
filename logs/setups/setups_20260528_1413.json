@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-05-28T14:13:35.646629+00:00",
+  "run_tag": "20260528_1413",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XLMUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.192,
+      "entry_high": 0.196,
+      "stop_loss": 0.2075,
+      "target_1": 0.1737,
+      "target_2": 0.158,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    },
+    {
+      "rank": 2,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 73200.0,
+      "entry_high": 73500.0,
+      "stop_loss": 74300.0,
+      "target_1": 71925.0,
+      "target_2": 70500.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    }
+  ]
+}

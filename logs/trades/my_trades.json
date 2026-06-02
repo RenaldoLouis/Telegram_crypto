@@ -36,10 +36,10 @@
     "entry_price": 0.06060,
     "stop_loss": 0.0595,
     "target_hit": null,
-    "actual_exit": null,
-    "exit_reason": null,
-    "result": "open",
-    "pnl_percent": null,
+    "actual_exit": 0.05964,
+    "exit_reason": "stop_loss",
+    "result": "loss",
+    "pnl_percent": -1.58,
     "claude_recommendation": {
       "rank": 3,
       "model": "claude-haiku-4-5",
@@ -56,5 +56,34 @@
     },
     "note": "SL too tight — only 1.8% from entry (0.0606 to 0.0595). Risk of getting stopped out by normal volatility before the move plays out.",
     "failure_reason": "sl_too_tight"
+  },
+  {
+    "date": "2026-06-02",
+    "run_tag": "20260601_1332",
+    "symbol": "HYPEUSDT",
+    "direction": "long",
+    "entry_price": 72.230,
+    "stop_loss": 70.8,
+    "target_hit": 75.025,
+    "actual_exit": 75.025,
+    "exit_reason": "target_hit",
+    "result": "win",
+    "pnl_percent": 3.87,
+    "claude_recommendation": {
+      "rank": 1,
+      "model": "claude-sonnet-4-6",
+      "setup_type": "trend_pullback",
+      "timeframe": "intraday",
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "entry_low": 72.5,
+      "entry_high": 73.5,
+      "stop_loss": 70.8,
+      "target_1": 76.0,
+      "target_2": 79.0,
+      "predicted_rr": 1.5
+    },
+    "note": "TP hit at 75.025 (below recommended T1 of 76.0). Smart to take profit early — secured +3.87% instead of waiting for 76.0.",
+    "failure_reason": null
   }
 ]

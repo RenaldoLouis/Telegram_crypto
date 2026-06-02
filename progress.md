@@ -1,19 +1,19 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-05-25 (v7)_
+_Last updated: 2026-06-02 (v9.1)_
 
 ---
 
 ## What This Project Does
 
-A personal, automated crypto analyst that runs once a night and delivers the **5 best trading opportunities** on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It self-evaluates past recommendations against actual price data and feeds results back to Claude.
+A personal, automated crypto analyst that runs once a night and delivers the **best trading opportunities** (quality over quantity, typically 2-3 per run) on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It self-evaluates past recommendations against actual price data and feeds results back to Claude.
 
 ```
 Momentum Pulse (every 4h, GitHub Actions, free)
     → Bybit API: fetch 50 tickers (single call)
     → Compare vs previous snapshot → detect volume/price acceleration
     → Flag coins: big move (>8% + >$200M), vol accel (>3x), funding squeeze
-    → Market regime detection: risk_off / neutral / risk_on (from 50-ticker aggregate)
+    → Market regime detection: risk_off / cautious / neutral / risk_on (from 50-ticker aggregate)
     → Save to logs/momentum/hot_list.json (48h expiry + regime)
     → Telegram alert: regime changes + new coin flags
     ↓
@@ -27,14 +27,20 @@ Python pre-filter (knowledge-based scoring, free)
     → Keep top 25 + watchlist (BTC, ETH, SOL) + hot list
     ↓
 Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
-    → RSI(14), EMA 20/50, volume spike ratio, breakout flags per TF
+    → RSI(14), EMA 20/50, volume spike ratio, breakout flags, ADX(14), range_pct per TF
     ↓
 Claude (Sonnet 4.6 daily) analyzes as professional trader
-    → Market regime awareness: risk_off → favor shorts, risk_on → favor longs
+    → BTC Daily Trend Guard: extracts BTC 1D trend/RSI/ADX, blocks correlated alt longs when bearish
+    → ADX-based market type: ADX < 20 = ranging (use range setups), ADX > 25 = trending (trend_pullback OK)
+    → Market regime awareness: risk_off/cautious → favor shorts, risk_on → favor longs
+    → Drought alert: 15+/20 recent losses → SEVERE DROUGHT, max 1-2 setups
+    → Losing streak circuit breaker: 5+ consecutive SLs → max 2 setups, strict quality gate
+    → Dead cat bounce detection: daily RSI sub-35 bounce ≠ trend pullback
     → Professional trader mindset (don't chase, trap awareness, realistic targets)
     → Multi-TF confluence scoring (4/4=High, 3/4=Medium, 2/4=Low)
-    → R:R floor: 1.5:1 minimum (lowered from 2:1 based on 98-trade backtest)
-    → Outputs 1-5 ranked setups (readable brief) + structured JSON
+    → R:R target: 1.5:1 (floor AND ceiling — MFE data proves higher targets unreachable)
+    → Volume hard gate: low volume environment → max 2 setups
+    → Outputs 0-3 ranked setups (quality over quantity) + structured JSON
     ↓
 main.py parses JSON → saves to logs/setups/
     ↓
@@ -70,15 +76,16 @@ Quarterly deep analysis (quarterly_analysis.py, run every ~3 months)
 | File | Lines | Purpose |
 |---|---|---|
 | `main.py` | 88 | Orchestrator — fetch → analyze → parse JSON → archive → deliver |
-| `config.py` | 67 | Settings: API keys, model, limits, timeframes, watchlist, momentum + regime thresholds |
-| `fetchers/bybit_data.py` | 345 | Bybit API: 50 tickers → scoring + hot list + regime → top 25 → multi-TF klines |
+| `config.py` | 74 | Settings: API keys, model, limits, timeframes, watchlist, momentum + regime thresholds (4-tier) |
+| `fetchers/bybit_data.py` | 362 | Bybit API: 50 tickers → scoring + hot list + regime → top 25 → multi-TF klines (incl. ADX + range_pct) |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
-| `analyzer/prompts.py` | 75 | Professional trader prompt + knowledge + tiered performance feedback + regime awareness |
-| `analyzer/claude_client.py` | 70 | Anthropic API wrapper with prompt caching + compact JSON |
+| `analyzer/prompts.py` | 351 | Professional trader prompt + knowledge + tiered performance feedback + regime/streak/volume/bounce/ADX/range rules |
+| `analyzer/claude_client.py` | 179 | Anthropic API wrapper with prompt caching + compact JSON + losing streak + drought alert + BTC trend injection |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `momentum_pulse.py` | 385 | Momentum detector + market regime detection — runs every 4h on GitHub Actions (zero Claude tokens) |
+| `momentum_pulse.py` | 397 | Momentum detector + 4-tier market regime detection — runs every 4h on GitHub Actions (zero Claude tokens) |
 | `weekly_eval.py` | 1630 | Evaluation engine + BE stop/partial profit model + tiered knowledge distillation |
 | `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
+| `trade_logger.py` | 195 | CLI trade journal manager — open/close/list trades from recent setups |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
 | `.github/workflows/` | — | GitHub Actions: momentum pulse every 4h (secrets via repo settings) |
 | `progress.md` | — | This file — project progress tracker |
@@ -115,7 +122,7 @@ logs/
 | Broad scan pool | 50 tickers (by turnover) |
 | Pre-filter to | 25 coins (by knowledge-based interest score + watchlist + hot list) |
 | Timeframes | 15m, 1h, 4h, 1D |
-| Indicators per TF | RSI(14), EMA 20, EMA 50, volume spike ratio, 20-candle breakout |
+| Indicators per TF | RSI(14), EMA 20, EMA 50, volume spike ratio, 20-candle breakout, **ADX(14)**, **range_pct** |
 | Watchlist (always included) | BTCUSDT, ETHUSDT, SOLUSDT + momentum pulse hot list |
 | Momentum pulse | Every 4h on GitHub Actions (zero Claude tokens) |
 | Schedule | Nightly screener (launchd, 9pm local) + momentum pulse (GitHub Actions, every 4h) |
@@ -153,32 +160,34 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 
 ## Performance & Win Rate
 
-**Status: 28 runs evaluated (101 trades triggered, 111 total setups). Active since 2026-04-22.**
+**Status: 45 runs evaluated (156 trades triggered, 167 total setups). Active since 2026-04-22.**
 
-### Current Stats (as of 2026-05-19)
+### Current Stats (as of 2026-06-01)
 | Metric | Value |
 |---|---|
-| Overall win rate | **37.6%** (38W / 63L) |
-| Avg actual R:R | -0.06 |
-| Avg predicted R:R | 2.1 |
-| **Prediction gap** | **2.2R** (targets still optimistic — R:R floor lowered to 1.5:1 to address) |
-| T1 hit rate | 33/101 (33%) |
-| Direction accuracy (MFE ≥ 0.5R) | **65%** (56/70 with MFE data) — direction usually right |
-| Avg MFE | 1.2R |
-| Simulated T1 at 0.75R | **76% hit rate** (vs 33% current) |
-| Simulated T1 at 1.0R | **62% hit rate** |
+| Overall win rate | **30.8%** (48W / 108L) ⚠️ declining |
+| Avg actual R:R | -0.18 |
+| Avg predicted R:R | 2.0 |
+| **Prediction gap** | **2.2R** |
+| T1 hit rate | 46/156 (29%) |
+| Direction accuracy (MFE ≥ 0.5R) | **62%** (97/156) |
+| Avg MFE | 1.04R |
+| Simulated T1 at 0.75R | **54% hit rate** (41/76) |
+| Simulated T1 at 1.0R | **42% hit rate** (32/76) |
+| Blended WR (partial profit) | 31% (17W / 38L, with 7 BE stops) |
+| Blended avg R:R | -0.37 |
 
 ### By Confidence Level
 | Confidence | Win Rate | Trades | Note |
 |---|---|---|---|
 | High | 22% (2/9) | 9 | Worse than medium — calibration issue |
-| Medium | **41% (30/73)** | 73 | Best performing |
-| Low | 32% (6/19) | 19 | Acceptable |
+| Medium | **34% (38/111)** | 111 | Best performing |
+| Low | 33% (7/21) | 21 | Acceptable |
 
 ### By Model
 | Model | Win Rate | Avg R:R | Trades |
 |---|---|---|---|
-| claude-sonnet-4-6 | **40%** | -0.02 | 89 |
+| claude-sonnet-4-6 | **35%** | -0.11 | 129 |
 | claude-haiku-4-5 | 12% | -0.25 | 8 |
 
 ### Win Rate Trajectory
@@ -191,17 +200,40 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 | 2026-05-10 | 56 | 35.7% | -0.17 |
 | 2026-05-14 | 80 | 38.8% | -0.06 |
 | 2026-05-16 | 96 | 39.6% | -0.02 |
-| 2026-05-19 | 101 | **37.6%** | **-0.06** |
+| 2026-05-19 | 101 | 37.6% | -0.06 |
+| 2026-05-27 | 141 | 33.3% | -0.13 |
+| 2026-05-29 | 148 | 31.8% | -0.17 |
+| 2026-06-01 | 156 | **30.8%** | **-0.18** |
 
-**Win rate dramatically improved from 10.7% → peak 39.6%. Recent dip to 37.6% from 0/5 streak (May 16-17). Monthly: April 16% → May 47%. Feedback loop working.**
+**Win rate peaked at 39.7% (May 22) then collapsed to 30.8% after extended losing streak May 21-Jun 1 (2W/39L = 5% win rate over last 39 trades). Monthly: April 16% → early May 40% → late May/Jun 31%. Root cause: trend-following in a ranging/choppy market with no ADX-based detection. v9 adds ADX, range detection, BTC daily trend guard, and range-specific setups.**
+
+### May 22-25 Losing Streak Analysis (triggered v8 changes)
+
+| Date | Trades | SL | BE Stop | Win | Win Rate |
+|---|---|---|---|---|---|
+| May 22 (2 scans) | 8 | 8 | 0 | 0 | 0% |
+| May 23 | 2 | 2 | 0 | 0 | 0% |
+| May 24 | 5 | 3 | 2 | 0 | 0% |
+| May 25 | 5 | 3 | 1 | 1 | 20% |
+| **Total** | **20** | **16** | **3** | **1** | **5%** |
+
+**Root causes identified and fixed in v8:**
+1. All 20 trades were longs in a declining market (58% declining, BTC -1.26%) — classified as "neutral" but should have been "cautious"
+2. Bounces from oversold daily RSI (sub-35) labeled as "trend_pullback" instead of dead cat bounce
+3. 5 setups per run despite "dangerously low volume" flagged in every brief
+4. Targets at 1.6-2.0R when MFE data shows average of 1.08R — at least 4-5 trades would have won with T1 at 0.75R
+5. No circuit breaker: 10+ consecutive SLs with no selectivity increase
+6. Zero shorts despite >50% of coins declining — self-reinforcing anti-short loop
 
 ### Key Diagnosis
-1. **Direction is right (65% reach 0.5R+ MFE)** but targets too far — execution problem, not analysis problem. R:R floor lowered from 2:1 to 1.5:1 to allow realistic T1 placement.
-2. **High confidence is miscalibrated**: 22% WR vs medium at 41%. Flagged in strategic rules.
-3. **Swing trades failing**: 11% WR (1/9), flagged to avoid. Short trades: 0% WR (0/3), but sample too small — v6 fixed the feedback loop that permanently blocked shorts. Now requires 15+ trades before "avoid" rule.
-4. **Rank #2 outperforms #1**: 48% vs 32% WR. Ranking criteria flagged for review.
-5. **T1 hit rate at 33%** but simulated backtest shows 76% at 0.75R, 62% at 1.0R — proving targets are the bottleneck.
-6. **Partial profit model introduced**: 50% at T1 + BE stop should convert many "direction right, target missed" losses into breakeven or small wins. Data will accumulate from next eval run.
+1. **Direction is right (64% reach 0.5R+ MFE)** but targets too far — execution problem, not analysis problem. v8 hard-caps predicted_rr at 1.5.
+2. **High confidence is miscalibrated**: 22% WR vs medium at 34%. Flagged in strategic rules.
+3. **Swing trades failing**: 25% WR (3/12), flagged to avoid. Short trades: 0% WR (0/3), but sample too small — v6 fixed the feedback loop, v8 forces shorts when >50% declining.
+4. **Rank #2 outperforms #1**: 41% vs 25% WR. Ranking criteria flagged for review.
+5. **T1 hit rate at 31%** but simulated backtest shows 59% at 0.75R, 46% at 1.0R — proving targets are the bottleneck. v8 hard-caps at 1.5R.
+6. **Partial profit model active**: blended WR 38%, 6 BE stops instead of full losses. Data confirms the model helps but targets still need to come down.
+7. **Low volume = low conviction**: when volume is absent, 5 setups means 5 losses. v8 caps at 2 setups in low-volume environments.
+8. **Dead cat bounces kill longs**: post-sell-off recovery bounces (daily RSI sub-35 → 15m/1h flip bullish) are traps, not trend pullbacks. v8 adds explicit detection.
 
 ### What the eval tracks
 - Overall win rate (W/L, avg R:R)
@@ -258,6 +290,143 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-06-02 (v9.1) — Trade Logger CLI + Trade Journal Updates
+
+**Trade Logger Script** (`trade_logger.py`)
+- New CLI tool for managing `logs/trades/my_trades.json` without manual JSON editing
+- `trade open` — shows recent setups from scanner, pick one by number, enter actual entry/SL/TP. Auto-fills `claude_recommendation` from setup file.
+- `trade close` — shows open trades, pick one, enter exit price + reason. Auto-calculates PnL%. Prompts for failure reason on losses.
+- `trade list` — shows all trades with win rate and total PnL summary
+- Terminal shortcut added: `trade` alias in `~/.zshrc`
+
+**Trade Journal Updates**
+- Closed ENJUSDT: SL hit at 0.05964, PnL -1.58% (failure: SL too tight)
+- Closed HYPEUSDT: TP hit at 75.025, PnL +3.87% (first win — took profit below recommended T1 of 76.0)
+- Current record: 1W / 2L (33% WR), total PnL: -4.80%
+
+**Cost impact**: Zero. Trade logger is a local CLI tool with no API calls.
+
+### 2026-06-01 (v9) — Choppy Market Fix: ADX Trend Detection + Range Setups + BTC Guard + Drought Alert
+
+**Problem**: May 21-Jun 1 produced 2 wins in 39 trades (5% win rate), dragging cumulative WR from 40% to 31%. Deep data analysis revealed 3 root causes: (1) system called "trend_pullback" on ranging coins (e.g., XRP 4h ADX=16, clearly ranging — not trending), (2) kept longing BTC-correlated alts while BTC daily was declining, (3) `recent_losses` counter (15/20 losses) was computed but never injected — only consecutive stop losses triggered alerts.
+
+**Data-driven diagnosis (39 trades, May 21-Jun 1):**
+- **31% (12/39) directionally wrong** — MFE < 0.3R, price never moved in predicted direction. All were longs on BTC-correlated alts in a BTC downtrend.
+- **33% (13/39) right direction, weak** — MFE 0.3-0.8R. Choppy market whipsawed these.
+- **36% (14/39) right direction, wrong setup/target** — MFE > 0.8R but still lost. ALL 14 would have hit T1 at 0.75R. Winners during this period all had INDEPENDENT momentum (NEAR, XLM, INJ — decoupled from BTC).
+- XRP recommended 7 times during clear downtrend, all 7 lost.
+- 4/4 TF confluence had 0% win rate — all TFs reflected same BTC-driven decline.
+
+**5 Fixes:**
+
+**1. ADX (14) Trend Strength Indicator** (`fetchers/bybit_data.py`)
+- New `adx_14` computed per timeframe using Wilder's smoothing method
+- ADX < 20 = ranging/choppy (trend-following will fail), 20-25 = weak trend, > 25 = trending
+- New `range_pct` — 20-candle high-low range as % of price. < 5% on 4h = tight consolidation, 5-10% = standard range.
+- Validated on live data: XRP 4h ADX=16.47 (ranging), DOGE 4h ADX=25.47 (borderline trending), BTC 4h ADX=31.56 (trending)
+
+**2. Choppy / Range Market Rules** (`analyzer/prompts.py`)
+- New prompt section teaching Claude how to read ADX and range_pct
+- When ADX < 20 on 4h: DO NOT use "trend_pullback" — use range-specific setups instead
+- Only trade at range BOUNDARIES (near 20-candle high/low), not mid-range
+- Valid range setups: range_mean_reversion, wyckoff_spring, liquidity_sweep, funding_squeeze, failed_breakout
+- Quick 4-8h holds: fade at range extreme, target range midpoint
+- Max 2 setups when most coins show ADX < 20
+- New setup_type `range_mean_reversion` added to JSON enum
+
+**3. BTC Daily Trend Guard** (`analyzer/claude_client.py`, `analyzer/prompts.py`)
+- Extracts BTC 1D trend, RSI, and ADX from technicals and injects prominently into user content
+- When BTC 1D trend is bearish with RSI < 40: explicit warning that correlated alt longs are HIGH RISK
+- Correlated alt longs during BTC bearish daily: REQUIRE 4/4 TF + volume confirmed, otherwise DROP
+- "Decoupled" alts (moving opposite to BTC) are still valid — these were the only winners during the streak
+- Prompt updated: BTC Correlation Awareness section strengthened with Daily Trend Guard rules
+
+**4. Recent Loss Rate Injection — Drought Alert** (`analyzer/claude_client.py`)
+- Activated the previously-unused `recent_losses` counter from `_detect_losing_streak()`
+- 15+/20 recent trades lost → SEVERE DROUGHT: max 1-2 setups, prefer range setups, consider 0 setups
+- 12+/20 recent trades lost → HIGH LOSS RATE: max 2-3 setups, higher quality bar
+- Current state: 15/20 = SEVERE DROUGHT will fire on next run
+- This catches broad losing patterns that the consecutive-stop counter misses (one BE stop resets the streak counter, but 15/20 losses is still terrible)
+
+**5. Validation Checklist Updated** (`analyzer/prompts.py`)
+- New check #3: "ADX trend check — if 4h ADX < 20, this coin is RANGING. Do NOT label it trend_pullback."
+- Failing ADX check → auto-DROP the setup (added to mandatory drop list alongside R:R and dead cat bounce)
+- T1 check updated: "In ranging markets, T1 = range midpoint"
+
+**Cost impact**: +1,600 tokens per run (~5.7% increase, from ~28k to ~29.6k). ~$0.10/month. Well below 2x threshold. Breakdown:
+- System prompt (cached): +680 tokens (ADX/range rules, BTC guard, validation)
+- Market data: +750 tokens (adx_14 + range_pct × 25 symbols × 4 TFs)
+- User content: +170 tokens (BTC section + drought alert)
+
+**Expected impact (backtested against May 21-Jun 1 data):**
+
+| Protection Layer | Would Have Fired? | Effect |
+|---|---|---|
+| ADX < 20 block on trend_pullback | Yes (XRP ADX=16, most alts ranging) | ~20 trades blocked or relabeled to range setups |
+| BTC Daily Trend Guard | Depends on EMA cross timing | Correlated alt longs flagged HIGH RISK |
+| SEVERE DROUGHT (15/20) | Yes | Max 1-2 setups per run instead of 3-5 |
+| Range-boundary-only rule | Yes | Mid-range entries blocked, only range extremes allowed |
+| range_mean_reversion type | N/A (new) | Correct labeling for range plays, tracked separately in eval |
+
+Combined: instead of 39 trades with 2 wins, the system would have produced ~8-12 high-quality range-boundary trades or skipped entirely. The 14 trades with MFE > 0.8R could be captured as partial wins with range-aware targets.
+
+### 2026-05-27 (v8) — Losing Streak Root Cause Fix: Cautious Regime + Circuit Breaker + T1 Hard Cap
+
+**Problem**: May 22-25 produced 16 stop losses in 20 trades (5% win rate). All 20 trades were longs in a declining market that was classified as "neutral." Root cause analysis revealed 6 systemic issues: (1) regime detection too lenient — 58% declining + BTC -1.26% should not be neutral, (2) dead cat bounces from oversold daily RSI mislabeled as "trend_pullback", (3) 5 setups per run in low-volume environments, (4) targets at 1.6-2.0R when MFE proves most trades don't reach 1.1R, (5) no circuit breaker for losing streaks, (6) zero shorts despite >50% of coins declining.
+
+**6 Fixes**:
+
+**1. Cautious Regime Tier** (`config.py`, `momentum_pulse.py`)
+- New 4th regime tier between neutral and risk_off: `cautious` (soft bearish)
+- Triggers: ≥55% declining AND median ≤ -0.5%, OR BTC ≤ -2%, OR ≥50% declining AND BTC ≤ -1.5%
+- Claude limited to max 3 setups, longs require volume OR 4/4 TF, must consider shorts
+- May 22-25 conditions (58% declining, -0.53% median) would now trigger `cautious` instead of `neutral`
+- Config: `REGIME_CAUTIOUS_DECLINE_PCT=55`, `REGIME_CAUTIOUS_MEDIAN_CHANGE=-0.5`, `REGIME_CAUTIOUS_BTC_CHANGE=-2.0`, `REGIME_CAUTIOUS_COMBO_DECLINE=50`, `REGIME_CAUTIOUS_COMBO_BTC=-1.5`
+
+**2. Losing Streak Circuit Breaker** (`analyzer/claude_client.py`)
+- New `_detect_losing_streak()` reads recent eval files, counts consecutive stop losses from most recent backward
+- 5+ consecutive SLs → LOSING STREAK ALERT injected into Claude's user content: max 2 setups, require volume OR 4/4 TF
+- 3-4 consecutive SLs → CAUTION: max 3 setups, increase quality bar
+- On May 25, the system would have detected 8 consecutive SLs and fired the alert
+
+**3. Regime Always Injected** (`analyzer/claude_client.py`)
+- Previously regime metrics only sent to Claude when non-neutral (to save tokens)
+- Now always injected so Claude can see market breadth metrics even in neutral markets
+- Enables Claude to make better judgment calls about setup count and direction (~100 extra tokens)
+
+**4. Dead Cat Bounce Detection** (`analyzer/prompts.py`)
+- New prompt section: "Dead Cat Bounce Detection (CRITICAL)"
+- Teaches Claude the difference between a real trend pullback (daily uptrend → EMA pullback) and a dead cat bounce (daily oversold RSI sub-35 → brief 15m/1h recovery that gets sold into)
+- When daily RSI was sub-35 within last 3 candles: any long must be LOW confidence, tighter targets, labeled "recovery_bounce" not "trend_pullback"
+
+**5. T1 Hard Cap + Volume Gate + Short Requirement + Setup Count Limits** (`analyzer/prompts.py`)
+- **T1 hard cap**: predicted_rr must be 1.5 (the floor IS the ceiling). No more 1.8, 2.0, 2.5 targets. MFE data (avg 1.08R over 141 trades) proves higher targets are unreachable for most trades.
+- **Volume hard gate**: if all symbols show <0.5x volume spike, max 2 setups. Low volume → fewer setups, not 5 setups with caveats.
+- **Short requirement**: when >50% coins declining, Claude MUST actively search for at least 1 short. Cannot use "historical short win rate is low" as excuse (sample is only 3 trades).
+- **Default max 3 setups** (was effectively 5). Regime-specific: risk_off=2, cautious=3, neutral=3, risk_on=5.
+- Updated pre-inclusion checklist with dead-cat-bounce check (#6) and volume gate (#7).
+
+**6. Strategic Rules Updated** (`logs/performance/strategic_rules.md`)
+- Rule 1: "STRICT SELECTIVITY" — 2-3 setups default, not 5
+- Rule 6 (new): "DEAD CAT BOUNCE TRAP" — May 22-25 specific diagnosis
+- Rule 8: "TARGETS TOO FAR — HARD CAP" — predicted_rr must be 1.5
+- Rule 9 (new): "VOLUME IS A GATE, NOT A FLAG" — max 2 setups in low volume
+
+**Cost impact**: ~+100 tokens per run (regime section now always sent, streak section ~50-80 tokens when active). Well below 2x threshold. No additional API calls — streak detection reads local eval files.
+
+**Expected impact (backtested against May 22-25 data)**:
+
+| Protection Layer | Would Have Fired? | Effect |
+|---|---|---|
+| Cautious regime | Yes (58% declining) | Max 3 setups, longs need volume/4TF, consider shorts |
+| Losing streak | Yes by May 25 (8 SLs) | Max 2 setups, strict quality gate |
+| Volume hard gate | Yes (most symbols <0.5x) | Max 2 setups |
+| Dead cat bounce | Yes (daily RSI sub-35 bounces) | All longs flagged LOW confidence |
+| T1 hard cap at 1.5R | Yes | ~4-5 trades saved (MFE reached 0.75-1.05R) |
+| Short requirement | Yes (>50% declining) | At least 1 short per scan |
+
+Combined effect: instead of 20 trades with 16 SLs, the system would have produced ~4-6 high-quality setups with several shorts mixed in. Even if the same % stopped out, the position count reduction alone would have cut losses by 60-70%.
+
 ### 2026-05-25 (v7) — ATH/ATL Exhaustion Setup + Fibonacci Framework + Short Unblock Fix
 
 **Problem**: HYPEUSDT hit ATH at ~$63 with RSI overbought across all 4 timeframes (83/79/64/74). The system correctly detected it via momentum pulse (big_move flag, $711M turnover) and included it in the May 24 scan. Claude flagged it as "DO NOT CHASE" in Risk Flags — but only warned against longs. It did NOT recommend a short, despite textbook exhaustion signals at ATH. HYPE subsequently fell toward the golden pocket (~$35.30). Root cause: (1) `strategic_rules.md` had stale "Avoid short setups" rule from before the v6 safeguard was added — the eval was never re-run to regenerate it; (2) no setup in the playbook covered ATH exhaustion reversals; (3) no Fibonacci retracement framework existed for target placement.
@@ -303,8 +472,9 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 - New `detect_market_regime()` function aggregates the same 50 tickers already fetched (zero extra API calls)
 - Classifies market as `risk_off` (bearish), `neutral`, or `risk_on` (bullish) using 5 aggregate metrics:
   - % of coins declining (breadth), median 24h change, BTC 24h change, avg funding rate, large decline count
-- Classification thresholds (tunable in config):
+- Classification thresholds (tunable in config, updated v8 to 4-tier):
   - `risk_off`: ≥70% declining AND median ≤ -2%, OR BTC ≤ -4%, OR ≥60% declining AND BTC ≤ -3%
+  - `cautious` (v8): ≥55% declining AND median ≤ -0.5%, OR BTC ≤ -2%, OR ≥50% declining AND BTC ≤ -1.5%
   - `risk_on`: ≤30% declining AND median ≥ +2%, OR BTC ≥ +4%, OR ≤40% declining AND BTC ≥ +3%
 - Regime saved in both `hot_list.json` (for main scan) and `last_snapshot.json` (for transition detection)
 - Telegram alert sent on regime transitions (e.g., "MARKET REGIME: NEUTRAL → RISK OFF")
@@ -676,15 +846,30 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
-- [ ] Run `scan` during a market sell-off to verify regime detection triggers and Claude recommends shorts
-- [ ] Run `scan` when a coin is at ATH with overbought RSI to verify Setup 8 triggers a short recommendation
-- [ ] Monitor regime alerts on Telegram — verify transitions are detected without false positives
-- [ ] Verify hot list integration includes regime: run `scan` and confirm market regime printed in output
-- [ ] Run `quarterly-scan` — 129 trades is enough for deep pattern analysis
-- [ ] Compare blended WR vs raw WR after new data comes in — validate that partial profit model shows edge
-- [ ] Monitor if 1.5:1 R:R floor lets Claude set more realistic T1 levels (T1 hit rate should increase from 33%)
-- [ ] Review per-symbol stats — XRPUSDT (67% WR) and SOLUSDT (0/3) trends continue?
-- [ ] Track Setup 8 (ATH/ATL Exhaustion) win rate once enough data accumulates
+- [x] **Trade logger CLI** — `trade_logger.py` for managing my_trades.json (open/close/list), `trade` alias (v9.1)
+- [ ] Run `scan` and verify ADX values appear in setup JSONs — check that ranging coins (ADX < 20) are NOT labeled "trend_pullback"
+- [ ] Verify SEVERE DROUGHT alert fires (15/20 losses) and Claude outputs max 1-2 setups
+- [ ] Verify BTC Daily Trend section appears in user content with RSI + ADX
+- [ ] Check if `range_mean_reversion` setup type appears when coins are ranging at boundaries
+- [ ] Run `quarterly-scan` — 156 trades is plenty for deep pattern analysis
+- [ ] Monitor range_mean_reversion win rate once enough data accumulates
+- [ ] Review per-symbol stats — BTCUSDT (1/8, 12% WR) and ETHUSDT (2/9, 22% WR) consistently underperform
+- [ ] Track whether ADX-based filtering reduces the number of directionally-wrong trades (MFE < 0.3R)
+- [ ] Run `eval-scan` after a few v9 runs to see if range setups perform differently from trend setups
+- [x] **ADX trend strength indicator** — ADX(14) + range_pct per timeframe, distinguishes ranging from trending (v9)
+- [x] **Choppy/range market rules** — new prompt section: ADX interpretation, range-boundary-only trading, max 2 setups when ranging (v9)
+- [x] **BTC Daily Trend Guard** — extracts BTC 1D trend/RSI/ADX, warns when correlated alt longs are HIGH RISK (v9)
+- [x] **Recent loss rate injection (drought alert)** — activates dead `recent_losses` code, 15+/20 → SEVERE DROUGHT max 1-2 setups (v9)
+- [x] **range_mean_reversion setup type** — new type for fading range extremes, quick 4-8h holds (v9)
+- [x] **ADX validation check** — mandatory pre-inclusion check: ADX < 20 → cannot be "trend_pullback", auto-DROP (v9)
+- [x] **Cautious regime tier** — 4th tier between neutral and risk_off, catches soft bearish markets (v8)
+- [x] **Losing streak circuit breaker** — reads eval files, 5+ SLs → max 2 setups + strict quality gate (v8)
+- [x] **Regime always injected** — Claude always sees market breadth metrics, not just when non-neutral (v8)
+- [x] **Dead cat bounce detection** — distinguishes real trend pullbacks from recovery bounces in downtrends (v8)
+- [x] **T1 hard cap** — predicted_rr must be 1.5 (floor = ceiling), based on MFE avg of 1.08R (v8)
+- [x] **Volume hard gate** — low volume environment → max 2 setups, not 5 with caveats (v8)
+- [x] **Short requirement** — must search for shorts when >50% coins declining (v8)
+- [x] **Default max 3 setups** — regime-specific: risk_off=2, cautious=3, neutral=3, risk_on=5 (v8)
 - [x] **ATH/ATL Exhaustion Reversal setup** — Setup 8 in playbook: multi-TF overbought at ATH → short with golden pocket target (v7)
 - [x] **Fibonacci retracement framework** — golden pocket (0.618) + key levels added to market structure knowledge (v7)
 - [x] **Strategic rules short unblock** — re-ran eval-scan, "Avoid shorts" → "NEEDS DATA" + "DIRECTIONAL BLIND SPOT" (v7)
@@ -749,5 +934,8 @@ Phase B (auto-execution) will only be considered after:
 1. 60+ days of evaluated Phase A data
 2. Proven edge from weekly_eval (win rate + R:R)
 3. Hard-coded risk engine built (position sizing, stop enforcement — NOT Claude)
+4. Model comparison data (Sonnet vs Haiku accuracy)
+5. Explicit user approval
+forcement — NOT Claude)
 4. Model comparison data (Sonnet vs Haiku accuracy)
 5. Explicit user approval
