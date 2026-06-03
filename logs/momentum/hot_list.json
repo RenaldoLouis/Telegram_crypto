@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-06-03T19:52:32.203452+00:00",
+  "generated_utc": "2026-06-03T22:29:39.929173+00:00",
   "market_regime": {
     "regime": "cautious",
     "metrics": {
-      "pct_declining": 64.0,
-      "median_change_pct": -0.93,
-      "btc_change_pct": -2.75,
-      "avg_funding_pct": -0.0372,
-      "large_decline_count": 12
+      "pct_declining": 44.0,
+      "median_change_pct": 0.42,
+      "btc_change_pct": -3.2,
+      "avg_funding_pct": -0.0274,
+      "large_decline_count": 6
     },
-    "detected_utc": "2026-06-03T19:52:32.202845+00:00",
-    "previous_regime": "risk_off"
+    "detected_utc": "2026-06-03T22:29:39.928561+00:00",
+    "previous_regime": "cautious"
   },
   "coins": [
     {
@@ -31,20 +31,20 @@
     },
     {
       "symbol": "LABUSDT",
-      "flagged_utc": "2026-06-03T19:52:32.202562+00:00",
-      "expires_utc": "2026-06-05T19:52:32.202562+00:00",
+      "flagged_utc": "2026-06-03T22:29:39.928312+00:00",
+      "expires_utc": "2026-06-05T22:29:39.928312+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move",
         "funding_squeeze"
       ],
-      "last_price": 17.0689,
-      "price_change_24h_pct": -27.7708,
-      "turnover_24h_usd": 743285159.0154,
-      "funding_rate_pct": -2.006581,
-      "open_interest": 2587280.0,
-      "volume_acceleration": 0.8883197845870222,
-      "price_acceleration_pct": 11.2745
+      "last_price": 16.928,
+      "price_change_24h_pct": 81.5705,
+      "turnover_24h_usd": 555947619.3852,
+      "funding_rate_pct": -1.439093,
+      "open_interest": 2495510.0,
+      "volume_acceleration": 0.7479600697552491,
+      "price_acceleration_pct": 53.799699999999994
     },
     {
       "symbol": "PORTALUSDT",
@@ -127,22 +127,6 @@
       "price_acceleration_pct": -0.9455999999999989
     },
     {
-      "symbol": "TONUSDT",
-      "flagged_utc": "2026-06-01T20:19:59.394510+00:00",
-      "expires_utc": "2026-06-03T20:19:59.394510+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 2.2033,
-      "price_change_24h_pct": 17.974899999999998,
-      "turnover_24h_usd": 205852802.7916,
-      "funding_rate_pct": 0.005,
-      "open_interest": 36246012.6,
-      "volume_acceleration": 1.9830471868218575,
-      "price_acceleration_pct": 15.291299999999998
-    },
-    {
       "symbol": "ESPORTSUSDT",
       "flagged_utc": "2026-06-02T22:24:29.419183+00:00",
       "expires_utc": "2026-06-04T22:24:29.419183+00:00",
@@ -160,19 +144,19 @@
     },
     {
       "symbol": "WLDUSDT",
-      "flagged_utc": "2026-06-03T19:52:32.202562+00:00",
-      "expires_utc": "2026-06-05T19:52:32.202562+00:00",
+      "flagged_utc": "2026-06-03T22:29:39.928312+00:00",
+      "expires_utc": "2026-06-05T22:29:39.928312+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 0.5254,
-      "price_change_24h_pct": 29.408800000000003,
-      "turnover_24h_usd": 264251970.2473,
-      "funding_rate_pct": -0.011517,
-      "open_interest": 137897700.8,
-      "volume_acceleration": 1.2771517297904023,
-      "price_acceleration_pct": 10.006900000000002
+      "last_price": 0.5395,
+      "price_change_24h_pct": 33.2756,
+      "turnover_24h_usd": 295251990.4958,
+      "funding_rate_pct": -0.008163,
+      "open_interest": 141499850.3,
+      "volume_acceleration": 1.1173123523714457,
+      "price_acceleration_pct": 3.8667999999999942
     },
     {
       "symbol": "XMRUSDT",
@@ -256,19 +240,19 @@
     },
     {
       "symbol": "ZECUSDT",
-      "flagged_utc": "2026-06-02T22:24:29.419183+00:00",
-      "expires_utc": "2026-06-04T22:24:29.419183+00:00",
-      "trigger": "big_move",
+      "flagged_utc": "2026-06-03T22:29:39.928312+00:00",
+      "expires_utc": "2026-06-05T22:29:39.928312+00:00",
+      "trigger": "funding_squeeze",
       "all_triggers": [
-        "big_move"
+        "funding_squeeze"
       ],
-      "last_price": 596.74,
-      "price_change_24h_pct": 8.8663,
-      "turnover_24h_usd": 489449687.4828,
-      "funding_rate_pct": 0.0051589999999999995,
-      "open_interest": 259478.27,
-      "volume_acceleration": 1.0727232303488126,
-      "price_acceleration_pct": 3.605100000000001
+      "last_price": 620.58,
+      "price_change_24h_pct": 4.2868,
+      "turnover_24h_usd": 528670169.1434,
+      "funding_rate_pct": -0.059465,
+      "open_interest": 251443.85,
+      "volume_acceleration": 1.0173851272630206,
+      "price_acceleration_pct": 3.9789000000000003
     },
     {
       "symbol": "SOLUSDT",
@@ -320,19 +304,35 @@
     },
     {
       "symbol": "CLOUSDT",
-      "flagged_utc": "2026-06-03T19:52:32.202562+00:00",
-      "expires_utc": "2026-06-05T19:52:32.202562+00:00",
+      "flagged_utc": "2026-06-03T22:29:39.928312+00:00",
+      "expires_utc": "2026-06-05T22:29:39.928312+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.17304,
-      "price_change_24h_pct": 26.9459,
-      "turnover_24h_usd": 35307489.7398,
-      "funding_rate_pct": 0.075241,
-      "open_interest": 14852286.0,
-      "volume_acceleration": 1.181569779228102,
-      "price_acceleration_pct": -16.364399999999996
+      "last_price": 0.17638,
+      "price_change_24h_pct": 27.267400000000002,
+      "turnover_24h_usd": 35334145.1604,
+      "funding_rate_pct": 0.084354,
+      "open_interest": 14416530.0,
+      "volume_acceleration": 1.0007549508842584,
+      "price_acceleration_pct": 0.32150000000000034
+    },
+    {
+      "symbol": "HYPEUSDT",
+      "flagged_utc": "2026-06-03T22:29:39.928312+00:00",
+      "expires_utc": "2026-06-05T22:29:39.928312+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 75.07,
+      "price_change_24h_pct": 9.4442,
+      "turnover_24h_usd": 599307363.586,
+      "funding_rate_pct": 0.0039440000000000005,
+      "open_interest": 3973142.14,
+      "volume_acceleration": 1.0284917581932942,
+      "price_acceleration_pct": 5.787000000000001
     }
   ]
 }
