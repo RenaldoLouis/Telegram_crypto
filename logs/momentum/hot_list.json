@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-06-25T18:12:44.666379+00:00",
+  "generated_utc": "2026-06-25T21:46:30.198096+00:00",
   "market_regime": {
-    "regime": "neutral",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 30.0,
-      "median_change_pct": 1.29,
-      "btc_change_pct": -0.07,
-      "avg_funding_pct": -0.0036,
-      "large_decline_count": 5
+      "pct_declining": 60.0,
+      "median_change_pct": -0.85,
+      "btc_change_pct": -1.9,
+      "avg_funding_pct": -0.0033,
+      "large_decline_count": 10
     },
-    "detected_utc": "2026-06-25T18:12:44.665714+00:00",
-    "previous_regime": "risk_off"
+    "detected_utc": "2026-06-25T21:46:30.197485+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
@@ -31,19 +31,19 @@
     },
     {
       "symbol": "REUSDT",
-      "flagged_utc": "2026-06-25T18:12:44.665468+00:00",
-      "expires_utc": "2026-06-27T18:12:44.665468+00:00",
+      "flagged_utc": "2026-06-25T21:46:30.197239+00:00",
+      "expires_utc": "2026-06-27T21:46:30.197239+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.579,
-      "price_change_24h_pct": -11.4137,
-      "turnover_24h_usd": 30674216.919,
-      "funding_rate_pct": -0.220631,
-      "open_interest": 9661539.0,
-      "volume_acceleration": 0.9848496402451745,
-      "price_acceleration_pct": -4.591599999999998
+      "last_price": 0.5645,
+      "price_change_24h_pct": -15.468699999999998,
+      "turnover_24h_usd": 29684509.7941,
+      "funding_rate_pct": -0.19672299999999998,
+      "open_interest": 9267072.0,
+      "volume_acceleration": 0.967734885375771,
+      "price_acceleration_pct": 4.054999999999998
     },
     {
       "symbol": "BTWUSDT",
@@ -63,19 +63,19 @@
     },
     {
       "symbol": "LABUSDT",
-      "flagged_utc": "2026-06-25T07:49:30.099521+00:00",
-      "expires_utc": "2026-06-27T07:49:30.099521+00:00",
+      "flagged_utc": "2026-06-25T21:46:30.197239+00:00",
+      "expires_utc": "2026-06-27T21:46:30.197239+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 17.747,
-      "price_change_24h_pct": 11.350200000000001,
-      "turnover_24h_usd": 154839890.2534,
-      "funding_rate_pct": -0.15398499999999998,
-      "open_interest": 2664796.0,
-      "volume_acceleration": 0.9598160168224148,
-      "price_acceleration_pct": 1.5637000000000008
+      "last_price": 17.4,
+      "price_change_24h_pct": 6.474100000000001,
+      "turnover_24h_usd": 79585838.952,
+      "funding_rate_pct": -0.25126,
+      "open_interest": 2531162.0,
+      "volume_acceleration": 1.0356560920456352,
+      "price_acceleration_pct": -7.999399999999999
     },
     {
       "symbol": "IDUSDT",
@@ -204,38 +204,6 @@
       "open_interest": 3118268.59,
       "volume_acceleration": 1.026876020674649,
       "price_acceleration_pct": 2.239300000000002
-    },
-    {
-      "symbol": "BEATUSDT",
-      "flagged_utc": "2026-06-23T21:44:33.132969+00:00",
-      "expires_utc": "2026-06-25T21:44:33.132969+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 2.0772,
-      "price_change_24h_pct": 30.6415,
-      "turnover_24h_usd": 58629124.0895,
-      "funding_rate_pct": -0.05370900000000001,
-      "open_interest": 5877792.0,
-      "volume_acceleration": 2.261481330023742,
-      "price_acceleration_pct": 13.925699999999999
-    },
-    {
-      "symbol": "GRAMUSDT",
-      "flagged_utc": "2026-06-23T21:44:33.132969+00:00",
-      "expires_utc": "2026-06-25T21:44:33.132969+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 1.5573,
-      "price_change_24h_pct": -7.879300000000001,
-      "turnover_24h_usd": 27207455.0607,
-      "funding_rate_pct": -0.11834700000000001,
-      "open_interest": 4839507.4,
-      "volume_acceleration": 0.888859791739351,
-      "price_acceleration_pct": 1.4434000000000005
     },
     {
       "symbol": "HEIUSDT",
