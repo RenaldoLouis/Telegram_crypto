@@ -1,0 +1,60 @@
+{
+  "run_timestamp_utc": "2026-06-26T13:25:26.175907+00:00",
+  "run_tag": "20260626_1325",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "LABUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 18.4,
+      "entry_high": 18.9,
+      "stop_loss": 16.7,
+      "target_1": 21.6,
+      "target_2": 24.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "btc_bearish_guard_decoupled_exception",
+          "funding_squeeze_extreme",
+          "4tf_confluence_long_exception",
+          "rank_reeval"
+        ],
+        "key_factor": "LABUSDT decoupled from broad BTC selloff (+5.3% vs BTC -3.8%), extreme negative funding (-0.55%) creates short squeeze fuel, 4/4 TF bullish with 1h pullback entry"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.144,
+      "entry_high": 0.146,
+      "stop_loss": 0.151,
+      "target_1": 0.136,
+      "target_2": 0.129,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "ada_short_edge",
+          "btc_bearish_daily_guard_aligned",
+          "short_setup_requirement",
+          "fade_bounce_not_low",
+          "bullish_divergence_bounce_risk"
+        ],
+        "key_factor": "4/4 TF bearish, 59% WR historical edge on ADA shorts, entry on 1h/4h bullish-divergence-driven bounce into resistance \u2014 not at current oversold low"
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "run_timestamp_utc": "2026-07-01T01:45:31.837618+00:00",
+  "run_tag": "20260701_0145",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "KORUUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 700.0,
+      "entry_high": 715.0,
+      "stop_loss": 745.0,
+      "target_1": 643.0,
+      "target_2": 600.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "risk_off_short_requirement",
+          "positive_funding_short_edge",
+          "wait_for_bounce_entry",
+          "short_bias"
+        ],
+        "key_factor": "Positive funding +0.124% with trapped longs in confirmed 4h bearish trend (ADX 35.79); entry only valid on 15m RSI bounce from extreme 7.58"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "TAIKOUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 0.078,
+      "entry_high": 0.0795,
+      "stop_loss": 0.0718,
+      "target_1": 0.0886,
+      "target_2": 0.096,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "risk_off_long_exception",
+          "decoupled_momentum",
+          "extreme_funding_override",
+          "regime_cautious"
+        ],
+        "key_factor": "Extreme -0.848% funding (shorts paying massively) + decoupled +17% vs BTC -3% + 4h volume 3.08x; included as override despite 3/4 TF in RISK_OFF \u2014 drop if strict 4/4 rule preferred"
+      }
+    }
+  ]
+}

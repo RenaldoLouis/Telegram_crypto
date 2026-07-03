@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-06-21T07:48:51.665400+00:00",
+  "run_tag": "20260621_0748",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "PORTALUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.015,
+      "entry_high": 0.0154,
+      "stop_loss": 0.01455,
+      "target_1": 0.0161,
+      "target_2": 0.017,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    },
+    {
+      "rank": 2,
+      "symbol": "SANDUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0574,
+      "entry_high": 0.0582,
+      "stop_loss": 0.0558,
+      "target_1": 0.0609,
+      "target_2": 0.064,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false
+    }
+  ]
+}

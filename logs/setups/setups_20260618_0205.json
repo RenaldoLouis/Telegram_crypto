@@ -1,0 +1,23 @@
+{
+  "run_timestamp_utc": "2026-06-18T02:05:01.129728+00:00",
+  "run_tag": "20260618_0205",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1685,
+      "entry_high": 0.1705,
+      "stop_loss": 0.1748,
+      "target_1": 0.16,
+      "target_2": 0.153,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    }
+  ]
+}

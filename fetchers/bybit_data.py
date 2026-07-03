@@ -80,6 +80,16 @@ class BybitFetcher:
         ], axis=1).max(axis=1)
         df["atr_14"] = tr.rolling(14).mean()
 
+        # --- MACD (12, 26, 9) for momentum direction + acceleration ---
+        ema_12 = df["close"].ewm(span=12, adjust=False).mean()
+        ema_26 = df["close"].ewm(span=26, adjust=False).mean()
+        df["macd"] = ema_12 - ema_26
+        df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
+        df["macd_hist"] = df["macd"] - df["macd_signal"]
+
+        # --- SMA 200 (meaningful on 1D with 200+ candles, NaN otherwise) ---
+        df["sma_200"] = df["close"].rolling(200).mean()
+
         # --- ADX (14) for trend strength (ranging vs trending) ---
         plus_dm = df["high"].diff()
         minus_dm = -df["low"].diff()
@@ -95,7 +105,7 @@ class BybitFetcher:
 
         latest = df.iloc[-1]
 
-        return {
+        result = {
             "current_price": float(latest["close"]),
             "rsi_14": round(float(latest["rsi_14"]), 2) if pd.notna(latest["rsi_14"]) else None,
             "volume_spike_ratio": round(float(latest["vol_spike_ratio"]), 2) if pd.notna(latest["vol_spike_ratio"]) else None,
@@ -107,12 +117,232 @@ class BybitFetcher:
             "atr_pct": round(float(latest["atr_14"] / latest["close"] * 100), 2) if pd.notna(latest["atr_14"]) and latest["close"] > 0 else None,
             "trend": "bullish" if pd.notna(latest["ema_20"]) and pd.notna(latest["ema_50"]) and latest["ema_20"] > latest["ema_50"] else "bearish",
             "adx_14": round(float(latest["adx_14"]), 2) if pd.notna(latest["adx_14"]) else None,
+            "macd": round(float(latest["macd"]), 6) if pd.notna(latest["macd"]) else None,
+            "macd_hist": round(float(latest["macd_hist"]), 6) if pd.notna(latest["macd_hist"]) else None,
             "range_pct": round(float((latest["high_20"] - latest["low_20"]) / latest["close"] * 100), 2) if pd.notna(latest["high_20"]) and pd.notna(latest["low_20"]) and latest["close"] > 0 else None,
             "last_3_candles_pct": [
                 round(float((df.iloc[-i]["close"] - df.iloc[-i]["open"]) / df.iloc[-i]["open"] * 100), 2)
                 for i in [3, 2, 1]
             ],
         }
+
+        # SMA 200 only included when enough candles (1D with 210 candles). Saves tokens on shorter TFs.
+        if pd.notna(latest["sma_200"]):
+            result["sma_200"] = round(float(latest["sma_200"]), 6)
+
+        # Divergence detection (RSI + MACD swing point analysis)
+        divergences = BybitFetcher._detect_divergences(df)
+        if divergences:
+            result["divergences"] = divergences
+
+        return result
+
+    @staticmethod
+    def _check_validated_signals(candles, tf_label):
+        """Check 4 cross-TF validated signal formulas against candle data.
+
+        These formulas passed out-of-sample train/test validation on 15 symbols
+        across both 1h and 4h timeframes. Only called for 1h and 4h.
+
+        Returns list of signal dicts (empty if none fire).
+        """
+        if len(candles) < 55:
+            return []
+
+        df = pd.DataFrame(
+            candles,
+            columns=["timestamp", "open", "high", "low", "close", "volume", "turnover"]
+        )
+        df[["open", "high", "low", "close", "volume"]] = df[
+            ["open", "high", "low", "close", "volume"]
+        ].astype(float)
+
+        # Compute needed indicators
+        delta = df["close"].diff()
+        gain = delta.where(delta > 0, 0).rolling(14).mean()
+        loss = -delta.where(delta < 0, 0).rolling(14).mean()
+        rs = gain / loss
+        df["rsi"] = 100 - (100 / (1 + rs))
+        df["ema20"] = df["close"].ewm(span=20, adjust=False).mean()
+        df["ema50"] = df["close"].ewm(span=50, adjust=False).mean()
+        tr = pd.concat([
+            df["high"] - df["low"],
+            (df["high"] - df["close"].shift()).abs(),
+            (df["low"] - df["close"].shift()).abs(),
+        ], axis=1).max(axis=1)
+        df["atr"] = tr.rolling(14).mean()
+        ema12 = df["close"].ewm(span=12, adjust=False).mean()
+        ema26 = df["close"].ewm(span=26, adjust=False).mean()
+        df["macd"] = ema12 - ema26
+        df["macd_sig"] = df["macd"].ewm(span=9, adjust=False).mean()
+        df["macd_hist"] = df["macd"] - df["macd_sig"]
+        plus_dm = df["high"].diff()
+        minus_dm = -df["low"].diff()
+        plus_dm = plus_dm.where((plus_dm > minus_dm) & (plus_dm > 0), 0.0)
+        minus_dm = minus_dm.where((minus_dm > plus_dm) & (minus_dm > 0), 0.0)
+        atr_w = tr.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
+        plus_di = 100 * plus_dm.ewm(alpha=1/14, min_periods=14, adjust=False).mean() / atr_w
+        minus_di = 100 * minus_dm.ewm(alpha=1/14, min_periods=14, adjust=False).mean() / atr_w
+        di_sum = (plus_di + minus_di).replace(0, float('nan'))
+        dx = 100 * (plus_di - minus_di).abs() / di_sum
+        df["adx"] = dx.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
+
+        c = df.iloc[-1]  # current
+        p = df.iloc[-2]  # previous
+        p2 = df.iloc[-3] # 2 candles ago
+
+        signals = []
+
+        # Guard: need valid indicators
+        if not all(pd.notna(c[col]) for col in ["rsi", "ema20", "ema50", "atr", "adx", "macd_hist"]):
+            return []
+        if c["atr"] <= 0:
+            return []
+
+        # --- Signal 1: RSI Rejection Short ---
+        # RSI was >75 (overbought), now crossing back down. Exhaustion reversal.
+        # Validated: 4h +0.362 test, 1h +1.100 test
+        if (pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
+            p2["rsi"] > 75 and p["rsi"] > 70 and
+            c["rsi"] < 72 and c["rsi"] > 50 and c["rsi"] < p["rsi"]):
+            risk = 2.0 * float(c["atr"])
+            signals.append({
+                "signal": "rsi_rejection_short",
+                "tf": tf_label,
+                "direction": "short",
+                "target_r": 2.0,
+                "stop_atr": 2.0,
+                "indicators": f"RSI {c['rsi']:.1f} (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
+                "historical": "66% WR, +0.36 expect (4h test), +1.10 (1h test)",
+            })
+
+        # --- Signal 2: MACD Momentum Long ---
+        # MACD histogram flips positive in uptrend. Trend continuation.
+        # Validated: 4h +0.500 test, 1h +0.389 test
+        if (pd.notna(p["macd_hist"]) and
+            p["macd_hist"] <= 0 and c["macd_hist"] > 0 and
+            c["ema20"] > c["ema50"] and
+            c["adx"] > 20 and
+            35 <= c["rsi"] <= 65):
+            signals.append({
+                "signal": "macd_momentum_long",
+                "tf": tf_label,
+                "direction": "long",
+                "target_r": 1.5,
+                "stop_atr": 1.5,
+                "indicators": f"MACD hist flipped +, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
+                "historical": "62% WR, +0.50 expect (4h test), +0.39 (1h test)",
+            })
+
+        # --- Signal 3: MACD Momentum Short ---
+        # MACD histogram flips negative in downtrend. Trend continuation.
+        # Validated: 4h +0.357 test, 1h +0.157 test
+        if (pd.notna(p["macd_hist"]) and
+            p["macd_hist"] >= 0 and c["macd_hist"] < 0 and
+            c["ema20"] < c["ema50"] and
+            c["adx"] > 15 and
+            30 <= c["rsi"] <= 55):
+            signals.append({
+                "signal": "macd_momentum_short",
+                "tf": tf_label,
+                "direction": "short",
+                "target_r": 1.5,
+                "stop_atr": 1.0,
+                "indicators": f"MACD hist flipped -, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
+                "historical": "66% WR, +0.36 expect (4h test), +0.16 (1h test)",
+            })
+
+        # --- Signal 4: Trend Pullback Short ---
+        # Downtrend + price pulled back to EMA20 + MACD confirms.
+        # Validated: 4h +0.080 test, 1h +0.151 test
+        if (c["ema20"] < c["ema50"] and
+            c["adx"] > 15 and
+            50 <= c["rsi"] <= 70 and
+            float(c["close"]) < float(c["ema50"]) and
+            abs(float(c["close"]) - float(c["ema20"])) < 0.7 * float(c["atr"]) and
+            c["macd"] < 0):
+            signals.append({
+                "signal": "trend_pullback_short",
+                "tf": tf_label,
+                "direction": "short",
+                "target_r": 2.0,
+                "stop_atr": 1.5,
+                "indicators": f"EMA20<EMA50, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}, near EMA20",
+                "historical": "59% WR, +0.08 expect (4h test), +0.15 (1h test)",
+            })
+
+        return signals
+
+    @staticmethod
+    def _detect_divergences(df, lookback=40, order=3):
+        """Detect RSI and MACD divergences from swing highs/lows.
+
+        Returns list of short labels: rsi_bull, rsi_bear, rsi_h_bull, rsi_h_bear,
+        macd_bull, macd_bear, macd_h_bull, macd_h_bear. Empty if none found.
+        """
+        n = len(df)
+        if n < 2 * order + 2:
+            return []
+
+        window_start = max(0, n - lookback)
+        divergences = []
+
+        # Find swing highs (local maxima in high prices)
+        swing_highs = []
+        for i in range(order, n - order):
+            is_peak = True
+            for j in range(-order, order + 1):
+                if j != 0 and df["high"].iat[i] <= df["high"].iat[i + j]:
+                    is_peak = False
+                    break
+            if is_peak:
+                swing_highs.append(i)
+
+        # Find swing lows (local minima in low prices)
+        swing_lows = []
+        for i in range(order, n - order):
+            is_trough = True
+            for j in range(-order, order + 1):
+                if j != 0 and df["low"].iat[i] >= df["low"].iat[i + j]:
+                    is_trough = False
+                    break
+            if is_trough:
+                swing_lows.append(i)
+
+        # Keep only swing points in lookback window
+        recent_highs = [i for i in swing_highs if i >= window_start]
+        recent_lows = [i for i in swing_lows if i >= window_start]
+
+        for ind_name, ind_col in [("rsi", "rsi_14"), ("macd", "macd")]:
+            ind = df[ind_col]
+
+            # Bearish divergences (from swing highs)
+            if len(recent_highs) >= 2:
+                h1, h2 = recent_highs[-2], recent_highs[-1]
+                iv1, iv2 = ind.iat[h1], ind.iat[h2]
+                if pd.notna(iv1) and pd.notna(iv2):
+                    ph1, ph2 = df["high"].iat[h1], df["high"].iat[h2]
+                    # Regular bearish: price higher high + indicator lower high
+                    if ph2 > ph1 and iv2 < iv1:
+                        divergences.append(f"{ind_name}_bear")
+                    # Hidden bearish: price lower high + indicator higher high
+                    elif ph2 < ph1 and iv2 > iv1:
+                        divergences.append(f"{ind_name}_h_bear")
+
+            # Bullish divergences (from swing lows)
+            if len(recent_lows) >= 2:
+                l1, l2 = recent_lows[-2], recent_lows[-1]
+                iv1, iv2 = ind.iat[l1], ind.iat[l2]
+                if pd.notna(iv1) and pd.notna(iv2):
+                    pl1, pl2 = df["low"].iat[l1], df["low"].iat[l2]
+                    # Regular bullish: price lower low + indicator higher low
+                    if pl2 < pl1 and iv2 > iv1:
+                        divergences.append(f"{ind_name}_bull")
+                    # Hidden bullish: price higher low + indicator lower low
+                    elif pl2 > pl1 and iv2 < iv1:
+                        divergences.append(f"{ind_name}_h_bull")
+
+        return divergences
 
     def get_klines_with_indicators(self, symbol):
         """Fetches 1h candles and calculates basic indicators (legacy single-TF)."""
@@ -132,6 +362,7 @@ class BybitFetcher:
     def get_multi_tf_indicators(self, symbol):
         """Fetches candles across all configured timeframes and computes indicators for each."""
         result = {"symbol": symbol, "timeframes": {}}
+        validated_signals = []
 
         tf_labels = {"15": "15m", "60": "1h", "240": "4h", "D": "1D"}
 
@@ -149,11 +380,21 @@ class BybitFetcher:
                 indicators = self._compute_indicators(candles)
                 label = tf_labels.get(interval, interval)
                 result["timeframes"][label] = indicators
+
+                # Check validated signals on 1h and 4h only
+                if label in ("1h", "4h"):
+                    sigs = BybitFetcher._check_validated_signals(candles, label)
+                    for sig in sigs:
+                        sig["symbol"] = symbol
+                    validated_signals.extend(sigs)
             except Exception as e:
                 print(f"  Warning: {symbol} {interval} kline failed: {e}")
 
             # Small delay to avoid rate limits with 50 symbols x 4 timeframes
             time.sleep(0.05)
+
+        if validated_signals:
+            result["validated_signals"] = validated_signals
 
         return result
 

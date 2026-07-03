@@ -1,0 +1,84 @@
+{
+  "run_timestamp_utc": "2026-06-27T05:44:45.884493+00:00",
+  "run_tag": "20260627_0544",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.15,
+      "entry_high": 0.1535,
+      "stop_loss": 0.1578,
+      "target_1": 0.143,
+      "target_2": 0.138,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "ada_short_edge",
+          "btc_bearish_guard",
+          "tight_t1",
+          "rank_reeval",
+          "dead_cat_bounce_fade"
+        ],
+        "key_factor": "ADA 59% WR short edge; conditional entry at 4h EMA50 resistance after bounce; 4h and 1D bearish ADX 40/44 with hidden bearish divergence confirming downtrend continuation"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 70.5,
+      "entry_high": 71.2,
+      "stop_loss": 69.2,
+      "target_1": 73.33,
+      "target_2": 75.5,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "btc_bearish_guard",
+          "decoupled_alt_priority",
+          "tight_t1",
+          "long_bias_structural_loss"
+        ],
+        "key_factor": "SOL decoupled from BTC (+5% vs BTC +0.5%); pullback to 4h EMA confluence ($70.15-71.20); 4h MACD hist accelerating; 1h ADX 32 confirms trend"
+      }
+    },
+    {
+      "rank": 3,
+      "symbol": "IDUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.039,
+      "entry_high": 0.04,
+      "stop_loss": 0.0378,
+      "target_1": 0.0421,
+      "target_2": 0.045,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "btc_bearish_guard",
+          "decoupled_alt_priority",
+          "tight_t1",
+          "long_bias_structural_loss"
+        ],
+        "key_factor": "IDUSDT 1D bullish (RSI 66, ADX 31) fully decoupled from BTC bearish daily; 4h bullish ADX 39 post-flush recovery; 15m RSI 32 oversold timing signal within bullish higher TF structure"
+      }
+    }
+  ]
+}

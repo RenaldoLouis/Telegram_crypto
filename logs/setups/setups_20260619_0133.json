@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-06-19T01:33:44.413639+00:00",
+  "run_tag": "20260619_0133",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ZEREBROUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0435,
+      "entry_high": 0.0445,
+      "stop_loss": 0.05,
+      "target_1": 0.035,
+      "target_2": 0.0319,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    },
+    {
+      "rank": 2,
+      "symbol": "LABUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 17.5,
+      "entry_high": 17.85,
+      "stop_loss": 19.4,
+      "target_1": 15.2,
+      "target_2": 14.26,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    }
+  ]
+}

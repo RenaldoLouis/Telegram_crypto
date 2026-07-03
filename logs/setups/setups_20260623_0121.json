@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-06-23T01:21:16.173017+00:00",
+  "run_tag": "20260623_0121",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.159,
+      "entry_high": 0.1598,
+      "stop_loss": 0.1625,
+      "target_1": 0.1541,
+      "target_2": 0.15,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    },
+    {
+      "rank": 2,
+      "symbol": "RESOLVUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0221,
+      "entry_high": 0.0224,
+      "stop_loss": 0.02124,
+      "target_1": 0.02399,
+      "target_2": 0.0265,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "run_timestamp_utc": "2026-06-28T02:48:29.174375+00:00",
+  "run_tag": "20260628_0248",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "LABUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 16.5,
+      "entry_high": 17.2,
+      "stop_loss": 15.0,
+      "target_1": 19.4,
+      "target_2": 22.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "funding_squeeze_setup5",
+          "btc_bearish_guard_decoupled",
+          "dead_cat_bounce_check_passed",
+          "partial_profit_rule",
+          "losing_symbols_check_passed"
+        ],
+        "key_factor": "Extreme short crowding (-0.1148% funding) at 4h EMA20 pullback within independently bullish 1D trend (ADX 49.12); hidden bullish divergences on 1D and 4h confirm continuation thesis"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "VELVETUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 1.55,
+      "entry_high": 1.68,
+      "stop_loss": 1.98,
+      "target_1": 1.13,
+      "target_2": 0.9,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "setup8_ath_exhaustion",
+          "short_bias_requirement",
+          "extreme_funding_long_crowded",
+          "wait_for_rejection_candle",
+          "volume_divergence_flag"
+        ],
+        "key_factor": "4h RSI 91.96 and 1D RSI 87.09 are highest in scan after 106% pump; extreme positive funding (+0.0604%) and volume divergence signal distribution \u2014 entry only on 1h rejection candle confirmation"
+      }
+    }
+  ]
+}

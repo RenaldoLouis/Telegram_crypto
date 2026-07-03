@@ -1,0 +1,58 @@
+{
+  "run_timestamp_utc": "2026-07-02T09:01:01.819110+00:00",
+  "run_tag": "20260702_0901",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 60000.0,
+      "entry_high": 60600.0,
+      "stop_loss": 58950.0,
+      "target_1": 62350.0,
+      "target_2": 63800.0,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "btc_bearish_guard",
+          "low_volume_env",
+          "macd_4h_flip",
+          "partial_profit_50pct"
+        ],
+        "key_factor": "4h MACD histogram +218 first bullish flip after sustained decline, price holding above 4h EMA20 at $59,821"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 157.0,
+      "entry_high": 158.5,
+      "stop_loss": 160.0,
+      "target_1": 154.25,
+      "target_2": 151.5,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "4tf_confluence_exception",
+          "low_volume_env",
+          "rank_reeval"
+        ],
+        "key_factor": "4/4 TF bearish alignment with ADX 34-38 on 15m/1h confirming active downtrend; only coin in scan with clean structural short across all timeframes"
+      }
+    }
+  ]
+}

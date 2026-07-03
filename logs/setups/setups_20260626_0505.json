@@ -1,0 +1,35 @@
+{
+  "run_timestamp_utc": "2026-06-26T05:05:09.994145+00:00",
+  "run_tag": "20260626_0505",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1428,
+      "entry_high": 0.1448,
+      "stop_loss": 0.1492,
+      "target_1": 0.1365,
+      "target_2": 0.129,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "risk_off_short_mandate",
+          "ada_priority",
+          "dead_cat_bounce_risk",
+          "wait_for_retest_entry",
+          "tight_t1",
+          "regime_risk_off"
+        ],
+        "key_factor": "4/4 TF bearish confluence with strong ADX on 4h/1h; historically best-performing symbol for shorts; degraded to low confidence due to daily RSI 26.9 (deeply oversold) and 4h bullish divergences signaling potential bounce"
+      }
+    }
+  ]
+}

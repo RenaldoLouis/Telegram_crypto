@@ -1,0 +1,61 @@
+{
+  "run_timestamp_utc": "2026-07-01T14:24:19.882250+00:00",
+  "run_tag": "20260701_1424",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "DYDXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.195,
+      "entry_high": 0.205,
+      "stop_loss": 0.22,
+      "target_1": 0.173,
+      "target_2": 0.155,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "ath_exhaustion_setup8",
+          "regime_cautious",
+          "short_bias",
+          "dead_cat_guard",
+          "tight_t1",
+          "rank_reeval"
+        ],
+        "key_factor": "1D RSI 84.23 with 5.63x climactic volume on +19.5% pump; 4h dual divergence (rsi_bear+macd_bear) confirms exhaustion \u2014 wait for 15m bounce to entry zone before shorting"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.153,
+      "entry_high": 0.158,
+      "stop_loss": 0.163,
+      "target_1": 0.1445,
+      "target_2": 0.138,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "dead_cat_bounce_detection",
+          "regime_cautious",
+          "short_bias",
+          "ada_historical_edge",
+          "tight_t1"
+        ],
+        "key_factor": "1h RSI 87.84 extreme overbought within 1D bearish downtrend (ADX 44.14); 4h rsi_bear divergence + bearish trend label = dead cat bounce in mature markdown, not reversal"
+      }
+    }
+  ]
+}

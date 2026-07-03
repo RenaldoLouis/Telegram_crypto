@@ -18,15 +18,17 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import anthropic
 from pybit.unified_trading import HTTP
 import config
 
 
 # How many days to look forward for each timeframe
+# Swing removed — system now only recommends scalp/intraday.
+# Legacy swing setups fall through to the default (2 days) in the eval logic.
 EVAL_WINDOWS = {
     "scalp": 1,
     "intraday": 2,
-    "swing": 7,
 }
 
 SETUPS_DIR = Path("logs/setups")
@@ -37,6 +39,7 @@ WIN_RATE_HISTORY_FILE = Path("logs/performance/win_rate_history.json")
 LIFETIME_STATS_FILE = Path("logs/performance/lifetime_stats.json")
 STRATEGIC_RULES_FILE = Path("logs/performance/strategic_rules.md")
 RECENT_PERFORMANCE_FILE = Path("logs/performance/recent_performance.md")
+DELTA_REGISTRY_FILE = Path("logs/performance/rule_registry.json")
 
 # Only evaluate setups from the last N weeks
 EVAL_LOOKBACK_WEEKS = 7
@@ -392,6 +395,8 @@ def run_evaluation():
                 result["predicted_rr"] = setup.get("predicted_rr", 0)
                 result["tf_confluence"] = setup.get("tf_confluence", 0)
                 result["rank"] = setup.get("rank", 0)
+                # Self-learning: capture reasoning for rule-level attribution
+                result["rules_applied"] = setup.get("reasoning", {}).get("rules_applied", [])
                 eval_results.append(result)
 
                 status = result["status"]
@@ -416,6 +421,7 @@ def run_evaluation():
                     "run_tag": run_tag,
                     "run_timestamp_utc": run_ts,
                     "model": model,
+                    "regime": record.get("regime", "neutral"),
                     "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
                     "results": eval_results,
                 }
@@ -438,6 +444,11 @@ def run_evaluation():
     generate_recent_performance(all_evals)
     # Human report: regenerate summary.md for human readability
     generate_summary(all_evals)
+
+    # --- Phase 4: Self-learning delta analysis ---
+    # Auto-triggers every N new evaluated trades. Finds patterns,
+    # checks if previous insights helped, generates ACTION rules.
+    maybe_run_delta_analysis(all_evals)
 
 
 def load_manual_trades():
@@ -472,6 +483,8 @@ def _empty_lifetime_stats():
         "stop_timing": {"total_stops": 0, "fast_stops": 0, "candles_sum": 0},
         "target_stats": {"t1_hits": 0, "t2_hits": 0},
         "by_symbol": {},
+        "by_regime": {},
+        "by_rule_applied": {},
         "simulated_t1": {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0},
         "partial_profit": {
             "blended_rr_sum": 0.0,
@@ -518,6 +531,10 @@ def update_lifetime_stats(all_evals):
     # Ensure newer stat keys exist for backward compatibility
     if "by_symbol" not in stats:
         stats["by_symbol"] = {}
+    if "by_regime" not in stats:
+        stats["by_regime"] = {}
+    if "by_rule_applied" not in stats:
+        stats["by_rule_applied"] = {}
     if "simulated_t1" not in stats:
         stats["simulated_t1"] = {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0}
     if "partial_profit" not in stats:
@@ -570,6 +587,14 @@ def update_lifetime_stats(all_evals):
             _increment_bucket(stats["by_timeframe"], r.get("timeframe", "intraday"), r)
             _increment_bucket(stats["by_direction"], r.get("direction", "long"), r)
             _increment_bucket(stats["by_symbol"], r.get("symbol", "unknown"), r)
+
+            # Regime tracking (self-learning)
+            regime = ev.get("regime", "neutral")
+            _increment_bucket(stats["by_regime"], regime, r)
+
+            # Rule-applied tracking (self-learning)
+            for rule_id in r.get("rules_applied", []):
+                _increment_bucket(stats["by_rule_applied"], rule_id, r)
 
             # Monthly trend
             stats["monthly_trend"][month_key]["total"] += 1
@@ -1008,6 +1033,57 @@ def generate_strategic_rules():
         lines.append(
             f"{rule_num}. **BEST MODEL**: {best_model[0]} ({bm_wr:.0f}% WR, {bm_rr:.2f} avg R:R). "
             "Consider using this model for production runs."
+        )
+        rule_num += 1
+
+    # --- Per-regime performance (self-learning) ---
+    by_regime = stats.get("by_regime", {})
+    for regime_label, rs in by_regime.items():
+        if rs["total"] >= 5:
+            r_wr = rs["wins"] / rs["total"] * 100
+            r_rr = rs["rr_sum"] / rs["total"]
+            if r_wr < 15:
+                lines.append(
+                    f"{rule_num}. **{regime_label.upper()} REGIME LOSING**: {rs['wins']}/{rs['total']} "
+                    f"({r_wr:.0f}% WR, {r_rr:.2f} avg R:R). "
+                    f"ACTION: During {regime_label}, reduce to max 1-2 setups and require 4/4 TF + volume."
+                )
+                rule_num += 1
+            elif r_wr >= 40 and rs["total"] >= 8:
+                lines.append(
+                    f"{rule_num}. **{regime_label.upper()} REGIME STRONG**: {rs['wins']}/{rs['total']} "
+                    f"({r_wr:.0f}% WR, {r_rr:.2f} avg R:R). "
+                    f"ACTION: During {regime_label}, maintain current approach — it's working."
+                )
+                rule_num += 1
+
+    # --- Rule-applied effectiveness (self-learning) ---
+    by_rule = stats.get("by_rule_applied", {})
+    effective_rules = []
+    ineffective_rules = []
+    for rule_id, rs in by_rule.items():
+        if rs["total"] >= 5:
+            r_wr = rs["wins"] / rs["total"] * 100
+            if r_wr >= 40:
+                effective_rules.append((rule_id, rs["wins"], rs["total"], r_wr))
+            elif r_wr < 15:
+                ineffective_rules.append((rule_id, rs["wins"], rs["total"], r_wr))
+
+    if effective_rules:
+        eff_str = ", ".join(f"{r[0]} ({r[1]}/{r[2]}={r[3]:.0f}%)" for r in
+                           sorted(effective_rules, key=lambda x: -x[3])[:3])
+        lines.append(
+            f"{rule_num}. **EFFECTIVE RULES**: {eff_str}. "
+            "ACTION: Continue applying these rules — they correlate with wins."
+        )
+        rule_num += 1
+
+    if ineffective_rules:
+        ineff_str = ", ".join(f"{r[0]} ({r[1]}/{r[2]}={r[3]:.0f}%)" for r in
+                             sorted(ineffective_rules, key=lambda x: x[3])[:3])
+        lines.append(
+            f"{rule_num}. **INEFFECTIVE RULES**: {ineff_str}. "
+            "ACTION: Reconsider setups based on these rules — they correlate with losses."
         )
         rule_num += 1
 
@@ -1646,6 +1722,362 @@ def generate_summary(all_evals):
         win_rate_history.append(snapshot)
         WIN_RATE_HISTORY_FILE.write_text(json.dumps(win_rate_history, indent=2), encoding="utf-8")
         print(f"Win rate history updated: {len(win_rate_history)} snapshots")
+
+
+# ============================================================
+# Delta Analysis — Self-Learning System
+# ============================================================
+# Triggered automatically after every eval when enough new trades
+# have accumulated. Replaces the slow quarterly cadence with a
+# faster feedback loop (every ~15 new trades).
+#
+# Flow: eval runs → enough new trades? → call Claude for patterns
+#       → grade previous insights → generate new ACTION rules
+#       → append to strategic_rules.md → next scan reads them
+# ============================================================
+
+DELTA_ANALYSIS_PROMPT = """You are analyzing RECENT performance changes in a crypto screener that recommends Bybit perpetual futures setups.
+
+## Context
+- {new_trades} new evaluated trades since last analysis (total: {total_trades})
+- Win rate at last analysis: {wr_at_last}
+- Current win rate: {current_wr}
+
+## Lifetime Stats (compact)
+```json
+{lifetime_stats}
+```
+
+## Recent 20 Trade Outcomes
+```json
+{recent_trades}
+```
+
+## Current Rules Being Followed
+{current_rules}
+
+## Previous Delta Insights to Evaluate
+{previous_insights}
+
+## Task
+1. **Grade each previous insight** (if any): EFFECTIVE / INEFFECTIVE / INCONCLUSIVE — with one-line reason.
+   Base this on whether the pattern described in the insight improved, worsened, or stayed the same.
+2. **Identify 2-5 NEW actionable patterns** not already in the current rules.
+   Focus on: regime-specific patterns, rule_applied effectiveness, symbol/direction combos,
+   temporal patterns, and anything the algorithmic rules can't detect.
+
+## Output Format (STRICT — parseable)
+### Previous Insight Grades
+- [insight_id]: EFFECTIVE|INEFFECTIVE|INCONCLUSIVE — [reason]
+
+### New Insights
+1. **[SHORT_ID]**: [observation]. ACTION: [specific instruction for Claude].
+2. ...
+
+Rules:
+- Each insight under 50 words. Be concrete — "Avoid ENAUSDT longs in cautious regime" not "Be more careful."
+- SHORT_ID must be lowercase_with_underscores, max 30 chars (e.g., "ada_short_edge", "range_in_cautious")
+- Only include insights NOT already covered by the algorithmic rules above.
+- If win rate DECLINED since last analysis, focus on what went WRONG and what to stop doing.
+- If win rate IMPROVED, identify what's working and reinforce it.
+"""
+
+
+def _load_delta_registry():
+    """Load the delta analysis registry (tracks when analysis ran and insight history)."""
+    if DELTA_REGISTRY_FILE.exists():
+        try:
+            return json.loads(DELTA_REGISTRY_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {
+        "last_delta_trade_count": 0,
+        "last_delta_date": None,
+        "wr_at_last_delta": None,
+        "insights": [],
+    }
+
+
+def _save_delta_registry(registry):
+    """Save the delta analysis registry."""
+    DELTA_REGISTRY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    DELTA_REGISTRY_FILE.write_text(json.dumps(registry, indent=2), encoding="utf-8")
+
+
+def _load_recent_eval_details(all_evals, limit=20):
+    """Load recent evaluated trade details for the delta analysis prompt."""
+    recent = []
+    for ev in sorted(all_evals, key=lambda e: e.get("run_tag", ""), reverse=True):
+        for r in reversed(ev.get("results", [])):
+            if r.get("status") == "evaluated":
+                recent.append({
+                    "symbol": r.get("symbol"),
+                    "direction": r.get("direction"),
+                    "timeframe": r.get("timeframe"),
+                    "setup_type": r.get("setup_type"),
+                    "confidence": r.get("confidence"),
+                    "rank": r.get("rank"),
+                    "won": r.get("won"),
+                    "actual_rr": r.get("actual_rr"),
+                    "blended_rr": r.get("blended_rr"),
+                    "exit_reason": r.get("exit_reason"),
+                    "mfe": r.get("max_favorable_rr"),
+                    "rules_applied": r.get("rules_applied", []),
+                    "regime": ev.get("regime", "neutral"),
+                    "run_tag": ev.get("run_tag"),
+                })
+            if len(recent) >= limit:
+                break
+        if len(recent) >= limit:
+            break
+    return recent
+
+
+def _parse_delta_insights(analysis_text, total_trades):
+    """Parse new insights from delta analysis output."""
+    insights = []
+    # Look for numbered insights after "### New Insights"
+    in_new = False
+    for line in analysis_text.split("\n"):
+        line = line.strip()
+        if "### New Insights" in line or "### new insights" in line.lower():
+            in_new = True
+            continue
+        if in_new and line and line[0].isdigit() and "**" in line:
+            # Extract insight ID and text
+            import re
+            match = re.match(r'\d+\.\s*\*\*(\w+)\*\*:\s*(.+)', line)
+            if match:
+                insight_id = match.group(1).lower()
+                text = match.group(2).strip()
+                insights.append({
+                    "id": insight_id,
+                    "text": text,
+                    "added_at_trade_count": total_trades,
+                    "added_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                    "status": "experimental",
+                    "trades_since": 0,
+                })
+    return insights
+
+
+def _parse_insight_grades(analysis_text):
+    """Parse grades for previous insights from delta analysis output."""
+    grades = {}
+    in_grades = False
+    for line in analysis_text.split("\n"):
+        line = line.strip()
+        if "### Previous Insight Grades" in line or "previous insight grades" in line.lower():
+            in_grades = True
+            continue
+        if in_grades and line.startswith("### "):
+            break  # Next section
+        if in_grades and line.startswith("- "):
+            # Format: - insight_id: EFFECTIVE|INEFFECTIVE|INCONCLUSIVE — reason
+            parts = line[2:].split(":", 1)
+            if len(parts) == 2:
+                insight_id = parts[0].strip().lower()
+                grade_text = parts[1].strip().upper()
+                if "EFFECTIVE" in grade_text and "INEFFECTIVE" not in grade_text:
+                    grades[insight_id] = "confirmed"
+                elif "INEFFECTIVE" in grade_text:
+                    grades[insight_id] = "expired"
+                else:
+                    grades[insight_id] = "experimental"  # inconclusive, keep trying
+    return grades
+
+
+def maybe_run_delta_analysis(all_evals):
+    """Run delta analysis if enough new trades have accumulated.
+
+    This replaces the quarterly cadence with a faster feedback loop.
+    Triggered automatically after every eval — checks if threshold is met.
+    """
+    if not LIFETIME_STATS_FILE.exists():
+        return
+
+    stats = json.loads(LIFETIME_STATS_FILE.read_text(encoding="utf-8"))
+    total = stats["total_evaluated"]
+
+    if total < config.DELTA_ANALYSIS_MIN_TRADES:
+        return  # Not enough total data
+
+    registry = _load_delta_registry()
+    last_count = registry.get("last_delta_trade_count", 0)
+    new_trades = total - last_count
+
+    if new_trades < config.DELTA_ANALYSIS_TRADE_THRESHOLD:
+        print(f"\nDelta analysis: {new_trades} new trades since last analysis "
+              f"(need {config.DELTA_ANALYSIS_TRADE_THRESHOLD}). Skipping.")
+        return
+
+    print(f"\n{'='*50}")
+    print(f"Self-Learning: Delta Analysis")
+    print(f"  {new_trades} new trades since last analysis (total: {total})")
+    print(f"{'='*50}")
+
+    # Compute current win rate
+    overall = stats["overall"]
+    current_wr = f"{overall['wins'] / total * 100:.1f}%" if total > 0 else "N/A"
+    wr_at_last = registry.get("wr_at_last_delta", "N/A")
+
+    # Load recent trade details
+    recent_trades = _load_recent_eval_details(all_evals, limit=20)
+
+    # Load current rules
+    current_rules = ""
+    if STRATEGIC_RULES_FILE.exists():
+        current_rules = STRATEGIC_RULES_FILE.read_text(encoding="utf-8").strip()
+
+    # Format previous insights for evaluation
+    active_insights = [i for i in registry.get("insights", []) if i["status"] != "expired"]
+    if active_insights:
+        prev_text = "\n".join(
+            f"- **{i['id']}** (added {i['added_date']}, {i.get('trades_since', 0)} trades since): {i['text']}"
+            for i in active_insights
+        )
+    else:
+        prev_text = "No previous insights yet — this is the first delta analysis."
+
+    # Build prompt
+    prompt = DELTA_ANALYSIS_PROMPT.format(
+        total_trades=total,
+        new_trades=new_trades,
+        lifetime_stats=json.dumps(stats, indent=2),
+        recent_trades=json.dumps(recent_trades, indent=2),
+        current_rules=current_rules,
+        previous_insights=prev_text,
+        wr_at_last=wr_at_last,
+        current_wr=current_wr,
+    )
+
+    # Call Claude
+    client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+    print("Calling Claude for delta analysis...")
+
+    try:
+        response = client.messages.create(
+            model=config.CLAUDE_MODEL,
+            max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except Exception as e:
+        print(f"  Delta analysis failed: {e}")
+        return
+
+    analysis = response.content[0].text
+    usage = response.usage
+    print(f"  Used {usage.input_tokens}+{usage.output_tokens} tokens.")
+    print(f"\n{analysis}\n")
+
+    # Parse grades for previous insights
+    grades = _parse_insight_grades(analysis)
+    for insight in registry.get("insights", []):
+        if insight["id"] in grades:
+            old_status = insight["status"]
+            insight["status"] = grades[insight["id"]]
+            if old_status != insight["status"]:
+                print(f"  Insight '{insight['id']}': {old_status} → {insight['status']}")
+
+    # Update trades_since for surviving insights
+    for insight in registry.get("insights", []):
+        if insight["status"] != "expired":
+            insight["trades_since"] = total - insight["added_at_trade_count"]
+            # Auto-graduate: experimental → confirmed after 20+ trades if not graded
+            if (insight["status"] == "experimental"
+                    and insight["trades_since"] >= 20
+                    and insight["id"] not in grades):
+                # If not explicitly graded after 20 trades, keep as experimental
+                # (it needs explicit EFFECTIVE grade to confirm)
+                pass
+
+    # Parse new insights
+    new_insights = _parse_delta_insights(analysis, total)
+    if new_insights:
+        print(f"  {len(new_insights)} new insight(s) registered:")
+        for ni in new_insights:
+            print(f"    - {ni['id']}: {ni['text'][:80]}...")
+
+    # Merge: keep non-expired old insights + add new ones
+    surviving = [i for i in registry.get("insights", []) if i["status"] != "expired"]
+    # Avoid duplicate IDs
+    existing_ids = {i["id"] for i in surviving}
+    for ni in new_insights:
+        if ni["id"] not in existing_ids:
+            surviving.append(ni)
+
+    # Update registry
+    registry["last_delta_trade_count"] = total
+    registry["last_delta_date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    registry["wr_at_last_delta"] = current_wr
+    registry["insights"] = surviving
+    _save_delta_registry(registry)
+    print(f"  Registry updated: {len(surviving)} active insight(s).")
+
+    # Apply active insights to strategic_rules.md
+    _apply_delta_insights_to_rules(surviving, total)
+
+    # Save full analysis log
+    log_dir = Path("logs/performance/quarterly")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now(timezone.utc)
+    log_file = log_dir / f"delta_{now.strftime('%Y%m%d')}.md"
+    log_content = (
+        f"# Delta Analysis — {now.strftime('%Y-%m-%d %H:%M UTC')}\n"
+        f"_Based on {total} evaluated trades ({new_trades} new). Model: {config.CLAUDE_MODEL}_\n"
+        f"_WR at last analysis: {wr_at_last} → current: {current_wr}_\n"
+        f"_Tokens: {usage.input_tokens} input + {usage.output_tokens} output_\n\n"
+        f"{analysis}\n"
+    )
+    log_file.write_text(log_content, encoding="utf-8")
+    print(f"  Full analysis saved to {log_file}")
+
+
+def _apply_delta_insights_to_rules(insights, total_trades):
+    """Append active delta insights to strategic_rules.md.
+
+    Only experimental and confirmed insights are included.
+    Expired insights are automatically excluded.
+    """
+    active = [i for i in insights if i["status"] in ("experimental", "confirmed")]
+    if not active:
+        # Remove delta section if no active insights
+        if STRATEGIC_RULES_FILE.exists():
+            content = STRATEGIC_RULES_FILE.read_text(encoding="utf-8")
+            marker = "\n## Delta Insights"
+            if marker in content:
+                content = content[:content.index(marker)].rstrip() + "\n"
+                STRATEGIC_RULES_FILE.write_text(content, encoding="utf-8")
+        return
+
+    # Build the delta insights section
+    now = datetime.now(timezone.utc)
+    lines = [
+        f"\n## Delta Insights (Self-Learning)",
+        f"_Updated {now.strftime('%Y-%m-%d')} from {total_trades} trades. "
+        f"Status: experimental=use as guidance, confirmed=follow strictly._\n",
+    ]
+    for i, insight in enumerate(active, 1):
+        status_marker = "✓" if insight["status"] == "confirmed" else "?"
+        lines.append(
+            f"{i}. [{status_marker}] **{insight['id']}**: {insight['text']}"
+        )
+    lines.append("")
+
+    # Replace previous delta section in strategic_rules.md
+    if STRATEGIC_RULES_FILE.exists():
+        content = STRATEGIC_RULES_FILE.read_text(encoding="utf-8")
+    else:
+        content = "# Strategic Rules\n_No algorithmic rules yet._\n"
+
+    # Remove old delta section AND old quarterly section
+    for marker in ("\n## Delta Insights", "\n## Quarterly Deep Insights"):
+        if marker in content:
+            content = content[:content.index(marker)]
+
+    content = content.rstrip() + "\n" + "\n".join(lines)
+    STRATEGIC_RULES_FILE.write_text(content, encoding="utf-8")
+    print(f"  Strategic rules updated with {len(active)} delta insight(s).")
 
 
 if __name__ == "__main__":

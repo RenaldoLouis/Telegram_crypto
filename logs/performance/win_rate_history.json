@@ -110,5 +110,61 @@
     "losses": 108,
     "win_rate": 30.8,
     "avg_rr": -0.18
+  },
+  {
+    "date": "2026-06-02 08:00 UTC",
+    "total_evaluated": 158,
+    "wins": 48,
+    "losses": 110,
+    "win_rate": 30.4,
+    "avg_rr": -0.19
+  },
+  {
+    "date": "2026-06-05 03:26 UTC",
+    "total_evaluated": 161,
+    "wins": 48,
+    "losses": 113,
+    "win_rate": 29.8,
+    "avg_rr": -0.2
+  },
+  {
+    "date": "2026-06-16 10:06 UTC",
+    "total_evaluated": 162,
+    "wins": 49,
+    "losses": 113,
+    "win_rate": 30.2,
+    "avg_rr": -0.19
+  },
+  {
+    "date": "2026-06-22 02:38 UTC",
+    "total_evaluated": 170,
+    "wins": 52,
+    "losses": 118,
+    "win_rate": 30.6,
+    "avg_rr": -0.16
+  },
+  {
+    "date": "2026-06-25 04:17 UTC",
+    "total_evaluated": 181,
+    "wins": 55,
+    "losses": 126,
+    "win_rate": 30.4,
+    "avg_rr": -0.14
+  },
+  {
+    "date": "2026-06-26 09:00 UTC",
+    "total_evaluated": 182,
+    "wins": 55,
+    "losses": 127,
+    "win_rate": 30.2,
+    "avg_rr": -0.15
+  },
+  {
+    "date": "2026-06-27 08:29 UTC",
+    "total_evaluated": 185,
+    "wins": 55,
+    "losses": 130,
+    "win_rate": 29.7,
+    "avg_rr": -0.15
   }
 ]

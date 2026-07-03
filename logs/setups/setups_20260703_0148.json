@@ -1,0 +1,85 @@
+{
+  "run_timestamp_utc": "2026-07-03T01:48:04.482756+00:00",
+  "run_tag": "20260703_0148",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1645,
+      "entry_high": 0.166,
+      "stop_loss": 0.169,
+      "target_1": 0.1595,
+      "target_2": 0.1545,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "ada_priority",
+          "short_bias",
+          "rsi_overbought_4h",
+          "daily_bearish_guard",
+          "rank_reeval"
+        ],
+        "key_factor": "4h RSI 84.48 extreme overbought + 15m rsi_bear divergence forming exhaustion signal on 1D bearish structure"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "FARTCOINUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.1685,
+      "entry_high": 0.17,
+      "stop_loss": 0.1774,
+      "target_1": 0.1569,
+      "target_2": 0.1465,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "exhaustion_short",
+          "multi_tf_rsi_overbought",
+          "4h_bearish_divergence",
+          "buying_climax_volume"
+        ],
+        "key_factor": "RSI overbought on 1h/4h/1D simultaneously with 4h rsi_bear+macd_bear regular divergences and 2.36x volume climax on 1h"
+      }
+    },
+    {
+      "rank": 3,
+      "symbol": "SLXUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 0.47,
+      "entry_high": 0.483,
+      "stop_loss": 0.449,
+      "target_1": 0.515,
+      "target_2": 0.56,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "funding_squeeze",
+          "extreme_negative_funding",
+          "daily_bullish_structure",
+          "tight_t1",
+          "low_volume_gate"
+        ],
+        "key_factor": "Extreme -2.5% per 8h funding with shorts mathematically unable to hold positions; 1D bullish trend intact with RSI 78 and ADX 36.74"
+      }
+    }
+  ]
+}

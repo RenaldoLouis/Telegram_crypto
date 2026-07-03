@@ -1,0 +1,62 @@
+{
+  "run_timestamp_utc": "2026-06-29T02:40:47.677702+00:00",
+  "run_tag": "20260629_0240",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1437,
+      "entry_high": 0.145,
+      "stop_loss": 0.1495,
+      "target_1": 0.1375,
+      "target_2": 0.13,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "regime_cautious",
+          "ada_priority",
+          "dead_cat_bounce_risk",
+          "tight_t1",
+          "partial_profit"
+        ],
+        "key_factor": "4/4 TF bearish with ADX 37-45 across 4h/1D; 15m bounce into 1h EMA20 resistance provides sell-the-rip entry in established downtrend"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ETHUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1575.0,
+      "entry_high": 1588.0,
+      "stop_loss": 1612.0,
+      "target_1": 1537.0,
+      "target_2": 1490.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "regime_cautious",
+          "volume_gate",
+          "dead_cat_bounce_risk",
+          "tight_t1",
+          "partial_profit"
+        ],
+        "key_factor": "4/4 TF bearish with 1h volume 1.93x confirmed; conditional entry on bounce to 4h EMA20 resistance at $1,585 \u2014 do not enter below $1,575"
+      }
+    }
+  ]
+}

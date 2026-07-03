@@ -15,5 +15,5 @@
 
 ## Market Preferences
 - Focus: BTC, ETH, and top-10 alts
-- Timeframe: 1H - 4H swing
+- Timeframe: 15M scalp to 1H intraday (no swing — avoid overnight risk)
 - Avoid: extreme low-cap (< $50M market cap) perps

@@ -1,0 +1,59 @@
+{
+  "run_timestamp_utc": "2026-06-30T02:33:35.120955+00:00",
+  "run_tag": "20260630_0233",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "LABUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 14.35,
+      "entry_high": 14.6,
+      "stop_loss": 13.5,
+      "target_1": 15.92,
+      "target_2": 17.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "funding_squeeze_priority",
+          "btc_bearish_guard_decoupled",
+          "1d_bullish_trend_anchor",
+          "partial_profit_t1"
+        ],
+        "key_factor": "Extreme negative funding (-1.054908%) into 1D bullish trend support at EMA20 with 15m rsi_bull divergence"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "HYPEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 64.5,
+      "entry_high": 65.5,
+      "stop_loss": 62.2,
+      "target_1": 69.2,
+      "target_2": 72.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "btc_bearish_guard_decoupled",
+          "1d_above_sma200",
+          "1h_strong_adx",
+          "15m_oversold_entry_timing",
+          "partial_profit_t1"
+        ],
+        "key_factor": "Only coin in scan with 1D bullish trend above SMA200 \u2014 genuinely decoupled from BTC bear structure with 1h ADX 38.72 and 15m RSI oversold at pullback to 1h EMA20"
+      }
+    }
+  ]
+}

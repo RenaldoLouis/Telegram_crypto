@@ -1,0 +1,23 @@
+{
+  "run_timestamp_utc": "2026-06-24T00:41:10.629986+00:00",
+  "run_tag": "20260624_0041",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "IDUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0328,
+      "entry_high": 0.0331,
+      "stop_loss": 0.0345,
+      "target_1": 0.0305,
+      "target_2": 0.028,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true
+    }
+  ]
+}

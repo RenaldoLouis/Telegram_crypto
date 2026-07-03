@@ -1,0 +1,60 @@
+{
+  "run_timestamp_utc": "2026-06-30T10:59:34.513267+00:00",
+  "run_tag": "20260630_1059",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XLMUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.178,
+      "entry_high": 0.181,
+      "stop_loss": 0.17,
+      "target_1": 0.1925,
+      "target_2": 0.197,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "btc_decoupled_exception",
+          "dead_cat_bounce_low_conf",
+          "rsi_bull_div_4h",
+          "recovery_bounce_label",
+          "partial_profit_t1"
+        ],
+        "key_factor": "XLM decoupling from BTC (+4.1% vs BTC -1.2%) with 4h rsi_bull + macd_bull divergence and 3/4 TF bullish alignment"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "LABUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 13.0,
+      "entry_high": 13.7,
+      "stop_loss": 11.9,
+      "target_1": 15.53,
+      "target_2": 16.5,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "funding_extreme_-1.154pct",
+          "btc_bearish_guard_high_risk",
+          "correlated_alt_flag",
+          "half_position_size",
+          "wait_15m_reversal_trigger"
+        ],
+        "key_factor": "Funding at -1.154% per 8h (3.5%/day short cost) with 1D bullish trend and oversold stack on 4h/1h; shorts mechanically pressured to cover on any bounce"
+      }
+    }
+  ]
+}

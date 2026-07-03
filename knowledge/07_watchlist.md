@@ -28,7 +28,7 @@ These symbols are analyzed every brief regardless of market-wide movers.
 *Edit this over time as your approach evolves.*
 
 - **Experience**: Intermediate. Strong technical background (developer). Learning disciplined trading.
-- **Preferred timeframes**: 4H for swing setups, 1H for day trade setups. Avoid scalping (< 15M).
+- **Preferred timeframes**: 1H for intraday setups, 15M for scalp entries. No swing trades — too much overnight/macro risk.
 - **Preferred direction**: both long and short — no directional bias.
 - **Leverage comfort**: 3-5x max for BTC/ETH, 2-3x for alts. Never > 10x.
 - **Max concurrent positions**: 2

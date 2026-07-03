@@ -1,0 +1,23 @@
+{
+  "run_timestamp_utc": "2026-06-18T07:23:36.633444+00:00",
+  "run_tag": "20260618_0723",
+  "model": "claude-sonnet-4-6",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XLMUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.23,
+      "entry_high": 0.236,
+      "stop_loss": 0.22,
+      "target_1": 0.252,
+      "target_2": 0.264,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false
+    }
+  ]
+}

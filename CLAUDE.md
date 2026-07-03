@@ -31,14 +31,18 @@ main.py  (orchestrator, async)
   │                                    get_top_movers(50) → single API call
   │                                    _ticker_interest_score() → knowledge-based pre-filter + hot list bonus
   │                                    _load_hot_list() → reads momentum pulse hot list
-  │                                    get_multi_tf_indicators() → 15m/1h/4h/1D klines
+  │                                    get_multi_tf_indicators() → 15m/1h/4h/1D klines + validated signal check
+  │                                    _compute_indicators() → RSI, EMA20/50, ATR, ADX, MACD, SMA200 (1D only), divergences
+  │                                    _check_validated_signals() → 4 cross-TF confirmed formulas on 1h/4h
   │                                    get_full_market_snapshot() → 50 → score → top 25 + hot list → multi-TF
   │
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
   │
   ├── analyzer/prompts.py          → SYSTEM_PROMPT + load_knowledge() + performance feedback + regime awareness
-  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, compact JSON, regime injection,
-  │                                    BTC daily trend extraction, recent loss rate injection, losing streak detection
+  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, extended thinking,
+  │                                    compact JSON, regime injection + explicit regime limits,
+  │                                    effective limit computation, BTC daily trend guard,
+  │                                    losing streak detection, recent loss rate injection
   │
   ├── delivery/telegram_bot.py     → MD→HTML converter, smart chunking, retry with backoff
   │
@@ -53,6 +57,11 @@ main.py  (orchestrator, async)
   ├── quarterly_analysis.py        → Claude-powered deep pattern analysis (run every ~3 months)
   ├── trade_logger.py              → CLI tool for managing my_trades.json (open/close/list trades)
   │
+  ├── backtester.py                → What-if backtester: sweeps T1/filters/regime limits across eval logs
+  ├── historical_backtester.py     → Historical strategy backtester: 12 signal rules, parameter optimizer,
+  │                                    train/test validation, robustness scoring. Caches Bybit klines locally.
+  │                                    4 cross-TF validated formulas integrated into live screener pipeline.
+  │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
         ├── briefs/*.md            → Archived readable briefs
@@ -61,13 +70,15 @@ main.py  (orchestrator, async)
         ├── momentum/
         │     ├── hot_list.json    → Active momentum-flagged coins + market regime (dynamic watchlist)
         │     └── last_snapshot.json → Previous pulse data + regime (for delta detection)
-        └── performance/
-              ├── lifetime_stats.json    → Layer 1: Incremental running counters (incl. by_symbol, simulated_t1)
-              ├── strategic_rules.md     → Layer 2: Prescriptive rules from all history (~600-800 tokens, sent to Claude)
-              ├── recent_performance.md  → Layer 3: Rolling 4-week trade details (~800 tokens, sent to Claude)
-              ├── summary.md             → Human-readable report (NOT sent to Claude)
-              ├── win_rate_history.json   → Win rate snapshots over time
-              └── quarterly/             → Deep analysis logs from quarterly_analysis.py
+        ├── performance/
+        │     ├── lifetime_stats.json    → Layer 1: Incremental running counters (incl. by_symbol, simulated_t1)
+        │     ├── strategic_rules.md     → Layer 2: Prescriptive rules from all history (~600-800 tokens, sent to Claude)
+        │     ├── recent_performance.md  → Layer 3: Rolling 4-week trade details (~800 tokens, sent to Claude)
+        │     ├── summary.md             → Human-readable report (NOT sent to Claude)
+        │     ├── win_rate_history.json   → Win rate snapshots over time
+        │     ├── rule_registry.json     → Delta analysis registry (insight tracking, effectiveness)
+        │     └── quarterly/             → Deep analysis + delta analysis logs
+        └── backtest_cache/              → Cached Bybit klines for historical backtesting (JSON, no expiry)
 ```
 
 ### Data Flow
@@ -76,17 +87,18 @@ main.py  (orchestrator, async)
 1. `BybitFetcher.get_top_movers(50)` → 50 tickers by turnover (single API call)
 2. `_load_hot_list()` → loads momentum pulse hot list (dynamic watchlist, 48h expiry) + market regime
 3. `_ticker_interest_score()` → disqualify illiquid (<$10M vol, <$50M OI), score rest + volume acceleration bonus for hot list coins
-4. Keep top 25 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 25 = 100 kline calls)
-5. `ClaudeAnalyzer.analyze(market, messages)` → always injects market regime metrics + losing streak detection into user content → readable brief + `setups_json` block
-6. `main.py` parses JSON block → saves to `logs/setups/` (includes model name)
-7. Clean brief (JSON stripped) → archived to `logs/briefs/` + delivered via Telegram
+4. Keep top 25 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 25 = 100 kline calls) + `_check_validated_signals()` on 1h/4h (zero extra API calls)
+5. `ClaudeAnalyzer.analyze(market, messages)` → extended thinking enabled (reasoning in separate thinking block, not in output) → injects regime metrics + explicit regime limits + effective limit computation + losing streak detection + BTC trend guard + **validated signals** into user content → readable brief + `setups_json` block
+6. `main.py` parses JSON block → validates against rules (Python, free) → saves to `logs/setups/` (includes model name, regime, reasoning)
+7. Clean brief (JSON stripped + pre-analysis stripped) → archived to `logs/briefs/` + delivered via Telegram
 8. Weekly: `weekly_eval.py` scores past setups (incl. simulated closer-T1 backtest) → updates tiered knowledge:
-   - `lifetime_stats.json` — incremental counters incl. by_symbol, simulated_t1 (O(1) per new eval)
-   - `strategic_rules.md` — prescriptive rules with ACTION lines (~600-800 tokens)
+   - `lifetime_stats.json` — incremental counters incl. by_symbol, by_regime, by_rule_applied, simulated_t1 (O(1) per new eval)
+   - `strategic_rules.md` — prescriptive rules with ACTION lines (~600-800 tokens) + delta insights
    - `recent_performance.md` — rolling 4-week trade details (~800 tokens)
    - `summary.md` — full human-readable report (NOT sent to Claude)
-9. Next run: `build_system_prompt()` loads strategic_rules + recent_performance → Claude self-calibrates
-10. Quarterly: `quarterly_analysis.py` uses Claude to find deep patterns → appends to strategic_rules.md
+   - **Delta analysis** — auto-triggered every 15 new trades: Claude finds patterns, grades previous insights, generates new ACTION rules → appended to strategic_rules.md
+9. Next run: `build_system_prompt()` loads strategic_rules (incl. delta insights) + recent_performance → Claude self-calibrates
+10. Quarterly: `quarterly_analysis.py` uses Claude for deep patterns → can still be run manually for thorough analysis
 
 ### Pre-Filter Scoring (Python, free)
 
@@ -127,9 +139,15 @@ dynamic watchlist in the next main scan. A Telegram alert is sent immediately fo
   - `neutral`: everything else
 - Regime saved in `hot_list.json` (read by main scan) and `last_snapshot.json` (for transition detection)
 - Telegram alert sent on regime transitions (e.g., neutral → cautious → risk_off)
-- During `risk_off`: Claude max 2 setups, skeptical of longs, actively look for shorts
-- During `cautious`: Claude max 3 setups, longs require volume OR 4/4 TF, must consider shorts
-- During `risk_on`: Claude favors trend-following longs, shorts only with clear distribution
+- During `risk_off`: Claude max 2 setups, at least 1 short, longs only with 4/4 TF + volume + structural support
+- During `cautious`: Claude max 3 setups, longs require volume OR 4/4 TF, must include 1 short if bearish structure exists
+- During `risk_on`: Claude favors trend-following longs, shorts only with clear distribution, max 5 setups
+
+**Effective limit computation** (in `claude_client.py`):
+- Resolves regime limit, losing streak limit, and loss rate limit into a single number
+- Claude sees ONE directive: `EFFECTIVE LIMIT THIS RUN: MAXIMUM N SETUPS` with reasoning
+- "Output more than N setups and the entire output is invalid" — removes all ambiguity
+- Example: risk_off (max 2) + 3 consecutive SLs (max 3) → effective max = 2
 
 **Losing streak circuit breaker** (in `claude_client.py`):
 - `_detect_losing_streak()` reads recent eval files and counts consecutive stop losses
@@ -157,11 +175,14 @@ dynamic watchlist in the next main scan. A Telegram alert is sent immediately fo
 
 ### Token Discipline
 
-Current per-run: ~28k tokens (~20k input, ~8k output). Before adding data to the Claude call:
+Current per-run: ~29k input tokens, ~8k output tokens, ~10k thinking tokens (extended thinking).
+Extended thinking is enabled — Claude's reasoning goes into a separate thinking block (not sent to Telegram), keeping output clean and focused on the formatted brief.
+Before adding data to the Claude call:
 - Estimate token impact
 - Anything that >2x's current input needs justification
 - Prefer pre-filtering in Python (free) over sending raw data to Claude (costs tokens)
 - Use compact JSON, not pretty-printed
+- New indicators should be token-efficient (e.g., SMA200 only included in 1D data, not all TFs)
 
 ---
 
@@ -209,6 +230,19 @@ python quarterly_analysis.py
 python trade_logger.py open      # Pick a setup, enter your entry price
 python trade_logger.py close     # Close an open trade, enter exit price
 python trade_logger.py list      # Show all trades with summary
+
+# What-if backtester (uses existing eval data, zero tokens)
+python backtester.py                    # Full report (all analyses)
+python backtester.py --t1-sweep         # T1 distance analysis
+python backtester.py --combo            # Best filter combinations
+python backtester.py --symbols          # Per-symbol breakdown
+
+# Historical strategy backtester (uses cached Bybit klines, zero tokens)
+python historical_backtester.py                              # Default: 6 coins, 1h
+python historical_backtester.py --interval 240               # 4h timeframe
+python historical_backtester.py --optimize all               # Parameter sweep all signals
+python historical_backtester.py --validate all               # Train/test validation
+python historical_backtester.py --validate all --interval 240 --symbols ADAUSDT,XRPUSDT,SOLUSDT,BTCUSDT,ETHUSDT,DOGEUSDT,SUIUSDT,XLMUSDT,ENAUSDT,HBARUSDT,TRXUSDT,NEARUSDT,OPUSDT,ARBUSDT,INJUSDT  # Full cross-TF validation
 ```
 
 **Terminal shortcuts** (defined in `~/.zshrc`):
@@ -253,8 +287,9 @@ python trade_logger.py list      # Show all trades with summary
 - **Telegram bot token**: if exposed in screenshot/log, revoke via `@BotFather`.
 - **Bybit rate limits**: 25 symbols × 4 TFs = 100 kline calls. `time.sleep(0.05)` between calls. If 429s appear, increase delay.
 - **Pandas rolling() warmup**: first 13-20 candles return NaN for RSI and vol spike. Code guards with `pd.notna()` — preserve on edits.
-- **Output truncation**: if `MAX_TOKENS_OUTPUT` is too low, the `setups_json` block gets cut off. Currently 8000 — sufficient for 5 setups + JSON. If output format grows, increase this.
+- **Output truncation**: with extended thinking, reasoning uses its own budget (`THINKING_BUDGET=10000`) separate from text output (`MAX_TOKENS_OUTPUT=8000`). The old issue of pre-analysis notes eating all output tokens is resolved. If the brief still truncates, increase `MAX_TOKENS_OUTPUT`.
 - **Prompt caching**: TTL is ~5 minutes. Once-nightly runs always have cold cache. Caching only helps during testing/debugging bursts.
+- **SMA200 warmup**: SMA(200) requires 200 candles. Only the 1D timeframe fetches 210 candles — SMA200 is NaN (omitted from output) on 15m/1h/4h. This is intentional to save tokens.
 
 ---
 
@@ -263,7 +298,7 @@ python trade_logger.py list      # Show all trades with summary
 `weekly_eval.py` is the feedback loop that makes this system improve over time:
 
 1. Reads `logs/setups/*.json` (each has: symbol, entry, stop, targets, confidence, model)
-2. Waits appropriate time: scalp=1d, intraday=2d, swing=7d
+2. Waits appropriate time: scalp=1d, intraday=2d (swing removed in v9.2 — system only recommends scalp/intraday)
 3. Fetches 15m klines from Bybit for the evaluation window
 4. Checks: entry triggered? → stop or target hit first? → actual R:R
 5. **Breakeven stop model**: once T1 is hit, the simulated stop moves to entry (breakeven). If price reverses after T1, worst case is 0R, not -1.0R.
@@ -284,15 +319,16 @@ Instead of sending all historical data to Claude every run (which would grow unb
 | 3. Recent Performance | `recent_performance.md` | **Yes** | ~800 tokens | **No** — rolling 4-week window |
 | Human Report | `summary.md` | No | ~2K tokens | Yes |
 
-**Layer 1** (`lifetime_stats.json`): Incrementally updated running counters — win rate by setup type, confidence, rank, model, timeframe, direction, **symbol**, monthly trends, prediction gap, MFE stats, **simulated T1 results**. Updated O(1) per new eval (no need to re-read old eval files).
+**Layer 1** (`lifetime_stats.json`): Incrementally updated running counters — win rate by setup type, confidence, rank, model, timeframe, direction, **symbol**, **regime**, **rule_applied**, monthly trends, prediction gap, MFE stats, **simulated T1 results**. Updated O(1) per new eval (no need to re-read old eval files).
 
 **Layer 2** (`strategic_rules.md`): **Prescriptive** rules derived from Layer 1. Each rule includes an "ACTION:" line telling Claude exactly what to do. Examples:
 - "CONFIDENCE MISCALIBRATED: High is 22% but Medium is 43%. ACTION: Only label 'high' if 4/4 TF confluence + volume."
 - "TARGETS TOO FAR: avg MFE is 1.3R. Backtest: T1 at 0.75R hits 65% vs current 28%. ACTION: Set T1 at max 1.0R."
-- "AVOID SWING: 11% WR. ACTION: Do not recommend swing setups."
 - "WINNING SYMBOLS: DOGEUSDT (4/6). ACTION: Give priority when in scan."
+- "CAUTIOUS REGIME LOSING: 3/20 (15% WR). ACTION: During cautious, reduce to max 1-2 setups."
+- "EFFECTIVE RULES: ada_priority (5/8=63%). ACTION: Continue applying — correlates with wins."
 
-Rules cover: selectivity, confidence calibration, timeframe/direction performance, setup types, rank anomalies, T1 placement (MFE-based), per-symbol patterns, stop timing, model comparison, directional blind spots.
+Rules cover: selectivity, confidence calibration, timeframe/direction performance, setup types, rank anomalies, T1 placement (MFE-based), per-symbol patterns, stop timing, model comparison, directional blind spots, **per-regime performance**, **rule-applied effectiveness**.
 
 **Direction rule safeguard**: "Avoid direction" rules require 15+ trades (`DIRECTION_RULE_MIN_TRADES`) before becoming hard rules. With fewer trades, the rule says "NEEDS DATA" instead of "avoid" — this prevents a self-reinforcing feedback loop where a direction (e.g., shorts) gets permanently blocked by a statistically insignificant sample size.
 
@@ -300,15 +336,42 @@ Rules cover: selectivity, confidence calibration, timeframe/direction performanc
 
 **Total prompt overhead**: ~1500-1800 tokens regardless of whether you've run for 1 month or 3 years.
 
-### Quarterly Deep Analysis
+### Self-Learning System (Delta Analysis)
 
-`quarterly_analysis.py` uses Claude to find non-obvious patterns that algorithms can't detect:
-- Temporal patterns (certain days/times perform better)
-- Setup interaction effects (type + confidence + timeframe combos)
-- Symbol-specific patterns (consistently winning/losing symbols)
-- Sequence effects (overconfidence after wins, selectivity after losses)
+The system automatically improves through a multi-layered feedback loop that does NOT require manual trading. The `scan` → `eval-scan` cycle is sufficient — the eval checks Claude's recommendations against actual price data.
 
-Run via `quarterly-scan` terminal command, or manually every ~3 months / after 50+ new evaluated trades. Findings are appended to `strategic_rules.md` under a "Quarterly Deep Insights" section.
+**Delta analysis** (`weekly_eval.py::maybe_run_delta_analysis()`) replaces the slow quarterly cadence:
+- **Trigger**: auto-runs after every `eval-scan` when 15+ new evaluated trades have accumulated (`DELTA_ANALYSIS_TRADE_THRESHOLD` in config)
+- **What it does**: calls Claude to find patterns in recent performance changes, grade previous insights, and generate new ACTION rules
+- **Previous insight grading**: each prior insight is graded EFFECTIVE (→ `confirmed`), INEFFECTIVE (→ `expired`/removed), or INCONCLUSIVE (→ stays `experimental`)
+- **Output**: 2-5 new insights in ACTION format, appended to `strategic_rules.md` under `## Delta Insights`
+- **Rule lifecycle**: `experimental` (new, use as guidance) → `confirmed` (graded effective, follow strictly) → `expired` (graded ineffective, removed from rules)
+- **Registry**: `logs/performance/rule_registry.json` tracks insight history, win rate snapshots, and grading results
+- **Cost**: ~10-15k input + ~1.5k output tokens per delta analysis (far less than nightly scan)
+
+**Reasoning capture** (in setup JSON):
+- Each setup includes a `reasoning` field: `rules_applied` (list of rule IDs that influenced the setup) + `key_factor` (one-line primary driver)
+- Carried through to eval results → tracked in `lifetime_stats.json::by_rule_applied`
+- Enables **rule-level attribution**: "When Claude cited `ada_priority`, did those setups win more?"
+- `generate_strategic_rules()` surfaces effective and ineffective rules in the prompt
+
+**Regime tagging** (in setup + eval records):
+- Market regime (`risk_off`/`cautious`/`neutral`/`risk_on`) is saved in both setup and eval records
+- Tracked in `lifetime_stats.json::by_regime`
+- `generate_strategic_rules()` surfaces per-regime win rates — enables regime-specific learning
+
+**Post-scan validation** (`main.py::validate_setups()`):
+- Pure Python (zero tokens) — runs after Claude's output is parsed, before saving
+- Checks: setup count vs regime limit, valid types/directions/timeframes, predicted_rr cap, duplicates, direction requirements
+- Violations are logged as warnings — does NOT block saving (so eval can still track the outcome)
+
+### Quarterly Deep Analysis (Manual)
+
+`quarterly_analysis.py` is still available for manual deep analysis:
+- Run via `quarterly-scan` terminal command
+- More thorough than delta analysis (uses larger context, deeper prompt)
+- Useful for periodic deep-dives after 50+ new trades
+- Findings append to `strategic_rules.md` (may be overwritten by next delta analysis)
 
 ### Model Comparison
 
@@ -355,3 +418,18 @@ See `progress.md` for:
 - **ATH/ATL Exhaustion Reversal (Setup 8)**: mean reversion short at ATH (or long at ATL) when multi-TF RSI is overbought/oversold + rejection candle confirms the turn. Target: golden pocket (0.618 fib). Requires multi-TF confirmation — not just "it went up a lot."
 - **Golden pocket (0.618 Fibonacci)**: the 61.8% Fibonacci retracement level — highest-probability reversal zone. Used as T1 for Setup 8 (ATH Exhaustion) and as entry zone for trend pullback setups. Measured from the swing low that started the move to the swing high where it ended.
 - **Fibonacci retracement**: a framework for identifying key pullback/target levels. Levels: 0.382 (shallow), 0.5 (midpoint), 0.618 (golden pocket), 0.786 (deep). Defined in `03_market_structure.md` under S&R. Self-fulfilling in crypto due to wide adoption.
+- **Effective limit**: the resolved maximum number of setups per run, computed as `min(regime_max, streak_max, loss_rate_max)`. Injected into Claude's user content as a single non-negotiable number. Removes ambiguity when multiple constraints overlap (e.g., risk_off says max 2, losing streak says max 3 → effective limit is 2).
+- **Extended thinking**: Anthropic API feature enabled in `claude_client.py`. Claude's reasoning (pre-analysis, candidate scanning, rule checking) goes into a separate `thinking` block with its own token budget (`THINKING_BUDGET`). Only the formatted brief text is extracted and sent to Telegram. This prevents reasoning from consuming output tokens and keeps Telegram messages clean.
+- **MACD (Moving Average Convergence Divergence)**: momentum indicator computed per timeframe. `macd` = EMA(12) - EMA(26), measures momentum direction (>0 bullish, <0 bearish). `macd_hist` = MACD - signal(EMA9 of MACD), measures momentum acceleration (>0 accelerating, <0 decelerating). Sign flip = momentum shift. Used to confirm trend entries and spot divergences.
+- **Divergence (regular)**: price makes a new extreme (higher high or lower low) but RSI/MACD does NOT confirm it. Regular bearish: price higher high + indicator lower high = momentum weakening, reversal warning. Regular bullish: price lower low + indicator higher low = selling exhausting, reversal potential. Detected programmatically from swing points (order=3, lookback=40 candles). Labels: `rsi_bear`, `rsi_bull`, `macd_bear`, `macd_bull`.
+- **Divergence (hidden)**: opposite of regular — the indicator makes a new extreme but price does NOT. Hidden bullish: price higher low + indicator lower low = uptrend continuation signal. Hidden bearish: price lower high + indicator higher high = downtrend continuation signal. Labels: `rsi_h_bull`, `rsi_h_bear`, `macd_h_bull`, `macd_h_bear`.
+- **SMA200 (200-period Simple Moving Average)**: long-term trend filter computed on 1D only (requires 200+ candles). Price above SMA200 = macro uptrend, below = macro downtrend. Acts as major dynamic support/resistance. Only present in 1D timeframe data to save tokens (15m/1h/4h fetch too few candles).
+- **Delta analysis**: automated self-learning system in `weekly_eval.py`. Triggers every 15 new evaluated trades. Calls Claude to find patterns, grade previous insights, and generate new ACTION rules. Replaces the slow quarterly cadence with faster feedback. Results appended to `strategic_rules.md` under `## Delta Insights`.
+- **Rule registry** (`rule_registry.json`): tracks delta analysis insights — when they were added, their status (`experimental`/`confirmed`/`expired`), and win rate snapshots. Enables insight effectiveness tracking over time.
+- **Reasoning capture**: `reasoning` field in setup JSON containing `rules_applied` (list of rule IDs) and `key_factor` (one-line driver). Carried through to eval results, tracked in `by_rule_applied` stats. Enables rule-level attribution — "did setups citing this rule win more?"
+- **Post-scan validation**: pure Python validator in `main.py` that checks Claude's output against hard rules (setup count, predicted_rr cap, valid types, regime requirements). Zero token cost. Logs violations as warnings.
+- **Validated signals**: 4 mechanical signal formulas that passed out-of-sample train/test validation on 15 symbols across both 1h and 4h timeframes. Detected by `_check_validated_signals()` in `bybit_data.py` during each scan. When they fire, injected into Claude's user content as `BACKTESTED SIGNALS` section. The 4 confirmed signals: `rsi_rejection_short` (RSI exhaustion at >75), `macd_momentum_long` (MACD hist flip positive in uptrend), `macd_momentum_short` (MACD hist flip negative in downtrend), `trend_pullback_short` (downtrend pullback to EMA20). 4 other signals (trend_pullback_long, range_reversion_long/short, rsi_bounce_long) were rejected as overfit during validation.
+- **Historical backtester** (`historical_backtester.py`): fetches Bybit klines (cached locally), defines 12 mechanical signal rules, runs parameter sweep optimization (`--optimize`), and validates with train/test split (`--validate`). Tests on 1h (42 days) and 4h (167 days) of data. Zero Claude tokens.
+- **What-if backtester** (`backtester.py`): reads existing eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbol blacklists), reports expectancy/WR/profit factor. Useful for answering "what if we changed X?" Zero Claude tokens.
+- **Train/test validation**: splits cached kline data 60/40 — optimizes parameters on train half, evaluates on test (unseen) half. If test expectancy is negative, the formula is overfit and rejected. Prevents integrating patterns that only work in hindsight.
+- **Robustness score**: for each top formula, checks if neighboring parameter values (±1 step) also have positive expectancy. High robustness (>50%) means the formula works across a range of conditions, not just one lucky parameterization.

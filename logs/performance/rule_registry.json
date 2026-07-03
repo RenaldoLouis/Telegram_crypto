@@ -1,0 +1,47 @@
+{
+  "last_delta_trade_count": 182,
+  "last_delta_date": "2026-06-26",
+  "wr_at_last_delta": "30.2%",
+  "insights": [
+    {
+      "id": "ada_short_edge",
+      "text": "ADAUSDT shorts are 13/22 (59% WR, +8.61R overall) \u2014 the single best symbol/direction combo in the dataset. ACTION: When ADAUSDT short setup appears, prioritize it as Rank #1 or #2 regardless of broader market scan. Treat as default anchor trade.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "long_bias_structural_loss",
+      "text": "Longs are 49/165 (30% WR, -28.33R) vs shorts 6/17 (35% WR, +1.19R). Long volume is ~10\u00d7 short volume but long R:R is deeply negative. ACTION: Require stricter entry criteria for longs \u2014 demand confirmed higher-low structure on 2+ timeframes before including any long setup.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "low_mfe_stop_loss_pattern",
+      "text": "Recent losing trades show MFE of 0.0\u20130.52R before stopping out. When MFE < 0.5R on stop-loss trades, the setup likely triggered into adverse momentum. ACTION: If entry candle closes more than 0.3R against position immediately, flag as \"no follow-through\" \u2014 consider tighter initial stop or skip setup.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "rank2_scalp_outlier",
+      "text": "The only 2 scalp trades show +4.12R combined (1W/1L), with RESOLVUSDT hitting 5.12R. Scalp timeframe is tiny sample but positive. ACTION: Do not suppress scalp setups if structure is clean \u2014 tag them explicitly and set T1 at 0.75R per Rule #6, letting runners go.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "wld_ena_avoid_longs",
+      "text": "WLDUSDT and ENAUSDT longs are 0/6 combined (-6R). Both appear repeatedly in recent losing runs. ACTION: Explicitly exclude WLDUSDT and ENAUSDT long setups until a structural trend reversal is confirmed on the daily. Shorts only, with full confluence required.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 0
+    }
+  ]
+}

@@ -16,6 +16,7 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 CLAUDE_MODEL = "claude-sonnet-4-6"   # use sonnet when tuning
 # CLAUDE_MODEL = "claude-haiku-4-5"      # Cheap for daily use;
 MAX_TOKENS_OUTPUT = 8000             # 5 detailed setups + JSON block needs ~6-7k tokens
+THINKING_BUDGET = 10000              # Extended thinking budget — reasoning tokens (not sent to Telegram)
 
 # === Bybit Settings ===
 BYBIT_CATEGORY = "linear"            # USDT perpetuals
@@ -23,8 +24,8 @@ TOP_MOVERS_LIMIT = 25                # Screen top 25 by volume
 KLINE_INTERVALS = {                  # Multi-timeframe candle config
     "15": 100,                       # 15m — scalp (last ~25h)
     "60": 100,                       # 1h  — intraday (last ~4 days)
-    "240": 100,                      # 4h  — swing (last ~16 days)
-    "D": 60,                         # 1D  — trend context (last ~2 months)
+    "240": 100,                      # 4h  — higher TF structure (last ~16 days)
+    "D": 210,                        # 1D  — trend context (last ~7 months, enough for SMA200)
 }
 # Legacy single-TF settings (kept for backward compat)
 KLINE_INTERVAL = "60"
@@ -73,3 +74,7 @@ REGIME_BULLISH_COMBO_BTC = 3.0
 
 # Minimum trades before "avoid direction" rule becomes hard
 DIRECTION_RULE_MIN_TRADES = 15
+
+# === Self-Learning (Delta Analysis) Settings ===
+DELTA_ANALYSIS_TRADE_THRESHOLD = 15  # Trigger delta analysis after N new evaluated trades
+DELTA_ANALYSIS_MIN_TRADES = 20       # Minimum total trades before first delta analysis
