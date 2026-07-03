@@ -11,3 +11,6 @@ venv/
 
 # Telethon session (contains auth tokens)
 screener_session.session
+
+# Backtest cache (large, machine-specific)
+logs/backtest_cache/

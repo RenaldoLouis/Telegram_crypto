@@ -1,13 +1,28 @@
-# Strategic Rules (derived from 185 evaluated trades — solid sample)
-_Last updated: 2026-06-27 08:29 UTC_
+# Strategic Rules (derived from 200 evaluated trades — solid sample)
+_Last updated: 2026-07-03 03:18 UTC_
 
-1. **MODERATE SELECTIVITY**: Win rate is 30%. ACTION: Output 2-4 setups per run. Prefer fewer, higher-conviction setups over padding to 5.
-2. **CONFIDENCE MISCALIBRATED**: 'High' confidence is 2/9 (22% WR) but 'Medium' is 44/146 (30% WR). ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + clean structure. If unsure, label 'medium' — it actually performs better.
+1. **MODERATE SELECTIVITY**: Win rate is 29%. ACTION: Output 2-4 setups per run. Prefer fewer, higher-conviction setups over padding to 5.
+2. **CONFIDENCE MISCALIBRATED**: 'High' confidence is 2/9 (22% WR) but 'Medium' is 45/157 (29% WR). ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + clean structure. If unsure, label 'medium' — it actually performs better.
 3. **'failed_breakout' STRUGGLING** (6 trades): 0% WR, -1.00 avg R:R. ACTION: Apply extra scrutiny — check entries and stops.
-4. **BEST TYPE: 'trend_pullback'**: 31% WR over 163 trades. ACTION: Prioritize this setup type. At least 2 of your top setups should be this type if available.
-5. **RANK #1 UNDERPERFORMS #2**: Rank #1 is 13/57 (23% WR) but Rank #2 is 17/50 (34% WR). ACTION: Your top-ranked setup may be the most 'obvious' one, not the best one. Re-evaluate ranking — prioritize setup quality and structural clarity over headline appeal.
-6. **TARGETS TOO FAR**: Predicted avg 1.9R but actual is -0.15R (gap: 2.0R). Average MFE is 1.1R, so set T1 at max 0.8R from entry. Backtest: T1 at 0.75R would hit 56% of trades, T1 at 1.0R would hit 44% (vs current T1 hit rate of 60/185 = 32%). ACTION: Place T1 at the nearest REAL structural level. Use ATR: T1 should be 1.5-2× ATR from entry, NOT 3×+.
-7. **DIRECTION RIGHT, EXECUTION WRONG**: 63% reach 0.5R+ favorable (avg MFE: 1.07R) but win rate is 30%. ACTION: Widen stops by 0.5× ATR and bring T1 closer. The direction is correct — fix the execution.
-8. **LOSING SYMBOLS**: ONDOUSDT (0/3), ZECUSDT (0/3), WLDUSDT (0/3). ACTION: Require 4/4 TF confluence + volume confirmed for these symbols. Do not include as filler.
-9. **PARTIAL PROFIT HELPS**: With 50% close at T1 + BE stop, blended WR is 37% (vs raw 30%), avg blended R:R -0.21. ACTION: Always recommend taking 50% profit at T1 and moving stop to breakeven.
-10. **BEST MODEL**: claude-sonnet-4-6 (31% WR, -0.13 avg R:R). Consider using this model for production runs.
+4. **BEST TYPE: 'trend_pullback'**: 31% WR over 172 trades. ACTION: Prioritize this setup type. At least 2 of your top setups should be this type if available.
+5. **TARGETS TOO FAR**: Predicted avg 1.9R but actual is -0.15R (gap: 2.0R). Average MFE is 1.0R, so set T1 at max 0.8R from entry. Backtest: T1 at 0.75R would hit 54% of trades, T1 at 1.0R would hit 42% (vs current T1 hit rate of 64/200 = 32%). ACTION: Place T1 at the nearest REAL structural level. Use ATR: T1 should be 1.5-2× ATR from entry, NOT 3×+.
+6. **DIRECTION RIGHT, EXECUTION WRONG**: 62% reach 0.5R+ favorable (avg MFE: 1.05R) but win rate is 29%. ACTION: Widen stops by 0.5× ATR and bring T1 closer. The direction is correct — fix the execution.
+7. **LOSING SYMBOLS**: ONDOUSDT (0/3), ZECUSDT (0/3), WLDUSDT (0/3), HYPEUSDT (0/3). ACTION: Require 4/4 TF confluence + volume confirmed for these symbols. Do not include as filler.
+8. **PARTIAL PROFIT HELPS**: With 50% close at T1 + BE stop, blended WR is 35% (vs raw 29%), avg blended R:R -0.22. ACTION: Always recommend taking 50% profit at T1 and moving stop to breakeven.
+9. **BEST MODEL**: claude-sonnet-4-6 (30% WR, -0.14 avg R:R). Consider using this model for production runs.
+10. **NEUTRAL REGIME LOSING**: 1/8 (12% WR, -0.26 avg R:R). ACTION: During neutral, reduce to max 1-2 setups and require 4/4 TF + volume.
+11. **INEFFECTIVE RULES**: tight_t1 (0/5=0%). ACTION: Reconsider setups based on these rules — they correlate with losses.
+
+## Delta Insights (Self-Learning)
+_Updated 2026-07-03 from 200 trades. Status: experimental=use as guidance, confirmed=follow strictly._
+
+1. [?] **ada_short_edge**: ADAUSDT shorts are 13/22 (59% WR, +8.61R overall) — the single best symbol/direction combo in the dataset. ACTION: When ADAUSDT short setup appears, prioritize it as Rank #1 or #2 regardless of broader market scan. Treat as default anchor trade.
+2. [?] **long_bias_structural_loss**: Longs are 49/165 (30% WR, -28.33R) vs shorts 6/17 (35% WR, +1.19R). Long volume is ~10× short volume but long R:R is deeply negative. ACTION: Require stricter entry criteria for longs — demand confirmed higher-low structure on 2+ timeframes before including any long setup.
+3. [?] **low_mfe_stop_loss_pattern**: Recent losing trades show MFE of 0.0–0.52R before stopping out. When MFE < 0.5R on stop-loss trades, the setup likely triggered into adverse momentum. ACTION: If entry candle closes more than 0.3R against position immediately, flag as "no follow-through" — consider tighter initial stop or skip setup.
+4. [?] **rank2_scalp_outlier**: The only 2 scalp trades show +4.12R combined (1W/1L), with RESOLVUSDT hitting 5.12R. Scalp timeframe is tiny sample but positive. ACTION: Do not suppress scalp setups if structure is clean — tag them explicitly and set T1 at 0.75R per Rule #6, letting runners go.
+5. [?] **wld_ena_avoid_longs**: WLDUSDT and ENAUSDT longs are 0/6 combined (-6R). Both appear repeatedly in recent losing runs. ACTION: Explicitly exclude WLDUSDT and ENAUSDT long setups until a structural trend reversal is confirmed on the daily. Shorts only, with full confluence required.
+6. [?] **labusdt_funding_squeeze_failure**: LABUSDT funding_squeeze longs are 0/4 (-4R total) across 4 consecutive attempts. The extreme funding signal is not producing reversals — the token is in structural decline overriding squeeze dynamics. ACTION: Exclude LABUSDT from all long setups regardless of funding signal until a confirmed daily higher-high is printed. Treat as blacklisted.
+7. [?] **risk_off_regime_shorts_only**: In risk_off regime, the 2 winning trades this batch (TAIKOUSDT long exception, KORUUSDT short) both used explicit override rules. The ADAUSDT short in risk_off lost. Risk_off regime has produced 2 wins from non-standard longs and 1 short loss. ACTION: In risk_off, default to shorts only; only permit longs with explicit decoupled-momentum + extreme-funding override combo — never on trend_pullback alone.
+8. [?] **ada_short_edge_revoked**: ADA shorts are now 0/3 in recent batch despite 59% historical WR. Recent ADA shorts show MFE of 0.27–1.50R then reversal, suggesting ADA has shifted to a ranging/bouncing structure. ACTION: Suspend ada_short_edge priority rule immediately. Require fresh 4H downtrend confirmation + no bullish divergence before re-enabling ADA short prioritization.
+9. [?] **be_stop_mfe_waste**: 4 trades this batch hit BE stop with MFE of 1.07–2.24R (SOLUSDT x2, ADAUSDT x2). These are structural wins being given back. ACTION: When MFE exceeds 1.0R and partial profit rule is active, move stop to +0.3R (not breakeven) to lock in partial gain rather than returning to zero.
+10. [?] **risk_on_regime_avoid**: risk_on regime is 0/4 (-4R) in the full dataset and produced 3 losses this batch (HYPEUSDT, LABUSDT, IDUSDT). The label "risk_on" appears to coincide with extended/exhausted moves, not clean pullbacks. ACTION: During risk_on regime, output maximum 1 setup and require short direction or confirmed pullback to a major structural level on 4H+. Do not take funding_squeeze longs in risk_on.

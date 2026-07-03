@@ -248,9 +248,15 @@ python historical_backtester.py --validate all --interval 240 --symbols ADAUSDT,
 **Terminal shortcuts** (defined in `~/.zshrc`):
 - `scan` — run nightly screener (includes git pull for latest hot list)
 - `pulse` — run momentum pulse locally
-- `eval-scan` — run weekly evaluation
-- `quarterly-scan` — run quarterly deep analysis
+- `eval-scan` — run weekly evaluation + delta analysis (auto-triggers every 15 new trades)
+- `backtest` — full backtest pipeline: validate signal formulas on 4h + 1h (15 symbols, fresh data) + eval combo analysis
 - `trade` — manage manual trade log (`trade open`, `trade close`, `trade list`)
+- `quarterly-scan` — quarterly deep analysis (optional — superseded by `backtest` + delta analysis)
+
+**Recommended workflow:**
+- **Daily:** `scan` (or let launchd run it at 9pm)
+- **Weekly:** `eval-scan` (scores past setups, updates rules, triggers delta analysis)
+- **Monthly:** `backtest` (re-validates signal formulas with fresh market data)
 
 ### Scheduled Runs
 

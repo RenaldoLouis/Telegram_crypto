@@ -1,7 +1,7 @@
 {
-  "last_delta_trade_count": 182,
-  "last_delta_date": "2026-06-26",
-  "wr_at_last_delta": "30.2%",
+  "last_delta_trade_count": 200,
+  "last_delta_date": "2026-07-03",
+  "wr_at_last_delta": "29.0%",
   "insights": [
     {
       "id": "ada_short_edge",
@@ -9,7 +9,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 18
     },
     {
       "id": "long_bias_structural_loss",
@@ -17,7 +17,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 18
     },
     {
       "id": "low_mfe_stop_loss_pattern",
@@ -25,7 +25,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 18
     },
     {
       "id": "rank2_scalp_outlier",
@@ -33,13 +33,53 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 18
     },
     {
       "id": "wld_ena_avoid_longs",
       "text": "WLDUSDT and ENAUSDT longs are 0/6 combined (-6R). Both appear repeatedly in recent losing runs. ACTION: Explicitly exclude WLDUSDT and ENAUSDT long setups until a structural trend reversal is confirmed on the daily. Shorts only, with full confluence required.",
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 18
+    },
+    {
+      "id": "labusdt_funding_squeeze_failure",
+      "text": "LABUSDT funding_squeeze longs are 0/4 (-4R total) across 4 consecutive attempts. The extreme funding signal is not producing reversals \u2014 the token is in structural decline overriding squeeze dynamics. ACTION: Exclude LABUSDT from all long setups regardless of funding signal until a confirmed daily higher-high is printed. Treat as blacklisted.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "risk_off_regime_shorts_only",
+      "text": "In risk_off regime, the 2 winning trades this batch (TAIKOUSDT long exception, KORUUSDT short) both used explicit override rules. The ADAUSDT short in risk_off lost. Risk_off regime has produced 2 wins from non-standard longs and 1 short loss. ACTION: In risk_off, default to shorts only; only permit longs with explicit decoupled-momentum + extreme-funding override combo \u2014 never on trend_pullback alone.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "ada_short_edge_revoked",
+      "text": "ADA shorts are now 0/3 in recent batch despite 59% historical WR. Recent ADA shorts show MFE of 0.27\u20131.50R then reversal, suggesting ADA has shifted to a ranging/bouncing structure. ACTION: Suspend ada_short_edge priority rule immediately. Require fresh 4H downtrend confirmation + no bullish divergence before re-enabling ADA short prioritization.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "be_stop_mfe_waste",
+      "text": "4 trades this batch hit BE stop with MFE of 1.07\u20132.24R (SOLUSDT x2, ADAUSDT x2). These are structural wins being given back. ACTION: When MFE exceeds 1.0R and partial profit rule is active, move stop to +0.3R (not breakeven) to lock in partial gain rather than returning to zero.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "risk_on_regime_avoid",
+      "text": "risk_on regime is 0/4 (-4R) in the full dataset and produced 3 losses this batch (HYPEUSDT, LABUSDT, IDUSDT). The label \"risk_on\" appears to coincide with extended/exhausted moves, not clean pullbacks. ACTION: During risk_on regime, output maximum 1 setup and require short direction or confirmed pullback to a major structural level on 4H+. Do not take funding_squeeze longs in risk_on.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
       "status": "experimental",
       "trades_since": 0
     }

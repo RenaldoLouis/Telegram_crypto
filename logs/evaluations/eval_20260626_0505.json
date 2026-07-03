@@ -1,0 +1,43 @@
+{
+  "run_tag": "20260626_0505",
+  "run_timestamp_utc": "2026-06-26T05:05:09.994145+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-07-03T03:18:55.079767+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.1428,
+      "exit_price": 0.1492,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.27,
+      "candles_to_exit": 43,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 1.5,
+      "tf_confluence": 4,
+      "rank": 1,
+      "rules_applied": [
+        "risk_off_short_mandate",
+        "ada_priority",
+        "dead_cat_bounce_risk",
+        "wait_for_retest_entry",
+        "tight_t1",
+        "regime_risk_off"
+      ]
+    }
+  ]
+}

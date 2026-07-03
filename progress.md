@@ -394,11 +394,24 @@ python historical_backtester.py                   # Default: 6 coins, 1h, fixed 
 python historical_backtester.py --interval 240    # 4h timeframe
 python historical_backtester.py --optimize all    # Parameter sweep all signals
 python historical_backtester.py --validate all    # Train/test validation
-python historical_backtester.py --validate all --interval 240 --symbols ADAUSDT,XRPUSDT,...  # Full validation
+python historical_backtester.py --full            # Full pipeline: 4h + 1h validate + eval combos (recommended)
 
 # Screener (validated signals now included automatically)
 python main.py                                    # scan as usual — validated signals injected if they fire
 ```
+
+**Terminal shortcuts** (defined in `~/.zshrc`):
+- `scan` — nightly screener (daily)
+- `eval-scan` — weekly evaluation + delta analysis
+- `backtest` — full backtest pipeline: validate 4h + 1h + eval combos (monthly)
+- `trade` — manual trade logger
+- `pulse` — momentum pulse (runs automatically on GitHub Actions)
+- `quarterly-scan` — deep analysis (optional — superseded by `backtest` + delta analysis)
+
+**Recommended workflow:**
+- **Daily:** `scan` (or let launchd run it at 9pm)
+- **Weekly:** `eval-scan` (scores past setups, updates rules, triggers delta analysis)
+- **Monthly:** `backtest` (re-validates signal formulas with fresh market data)
 
 **Cost impact**: Zero for backtesting tools (pure Python + cached Bybit data). Signal detection in live pipeline: zero extra API calls, ~100-200 tokens per run in Claude prompt. Total monthly cost unchanged.
 
@@ -1135,9 +1148,11 @@ Combined effect: instead of 20 trades with 16 SLs, the system would have produce
 - [x] **Cross-TF validation** — validated on both 1h (42 days) and 4h (167 days) across 15 symbols. 4 of 8 signals confirmed, 4 rejected as overfit (v11.0)
 - [x] **Validated signal integration** — 4 confirmed formulas (rsi_rejection_short, macd_momentum_long/short, trend_pullback_short) injected into Claude's prompt when they fire (v11.0)
 - [ ] Run `eval-scan` to trigger first delta analysis (need 15+ new trades since last analysis)
+- [x] **`backtest` terminal shortcut** — runs full pipeline (`--full`): validate 4h + 1h + eval combos in one command (v11.0)
+- [x] **`quarterly-scan` superseded** — `backtest` + delta analysis replaces quarterly deep analysis for routine use (v11.0)
 - [ ] Run several `scan` cycles with validated signals active and compare WR vs pre-v11 setups
 - [ ] Monitor validated signal hit rate — how often do they fire, and do Claude's setups align with them?
-- [ ] Re-run `--validate all` with refreshed kline data after 2-4 weeks to check if formulas still hold
+- [ ] Monthly: run `backtest` to re-validate signal formulas with fresh market data
 - [ ] Review per-symbol stats — BTCUSDT (1/8, 12% WR) and ETHUSDT (2/9, 22% WR) consistently underperform
 - [x] **ADX trend strength indicator** — ADX(14) + range_pct per timeframe, distinguishes ranging from trending (v9)
 - [x] **Choppy/range market rules** — new prompt section: ADX interpretation, range-boundary-only trading, max 2 setups when ranging (v9)

@@ -1785,7 +1785,92 @@ def main():
                         help="Min trades for optimize results (default: 15)")
     parser.add_argument("--top-n", type=int, default=20,
                         help="Show top N results per signal in optimize (default: 20)")
+    parser.add_argument("--full", action="store_true",
+                        help="Full pipeline: validate on 4h + 1h (15 symbols, fresh data) + eval combo analysis")
     args = parser.parse_args()
+
+    # ── Full pipeline mode: validate both TFs + eval combo ──
+    if args.full:
+        full_symbols = ",".join(EXPANDED_SYMBOLS)
+        all_sigs = list(PARAM_GRIDS.keys())
+
+        print("\n" + "=" * 80)
+        print("  FULL BACKTEST PIPELINE")
+        print("  Step 1/3: Validate on 4h (167 days, 15 symbols, fresh data)")
+        print("  Step 2/3: Validate on 1h (42 days, 15 symbols, fresh data)")
+        print("  Step 3/3: Analyze Claude's eval history (combo filters)")
+        print("=" * 80)
+
+        # Step 1: Validate on 4h
+        section("STEP 1/3 — VALIDATE ON 4h (167 DAYS)")
+        dfs_4h = {}
+        for sym in EXPANDED_SYMBOLS:
+            candles = fetch_klines(sym, "240", 1000, use_cache=False)
+            if candles and len(candles) >= 100:
+                dfs_4h[sym] = compute_indicators_df(candles)
+        if dfs_4h:
+            results_4h = run_validation(dfs_4h, all_sigs, args.cooldown, args.eval_window,
+                                        args.min_trades, args.split)
+        else:
+            print("  No data for 4h validation.")
+            results_4h = []
+
+        # Step 2: Validate on 1h
+        section("STEP 2/3 — VALIDATE ON 1h (42 DAYS)")
+        dfs_1h = {}
+        for sym in EXPANDED_SYMBOLS:
+            candles = fetch_klines(sym, "60", 1000, use_cache=False)
+            if candles and len(candles) >= 100:
+                dfs_1h[sym] = compute_indicators_df(candles)
+        if dfs_1h:
+            results_1h = run_validation(dfs_1h, all_sigs, args.cooldown, args.eval_window,
+                                        args.min_trades, args.split)
+        else:
+            print("  No data for 1h validation.")
+            results_1h = []
+
+        # Step 3: Run eval combo analysis
+        section("STEP 3/3 — CLAUDE EVAL COMBO ANALYSIS")
+        try:
+            from backtester import (load_all_evals, load_setup_lookup, merge_trades,
+                                    report_baseline, report_combo, report_findings)
+            trades = load_all_evals()
+            setup_lookup = load_setup_lookup()
+            trades = merge_trades(trades, setup_lookup)
+            if trades:
+                print(f"  Loaded {len(trades)} evaluated trades.")
+                report_baseline(trades)
+                report_combo(trades)
+            else:
+                print("  No evaluated trades found.")
+        except Exception as e:
+            print(f"  Could not run eval combo analysis: {e}")
+
+        # Final cross-TF summary
+        section("CROSS-TF SUMMARY")
+        passed_4h = {v["signal"] for v in results_4h} if results_4h else set()
+        passed_1h = {v["signal"] for v in results_1h} if results_1h else set()
+        both = passed_4h & passed_1h
+        only_4h = passed_4h - passed_1h
+        only_1h = passed_1h - passed_4h
+
+        if both:
+            print(f"\n  ★ CONFIRMED on BOTH timeframes (safe to integrate):")
+            for sig in sorted(both):
+                print(f"    - {sig}")
+        if only_4h:
+            print(f"\n  ⚠ 4h only (use with caution):")
+            for sig in sorted(only_4h):
+                print(f"    - {sig}")
+        if only_1h:
+            print(f"\n  ⚠ 1h only (use with caution):")
+            for sig in sorted(only_1h):
+                print(f"    - {sig}")
+        if not both and not only_4h and not only_1h:
+            print("\n  No formulas passed validation on either timeframe.")
+
+        print()
+        sys.exit(0)
 
     symbols = [s.strip().upper() for s in args.symbols.split(",")]
     target_rs = [float(t) for t in args.targets.split(",")]

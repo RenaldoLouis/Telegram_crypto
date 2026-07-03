@@ -1,0 +1,92 @@
+{
+  "run_tag": "20260627_0544",
+  "run_timestamp_utc": "2026-06-27T05:44:45.884493+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-07-03T03:18:56.608953+00:00",
+  "results": [
+    {
+      "status": "not_triggered",
+      "reason": "Price never reached entry zone",
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "ada_short_edge",
+        "btc_bearish_guard",
+        "tight_t1",
+        "rank_reeval",
+        "dead_cat_bounce_fade"
+      ]
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 71.2,
+      "exit_price": 71.2,
+      "exit_reason": "be_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": true,
+      "actual_rr": 0.0,
+      "blended_rr": 0.53,
+      "won": false,
+      "max_favorable_rr": 1.07,
+      "candles_to_exit": 136,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 2,
+      "rules_applied": [
+        "btc_bearish_guard",
+        "decoupled_alt_priority",
+        "tight_t1",
+        "long_bias_structural_loss"
+      ]
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.03918,
+      "exit_price": 0.0378,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.95,
+      "candles_to_exit": 74,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": false,
+      "symbol": "IDUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 3,
+      "rules_applied": [
+        "btc_bearish_guard",
+        "decoupled_alt_priority",
+        "tight_t1",
+        "long_bias_structural_loss"
+      ]
+    }
+  ]
+}

@@ -1,10 +1,25 @@
 # Recent Performance (last 4 weeks)
-_29 trades: 7W / 22L (24% WR, 0.05 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 48% WR, 0.10 avg blended R:R_
+_39 trades: 10W / 29L (26% WR, 0.05 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 44% WR, 0.06 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-01 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.22 (W) | 1.74 | target_2 | 2.24R |
+| 2026-07-01 | TAIKOUSDT | L | intra | funding_sque | low | 3/4 | 1.5 | 2.14 (W) | 1.66 | target_2 | 2.15R |
+| 2026-06-30 | XLMUSDT | L | intra | trend_pullba | low | 3/4 | 1.5 | 1.92 (W) | 1.68 | target_2 | 1.95R |
+| 2026-06-30 | LABUSDT | L | intra | funding_sque | low | 1/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.15R |
+| 2026-06-30 | LABUSDT | L | intra | funding_sque | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.34R |
+| 2026-06-30 | HYPEUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.3R |
+| 2026-06-29 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -0.44 (L) | -0.44 | expired | 0.43R |
+| 2026-06-29 | ETHUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.54R |
+| 2026-06-28 | LABUSDT | L | intra | funding_sque | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.43R |
+| 2026-06-28 | VELVETUSDT | S | intra | other | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
+| 2026-06-27 | SOLUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | 0.0 (L) | 0.53 | be_stop | 1.07R |
+| 2026-06-27 | IDUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.95R |
+| 2026-06-26 | LABUSDT | L | intra | funding_sque | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 1.1R |
+| 2026-06-26 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -0.06 (L) | -0.06 | expired | 0.27R |
+| 2026-06-26 | ADAUSDT | S | intra | trend_pullba | low | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.27R |
 | 2026-06-25 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.0 (L) | 0.59 | be_stop | 1.17R |
 | 2026-06-25 | SOLUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.6 | be_stop | 2.24R |
 | 2026-06-24 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.54 | be_stop | 1.5R |
@@ -29,14 +44,10 @@ _Partial profit model (50% at T1 + BE stop): 48% WR, 0.10 avg blended R:R_
 | 2026-06-17 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.38 | be_stop | 0.77R |
 | 2026-06-17 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.73 | target_1 | 1.94R |
 | 2026-06-05 | TRXUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.0 (W) | 2.0 | target_1 | 2.18R |
-| 2026-06-01 | HYPEUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.23R |
-| 2026-06-01 | HYPEUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.85R |
-| 2026-06-01 | XRPUSDT | L | intra | other | low | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.12R |
-| 2026-05-31 | ONDOUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.28R |
-| 2026-05-31 | HBARUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | 0.0 (L) | 0.59 | be_stop | 1.54R |
 
-- Recent 'trend_pullback': 5/22 (23% WR)
+- Recent 'trend_pullback': 7/27 (26% WR)
 - Recent 'other': 2/6 (33% WR)
+- Recent 'funding_squeeze': 1/5 (20% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
