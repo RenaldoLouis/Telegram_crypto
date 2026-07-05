@@ -1,0 +1,62 @@
+{
+  "run_tag": "20260701_1424",
+  "run_timestamp_utc": "2026-07-01T14:24:19.882250+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-07-05T05:24:58.422229+00:00",
+  "results": [
+    {
+      "status": "not_triggered",
+      "reason": "Price never reached entry zone",
+      "symbol": "DYDXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 4,
+      "rank": 1,
+      "rules_applied": [
+        "ath_exhaustion_setup8",
+        "regime_cautious",
+        "short_bias",
+        "dead_cat_guard",
+        "tight_t1",
+        "rank_reeval"
+      ]
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.1549,
+      "exit_price": 0.163,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.31,
+      "candles_to_exit": 139,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 2,
+      "rules_applied": [
+        "dead_cat_bounce_detection",
+        "regime_cautious",
+        "short_bias",
+        "ada_historical_edge",
+        "tight_t1"
+      ]
+    }
+  ]
+}

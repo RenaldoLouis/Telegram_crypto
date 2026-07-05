@@ -1,10 +1,16 @@
 # Recent Performance (last 4 weeks)
-_39 trades: 10W / 29L (26% WR, 0.05 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 44% WR, 0.06 avg blended R:R_
+_44 trades: 10W / 34L (23% WR, -0.09 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 39% WR, -0.08 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-03 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.9R |
+| 2026-07-03 | FARTCOINUS | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
+| 2026-07-03 | SLXUSDT | L | intra | funding_sque | low | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
+| 2026-07-02 | BTCUSDT | L | intra | trend_pullba | low | 3/4 | 1.5 | 1.08 (W) | 1.08 | target_1 | 1.45R |
+| 2026-07-02 | SPCXUSDT | S | intra | trend_pullba | low | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
+| 2026-07-01 | ADAUSDT | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.31R |
 | 2026-07-01 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.22 (W) | 1.74 | target_2 | 2.24R |
 | 2026-07-01 | TAIKOUSDT | L | intra | funding_sque | low | 3/4 | 1.5 | 2.14 (W) | 1.66 | target_2 | 2.15R |
 | 2026-06-30 | XLMUSDT | L | intra | trend_pullba | low | 3/4 | 1.5 | 1.92 (W) | 1.68 | target_2 | 1.95R |
@@ -43,11 +49,10 @@ _Partial profit model (50% at T1 + BE stop): 44% WR, 0.06 avg blended R:R_
 | 2026-06-17 | WLDUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.8R |
 | 2026-06-17 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.38 | be_stop | 0.77R |
 | 2026-06-17 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.73 | target_1 | 1.94R |
-| 2026-06-05 | TRXUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.0 (W) | 2.0 | target_1 | 2.18R |
 
-- Recent 'trend_pullback': 7/27 (26% WR)
-- Recent 'other': 2/6 (33% WR)
-- Recent 'funding_squeeze': 1/5 (20% WR)
+- Recent 'trend_pullback': 7/29 (24% WR)
+- Recent 'other': 2/8 (25% WR)
+- Recent 'funding_squeeze': 1/6 (17% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS

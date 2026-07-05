@@ -1,0 +1,73 @@
+{
+  "run_tag": "20260702_0901",
+  "run_timestamp_utc": "2026-07-02T09:01:01.819110+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-07-05T05:24:58.984993+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 60581.5,
+      "exit_price": 62350.0,
+      "exit_reason": "target_1",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "actual_rr": 1.08,
+      "blended_rr": 1.08,
+      "won": true,
+      "max_favorable_rr": 1.45,
+      "candles_to_exit": 192,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "symbol": "BTCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "btc_bearish_guard",
+        "low_volume_env",
+        "macd_4h_flip",
+        "partial_profit_50pct"
+      ]
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 157.0,
+      "exit_price": 160.0,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.21,
+      "candles_to_exit": 13,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 1.5,
+      "tf_confluence": 4,
+      "rank": 2,
+      "rules_applied": [
+        "short_bias",
+        "4tf_confluence_exception",
+        "low_volume_env",
+        "rank_reeval"
+      ]
+    }
+  ]
+}

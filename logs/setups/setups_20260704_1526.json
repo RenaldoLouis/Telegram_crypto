@@ -1,0 +1,60 @@
+{
+  "run_timestamp_utc": "2026-07-04T15:26:10.088471+00:00",
+  "run_tag": "20260704_1526",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "HMSTRUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.00034,
+      "entry_high": 0.00036,
+      "stop_loss": 0.000422,
+      "target_1": 0.000242,
+      "target_2": 0.00018,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "rsi_rejection_short",
+          "parabolic_exhaustion",
+          "short_bias",
+          "partial_profit_helps"
+        ],
+        "key_factor": "Validated rsi_rejection_short (66% WR) \u2014 4h RSI rolled from 95.5 to 71.7 after parabolic +64% two-day move; 1D volume climax 10.61x; 3/4 TF aligned for short"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "BREVUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0819,
+      "entry_high": 0.0828,
+      "stop_loss": 0.0852,
+      "target_1": 0.0782,
+      "target_2": 0.074,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "trend_pullback_short",
+          "1d_bearish_guard",
+          "low_volume_flag",
+          "4h_oversold_risk"
+        ],
+        "key_factor": "Validated 1h trend_pullback_short (59% WR) \u2014 EMA20<EMA50 on 1h, price at EMA20 resistance in 1D bearish structure; 4h RSI 18.59 is primary risk requiring reduced sizing"
+      }
+    }
+  ]
+}

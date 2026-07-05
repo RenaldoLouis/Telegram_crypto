@@ -1,0 +1,84 @@
+{
+  "run_timestamp_utc": "2026-07-05T05:01:14.053803+00:00",
+  "run_tag": "20260705_0501",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 62650.0,
+      "entry_high": 62900.0,
+      "stop_loss": 63840.0,
+      "target_1": 61170.0,
+      "target_2": 60620.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "backtested_signal_priority",
+          "regime_cautious",
+          "btc_daily_bearish_guard",
+          "short_bias",
+          "ada_short_edge_revoked"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 4h (66% WR backtested) with 1h bearish RSI+MACD divergences confirming rollover; macro bearish below SMA200"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.13,
+      "entry_high": 1.143,
+      "stop_loss": 1.179,
+      "target_1": 1.08,
+      "target_2": 1.06,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "backtested_signal_priority",
+          "regime_cautious",
+          "short_bias",
+          "tight_t1"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 4h (RSI 79 \u2192 70.5, ADX 41.2); 1D bearish with hidden bearish divergences; price structurally below SMA200"
+      }
+    },
+    {
+      "rank": 3,
+      "symbol": "MIRAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.051,
+      "entry_high": 0.053,
+      "stop_loss": 0.061,
+      "target_1": 0.0387,
+      "target_2": 0.034,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "backtested_signal_priority",
+          "regime_cautious",
+          "short_bias",
+          "volume_confirmed_gate"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 4h with ADX 60.85 (strongest trend in scan), 4h volume 1.21x + 1D distribution spike 3.56x; price far below SMA200"
+      }
+    }
+  ]
+}
