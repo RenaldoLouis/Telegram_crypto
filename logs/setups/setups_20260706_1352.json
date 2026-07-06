@@ -1,0 +1,101 @@
+{
+  "run_timestamp_utc": "2026-07-06T13:52:14.963724+00:00",
+  "run_tag": "20260706_1352",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "VANRYUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0092,
+      "entry_high": 0.0096,
+      "stop_loss": 0.011,
+      "target_1": 0.0075,
+      "target_2": 0.006,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "setup8_exhaustion",
+          "short_bias",
+          "btc_bearish_guard",
+          "regime_neutral",
+          "losing_streak_caution"
+        ],
+        "key_factor": "4/4 TF RSI all >80 + 1H bearish divergence (rsi_bear+macd_bear) + extreme funding 0.069% + 5.44x climactic 1D volume on parabolic +61% daily move"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 56.74,
+          "rsi": 85.77,
+          "macd": 0.001043,
+          "macd_hist": 0.000377,
+          "trend": "bullish",
+          "ema20_dist_atr": 3.67,
+          "range_pct": 75.06
+        },
+        "tf_1h": {
+          "adx": 46.45,
+          "rsi": 85.68,
+          "macd": 0.00068,
+          "macd_hist": 0.000288,
+          "trend": "bullish",
+          "ema20_dist_atr": 4.39,
+          "range_pct": 53.33
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "post_liquidation",
+      "entry_low": 0.0752,
+      "entry_high": 0.0756,
+      "stop_loss": 0.0737,
+      "target_1": 0.078,
+      "target_2": 0.08,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "dead_cat_bounce_rule",
+          "volume_confirmation",
+          "btc_bearish_guard",
+          "losing_streak_caution"
+        ],
+        "key_factor": "1H RSI 27.47 with 3.13x volume spike + 4H volume 2.47x at bullish 4H structure; 1D RSI sub-35 triggers DCB rule \u2014 labeled recovery bounce only, LOW confidence"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.93,
+          "rsi": 41.75,
+          "macd": 0.000486,
+          "macd_hist": -0.000241,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.77,
+          "range_pct": 6.69
+        },
+        "tf_1h": {
+          "adx": 18.2,
+          "rsi": 27.47,
+          "macd": -0.000304,
+          "macd_hist": -0.000234,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.88,
+          "range_pct": 6.08
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
