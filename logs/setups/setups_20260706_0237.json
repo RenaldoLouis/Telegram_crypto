@@ -1,0 +1,62 @@
+{
+  "run_timestamp_utc": "2026-07-06T02:37:27.253690+00:00",
+  "run_tag": "20260706_0237",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 63400.0,
+      "entry_high": 63600.0,
+      "stop_loss": 64180.0,
+      "target_1": 62460.0,
+      "target_2": 62120.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "regime_cautious",
+          "short_bias",
+          "btc_bearish_daily",
+          "losing_streak_selective",
+          "partial_profit"
+        ],
+        "key_factor": "Validated rsi_rejection_short: 1h RSI peaked at 76.1 now rejecting to 69.4 within a bearish 1D macro trend; 66% backtested WR"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.148,
+      "entry_high": 1.158,
+      "stop_loss": 1.167,
+      "target_1": 1.125,
+      "target_2": 1.115,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "regime_cautious",
+          "short_bias",
+          "btc_bearish_daily",
+          "losing_streak_selective",
+          "partial_profit"
+        ],
+        "key_factor": "Validated rsi_rejection_short: extreme 1h RSI peaked at 86.0 now rejecting to 68.7; 1D hidden bearish divergences confirm downtrend; 66% backtested WR"
+      }
+    }
+  ]
+}
