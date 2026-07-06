@@ -1,0 +1,58 @@
+{
+  "run_timestamp_utc": "2026-07-05T15:20:56.639969+00:00",
+  "run_tag": "20260705_1520",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SNDKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1858.0,
+      "entry_high": 1870.0,
+      "stop_loss": 1898.0,
+      "target_1": 1823.0,
+      "target_2": 1775.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "short_bias",
+          "adx_trend_check",
+          "regime_neutral"
+        ],
+        "key_factor": "Validated trend_pullback_short (59% WR) on 4h with ADX 35.17 trending bearish, 1h RSI 73.57 overbought into EMA20 resistance"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0775,
+      "entry_high": 0.0783,
+      "stop_loss": 0.0763,
+      "target_1": 0.0795,
+      "target_2": 0.082,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "btc_bearish_guard",
+          "tight_t1",
+          "losing_streak_alert"
+        ],
+        "key_factor": "Validated macd_momentum_long (62% WR) on 1h with MACD hist flipped positive; BTC daily bearish guard limits size to 0.5% risk"
+      }
+    }
+  ]
+}

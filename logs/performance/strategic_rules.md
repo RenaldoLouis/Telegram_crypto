@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 206 evaluated trades — solid sample)
-_Last updated: 2026-07-05 05:24 UTC_
+_Last updated: 2026-07-05 15:31 UTC_
 
 1. **MODERATE SELECTIVITY**: Win rate is 29%. ACTION: Output 2-4 setups per run. Prefer fewer, higher-conviction setups over padding to 5.
 2. **CONFIDENCE MISCALIBRATED**: 'High' confidence is 2/9 (22% WR) but 'Medium' is 45/160 (28% WR). ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + clean structure. If unsure, label 'medium' — it actually performs better.
