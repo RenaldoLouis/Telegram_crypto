@@ -29,6 +29,55 @@ def strip_json_block(brief_text):
     return re.sub(r"\n*```setups_json\s*\n.+?\n```\n*", "", brief_text, flags=re.DOTALL).strip()
 
 
+def enrich_with_entry_indicators(setups, technicals):
+    """Attach an `entry_indicators` snapshot to each setup for later analysis.
+
+    Persists the 4h/1h indicator values that Claude saw at decision time —
+    ADX, RSI, MACD, EMA20 distance in ATR units, and whether a backtested
+    signal fired for this symbol+direction. This is instrumentation only: it
+    changes no behavior, costs no tokens. It exists so a future eval can test
+    whether stricter trend_pullback gates (ADX>25, price near EMA20, MACD
+    confirm) actually win — data we currently cannot reconstruct from logs.
+    """
+    by_symbol = {t.get("symbol"): t for t in (technicals or [])}
+
+    def tf_block(tfs, label):
+        d = tfs.get(label) if tfs else None
+        if not isinstance(d, dict):
+            return None
+        price, ema20, atr = d.get("current_price"), d.get("ema_20"), d.get("atr_14")
+        ema20_dist_atr = None
+        if price is not None and ema20 is not None and atr:
+            ema20_dist_atr = round(abs(price - ema20) / atr, 2)
+        return {
+            "adx": d.get("adx_14"),
+            "rsi": d.get("rsi_14"),
+            "macd": d.get("macd"),
+            "macd_hist": d.get("macd_hist"),
+            "trend": d.get("trend"),
+            "ema20_dist_atr": ema20_dist_atr,
+            "range_pct": d.get("range_pct"),
+        }
+
+    for s in setups:
+        tech = by_symbol.get(s.get("symbol"))
+        if not tech:
+            continue
+        tfs = tech.get("timeframes", {})
+        # Did a backtested signal fire for this symbol in the setup's direction?
+        fired = [
+            sig.get("signal")
+            for sig in tech.get("validated_signals", [])
+            if sig.get("direction") == s.get("direction")
+        ]
+        s["entry_indicators"] = {
+            "tf_4h": tf_block(tfs, "4h"),
+            "tf_1h": tf_block(tfs, "1h"),
+            "backtested_signal": fired[0] if fired else None,
+        }
+    return setups
+
+
 def validate_setups(setups, regime_label):
     """Pure Python validation of Claude's setup output against hard rules.
 
@@ -116,6 +165,9 @@ async def run_screener():
         # Extract regime for tracking (self-learning)
         regime_info = market.get("market_regime", {})
         regime_label = regime_info.get("regime", "neutral") if regime_info else "neutral"
+
+        # Attach entry-time indicator snapshot for later analysis (instrumentation only)
+        enrich_with_entry_indicators(setups, market.get("technicals", []))
 
         # Validate setups against hard rules
         violations = validate_setups(setups, regime_label)

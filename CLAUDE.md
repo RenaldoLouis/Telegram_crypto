@@ -33,7 +33,7 @@ main.py  (orchestrator, async)
   │                                    _load_hot_list() → reads momentum pulse hot list
   │                                    get_multi_tf_indicators() → 15m/1h/4h/1D klines + validated signal check
   │                                    _compute_indicators() → RSI, EMA20/50, ATR, ADX, MACD, SMA200 (1D only), divergences
-  │                                    _check_validated_signals() → 4 cross-TF confirmed formulas on 1h/4h
+  │                                    _check_validated_signals() → 3 backtest-validated formulas (2 cross-TF, 1 4h-only)
   │                                    get_full_market_snapshot() → 50 → score → top 25 + hot list → multi-TF
   │
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
@@ -60,7 +60,7 @@ main.py  (orchestrator, async)
   ├── backtester.py                → What-if backtester: sweeps T1/filters/regime limits across eval logs
   ├── historical_backtester.py     → Historical strategy backtester: 12 signal rules, parameter optimizer,
   │                                    train/test validation, robustness scoring. Caches Bybit klines locally.
-  │                                    4 cross-TF validated formulas integrated into live screener pipeline.
+  │                                    validated formulas integrated into live screener pipeline (re-validated monthly).
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
@@ -434,7 +434,7 @@ See `progress.md` for:
 - **Rule registry** (`rule_registry.json`): tracks delta analysis insights — when they were added, their status (`experimental`/`confirmed`/`expired`), and win rate snapshots. Enables insight effectiveness tracking over time.
 - **Reasoning capture**: `reasoning` field in setup JSON containing `rules_applied` (list of rule IDs) and `key_factor` (one-line driver). Carried through to eval results, tracked in `by_rule_applied` stats. Enables rule-level attribution — "did setups citing this rule win more?"
 - **Post-scan validation**: pure Python validator in `main.py` that checks Claude's output against hard rules (setup count, predicted_rr cap, valid types, regime requirements). Zero token cost. Logs violations as warnings.
-- **Validated signals**: 4 mechanical signal formulas that passed out-of-sample train/test validation on 15 symbols across both 1h and 4h timeframes. Detected by `_check_validated_signals()` in `bybit_data.py` during each scan. When they fire, injected into Claude's user content as `BACKTESTED SIGNALS` section. The 4 confirmed signals: `rsi_rejection_short` (RSI exhaustion at >75), `macd_momentum_long` (MACD hist flip positive in uptrend), `macd_momentum_short` (MACD hist flip negative in downtrend), `trend_pullback_short` (downtrend pullback to EMA20). 4 other signals (trend_pullback_long, range_reversion_long/short, rsi_bounce_long) were rejected as overfit during validation.
+- **Validated signals**: mechanical signal formulas that passed out-of-sample train/test validation on 15 symbols. Detected by `_check_validated_signals()` in `bybit_data.py` during each scan. When they fire, injected into Claude's user content as `BACKTESTED SIGNALS` section. Current confirmed signals (Jul 2026 re-validation): `rsi_rejection_short` (RSI exhaustion at >75, ★ STRONG both TFs), `macd_momentum_long` (MACD hist flip positive in uptrend, confirmed both TFs), `trend_pullback_short` (downtrend pullback to EMA20, **4h ONLY** — 1h rejected as overfit). `macd_momentum_short` was removed after degrading to overfit on both TFs. Other signals (trend_pullback_long, range_reversion_long/short, rsi_bounce_long) remain rejected/single-TF-only. The set is re-checked monthly via `backtest`; when a signal drifts, `_check_validated_signals()` is manually updated to match.
 - **Historical backtester** (`historical_backtester.py`): fetches Bybit klines (cached locally), defines 12 mechanical signal rules, runs parameter sweep optimization (`--optimize`), and validates with train/test split (`--validate`). Tests on 1h (42 days) and 4h (167 days) of data. Zero Claude tokens.
 - **What-if backtester** (`backtester.py`): reads existing eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbol blacklists), reports expectancy/WR/profit factor. Useful for answering "what if we changed X?" Zero Claude tokens.
 - **Train/test validation**: splits cached kline data 60/40 — optimizes parameters on train half, evaluates on test (unseen) half. If test expectancy is negative, the formula is overfit and rejected. Prevents integrating patterns that only work in hindsight.

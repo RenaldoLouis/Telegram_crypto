@@ -314,6 +314,37 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-07-06 (v11.1) — Backtest Re-Validation + Root-Cause Analysis + Entry-Indicator Instrumentation
+
+**Context**: Re-ran the `backtest` pipeline (monthly re-validation) on fresh 15-symbol data, then dug into why the live system is net-losing over 206 evaluated trades. A proposed prompt fix was rejected after a data double-check; shipped instrumentation instead so the next round can be decided by evidence.
+
+**1. Backtest reconciliation — updated live validated signals** (`fetchers/bybit_data.py::_check_validated_signals`)
+- The Jul-2026 re-run changed which formulas hold out-of-sample. Reconciled the hardcoded live set to match:
+  - `rsi_rejection_short` — kept (★ STRONG both TFs: 4h test +0.44, 1h test +0.81)
+  - `macd_momentum_long` — kept (confirmed both TFs: 4h +0.25, 1h +0.59)
+  - `trend_pullback_short` — **gated to 4h ONLY** (4h test +0.28, N=111, 100% robust; 1h now rejected as overfit, all variants negative test exp)
+  - `macd_momentum_short` — **REMOVED** (degraded to overfit on BOTH TFs — was actively injecting a losing signal into Claude's context every scan)
+- Refreshed docstring + `historical:` strings to new test numbers. CLAUDE.md architecture/data-flow/glossary updated to describe the 3-signal set and monthly re-validation cadence.
+
+**2. Root-cause analysis of the net-loss (206 triggered trades: 29% WR, −0.166R, PF 0.72)**
+- **Direction is right 61% of the time** (MFE ≥0.5R) — the reads are good. The leak is execution.
+- **One-trick pony**: `trend_pullback` = 175/206 (85%) of all trades; runs −0.116R, 54% stop rate. System performance ≈ trend_pullback performance.
+- **Stop shakeout is the dominant leak**: 57% hit stop; ~34 trades (17%) eventually ran ≥1.0R in the predicted direction but were stopped out first (MFE≥1.0R = 42% vs sim-T1@1.0R-before-stop = 25%).
+- **Confidence is anti-predictive**: `high` = 22% WR (worst, 78% stop), `low` = 32% (best).
+- **tf_confluence runs backwards for trend_pullback**: 4/4 = 17% WR (worst), 3/4 = 36% (best), 2/4 = 22%. More alignment → worse (chase signature).
+
+**3. Proposed prompt edits REJECTED after double-check** (not implemented)
+- Edit A (make trend_pullback "earn" its label via strict ADX>25 / near-EMA20 / MACD gate) and Edit B (gate "high" confidence on a fired backtested signal) were drafted, then killed:
+  - **Edit B is inert**: confidence is a pure label — never gates selection or drops a setup (confirmed: no confidence filter in `main.py`/`claude_client.py`; `weekly_eval.py` scores ALL output setups). Win-rate impact = 0.
+  - **Edit A unproven / contradicted**: the only logged strictness proxy (tf_confluence) runs backwards; the +0.28R justifying the strict gate is from the mechanical backtester (different population from Claude's discretionary label); and setup records store NO entry indicators, so the thesis is unmeasurable with current data.
+
+**4. Instrumentation added** (`main.py::enrich_with_entry_indicators`, new helper)
+- Every saved setup now carries an `entry_indicators` block: 4h + 1h `{adx, rsi, macd, macd_hist, trend, ema20_dist_atr, range_pct}` + `backtested_signal` (which validated signal fired for that symbol/direction, or null).
+- Values pulled from `market['technicals']` at save time. **Zero tokens, changes no behavior.** Missing-symbol setups are skipped gracefully.
+- Purpose: unblock the strict-gate thesis. After ~15-20 new trades carrying this data are eval-scored, we can finally test whether stricter trend_pullbacks (and backtested-signal-backed setups) actually win — see "What's Next".
+
+**Decisions deferred (thin data)**: `vol_confirmed` is the only slice that flips positive (long+vol_confirmed +0.204 vs long alone −0.172), BUT it's Claude-self-reported (Goodhart risk) and n=25. Left untouched until more data accumulates.
+
 ### 2026-07-03 (v11.0) — Historical Backtester + Empirically Validated Signal Pre-Filters
 
 **Problem**: Claude was generating all trade setups from scratch using indicator data + knowledge files, but there was no empirical validation of WHICH indicator combinations actually predict price movement. The system had no way to distinguish real patterns from noise. Some of Claude's "best" setups (rank #1) were actually the worst performers (22.8% WR vs 34% for rank #2). Direction was right 63% of the time (MFE ≥ 0.5R) but targets were too far — an execution problem, not an analysis problem.
@@ -1130,6 +1161,24 @@ Combined effect: instead of 20 trades with 16 SLs, the system would have produce
 ## What's Next (Backlog)
 
 ### Short Term (next 1-2 weeks)
+
+> **⏭️ NEXT SYSTEM-IMPROVEMENT SESSION — the strict-gate re-check (queued 2026-07-06, v11.1)**
+> When the user asks to "improve the system" / "check our improvement" again, START HERE. This is a data-gated decision that was deliberately deferred until enough instrumented trades exist.
+>
+> **Precondition**: at least ~15-20 setups saved with an `entry_indicators` block (added v11.1) have been scored by `eval-scan`. Check: count `logs/setups/*.json` entries that have `entry_indicators` AND a matching evaluated result. If too few, tell the user to keep running `scan` + weekly `eval-scan` and come back later.
+>
+> **The analysis** (join `logs/setups/*.json` ↔ `logs/evaluations/*.json` by run_tag + symbol; entry_indicators lives on the setup side):
+> 1. Do trend_pullbacks meeting the **strict gate** (`tf_4h.adx > 25` AND `tf_4h.ema20_dist_atr < ~0.7` AND `tf_4h.macd` confirms direction) win more than loose ones? Compare WR + expectancy, strict vs loose subset.
+> 2. Do setups with `entry_indicators.backtested_signal != null` win more than those without?
+> 3. Re-check the `vol_confirmed` long subset (was n=25, +0.204 vs −0.172 for longs overall) — has it held with more data?
+>
+> **Decision rule**:
+> - If strict subset clearly wins → implement a hard **DROP** rule (drop, not relabel — confidence labels are inert, proven v11.1) for trend_pullbacks failing the gate. Likely in `main.py::validate_setups` (Python, zero tokens) or as a prompt DROP directive.
+> - If strict subset still loses → the leak is **stop placement / entry timing**, NOT labeling. Pivot to that (e.g. wider ATR stops vs the 57% stop-out rate) — but mind the prior T1/SL over-correction (see memory [[feedback-overcorrection-fix]]), so validate on data first.
+> - Do NOT re-propose the rejected confidence-gate (Edit B) — it changes no outcomes. Full context in memory [[project-root-cause-trend-pullback]] and the v11.1 changelog above.
+
+- [ ] **(v11.1) Strict-gate re-check** — after ~15-20 instrumented trades are eval-scored, run the analysis above and decide DROP-rule vs stop-placement pivot
+- [ ] **(v11.1) Monthly `backtest` re-validation** — re-run and reconcile `_check_validated_signals` to the fresh results (last done 2026-07-06)
 - [x] **Explicit regime enforcement** — regime limits + direction requirements injected into user content, not just system prompt (v9.2)
 - [x] **Effective limit computation** — resolves regime + streak + loss rate into single number, removes ambiguity (v9.2)
 - [x] **Drop swing timeframe** — only scalp/intraday allowed, reduces overnight risk (v9.2)
@@ -1146,7 +1195,7 @@ Combined effect: instead of 20 trades with 16 SLs, the system would have produce
 - [x] **What-if backtester** — `backtester.py`: sweeps T1 distance, filters, regime limits, symbol blacklists across 185 eval trades (v11.0)
 - [x] **Historical strategy backtester** — `historical_backtester.py`: 12 mechanical signal rules, parameter sweep optimizer, train/test validation (v11.0)
 - [x] **Cross-TF validation** — validated on both 1h (42 days) and 4h (167 days) across 15 symbols. 4 of 8 signals confirmed, 4 rejected as overfit (v11.0)
-- [x] **Validated signal integration** — 4 confirmed formulas (rsi_rejection_short, macd_momentum_long/short, trend_pullback_short) injected into Claude's prompt when they fire (v11.0)
+- [x] **Validated signal integration** — confirmed formulas injected into Claude's prompt when they fire (v11.0). Set reconciled v11.1: rsi_rejection_short + macd_momentum_long (both TFs), trend_pullback_short (4h only); macd_momentum_short removed as overfit
 - [ ] Run `eval-scan` to trigger first delta analysis (need 15+ new trades since last analysis)
 - [x] **`backtest` terminal shortcut** — runs full pipeline (`--full`): validate 4h + 1h + eval combos in one command (v11.0)
 - [x] **`quarterly-scan` superseded** — `backtest` + delta analysis replaces quarterly deep analysis for routine use (v11.0)

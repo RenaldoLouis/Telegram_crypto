@@ -139,10 +139,14 @@ class BybitFetcher:
 
     @staticmethod
     def _check_validated_signals(candles, tf_label):
-        """Check 4 cross-TF validated signal formulas against candle data.
+        """Check validated signal formulas against candle data.
 
-        These formulas passed out-of-sample train/test validation on 15 symbols
-        across both 1h and 4h timeframes. Only called for 1h and 4h.
+        Passed out-of-sample train/test validation on 15 symbols (Jul 2026 re-run):
+          - rsi_rejection_short : confirmed both 1h + 4h
+          - macd_momentum_long  : confirmed both 1h + 4h
+          - trend_pullback_short: 4h ONLY (1h rejected as overfit)
+        macd_momentum_short removed — degraded to overfit on both TFs.
+        Only called for 1h and 4h.
 
         Returns list of signal dicts (empty if none fire).
         """
@@ -201,7 +205,7 @@ class BybitFetcher:
 
         # --- Signal 1: RSI Rejection Short ---
         # RSI was >75 (overbought), now crossing back down. Exhaustion reversal.
-        # Validated: 4h +0.362 test, 1h +1.100 test
+        # Validated (Jul 2026 re-run): ★ STRONG both TFs — 4h test +0.438, 1h test +0.809
         if (pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
             p2["rsi"] > 75 and p["rsi"] > 70 and
             c["rsi"] < 72 and c["rsi"] > 50 and c["rsi"] < p["rsi"]):
@@ -213,12 +217,12 @@ class BybitFetcher:
                 "target_r": 2.0,
                 "stop_atr": 2.0,
                 "indicators": f"RSI {c['rsi']:.1f} (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
-                "historical": "66% WR, +0.36 expect (4h test), +1.10 (1h test)",
+                "historical": "+0.44 expect (4h test), +0.81 (1h test)",
             })
 
         # --- Signal 2: MACD Momentum Long ---
         # MACD histogram flips positive in uptrend. Trend continuation.
-        # Validated: 4h +0.500 test, 1h +0.389 test
+        # Validated (Jul 2026 re-run): confirmed both TFs — 4h test +0.250, 1h test +0.591
         if (pd.notna(p["macd_hist"]) and
             p["macd_hist"] <= 0 and c["macd_hist"] > 0 and
             c["ema20"] > c["ema50"] and
@@ -231,31 +235,15 @@ class BybitFetcher:
                 "target_r": 1.5,
                 "stop_atr": 1.5,
                 "indicators": f"MACD hist flipped +, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
-                "historical": "62% WR, +0.50 expect (4h test), +0.39 (1h test)",
+                "historical": "+0.25 expect (4h test), +0.59 (1h test)",
             })
 
-        # --- Signal 3: MACD Momentum Short ---
-        # MACD histogram flips negative in downtrend. Trend continuation.
-        # Validated: 4h +0.357 test, 1h +0.157 test
-        if (pd.notna(p["macd_hist"]) and
-            p["macd_hist"] >= 0 and c["macd_hist"] < 0 and
-            c["ema20"] < c["ema50"] and
-            c["adx"] > 15 and
-            30 <= c["rsi"] <= 55):
-            signals.append({
-                "signal": "macd_momentum_short",
-                "tf": tf_label,
-                "direction": "short",
-                "target_r": 1.5,
-                "stop_atr": 1.0,
-                "indicators": f"MACD hist flipped -, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
-                "historical": "66% WR, +0.36 expect (4h test), +0.16 (1h test)",
-            })
-
-        # --- Signal 4: Trend Pullback Short ---
+        # --- Signal 3: Trend Pullback Short (4h ONLY) ---
         # Downtrend + price pulled back to EMA20 + MACD confirms.
-        # Validated: 4h +0.080 test, 1h +0.151 test
-        if (c["ema20"] < c["ema50"] and
+        # Validated (Jul 2026 re-run): 4h test +0.280, N=111, 100% robust.
+        # 1h REJECTED as overfit (all variants negative test exp) — gated to 4h only.
+        if (tf_label == "4h" and
+            c["ema20"] < c["ema50"] and
             c["adx"] > 15 and
             50 <= c["rsi"] <= 70 and
             float(c["close"]) < float(c["ema50"]) and
@@ -268,7 +256,7 @@ class BybitFetcher:
                 "target_r": 2.0,
                 "stop_atr": 1.5,
                 "indicators": f"EMA20<EMA50, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}, near EMA20",
-                "historical": "59% WR, +0.08 expect (4h test), +0.15 (1h test)",
+                "historical": "+0.28 expect (4h test, N=111, 100% robust)",
             })
 
         return signals
