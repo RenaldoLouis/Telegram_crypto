@@ -1,0 +1,100 @@
+{
+  "run_timestamp_utc": "2026-07-07T15:34:57.653673+00:00",
+  "run_tag": "20260707_1534",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 152.5,
+      "entry_high": 154.5,
+      "stop_loss": 159.5,
+      "target_1": 144.5,
+      "target_2": 140.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "regime_cautious",
+          "bounce_entry_not_chase",
+          "volume_confirmed_4h"
+        ],
+        "key_factor": "4h volume-confirmed breakdown (4.94x avg) with 4/4 TF bearish structure; entry on 15m oversold bounce to resistance"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 19.06,
+          "rsi": 29.33,
+          "macd": -1.091397,
+          "macd_hist": -0.770676,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.27,
+          "range_pct": 11.47
+        },
+        "tf_1h": {
+          "adx": 23.07,
+          "rsi": 31.4,
+          "macd": -1.596637,
+          "macd_hist": -0.514621,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.71,
+          "range_pct": 7.18
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1785,
+      "entry_high": 0.18,
+      "stop_loss": 0.1845,
+      "target_1": 0.1715,
+      "target_2": 0.165,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "regime_cautious",
+          "ada_short_historical_edge",
+          "bounce_entry_not_chase"
+        ],
+        "key_factor": "1D accelerating decline (-1.41, -2.85, -3.75 pct last 3 candles) with 3/4 TF bearish alignment; entry on bounce to 1h EMA20 rejection"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 38.79,
+          "rsi": 22.38,
+          "macd": 0.002405,
+          "macd_hist": -0.002425,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.8,
+          "range_pct": 14.12
+        },
+        "tf_1h": {
+          "adx": 20.96,
+          "rsi": 24.81,
+          "macd": -0.001914,
+          "macd_hist": -0.000202,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.34,
+          "range_pct": 6.66
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
