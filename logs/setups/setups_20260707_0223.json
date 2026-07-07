@@ -1,0 +1,100 @@
+{
+  "run_timestamp_utc": "2026-07-07T02:23:28.027506+00:00",
+  "run_tag": "20260707_0223",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XPLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1075,
+      "entry_high": 0.1092,
+      "stop_loss": 0.1038,
+      "target_1": 0.115,
+      "target_2": 0.122,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "4tf_confluence_override_volume",
+          "sma200_bullish_filter",
+          "tight_t1",
+          "losing_streak_selectivity"
+        ],
+        "key_factor": "4/4 TF bullish alignment with price at SMA200 support; only valid on volume uptick at entry"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 31.34,
+          "rsi": 48.19,
+          "macd": 0.002174,
+          "macd_hist": -0.000262,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.54,
+          "range_pct": 14.01
+        },
+        "tf_1h": {
+          "adx": 15.51,
+          "rsi": 68.32,
+          "macd": 0.00057,
+          "macd_hist": 0.000282,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.34,
+          "range_pct": 9.59
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 81.0,
+      "entry_high": 81.7,
+      "stop_loss": 79.6,
+      "target_1": 83.97,
+      "target_2": 85.5,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "15m_oversold_h_bull_divergence",
+          "4h_trend_pullback_priority",
+          "losing_streak_selectivity",
+          "reduced_size_low_confidence"
+        ],
+        "key_factor": "4h trending uptrend (ADX 34) with 15m oversold hidden bullish divergence at EMA20 pullback zone; low volume limits conviction"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 34.13,
+          "rsi": 48.64,
+          "macd": 0.699057,
+          "macd_hist": -0.177739,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.46,
+          "range_pct": 5.83
+        },
+        "tf_1h": {
+          "adx": 20.36,
+          "rsi": 67.73,
+          "macd": 0.309136,
+          "macd_hist": 0.055397,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.06,
+          "range_pct": 5.61
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
