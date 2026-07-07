@@ -1,0 +1,101 @@
+{
+  "run_timestamp_utc": "2026-07-07T08:11:24.199660+00:00",
+  "run_tag": "20260707_0811",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 158.4,
+      "entry_high": 159.0,
+      "stop_loss": 160.8,
+      "target_1": 155.35,
+      "target_2": 153.5,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "4tf_bearish_required",
+          "losing_streak_selectivity"
+        ],
+        "key_factor": "4/4 TF bearish structure with 15m RSI 77.69 overbought bounce + 3.63x volume spike providing fade entry in confirmed downtrend"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 18.12,
+          "rsi": 41.92,
+          "macd": -0.587158,
+          "macd_hist": -0.433209,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.75,
+          "range_pct": 7.97
+        },
+        "tf_1h": {
+          "adx": 22.05,
+          "rsi": 58.43,
+          "macd": -1.02892,
+          "macd_hist": 0.107062,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.32,
+          "range_pct": 7.97
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1795,
+      "entry_high": 0.1805,
+      "stop_loss": 0.183,
+      "target_1": 0.175,
+      "target_2": 0.172,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "ada_priority",
+          "losing_streak_selectivity",
+          "tight_t1"
+        ],
+        "key_factor": "1D markdown in progress (3 consecutive bearish daily closes), 1D RSI 67 rolling over with ADX 37, historical ADA short edge, 4h MACD collapse despite bullish label"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 41.21,
+          "rsi": 31.06,
+          "macd": 0.003216,
+          "macd_hist": -0.002249,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.51,
+          "range_pct": 13.96
+        },
+        "tf_1h": {
+          "adx": 17.09,
+          "rsi": 36.13,
+          "macd": -0.001468,
+          "macd_hist": -0.000284,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.61,
+          "range_pct": 5.14
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
