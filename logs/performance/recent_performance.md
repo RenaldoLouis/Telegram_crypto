@@ -1,10 +1,17 @@
 # Recent Performance (last 4 weeks)
-_44 trades: 10W / 34L (23% WR, -0.09 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 39% WR, -0.08 avg blended R:R_
+_51 trades: 13W / 38L (25% WR, -0.11 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 41% WR, -0.10 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-05 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.56R |
+| 2026-07-05 | ENAUSDT | L | intra | trend_pullba | low | 2/4 | 1.5 | 0.0 (L) | 0.33 | be_stop | 1.67R |
+| 2026-07-05 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.31R |
+| 2026-07-05 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.33 (W) | 0.33 | expired | 0.62R |
+| 2026-07-05 | MIRAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.52 (W) | 0.52 | expired | 0.54R |
+| 2026-07-04 | HMSTRUSDT | S | intra | other | med | 3/4 | 1.5 | 0.24 (W) | 0.24 | expired | 1.01R |
+| 2026-07-04 | BREVUSDT | S | intra | trend_pullba | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
 | 2026-07-03 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.9R |
 | 2026-07-03 | FARTCOINUS | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
 | 2026-07-03 | SLXUSDT | L | intra | funding_sque | low | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
@@ -50,8 +57,8 @@ _Partial profit model (50% at T1 + BE stop): 39% WR, -0.08 avg blended R:R_
 | 2026-06-17 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.38 | be_stop | 0.77R |
 | 2026-06-17 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.73 | target_1 | 1.94R |
 
-- Recent 'trend_pullback': 7/29 (24% WR)
-- Recent 'other': 2/8 (25% WR)
+- Recent 'trend_pullback': 9/35 (26% WR)
+- Recent 'other': 3/9 (33% WR)
 - Recent 'funding_squeeze': 1/6 (17% WR)
 
 ## Trader's Recent Actual Trades
