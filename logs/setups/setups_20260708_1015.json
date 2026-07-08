@@ -1,0 +1,104 @@
+{
+  "run_timestamp_utc": "2026-07-08T10:15:33.887598+00:00",
+  "run_tag": "20260708_1015",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.088,
+      "entry_high": 1.095,
+      "stop_loss": 1.118,
+      "target_1": 1.042,
+      "target_2": 1.0,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_risk_off",
+          "short_bias",
+          "btc_bearish_daily_anchor",
+          "cautious_short_bias_combo",
+          "dead_cat_bounce_entry_wait",
+          "partial_profit"
+        ],
+        "key_factor": "4/4 TF bearish trend with 1D RSI 51 providing daily downside runway; 4h 1.5x volume spike confirms real distribution; wait for 1h RSI bounce to 35-40 before entry"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 24.48,
+          "rsi": 18.22,
+          "macd": -0.005742,
+          "macd_hist": -0.008546,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.04,
+          "range_pct": 8.87
+        },
+        "tf_1h": {
+          "adx": 34.36,
+          "rsi": 14.39,
+          "macd": -0.012542,
+          "macd_hist": -0.002301,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.37,
+          "range_pct": 5.7
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0718,
+      "entry_high": 0.0728,
+      "stop_loss": 0.075,
+      "target_1": 0.0677,
+      "target_2": 0.065,
+      "predicted_rr": 1.5,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_risk_off",
+          "short_bias",
+          "4tf_bearish_alignment",
+          "dead_cat_bounce_entry_wait",
+          "partial_profit",
+          "low_volume_gate"
+        ],
+        "key_factor": "4/4 TF bearish alignment with 1D ADX 35.6 confirming trend; 1D RSI 37 has room before oversold; daily candles show consistent -3 to -4% decline; entry requires 1h RSI recovery first"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 22.06,
+          "rsi": 12.69,
+          "macd": -0.000873,
+          "macd_hist": -0.000596,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.37,
+          "range_pct": 11.11
+        },
+        "tf_1h": {
+          "adx": 40.49,
+          "rsi": 19.05,
+          "macd": -0.001015,
+          "macd_hist": -0.000188,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.49,
+          "range_pct": 6.63
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
