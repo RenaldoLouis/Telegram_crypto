@@ -1,0 +1,101 @@
+{
+  "run_timestamp_utc": "2026-07-08T02:48:55.740887+00:00",
+  "run_tag": "20260708_0248",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 63050.0,
+      "entry_high": 63400.0,
+      "stop_loss": 64250.0,
+      "target_1": 61800.0,
+      "target_2": 60500.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "risk_off_short_bias",
+          "4h_bearish_divergence",
+          "macro_bearish_sma200",
+          "regime_risk_off",
+          "short_bias"
+        ],
+        "key_factor": "4h RSI+MACD bearish divergence at EMA20 in macro bearish trend with 90% market declining"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 20.06,
+          "rsi": 51.93,
+          "macd": 403.059922,
+          "macd_hist": -98.468124,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.12,
+          "range_pct": 5.45
+        },
+        "tf_1h": {
+          "adx": 15.11,
+          "rsi": 43.81,
+          "macd": -26.254234,
+          "macd_hist": -80.042522,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.81,
+          "range_pct": 2.76
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.1,
+      "entry_high": 1.114,
+      "stop_loss": 1.136,
+      "target_1": 1.066,
+      "target_2": 1.03,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "risk_off_short_bias",
+          "regime_risk_off",
+          "short_bias",
+          "1h_volume_confirmed"
+        ],
+        "key_factor": "3/4 TF bearish alignment with 1h volume 1.67x in RISK_OFF broad sell-off environment"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 23.95,
+          "rsi": 35.51,
+          "macd": 0.000226,
+          "macd_hist": -0.006674,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.22,
+          "range_pct": 7.27
+        },
+        "tf_1h": {
+          "adx": 20.68,
+          "rsi": 31.47,
+          "macd": -0.007629,
+          "macd_hist": -0.001997,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.66,
+          "range_pct": 4.13
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
