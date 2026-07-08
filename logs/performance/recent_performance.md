@@ -1,10 +1,12 @@
 # Recent Performance (last 4 weeks)
-_51 trades: 13W / 38L (25% WR, -0.11 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 41% WR, -0.10 avg blended R:R_
+_53 trades: 15W / 38L (28% WR, -0.04 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 43% WR, -0.04 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-06 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.51 | target_2 | 2.12R |
+| 2026-07-06 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.75 (W) | 1.49 | target_2 | 1.84R |
 | 2026-07-05 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.56R |
 | 2026-07-05 | ENAUSDT | L | intra | trend_pullba | low | 2/4 | 1.5 | 0.0 (L) | 0.33 | be_stop | 1.67R |
 | 2026-07-05 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.31R |
@@ -57,7 +59,7 @@ _Partial profit model (50% at T1 + BE stop): 41% WR, -0.10 avg blended R:R_
 | 2026-06-17 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.38 | be_stop | 0.77R |
 | 2026-06-17 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.73 | target_1 | 1.94R |
 
-- Recent 'trend_pullback': 9/35 (26% WR)
+- Recent 'trend_pullback': 11/37 (30% WR)
 - Recent 'other': 3/9 (33% WR)
 - Recent 'funding_squeeze': 1/6 (17% WR)
 

@@ -1,7 +1,7 @@
 {
-  "last_delta_trade_count": 200,
-  "last_delta_date": "2026-07-03",
-  "wr_at_last_delta": "29.0%",
+  "last_delta_trade_count": 215,
+  "last_delta_date": "2026-07-08",
+  "wr_at_last_delta": "29.8%",
   "insights": [
     {
       "id": "ada_short_edge",
@@ -9,7 +9,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 18
+      "trades_since": 33
     },
     {
       "id": "long_bias_structural_loss",
@@ -17,7 +17,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 18
+      "trades_since": 33
     },
     {
       "id": "low_mfe_stop_loss_pattern",
@@ -25,7 +25,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 18
+      "trades_since": 33
     },
     {
       "id": "rank2_scalp_outlier",
@@ -33,7 +33,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 18
+      "trades_since": 33
     },
     {
       "id": "wld_ena_avoid_longs",
@@ -41,7 +41,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 18
+      "trades_since": 33
     },
     {
       "id": "labusdt_funding_squeeze_failure",
@@ -49,7 +49,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 15
     },
     {
       "id": "risk_off_regime_shorts_only",
@@ -57,7 +57,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 15
     },
     {
       "id": "ada_short_edge_revoked",
@@ -65,7 +65,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 15
     },
     {
       "id": "be_stop_mfe_waste",
@@ -73,13 +73,53 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 15
     },
     {
       "id": "risk_on_regime_avoid",
       "text": "risk_on regime is 0/4 (-4R) in the full dataset and produced 3 losses this batch (HYPEUSDT, LABUSDT, IDUSDT). The label \"risk_on\" appears to coincide with extended/exhausted moves, not clean pullbacks. ACTION: During risk_on regime, output maximum 1 setup and require short direction or confirmed pullback to a major structural level on 4H+. Do not take funding_squeeze longs in risk_on.",
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 15
+    },
+    {
+      "id": "cautious_short_bias_combo",
+      "text": "In cautious regime with short_bias rule active, recent trades went 3/3 (XRPUSDT, BTCUSDT, MIRAUSDT) including two T2 hits. This specific combo is the highest-confidence cluster in the dataset. ACTION: When regime=cautious AND short_bias applicable, prioritize as Rank #1-2 and apply partial_profit rule explicitly.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "validated_vs_backtested_priority",
+      "text": "validated_signal_priority is 3/6 (50% WR) while backtested_signal_priority is 2/3 (67% WR) but with one large loss skewing R:R. Recent batch shows validated rules producing T2 wins whereas backtested produced mixed results. ACTION: Treat validated_signal_priority as minimum gate; backtested_signal_priority is acceptable only in cautious regime.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "btc_bearish_daily_anchor",
+      "text": "btc_bearish_daily rule produced 2/2 wins (+3.48R combined) in the most recent run (20260706). Both were short setups. ACTION: When btc_bearish_daily rule is triggered and regime is cautious, treat BTC and correlated-alt short setups as high-priority regardless of broader scan ranking.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "neutral_regime_short_only",
+      "text": "Neutral regime produced 2 wins (BTCUSDT long at +1.08R, XLMUSDT long at +1.92R) but also 4 losses including SNDKUSDT and BREVUSDT shorts and HYPEUSDT long. Net neutral regime is -3.76R lifetime. ACTION: In neutral regime, restrict to maximum 2 setups; prefer shorts with volume confirmation; avoid longs unless RSI bull divergence rule is explicitly present.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "low_mfe_short_obscure_symbols",
+      "text": "BREVUSDT (MFE 0.13R), SNDKUSDT (MFE 0.56R), SPCXUSDT (MFE 0.21R) \u2014 all low-liquidity shorts with minimal follow-through, all -1R. Low-cap/obscure symbols with MFE under 0.6R on stop-outs suggest liquidity insufficient to sustain directional moves. ACTION: Require average daily volume confirmation gate for any symbol outside top-15 market cap before including as a short setup.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
       "status": "experimental",
       "trades_since": 0
     }
