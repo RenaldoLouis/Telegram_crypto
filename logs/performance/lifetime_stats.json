@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-07-08 03:37 UTC",
-  "total_setups": 231,
-  "total_evaluated": 215,
+  "last_updated": "2026-07-09 02:07 UTC",
+  "total_setups": 233,
+  "total_evaluated": 217,
   "total_not_triggered": 16,
   "overall": {
-    "wins": 64,
-    "losses": 151,
-    "rr_sum": -32.71
+    "wins": 65,
+    "losses": 152,
+    "rr_sum": -31.330000000000002
   },
   "by_setup_type": {
     "trend_pullback": {
@@ -29,8 +29,8 @@
     },
     "post_liquidation": {
       "wins": 0,
-      "losses": 3,
-      "total": 3,
+      "losses": 4,
+      "total": 4,
       "rr_sum": -3.0
     },
     "liquidity_sweep": {
@@ -46,10 +46,10 @@
       "rr_sum": -3.86
     },
     "other": {
-      "wins": 3,
+      "wins": 4,
       "losses": 8,
-      "total": 11,
-      "rr_sum": -2.7
+      "total": 12,
+      "rr_sum": -1.3200000000000003
     },
     "range_mean_reversion": {
       "wins": 0,
@@ -66,24 +66,24 @@
       "rr_sum": -2.42
     },
     "medium": {
-      "wins": 50,
+      "wins": 51,
       "losses": 118,
-      "total": 168,
-      "rr_sum": -27.210000000000008
+      "total": 169,
+      "rr_sum": -25.83000000000001
     },
     "low": {
       "wins": 12,
-      "losses": 26,
-      "total": 38,
+      "losses": 27,
+      "total": 39,
       "rr_sum": -3.079999999999998
     }
   },
   "by_rank": {
     "1": {
-      "wins": 18,
+      "wins": 19,
       "losses": 52,
-      "total": 70,
-      "rr_sum": -14.920000000000005
+      "total": 71,
+      "rr_sum": -13.540000000000006
     },
     "3": {
       "wins": 12,
@@ -105,8 +105,8 @@
     },
     "2": {
       "wins": 20,
-      "losses": 44,
-      "total": 64,
+      "losses": 45,
+      "total": 65,
       "rr_sum": -0.4300000000000015
     }
   },
@@ -118,10 +118,10 @@
       "rr_sum": -2.46
     },
     "claude-sonnet-4-6": {
-      "wins": 62,
-      "losses": 141,
-      "total": 203,
-      "rr_sum": -28.25000000000001
+      "wins": 63,
+      "losses": 142,
+      "total": 205,
+      "rr_sum": -26.87000000000001
     },
     "claude-haiku-4-5": {
       "wins": 1,
@@ -138,10 +138,10 @@
       "rr_sum": -2.23
     },
     "intraday": {
-      "wins": 60,
-      "losses": 141,
-      "total": 201,
-      "rr_sum": -34.6
+      "wins": 61,
+      "losses": 142,
+      "total": 203,
+      "rr_sum": -33.22
     },
     "scalp": {
       "wins": 1,
@@ -153,15 +153,15 @@
   "by_direction": {
     "long": {
       "wins": 52,
-      "losses": 125,
-      "total": 177,
+      "losses": 126,
+      "total": 178,
       "rr_sum": -30.189999999999998
     },
     "short": {
-      "wins": 12,
+      "wins": 13,
       "losses": 26,
-      "total": 38,
-      "rr_sum": -2.5199999999999996
+      "total": 39,
+      "rr_sum": -1.1399999999999997
     }
   },
   "monthly_trend": {
@@ -181,20 +181,20 @@
       "total": 40
     },
     "2026-07": {
-      "wins": 8,
-      "losses": 9,
-      "total": 17
+      "wins": 9,
+      "losses": 10,
+      "total": 19
     }
   },
   "prediction_gap": {
-    "sum_predicted": 396.6899999999999,
-    "sum_actual": -32.71,
-    "count": 215
+    "sum_predicted": 399.6899999999999,
+    "sum_actual": -31.330000000000002,
+    "count": 217
   },
   "mfe_stats": {
-    "reached_05r": 133,
-    "total_with_mfe": 215,
-    "mfe_sum": 222.4099999999999
+    "reached_05r": 135,
+    "total_with_mfe": 217,
+    "mfe_sum": 226.64999999999992
   },
   "stop_timing": {
     "total_stops": 121,
@@ -202,7 +202,7 @@
     "candles_sum": 8112
   },
   "target_stats": {
-    "t1_hits": 68,
+    "t1_hits": 70,
     "t2_hits": 25
   },
   "by_symbol": {
@@ -268,8 +268,8 @@
     },
     "DOGEUSDT": {
       "wins": 6,
-      "losses": 10,
-      "total": 16,
+      "losses": 11,
+      "total": 17,
       "rr_sum": -3.06
     },
     "HYPERUSDT": {
@@ -499,21 +499,27 @@
       "losses": 1,
       "total": 1,
       "rr_sum": -1.0
+    },
+    "VANRYUSDT": {
+      "wins": 1,
+      "losses": 0,
+      "total": 1,
+      "rr_sum": 1.38
     }
   },
   "simulated_t1": {
-    "sim_075r_hits": 71,
-    "sim_100r_hits": 56,
-    "sim_total": 135
+    "sim_075r_hits": 73,
+    "sim_100r_hits": 58,
+    "sim_total": 137
   },
   "partial_profit": {
-    "blended_rr_sum": -23.890000000000008,
-    "blended_wins": 42,
+    "blended_rr_sum": -21.67000000000001,
+    "blended_wins": 44,
     "blended_losses": 72,
-    "be_stops": 16,
+    "be_stops": 17,
     "t1_then_t2": 25,
-    "t1_then_be": 16,
-    "t1_then_expire": 20
+    "t1_then_be": 17,
+    "t1_then_expire": 21
   },
   "processed_run_tags": [
     "20260422_0240",
@@ -592,14 +598,15 @@
     "20260704_1526",
     "20260705_0501",
     "20260705_1520",
-    "20260706_0237"
+    "20260706_0237",
+    "20260706_1352"
   ],
   "by_regime": {
     "neutral": {
-      "wins": 3,
-      "losses": 11,
-      "total": 14,
-      "rr_sum": -3.76
+      "wins": 4,
+      "losses": 12,
+      "total": 16,
+      "rr_sum": -2.38
     },
     "risk_off": {
       "wins": 2,
@@ -718,10 +725,10 @@
       "rr_sum": -0.06
     },
     "btc_bearish_guard": {
-      "wins": 1,
-      "losses": 3,
-      "total": 4,
-      "rr_sum": 0.08000000000000007
+      "wins": 2,
+      "losses": 4,
+      "total": 6,
+      "rr_sum": 1.46
     },
     "decoupled_alt_priority": {
       "wins": 0,
@@ -796,10 +803,10 @@
       "rr_sum": -1.0
     },
     "short_bias": {
-      "wins": 6,
+      "wins": 7,
       "losses": 7,
-      "total": 13,
-      "rr_sum": 0.35000000000000053
+      "total": 14,
+      "rr_sum": 1.7300000000000004
     },
     "partial_profit": {
       "wins": 2,
@@ -1114,10 +1121,10 @@
       "rr_sum": -1.0
     },
     "regime_neutral": {
-      "wins": 0,
+      "wins": 1,
       "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
+      "total": 2,
+      "rr_sum": 0.3799999999999999
     },
     "losing_streak_alert": {
       "wins": 0,
@@ -1136,6 +1143,30 @@
       "losses": 0,
       "total": 2,
       "rr_sum": 3.48
+    },
+    "setup8_exhaustion": {
+      "wins": 1,
+      "losses": 0,
+      "total": 1,
+      "rr_sum": 1.38
+    },
+    "losing_streak_caution": {
+      "wins": 1,
+      "losses": 1,
+      "total": 2,
+      "rr_sum": 1.38
+    },
+    "dead_cat_bounce_rule": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": 0.0
+    },
+    "volume_confirmation": {
+      "wins": 0,
+      "losses": 1,
+      "total": 1,
+      "rr_sum": 0.0
     }
   }
 }
