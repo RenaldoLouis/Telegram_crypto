@@ -1,0 +1,54 @@
+{
+  "run_timestamp_utc": "2026-07-09T07:26:58.778680+00:00",
+  "run_tag": "20260709_0726",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SUIUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.72,
+      "entry_high": 0.7235,
+      "stop_loss": 0.736,
+      "target_1": 0.702,
+      "target_2": 0.695,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "regime_cautious",
+          "short_bias",
+          "rsi_rejection_short"
+        ],
+        "key_factor": "Backtested rsi_rejection_short signal (RSI 79.8\u219267.8 on 1h); 3/4 TF bearish alignment with price below 4h EMA cluster acting as resistance"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 18.56,
+          "rsi": 36.35,
+          "macd": -0.00766,
+          "macd_hist": -0.00162,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.24,
+          "range_pct": 10.04
+        },
+        "tf_1h": {
+          "adx": 24.69,
+          "rsi": 67.84,
+          "macd": 0.001587,
+          "macd_hist": 0.002805,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.87,
+          "range_pct": 5.02
+        },
+        "backtested_signal": "rsi_rejection_short"
+      }
+    }
+  ]
+}
