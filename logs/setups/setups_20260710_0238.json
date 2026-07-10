@@ -1,0 +1,146 @@
+{
+  "run_timestamp_utc": "2026-07-10T02:38:28.593101+00:00",
+  "run_tag": "20260710_0238",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "VINEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.00935,
+      "entry_high": 0.00955,
+      "stop_loss": 0.0109,
+      "target_1": 0.00727,
+      "target_2": 0.00582,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "short_bias",
+          "regime_risk_on_caution",
+          "adx_trend_confirmation"
+        ],
+        "key_factor": "Strongest 4h ADX (41.95) of all validated signals; price at 4h EMA50 resistance in bearish EMA stack (EMA20 < EMA50), confirmed downtrend with pullback entry"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 41.95,
+          "rsi": 56.7,
+          "macd": -6.9e-05,
+          "macd_hist": 0.000309,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.57,
+          "range_pct": 48.92
+        },
+        "tf_1h": {
+          "adx": 40.25,
+          "rsi": 35.32,
+          "macd": 0.000356,
+          "macd_hist": -8e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.1,
+          "range_pct": 27.16
+        },
+        "backtested_signal": "trend_pullback_short"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "ESPORTSUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0193,
+      "entry_high": 0.0201,
+      "stop_loss": 0.0225,
+      "target_1": 0.0155,
+      "target_2": 0.012,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "short_bias",
+          "dead_cat_bounce_awareness",
+          "adx_trend_confirmation"
+        ],
+        "key_factor": "4h ADX 40.77 in strong downtrend; price pulled back to 4h EMA20 (0.01930) resistance in catastrophically broken structure (price 94% below SMA200)"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 40.77,
+          "rsi": 57.38,
+          "macd": -0.000739,
+          "macd_hist": 0.000682,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.18,
+          "range_pct": 43.69
+        },
+        "tf_1h": {
+          "adx": 32.25,
+          "rsi": 47.29,
+          "macd": 0.000814,
+          "macd_hist": -0.00015,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.01,
+          "range_pct": 33.21
+        },
+        "backtested_signal": "trend_pullback_short"
+      }
+    },
+    {
+      "rank": 3,
+      "symbol": "KORUUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 548.0,
+      "entry_high": 565.0,
+      "stop_loss": 635.0,
+      "target_1": 472.0,
+      "target_2": 385.0,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "short_bias",
+          "regime_risk_on_caution",
+          "prior_win_same_setup"
+        ],
+        "key_factor": "Price at 4h EMA20 (551) resistance in bearish EMA stack (EMA20 << EMA50 587); rsi_h_bear divergence on 4h; same structure that produced +2.22R win on 2026-07-01"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.8,
+          "rsi": 51.2,
+          "macd": -10.464178,
+          "macd_hist": 8.516364,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.03,
+          "range_pct": 38.15
+        },
+        "tf_1h": {
+          "adx": 20.55,
+          "rsi": 51.61,
+          "macd": 9.897169,
+          "macd_hist": -2.01906,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.02,
+          "range_pct": 15.9
+        },
+        "backtested_signal": "trend_pullback_short"
+      }
+    }
+  ]
+}
