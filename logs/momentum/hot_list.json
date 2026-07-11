@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-07-11T06:16:49.808603+00:00",
+  "generated_utc": "2026-07-11T09:40:21.054830+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 38.0,
-      "median_change_pct": 0.33,
-      "btc_change_pct": 0.25,
-      "avg_funding_pct": -0.0138,
+      "pct_declining": 42.0,
+      "median_change_pct": 0.32,
+      "btc_change_pct": -0.28,
+      "avg_funding_pct": 0.0042,
       "large_decline_count": 6
     },
-    "detected_utc": "2026-07-11T06:16:49.808032+00:00",
+    "detected_utc": "2026-07-11T09:40:21.054263+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
