@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-07-11T02:51:15.229681+00:00",
+  "generated_utc": "2026-07-11T06:16:49.808603+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 40.0,
-      "median_change_pct": 0.6,
-      "btc_change_pct": 0.18,
-      "avg_funding_pct": 0.0044,
-      "large_decline_count": 4
+      "pct_declining": 38.0,
+      "median_change_pct": 0.33,
+      "btc_change_pct": 0.25,
+      "avg_funding_pct": -0.0138,
+      "large_decline_count": 6
     },
-    "detected_utc": "2026-07-11T02:51:15.229118+00:00",
+    "detected_utc": "2026-07-11T06:16:49.808032+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -28,22 +28,6 @@
       "open_interest": 14318428.0,
       "volume_acceleration": 1.0239999071683776,
       "price_acceleration_pct": 5.5159
-    },
-    {
-      "symbol": "SLXUSDT",
-      "flagged_utc": "2026-07-09T03:34:08.142953+00:00",
-      "expires_utc": "2026-07-11T03:34:08.142953+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.1924,
-      "price_change_24h_pct": 13.1764,
-      "turnover_24h_usd": 17839533.4622,
-      "funding_rate_pct": -0.16899599999999998,
-      "open_interest": 21872025.0,
-      "volume_acceleration": 0.8884163009893039,
-      "price_acceleration_pct": 6.1971
     },
     {
       "symbol": "SKHYNIXUSDT",
@@ -188,6 +172,22 @@
       "open_interest": 107456.84,
       "volume_acceleration": 0.9716655485815725,
       "price_acceleration_pct": 1.9386999999999999
+    },
+    {
+      "symbol": "KATUSDT",
+      "flagged_utc": "2026-07-11T06:16:49.807748+00:00",
+      "expires_utc": "2026-07-13T06:16:49.807748+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.005534,
+      "price_change_24h_pct": 4.1596,
+      "turnover_24h_usd": 16192098.9278,
+      "funding_rate_pct": -0.928242,
+      "open_interest": 293822660.0,
+      "volume_acceleration": 1.158904638631165,
+      "price_acceleration_pct": -4.4187
     }
   ]
 }
