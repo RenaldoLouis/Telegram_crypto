@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-07-03 (v11.0)_
+_Last updated: 2026-07-12 (v11.2)_
 
 ---
 
@@ -313,6 +313,33 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-07-12 (v11.2) — Execution Overhaul: T1→T2 Floor Relocation, Long Volume Gate, +0.3R Trail
+
+**Context**: With 237 evaluated trades (30% WR, −34R, PF 0.75), re-ran `backtester.py` to quantify fixes for the long-standing execution leak. Diagnosis held: **direction is right 64% of the time (avg MFE 1.03R) but targets sit past the average excursion** — trades reach ~1R, never tag T1, reverse, and pay the full −1R stop. Three fixes implemented and backtested; #4 (regime tightening) scoped out for now.
+
+**1. T1 is now a partial-profit level; the 1.5:1 floor moved to T2** (`analyzer/prompts.py`, `main.py::validate_setups`)
+- The old prompt *pinned* `predicted_rr` (R:R to T1) at exactly 1.5 — the leak itself. Since avg MFE is only 1.03R, a 1.5R T1 was unreachable (T1 hit rate 31%).
+- **New rule: T1 at 0.75–1.0R (predicted_rr 0.75–1.0), and the 1.5:1 minimum-edge floor now lives on target_2** (the reward leg). Risk framework intact — not weakened, relocated.
+- `validate_setups()` now enforces both: flags `predicted_rr > 1.1` (T1 too far) AND computes R:R to T2, flagging `< 1.4` (edge floor). JSON schema example + notes updated.
+- **Backtest**: current blended −24.8R → **T1@0.75R = +5.2R (+30R)**; T1@1.0R = −9.1R. 0.75R would have hit 54% vs current 31%. Flips the whole book positive.
+
+**2. Long volume gate + long blacklist** (`analyzer/prompts.py`, `main.py::validate_setups`)
+- Longs = 52/181 (−33.2R) vs shorts 20/56 (−0.9R) — longs are essentially the entire loss. But the real discriminator is volume, not direction: longs **without** volume = −0.24R expect / PF 0.60; longs **with** volume = **+0.15R / PF 1.25** (`vol_confirmed + rank≤3 + long` → +0.39R / PF 1.70).
+- **New rule: every long MUST have `volume_confirmed=true`, in every regime.** Validator rejects volume-less longs. This is the `vol_confirmed` slice v11.1 flagged but deferred (Goodhart risk, n=25) — now acted on at n=237.
+- Long blacklist (deeply negative history, shorts still allowed): ENA/ETH/HBAR/WLD/HYPE/ONDO/LAB.
+
+**3. Eval model: +0.3R trail replaces bare breakeven** (`weekly_eval.py::evaluate_setup`)
+- Old model returned the runner all the way to breakeven (0R). 18 BE-stops gave back MFE of 1.0–2.2R — structural winners handed back to zero.
+- **New model: once price runs 1.0R in profit, the stop tightens to +0.3R (not BE).** Worst case after 1R is +0.3R. Uses prior-candle MFE (no intracandle look-ahead). New `trail_stop_hit` field + `partial_profit.trail_stops` counter. Prompt position-management guidance updated to match.
+- **Backtest (floor-at-+0.3R-after-1R model)**: −34R → **+2.2R (+36R)**, 44 trades rescued (22 were full −1R stops, 22 were BE-to-zero).
+- Overlaps #1 (same "reached 1R then reversed" bucket) — the two do not add linearly.
+
+**Two free findings surfaced (not yet acted on)**: (a) 3/4 TF confluence *beats* 4/4 — the "4/4 = high confidence" mapping is inverted (4/4 = already-extended = late entry); noted in prompt. (b) `risk_off` loses in both directions (shorts 0/5, longs mixed) — regime gate should be zero setups in risk_off; deferred to the #4 regime pass.
+
+**Verification**: all files compile; trail model unit-tested through real `evaluate_setup` on synthetic klines (ran-1.1R-then-reversed → +0.3R rescue; T1-hit-MFE<1 → BE preserved; dead-on-arrival → −1R intact); validator 6/6 cases correct. Live `scan` ran clean (exit 0, zero violations): 2 shorts, both `trend_pullback`, T1 at 0.88–0.89R / T2 at 1.57–1.72R — T1 placement fix visibly working vs the old 1.5R.
+
+**Note**: #3 only affects NEW evals going forward (existing eval JSONs keep old scores unless re-run). Effect proves out as these setups resolve under `eval-scan`.
 
 ### 2026-07-06 (v11.1) — Backtest Re-Validation + Root-Cause Analysis + Entry-Indicator Instrumentation
 

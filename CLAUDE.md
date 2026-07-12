@@ -16,7 +16,7 @@ Claude analyzes data and surfaces setups. The human makes every trading decision
 - Do NOT add order execution logic, even if asked casually.
 - Do NOT wire Claude output directly to the Bybit write API.
 - Do NOT expand the Bybit API key permissions beyond Read-Only.
-- Do NOT weaken R:R below 1.5:1 minimum floor or remove risk flags from output. (Lowered from 2:1 to 1.5:1 based on 98-trade backtest showing avg MFE of 1.15R — the old 2:1 floor forced unreachable targets.)
+- Do NOT weaken the 1.5:1 minimum R:R floor or remove risk flags from output. **The 1.5:1 floor lives on target_2 (the reward leg), NOT target_1.** T1 is a partial-profit level at 0.75–1.0R; T2 must be ≥1.5R. (History: floor lowered 2:1→1.5:1, then in v11.2 relocated from T1 to T2 based on a 237-trade backtest — avg MFE only 1.03R, so a 1.5R T1 was unreachable and setting T1 at 0.75R flipped the book from −24.8R to +5.2R. `main.py::validate_setups` enforces T1 ≤ 1.0R AND T2 ≥ 1.5R.)
 
 Auto-execution will only be considered after: (a) 60+ days of evaluated Phase A data, (b) a separate hard-coded risk engine (not Claude) for position sizing, (c) model comparison data (Sonnet vs Haiku), and (d) explicit user approval.
 
@@ -271,7 +271,7 @@ python historical_backtester.py --validate all --interval 240 --symbols ADAUSDT,
 1. **Never add write-path Bybit calls** (place_order, cancel_order, etc.). Confirm Phase B preconditions first.
 2. **Never let free-text output drive actions.** Use structured JSON (`setups_json`) with validated fields.
 3. **New data sources welcome** — wire into `fetchers/`, pass to Claude context. Estimate token impact first.
-4. **Prompt changes**: update `analyzer/prompts.py`. Never weaken R:R below 1.5:1 floor, remove risk framework, or make Claude more aggressive about calling trades.
+4. **Prompt changes**: update `analyzer/prompts.py`. Never weaken the 1.5:1 R:R floor (now carried by target_2, not target_1), remove risk framework, or make Claude more aggressive about calling trades.
 5. **Knowledge files** in `/knowledge/*.md` are user-editable. Keep human-readable. Claude loads all `*.md` files on every run.
 6. **Pre-filter scoring** in `bybit_data.py::_ticker_interest_score()` should reflect knowledge file rules. When knowledge changes, update scoring thresholds to match.
 
@@ -307,7 +307,7 @@ python historical_backtester.py --validate all --interval 240 --symbols ADAUSDT,
 2. Waits appropriate time: scalp=1d, intraday=2d (swing removed in v9.2 — system only recommends scalp/intraday)
 3. Fetches 15m klines from Bybit for the evaluation window
 4. Checks: entry triggered? → stop or target hit first? → actual R:R
-5. **Breakeven stop model**: once T1 is hit, the simulated stop moves to entry (breakeven). If price reverses after T1, worst case is 0R, not -1.0R.
+5. **Trailing stop model (v11.2)**: once T1 is hit (MFE < 1R) the simulated stop moves to entry (breakeven). Once price runs **1.0R in profit, the stop tightens to +0.3R** (lock a partial gain) instead of breakeven — backtest showed many trades reached 1.0–2.2R MFE then reversed to a 0R exit. Worst case after 1R is +0.3R, not 0R or −1.0R. Tracked as `trail_stop_hit`. The trail decision uses prior-candle MFE (no intracandle look-ahead).
 6. **Partial profit model**: calculates `blended_rr` = 50% closed at T1 + 50% trails with BE stop to T2/expiry. This models realistic position management.
 7. **Simulated closer-T1 backtest**: also checks if T1 at 0.75R and 1.0R would have been hit before stop
 8. Saves to `logs/evaluations/eval_*.json` (includes `blended_rr`, `be_stop_hit`, `sim_t1_*` fields)
@@ -368,7 +368,7 @@ The system automatically improves through a multi-layered feedback loop that doe
 
 **Post-scan validation** (`main.py::validate_setups()`):
 - Pure Python (zero tokens) — runs after Claude's output is parsed, before saving
-- Checks: setup count vs regime limit, valid types/directions/timeframes, predicted_rr cap, duplicates, direction requirements
+- Checks: setup count vs regime limit, valid types/directions/timeframes, T1 ≤ 1.0R cap, T2 ≥ 1.5R edge floor, long volume gate + long blacklist, duplicates, direction requirements
 - Violations are logged as warnings — does NOT block saving (so eval can still track the outcome)
 
 ### Quarterly Deep Analysis (Manual)
@@ -399,7 +399,7 @@ See `progress.md` for:
 ## Glossary
 
 - **Brief**: the structured output Claude produces per run (Market Context, Top 5 Opportunities, Risk Flags, Takeaway).
-- **Setup**: a trading opportunity with entry zone, stop, target 1+2, R:R, and confidence. Must have R:R >= 1.5:1.
+- **Setup**: a trading opportunity with entry zone, stop, target 1+2, R:R, and confidence. T1 is a partial-profit level at 0.75–1.0R; T2 (the reward leg) must be >= 1.5R. Every long must also have `volume_confirmed=true`.
 - **setups_json**: structured JSON block Claude appends to every brief for machine-readable tracking.
 - **Pre-filter**: Python scoring of 50 tickers down to 25 before kline fetching, using knowledge-derived rules.
 - **Multi-TF confluence**: how many of 4 timeframes agree on direction. 4/4=High, 3/4=Medium, 2/4=Low.
@@ -409,7 +409,8 @@ See `progress.md` for:
 - **MFE (Max Favorable Excursion)**: how far price moved in Claude's predicted direction before outcome. Used to diagnose "direction right, execution wrong" and compute optimal T1 distance.
 - **Simulated T1 backtest**: per-trade check of whether a closer T1 (at 0.75R or 1.0R) would have been hit before stop. Aggregated to quantify optimal T1 distance.
 - **Blended R:R**: the partial profit model result. 50% of position closed at T1, remaining 50% trails with breakeven stop. Calculated as `0.5 * T1_rr + 0.5 * actual_rr`. More realistic than all-or-nothing scoring.
-- **BE stop (breakeven stop)**: after T1 is hit in the eval, the stop moves to entry price. If price reverses, the worst case is 0R instead of -1.0R. Tracked as `be_stop_hit` in eval results.
+- **BE stop (breakeven stop)**: after T1 is hit (MFE < 1R) in the eval, the stop moves to entry price. If price reverses, the worst case is 0R instead of -1.0R. Tracked as `be_stop_hit` in eval results.
+- **Trail stop (+0.3R lock)**: once price runs 1.0R in profit, the eval stop tightens to +0.3R instead of breakeven, so structural winners that reverse still exit green (+0.3R, not 0R). Tracked as `trail_stop_hit` and `partial_profit.trail_stops`. Uses prior-candle MFE (no look-ahead). Added v11.2.
 - **Momentum pulse**: lightweight scanner (`momentum_pulse.py`) that runs every 4h on GitHub Actions. Fetches 50 tickers, compares against previous snapshot to detect volume/price acceleration. Zero Claude tokens. Flags coins to `logs/momentum/hot_list.json`.
 - **Hot list**: dynamic watchlist generated by the momentum pulse. Coins flagged for big moves, volume acceleration, or funding squeezes. Entries expire after 48h. Main scan merges hot list into watchlist automatically.
 - **Volume acceleration**: ratio of a coin's current turnover vs its turnover at the previous pulse (4h earlier). >3x triggers a flag. >2x gives a scoring bonus in the pre-filter. Detects coins that are ramping up before they appear in the top 50 by absolute turnover.
@@ -433,7 +434,7 @@ See `progress.md` for:
 - **Delta analysis**: automated self-learning system in `weekly_eval.py`. Triggers every 15 new evaluated trades. Calls Claude to find patterns, grade previous insights, and generate new ACTION rules. Replaces the slow quarterly cadence with faster feedback. Results appended to `strategic_rules.md` under `## Delta Insights`.
 - **Rule registry** (`rule_registry.json`): tracks delta analysis insights — when they were added, their status (`experimental`/`confirmed`/`expired`), and win rate snapshots. Enables insight effectiveness tracking over time.
 - **Reasoning capture**: `reasoning` field in setup JSON containing `rules_applied` (list of rule IDs) and `key_factor` (one-line driver). Carried through to eval results, tracked in `by_rule_applied` stats. Enables rule-level attribution — "did setups citing this rule win more?"
-- **Post-scan validation**: pure Python validator in `main.py` that checks Claude's output against hard rules (setup count, predicted_rr cap, valid types, regime requirements). Zero token cost. Logs violations as warnings.
+- **Post-scan validation**: pure Python validator in `main.py` that checks Claude's output against hard rules (setup count, T1 ≤ 1.0R cap, T2 ≥ 1.5R edge floor, long volume gate + long blacklist, valid types, regime requirements). Zero token cost. Logs violations as warnings.
 - **Validated signals**: mechanical signal formulas that passed out-of-sample train/test validation on 15 symbols. Detected by `_check_validated_signals()` in `bybit_data.py` during each scan. When they fire, injected into Claude's user content as `BACKTESTED SIGNALS` section. Current confirmed signals (Jul 2026 re-validation): `rsi_rejection_short` (RSI exhaustion at >75, ★ STRONG both TFs), `macd_momentum_long` (MACD hist flip positive in uptrend, confirmed both TFs), `trend_pullback_short` (downtrend pullback to EMA20, **4h ONLY** — 1h rejected as overfit). `macd_momentum_short` was removed after degrading to overfit on both TFs. Other signals (trend_pullback_long, range_reversion_long/short, rsi_bounce_long) remain rejected/single-TF-only. The set is re-checked monthly via `backtest`; when a signal drifts, `_check_validated_signals()` is manually updated to match.
 - **Historical backtester** (`historical_backtester.py`): fetches Bybit klines (cached locally), defines 12 mechanical signal rules, runs parameter sweep optimization (`--optimize`), and validates with train/test split (`--validate`). Tests on 1h (42 days) and 4h (167 days) of data. Zero Claude tokens.
 - **What-if backtester** (`backtester.py`): reads existing eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbol blacklists), reports expectancy/WR/profit factor. Useful for answering "what if we changed X?" Zero Claude tokens.

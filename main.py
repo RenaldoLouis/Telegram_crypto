@@ -99,13 +99,41 @@ def validate_setups(setups, regime_label):
             f"COUNT EXCEEDS REGIME LIMIT: {len(setups)} setups > {regime_label} max {max_setups}"
         )
 
+    # Symbols with a deeply negative long history (237-trade backtest).
+    long_blacklist = {"ENAUSDT", "ETHUSDT", "HBARUSDT", "WLDUSDT",
+                      "HYPEUSDT", "ONDOUSDT", "LABUSDT"}
+
     for s in setups:
         sym = s.get("symbol", "?")
-        if s.get("predicted_rr", 0) > 1.6:  # small tolerance
-            violations.append(f"{sym}: predicted_rr {s['predicted_rr']} exceeds 1.5 cap")
+        direction = s.get("direction")
+
+        # T1 must be a partial-profit level at 0.75-1.0R, NOT the 1.5R edge level.
+        # (The 1.5:1 minimum edge now lives on target_2 — see below.)
+        pr = s.get("predicted_rr", 0)
+        if pr > 1.1:  # small tolerance over the 1.0R cap
+            violations.append(f"{sym}: predicted_rr {pr} exceeds 1.0R T1 cap (T1 too far)")
+
+        # target_2 carries the 1.5:1 edge floor. Compute R:R to T2 from mid-entry.
+        try:
+            entry_mid = (float(s["entry_low"]) + float(s["entry_high"])) / 2
+            risk = abs(entry_mid - float(s["stop_loss"]))
+            t2 = float(s["target_2"])
+            if risk > 0:
+                t2_rr = (t2 - entry_mid) / risk if direction == "long" else (entry_mid - t2) / risk
+                if t2_rr < 1.4:  # small tolerance under the 1.5 floor
+                    violations.append(f"{sym}: R:R to target_2 {t2_rr:.2f} below 1.5 edge floor")
+        except (KeyError, TypeError, ValueError):
+            violations.append(f"{sym}: missing/invalid price fields for R:R check")
+
+        # Long volume gate: every long must have volume confirmation.
+        if direction == "long" and not s.get("volume_confirmed", False):
+            violations.append(f"{sym}: LONG without volume_confirmed (long volume gate)")
+        if direction == "long" and sym in long_blacklist:
+            violations.append(f"{sym}: LONG on blacklisted symbol (negative long history)")
+
         if s.get("setup_type") not in valid_types:
             violations.append(f"{sym}: unknown setup_type '{s.get('setup_type')}'")
-        if s.get("direction") not in ("long", "short"):
+        if direction not in ("long", "short"):
             violations.append(f"{sym}: invalid direction '{s.get('direction')}'")
         if s.get("timeframe") not in ("scalp", "intraday"):
             violations.append(f"{sym}: invalid timeframe '{s.get('timeframe')}'")

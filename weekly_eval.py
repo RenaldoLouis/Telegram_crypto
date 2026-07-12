@@ -151,15 +151,23 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         return {"status": "not_triggered", "reason": "Price never reached entry zone"}
 
     # Phase 2: After entry, did stop or target hit first?
-    # Models realistic position management:
-    #   - Once T1 is hit, stop moves to breakeven (entry price)
-    #   - Partial profit: 50% closed at T1, remaining 50% trails with BE stop
-    # Also track MFE (max favorable excursion) — how far price moved in our
-    # direction before the outcome.
+    # Models realistic position management (v10 — +0.3R trail):
+    #   - Before T1 and before 1R MFE: original stop applies.
+    #   - Once price runs 1.0R in favor: stop tightens to +0.3R (lock a partial
+    #     gain) so structural winners aren't given back to zero. This replaces
+    #     the old "return all the way to breakeven" behavior — backtest showed
+    #     many trades reached 1.0-2.2R MFE then reversed to a 0R exit.
+    #   - Once T1 is hit but MFE < 1R: stop moves to breakeven.
+    #   - Partial profit: 50% closed at T1, remaining 50% trails with this stop.
+    # The trail decision uses MFE as of PRIOR candles only (no intracandle
+    # look-ahead — a candle cannot both reach 1R and honor the +0.3R stop).
+    LOCK_TRIGGER_RR = 1.0   # once MFE reaches this...
+    LOCK_STOP_RR = 0.3      # ...move the stop to +this many R
     stop_hit = False
     t1_hit = False
     t2_hit = False
-    be_stop_hit = False  # breakeven stop hit after T1
+    be_stop_hit = False     # breakeven stop hit after T1 (MFE stayed < 1R)
+    trail_stop_hit = False  # +0.3R trail stop hit after 1R MFE
     exit_price = None
     exit_reason = None
     risk = abs(entry_price - stop_loss)
@@ -168,8 +176,9 @@ def evaluate_setup(client, setup, run_timestamp_utc):
 
     for c in candles[entry_candle_idx:]:
         candles_to_exit += 1
+        mfe_prior = max_favorable_rr  # MFE known entering this candle
 
-        # Track MFE before checking exit conditions
+        # Track MFE with this candle
         if risk > 0:
             if direction == "long":
                 favorable = (c["high"] - entry_price) / risk
@@ -177,44 +186,43 @@ def evaluate_setup(client, setup, run_timestamp_utc):
                 favorable = (entry_price - c["low"]) / risk
             max_favorable_rr = max(max_favorable_rr, favorable)
 
+        # Effective protective stop for this candle, most-protective first.
+        if mfe_prior >= LOCK_TRIGGER_RR:
+            protect_reason = "trail_stop"
+            protect = (entry_price + LOCK_STOP_RR * risk) if direction == "long" \
+                else (entry_price - LOCK_STOP_RR * risk)
+        elif t1_hit:
+            protect_reason = "be_stop"
+            protect = entry_price
+        else:
+            protect_reason = "stop_loss"
+            protect = stop_loss
+
         if direction == "long":
-            if not t1_hit:
-                # Before T1: original stop applies
-                if c["low"] <= stop_loss:
-                    stop_hit = True
-                    exit_price = stop_loss
-                    exit_reason = "stop_loss"
-                    break
-                if c["high"] >= target_1:
-                    t1_hit = True
-                    # Don't break — continue to check for T2 with BE stop
-            else:
-                # After T1: stop is now at breakeven (entry price)
-                if c["low"] <= entry_price:
-                    be_stop_hit = True
-                    exit_price = entry_price
-                    exit_reason = "be_stop"
-                    break
+            if c["low"] <= protect:
+                exit_price = protect
+                exit_reason = protect_reason
+                stop_hit = protect_reason == "stop_loss"
+                be_stop_hit = protect_reason == "be_stop"
+                trail_stop_hit = protect_reason == "trail_stop"
+                break
+            if not t1_hit and c["high"] >= target_1:
+                t1_hit = True
             if target_2 and c["high"] >= target_2:
                 t2_hit = True
                 exit_price = target_2
                 exit_reason = "target_2"
                 break
         else:  # short
-            if not t1_hit:
-                if c["high"] >= stop_loss:
-                    stop_hit = True
-                    exit_price = stop_loss
-                    exit_reason = "stop_loss"
-                    break
-                if c["low"] <= target_1:
-                    t1_hit = True
-            else:
-                if c["high"] >= entry_price:
-                    be_stop_hit = True
-                    exit_price = entry_price
-                    exit_reason = "be_stop"
-                    break
+            if c["high"] >= protect:
+                exit_price = protect
+                exit_reason = protect_reason
+                stop_hit = protect_reason == "stop_loss"
+                be_stop_hit = protect_reason == "be_stop"
+                trail_stop_hit = protect_reason == "trail_stop"
+                break
+            if not t1_hit and c["low"] <= target_1:
+                t1_hit = True
             if target_2 and c["low"] <= target_2:
                 t2_hit = True
                 exit_price = target_2
@@ -222,7 +230,7 @@ def evaluate_setup(client, setup, run_timestamp_utc):
                 break
 
     # If no definitive exit, determine outcome
-    if not stop_hit and not be_stop_hit and not t2_hit:
+    if not stop_hit and not be_stop_hit and not trail_stop_hit and not t2_hit:
         if t1_hit:
             exit_price = target_1
             exit_reason = "target_1"
@@ -296,6 +304,7 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         "target_2_hit": t2_hit,
         "stop_hit": stop_hit,
         "be_stop_hit": be_stop_hit,
+        "trail_stop_hit": trail_stop_hit,
         "actual_rr": actual_rr,
         "blended_rr": blended_rr,
         "won": won,
@@ -491,6 +500,7 @@ def _empty_lifetime_stats():
             "blended_wins": 0,
             "blended_losses": 0,
             "be_stops": 0,
+            "trail_stops": 0,
             "t1_then_t2": 0,
             "t1_then_be": 0,
             "t1_then_expire": 0,
@@ -540,7 +550,7 @@ def update_lifetime_stats(all_evals):
     if "partial_profit" not in stats:
         stats["partial_profit"] = {
             "blended_rr_sum": 0.0, "blended_wins": 0, "blended_losses": 0,
-            "be_stops": 0, "t1_then_t2": 0, "t1_then_be": 0, "t1_then_expire": 0,
+            "be_stops": 0, "trail_stops": 0, "t1_then_t2": 0, "t1_then_be": 0, "t1_then_expire": 0,
         }
 
     processed = set(stats.get("processed_run_tags", []))
@@ -652,11 +662,13 @@ def update_lifetime_stats(all_evals):
                     pp["blended_losses"] += 1
             if r.get("be_stop_hit"):
                 pp["be_stops"] += 1
+            if r.get("trail_stop_hit"):
+                pp["trail_stops"] = pp.get("trail_stops", 0) + 1
             if r.get("target_1_hit"):
                 exit_r = r.get("exit_reason", "")
                 if exit_r == "target_2":
                     pp["t1_then_t2"] += 1
-                elif exit_r == "be_stop":
+                elif exit_r in ("be_stop", "trail_stop"):
                     pp["t1_then_be"] += 1
                 elif exit_r in ("target_1", "expired"):
                     pp["t1_then_expire"] += 1
