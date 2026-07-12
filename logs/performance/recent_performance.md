@@ -1,10 +1,30 @@
 # Recent Performance (last 4 weeks)
-_55 trades: 16W / 39L (29% WR, -0.02 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 45% WR, 0.00 avg blended R:R_
+_75 trades: 23W / 52L (31% WR, -0.05 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 44% WR, -0.04 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-10 | VINEUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -0.12 (L) | -0.12 | expired | 0.2R |
+| 2026-07-10 | ESPORTSUSD | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.21 (W) | 1.21 | target_1 | 1.51R |
+| 2026-07-10 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.23 (W) | 0.23 | expired | 0.58R |
+| 2026-07-09 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.61 (W) | 0.61 | expired | 0.87R |
+| 2026-07-09 | SPCXUSDT | S | intra | trend_pullba | low | 3/4 | 1.5 | 0.59 (W) | 0.59 | expired | 0.73R |
+| 2026-07-09 | SUIUSDT | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.98R |
+| 2026-07-09 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 1.09R |
+| 2026-07-09 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 1.03R |
+| 2026-07-08 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.55R |
+| 2026-07-08 | XRPUSDT | S | intra | trend_pullba | low | 3/4 | 1.5 | -0.95 (L) | -0.95 | expired | 0.64R |
+| 2026-07-08 | DOGEUSDT | S | intra | trend_pullba | low | 4/4 | 1.5 | -0.88 (L) | -0.88 | expired | 0.24R |
+| 2026-07-08 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.0 (L) | 0.52 | be_stop | 1.29R |
+| 2026-07-08 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -0.12 (L) | -0.12 | expired | 1.04R |
+| 2026-07-07 | SPCXUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 0.33 (W) | 0.33 | expired | 1.0R |
+| 2026-07-07 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.25 (W) | 1.71 | target_2 | 2.25R |
+| 2026-07-07 | RPLUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.27R |
+| 2026-07-07 | SPCXUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.8R |
+| 2026-07-07 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.14 (W) | 1.71 | target_2 | 2.34R |
+| 2026-07-07 | XPLUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.18R |
+| 2026-07-07 | SOLUSDT | L | intra | trend_pullba | low | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.61R |
 | 2026-07-06 | VANRYUSDT | S | intra | other | med | 4/4 | 1.5 | 1.38 (W) | 1.38 | target_1 | 2.36R |
 | 2026-07-06 | DOGEUSDT | L | intra | post_liquida | low | 3/4 | 1.5 | 0.0 (L) | 0.84 | be_stop | 1.88R |
 | 2026-07-06 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.51 | target_2 | 2.12R |
@@ -61,8 +81,8 @@ _Partial profit model (50% at T1 + BE stop): 45% WR, 0.00 avg blended R:R_
 | 2026-06-17 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.38 | be_stop | 0.77R |
 | 2026-06-17 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.73 | target_1 | 1.94R |
 
-- Recent 'trend_pullback': 11/37 (30% WR)
-- Recent 'other': 4/10 (40% WR)
+- Recent 'trend_pullback': 18/56 (32% WR)
+- Recent 'other': 4/11 (36% WR)
 - Recent 'funding_squeeze': 1/6 (17% WR)
 
 ## Trader's Recent Actual Trades

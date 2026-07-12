@@ -1,0 +1,101 @@
+{
+  "run_timestamp_utc": "2026-07-12T08:19:33.938848+00:00",
+  "run_tag": "20260712_0819",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1638,
+      "entry_high": 0.1658,
+      "stop_loss": 0.1685,
+      "target_1": 0.1615,
+      "target_2": 0.159,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "ada_cautious_regime_only",
+          "cautious_short_bias_combo",
+          "short_bias",
+          "regime_cautious",
+          "rank1_4tf_confluence"
+        ],
+        "key_factor": "4/4 TF bearish alignment with price below all EMAs across all timeframes; ada_cautious_regime_only delta rule active"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 19.57,
+          "rsi": 40.61,
+          "macd": -0.001707,
+          "macd_hist": -1.9e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.28,
+          "range_pct": 7.51
+        },
+        "tf_1h": {
+          "adx": 24.89,
+          "rsi": 25.49,
+          "macd": -0.001166,
+          "macd_hist": -0.000533,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.3,
+          "range_pct": 7.51
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "HMSTRUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.000205,
+      "entry_high": 0.000213,
+      "stop_loss": 0.000234,
+      "target_1": 0.000187,
+      "target_2": 0.000166,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "short_bias",
+          "regime_cautious",
+          "rank2_highest_conviction"
+        ],
+        "key_factor": "Validated backtested trend_pullback_short signal on 4h (N=111, 100% robust, +0.28R expectancy); 15m volume spike 1.59x confirms bounce into EMA20 entry zone"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.81,
+          "rsi": 56.51,
+          "macd": -9e-06,
+          "macd_hist": 3e-06,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.65,
+          "range_pct": 28.98
+        },
+        "tf_1h": {
+          "adx": 15.99,
+          "rsi": 50.18,
+          "macd": -2e-06,
+          "macd_hist": -1e-06,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.77,
+          "range_pct": 15.89
+        },
+        "backtested_signal": "trend_pullback_short"
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "run_tag": "20260707_0223",
+  "run_timestamp_utc": "2026-07-07T02:23:28.027506+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-07-12T07:29:43.204914+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.10809,
+      "exit_price": 0.1038,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.18,
+      "candles_to_exit": 47,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "XPLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 4,
+      "rank": 1,
+      "rules_applied": [
+        "4tf_confluence_override_volume",
+        "sma200_bullish_filter",
+        "tight_t1",
+        "losing_streak_selectivity"
+      ]
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 81.56,
+      "exit_price": 79.6,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.61,
+      "candles_to_exit": 93,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "SOLUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 2,
+      "rules_applied": [
+        "15m_oversold_h_bull_divergence",
+        "4h_trend_pullback_priority",
+        "losing_streak_selectivity",
+        "reduced_size_low_confidence"
+      ]
+    }
+  ]
+}

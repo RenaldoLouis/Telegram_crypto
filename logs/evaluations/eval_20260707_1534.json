@@ -1,0 +1,73 @@
+{
+  "run_tag": "20260707_1534",
+  "run_timestamp_utc": "2026-07-07T15:34:57.653673+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-07-12T07:29:44.716753+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 152.5,
+      "exit_price": 150.22,
+      "exit_reason": "expired",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "actual_rr": 0.33,
+      "blended_rr": 0.33,
+      "won": true,
+      "max_favorable_rr": 1.0,
+      "candles_to_exit": 192,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 4,
+      "rank": 1,
+      "rules_applied": [
+        "short_bias",
+        "regime_cautious",
+        "bounce_entry_not_chase",
+        "volume_confirmed_4h"
+      ]
+    },
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.1785,
+      "exit_price": 0.165,
+      "exit_reason": "target_2",
+      "target_1_hit": true,
+      "target_2_hit": true,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "actual_rr": 2.25,
+      "blended_rr": 1.71,
+      "won": true,
+      "max_favorable_rr": 2.25,
+      "candles_to_exit": 67,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 2,
+      "rules_applied": [
+        "short_bias",
+        "regime_cautious",
+        "ada_short_historical_edge",
+        "bounce_entry_not_chase"
+      ]
+    }
+  ]
+}

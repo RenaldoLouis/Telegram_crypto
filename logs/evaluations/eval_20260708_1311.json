@@ -1,0 +1,42 @@
+{
+  "run_tag": "20260708_1311",
+  "run_timestamp_utc": "2026-07-08T13:11:00.161665+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-07-12T07:29:46.223134+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 62100.0,
+      "exit_price": 63200.0,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.55,
+      "candles_to_exit": 72,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 1.5,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "btc_bearish_daily_anchor",
+        "short_bias",
+        "risk_off_regime_shorts_only",
+        "cautious_short_bias_combo",
+        "regime_riskoff"
+      ]
+    }
+  ]
+}

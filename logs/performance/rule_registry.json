@@ -1,7 +1,7 @@
 {
-  "last_delta_trade_count": 215,
-  "last_delta_date": "2026-07-08",
-  "wr_at_last_delta": "29.8%",
+  "last_delta_trade_count": 237,
+  "last_delta_date": "2026-07-12",
+  "wr_at_last_delta": "30.4%",
   "insights": [
     {
       "id": "ada_short_edge",
@@ -9,7 +9,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 33
+      "trades_since": 55
     },
     {
       "id": "long_bias_structural_loss",
@@ -17,7 +17,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 33
+      "trades_since": 55
     },
     {
       "id": "low_mfe_stop_loss_pattern",
@@ -25,7 +25,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 33
+      "trades_since": 55
     },
     {
       "id": "rank2_scalp_outlier",
@@ -33,7 +33,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 33
+      "trades_since": 55
     },
     {
       "id": "wld_ena_avoid_longs",
@@ -41,7 +41,7 @@
       "added_at_trade_count": 182,
       "added_date": "2026-06-26",
       "status": "experimental",
-      "trades_since": 33
+      "trades_since": 55
     },
     {
       "id": "labusdt_funding_squeeze_failure",
@@ -49,7 +49,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 15
+      "trades_since": 37
     },
     {
       "id": "risk_off_regime_shorts_only",
@@ -57,7 +57,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 15
+      "trades_since": 37
     },
     {
       "id": "ada_short_edge_revoked",
@@ -65,7 +65,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 15
+      "trades_since": 37
     },
     {
       "id": "be_stop_mfe_waste",
@@ -73,7 +73,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 15
+      "trades_since": 37
     },
     {
       "id": "risk_on_regime_avoid",
@@ -81,7 +81,7 @@
       "added_at_trade_count": 200,
       "added_date": "2026-07-03",
       "status": "experimental",
-      "trades_since": 15
+      "trades_since": 37
     },
     {
       "id": "cautious_short_bias_combo",
@@ -89,7 +89,7 @@
       "added_at_trade_count": 215,
       "added_date": "2026-07-08",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 22
     },
     {
       "id": "validated_vs_backtested_priority",
@@ -97,7 +97,7 @@
       "added_at_trade_count": 215,
       "added_date": "2026-07-08",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 22
     },
     {
       "id": "btc_bearish_daily_anchor",
@@ -105,7 +105,7 @@
       "added_at_trade_count": 215,
       "added_date": "2026-07-08",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 22
     },
     {
       "id": "neutral_regime_short_only",
@@ -113,13 +113,53 @@
       "added_at_trade_count": 215,
       "added_date": "2026-07-08",
       "status": "experimental",
-      "trades_since": 0
+      "trades_since": 22
     },
     {
       "id": "low_mfe_short_obscure_symbols",
       "text": "BREVUSDT (MFE 0.13R), SNDKUSDT (MFE 0.56R), SPCXUSDT (MFE 0.21R) \u2014 all low-liquidity shorts with minimal follow-through, all -1R. Low-cap/obscure symbols with MFE under 0.6R on stop-outs suggest liquidity insufficient to sustain directional moves. ACTION: Require average daily volume confirmation gate for any symbol outside top-15 market cap before including as a short setup.",
       "added_at_trade_count": 215,
       "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 22
+    },
+    {
+      "id": "risk_off_shorts_also_fail",
+      "text": "Risk_off shorts went 0/5 this batch (-4.83R combined) after 0/7 lifetime. Risk_off regime has now produced 0 wins in any direction across 10 trades. ACTION: In risk_off regime, output zero setups unless explicit decoupled-momentum + extreme-funding override applies. Treat risk_off as a no-trade zone by default.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "btc_bearish_anchor_is_contra",
+      "text": "btc_bearish_daily_anchor tagged 4 trades this batch, all full stops. Lifetime: 0/4 (-3.95R). The rule appears to fire on counter-trend shorts during BTC bounces, not confirmed breakdowns. ACTION: Remove btc_bearish_daily_anchor as a positive signal. When it appears alone without regime_cautious + ada_short combo, treat as a warning flag and skip the setup.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "ada_cautious_regime_only",
+      "text": "ADA shorts recovered with 2x T2 hits but exclusively in cautious regime. The ada_short_edge_revoked batch losses occurred in non-cautious contexts. Win/loss split appears regime-gated. ACTION: Re-enable ada_short_edge prioritization strictly in cautious regime only. In risk_off or neutral, require 4H downtrend confirmation before including ADA shorts.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "rank1_short_underperforms_rank2",
+      "text": "Rank 1 lifetime: 21/82 (26% WR, -19.67R). Rank 2 lifetime: 24/73 (33% WR, +2.76R). Recent batch confirms: rank 2 shorts won (ESPORTSUSDT +1.21R, ADAUSDT +2.25R, SPCXUSDT +0.59R) while rank 1 shorts dominated the losses. ACTION: When outputting 2 setups, assign the highest-conviction setup Rank 2, not Rank 1. Reserve Rank 1 only for setups with 4/4 TF confluence + volume confirmed.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "high_mfe_stop_out_pattern",
+      "text": "KORUUSDT (MFE 1.03R, stop -1R), SKHYNIXUSDT (MFE 1.09R, stop -1R), SUIUSDT (MFE 0.98R, stop -1R)",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
       "status": "experimental",
       "trades_since": 0
     }
