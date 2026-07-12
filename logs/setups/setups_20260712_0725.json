@@ -1,0 +1,101 @@
+{
+  "run_timestamp_utc": "2026-07-12T07:25:34.997873+00:00",
+  "run_tag": "20260712_0725",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "XPINUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.00198,
+      "entry_high": 0.00205,
+      "stop_loss": 0.00187,
+      "target_1": 0.002218,
+      "target_2": 0.00238,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "regime_cautious",
+          "four_tf_confluence_gate",
+          "short_bias_override_decoupled"
+        ],
+        "key_factor": "Backtested macd_momentum_long signal on 1h with +0.59 expected value; 4/4 TF bullish confluence satisfies CAUTIOUS long gate despite low volume"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 34.84,
+          "rsi": 73.77,
+          "macd": 0.000145,
+          "macd_hist": 2.2e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.24,
+          "range_pct": 40.96
+        },
+        "tf_1h": {
+          "adx": 21.58,
+          "rsi": 62.01,
+          "macd": 3.1e-05,
+          "macd_hist": 1e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.73,
+          "range_pct": 22.91
+        },
+        "backtested_signal": "macd_momentum_long"
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "HBARUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0678,
+      "entry_high": 0.0682,
+      "stop_loss": 0.0694,
+      "target_1": 0.0661,
+      "target_2": 0.064,
+      "predicted_rr": 1.5,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "regime_cautious",
+          "four_tf_confluence_gate",
+          "sma200_below_filter",
+          "hidden_bear_divergence_confirm"
+        ],
+        "key_factor": "4/4 TF bearish, price 27% below 1D SMA200, hidden bearish divergences on 4h and 1D confirm downtrend continuation; micro-bounce into 15m EMA provides short entry into resistance"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 22.95,
+          "rsi": 39.17,
+          "macd": -0.000736,
+          "macd_hist": -0.000116,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.32,
+          "range_pct": 7.2
+        },
+        "tf_1h": {
+          "adx": 28.48,
+          "rsi": 35.27,
+          "macd": -0.000493,
+          "macd_hist": -8.3e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.24,
+          "range_pct": 4.12
+        },
+        "backtested_signal": null
+      }
+    }
+  ]
+}
