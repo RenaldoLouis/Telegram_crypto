@@ -1,0 +1,105 @@
+{
+  "run_timestamp_utc": "2026-07-13T02:45:15.986718+00:00",
+  "run_tag": "20260713_0245",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.162,
+      "entry_high": 0.1645,
+      "stop_loss": 0.169,
+      "target_1": 0.1585,
+      "target_2": 0.1535,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "confluence_3of4",
+          "volume_confirmed",
+          "partial_profit"
+        ],
+        "key_factor": "3/4 effective TF bearish confluence (4h bullish divergences reduce signal weight); short entry on mechanical bounce to EMA resistance band after 1h RSI 22 oversold flush"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 20.48,
+          "rsi": 34.33,
+          "macd": -0.002245,
+          "macd_hist": -0.000383,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.82,
+          "range_pct": 9.42
+        },
+        "tf_1h": {
+          "adx": 26.88,
+          "rsi": 22.62,
+          "macd": -0.001318,
+          "macd_hist": -0.000278,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.04,
+          "range_pct": 3.74
+        },
+        "backtested_signal": null
+      },
+      "regime": "neutral",
+      "interest_score": 2.0
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.088,
+      "entry_high": 1.095,
+      "stop_loss": 1.111,
+      "target_1": 1.077,
+      "target_2": 1.063,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "volume_confirmed",
+          "wait_for_retest",
+          "partial_profit",
+          "rank_reeval"
+        ],
+        "key_factor": "4/4 bearish alignment with volume confirmed but mature move; valid only as bounce-retest short into 1h EMA20 cluster; no bullish divergences unlike ADA"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.44,
+          "rsi": 33.33,
+          "macd": -0.004605,
+          "macd_hist": -0.001768,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.66,
+          "range_pct": 3.97
+        },
+        "tf_1h": {
+          "adx": 22.27,
+          "rsi": 29.44,
+          "macd": -0.004378,
+          "macd_hist": -0.001574,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.78,
+          "range_pct": 2.56
+        },
+        "backtested_signal": null
+      },
+      "regime": "neutral",
+      "interest_score": 2.0
+    }
+  ]
+}
