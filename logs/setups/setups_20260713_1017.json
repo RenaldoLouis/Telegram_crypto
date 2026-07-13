@@ -1,0 +1,105 @@
+{
+  "run_timestamp_utc": "2026-07-13T10:17:08.153113+00:00",
+  "run_tag": "20260713_1017",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1608,
+      "entry_high": 0.1622,
+      "stop_loss": 0.1645,
+      "target_1": 0.1589,
+      "target_2": 0.1568,
+      "predicted_rr": 0.87,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "4/4 TF bearish structure with 1h ADX 30 confirming trend; entry requires bounce to 1h EMA20 resistance as 1h RSI 26 is oversold \u2014 4h bullish divergences downgrade confluence to 3/4"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 23.54,
+          "rsi": 36.02,
+          "macd": -0.002666,
+          "macd_hist": -0.000524,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.56,
+          "range_pct": 10.91
+        },
+        "tf_1h": {
+          "adx": 30.79,
+          "rsi": 26.09,
+          "macd": -0.001449,
+          "macd_hist": -3e-06,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.17,
+          "range_pct": 5.14
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 2.0
+    },
+    {
+      "rank": 2,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 63200.0,
+      "entry_high": 63500.0,
+      "stop_loss": 64100.0,
+      "target_1": 62750.0,
+      "target_2": 62200.0,
+      "predicted_rr": 0.8,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "confluence_3of4",
+          "macd_divergence",
+          "partial_profit"
+        ],
+        "key_factor": "1D and 4h hidden bearish divergences confirm downtrend continuation; 15m RSI 76 local bounce into EMA resistance provides the short-the-bounce entry trigger within a macro bearish structure"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 18.27,
+          "rsi": 34.57,
+          "macd": 3.356415,
+          "macd_hist": -179.55561,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.05,
+          "range_pct": 3.64
+        },
+        "tf_1h": {
+          "adx": 17.78,
+          "rsi": 29.6,
+          "macd": -286.364318,
+          "macd_hist": -35.992726,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.85,
+          "range_pct": 3.2
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 0.0
+    }
+  ]
+}
