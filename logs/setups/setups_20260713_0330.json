@@ -1,0 +1,154 @@
+{
+  "run_timestamp_utc": "2026-07-13T03:30:31.410038+00:00",
+  "run_tag": "20260713_0330",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SOLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 76.5,
+      "entry_high": 77.2,
+      "stop_loss": 78.65,
+      "target_1": 75.3,
+      "target_2": 73.8,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "confluence_3of4",
+          "volume_confirmed"
+        ],
+        "key_factor": "3/4 TF bearish with 1h/4h volume confirmed; 1D marginal/flat provides only 3/4 confluence \u2014 sweet spot per backtest; entry on bounce to 1h EMA20 rejection"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 19.79,
+          "rsi": 35.73,
+          "macd": -0.582106,
+          "macd_hist": -0.061466,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.47,
+          "range_pct": 5.33
+        },
+        "tf_1h": {
+          "adx": 19.59,
+          "rsi": 37.75,
+          "macd": -0.214743,
+          "macd_hist": -0.096954,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.48,
+          "range_pct": 3.43
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.162,
+      "entry_high": 0.165,
+      "stop_loss": 0.171,
+      "target_1": 0.1568,
+      "target_2": 0.152,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "rank_reeval",
+          "volume_confirmed",
+          "wait_for_retest"
+        ],
+        "key_factor": "4/4 TF bearish with strong 1h (2.01x) and 4h (1.80x) volume; ranked #2 per 4/4 rule (extended move); entry only on bounce to broken structure at 0.162\u20130.165"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 20.91,
+          "rsi": 31.36,
+          "macd": -0.002397,
+          "macd_hist": -0.000505,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.26,
+          "range_pct": 10.73
+        },
+        "tf_1h": {
+          "adx": 28.01,
+          "rsi": 18.37,
+          "macd": -0.001578,
+          "macd_hist": -0.000424,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.76,
+          "range_pct": 4.99
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 2.0
+    },
+    {
+      "rank": 3,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.082,
+      "entry_high": 1.095,
+      "stop_loss": 1.118,
+      "target_1": 1.064,
+      "target_2": 1.045,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "rank_reeval",
+          "volume_confirmed",
+          "wait_for_retest"
+        ],
+        "key_factor": "4/4 TF bearish with strongest 4h volume spike (2.36x); ranked #3 per 4/4 rule; 4h ADX 15.87 is primary risk (weak trend); entry conditional on bounce to 1h EMA zone"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.87,
+          "rsi": 30.85,
+          "macd": -0.005076,
+          "macd_hist": -0.002145,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.05,
+          "range_pct": 4.65
+        },
+        "tf_1h": {
+          "adx": 22.69,
+          "rsi": 26.41,
+          "macd": -0.005386,
+          "macd_hist": -0.002053,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.21,
+          "range_pct": 3.24
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 3.0
+    }
+  ]
+}
