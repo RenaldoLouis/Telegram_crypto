@@ -24,9 +24,12 @@ import argparse
 from collections import defaultdict
 from pathlib import Path
 
+import config  # for LONG_MIN_CONFLUENCE (v11.3 gate-compliance audit)
+
 BASE_DIR = Path(__file__).parent
 EVAL_DIR = BASE_DIR / "logs" / "evaluations"
 SETUP_DIR = BASE_DIR / "logs" / "setups"
+VERSION_MARKERS = BASE_DIR / "logs" / "performance" / "version_markers.json"
 
 
 # ─── Data Loading ────────────────────────────────────────────────────────────
@@ -648,6 +651,91 @@ def report_monthly(trades):
         print_row(month, s)
 
 
+# ─── v11.3 Version Segments (before/after cutover) ───────────────────────────
+
+def report_version_segments(trades):
+    """Compare PRE-cutover vs POST-cutover (v11.3-era) trade performance.
+
+    v11.3 changed forward SELECTION (confluence floor, no-4/4-rank1, long cap,
+    canonical rules) — invisible to signal-formula/eval backtests, which read the
+    old logs. This report isolates trades selected AFTER the v11.3 cutover so the
+    `backtest` command can show whether the change actually helped.
+
+    A trade is v11.3-era iff it carries `interest_score` (only v11.3 wrote it) —
+    unambiguous and robust to same-day edge cases. Verdict thresholds are read from
+    version_markers.json::validation_target so this stays consistent with
+    weekly_eval::_version_validation_line (intentional duplication — different data
+    source / entry point; not worth a shared helper).
+    """
+    section("v11.3 VERSION SEGMENTS (before vs after cutover)")
+
+    if not VERSION_MARKERS.exists():
+        print("  No version_markers.json — nothing to segment.")
+        return
+    try:
+        markers = json.loads(VERSION_MARKERS.read_text(encoding="utf-8")).get("markers", [])
+    except Exception as e:
+        print(f"  Could not read version_markers.json: {e}")
+        return
+    if not markers:
+        print("  version_markers.json has no markers.")
+        return
+
+    m = markers[-1]
+    ver = m.get("version", "latest")
+    cutover = m.get("cutover_trade_count", 0)
+    tgt = m.get("validation_target", {})
+    min_trades = tgt.get("min_trades", 20)
+    wr_target = tgt.get("wr_target", 34.0)
+    exp_target = tgt.get("expectancy_target", 0.0)
+
+    # Split on the v11.3 structural marker.
+    post = [t for t in trades if t.get("interest_score") is not None]
+    pre = [t for t in trades if t.get("interest_score") is None]
+    pre_s = compute_stats(pre)
+    post_s = compute_stats(post)
+
+    print(f"  Cutover: {ver} at {cutover} trades ({m.get('date', '?')}). "
+          f"Targets: WR >= {wr_target:.0f}%, expectancy >= {exp_target:+.2f}R over {min_trades} trades.\n")
+    print_header()
+    print_row(f"PRE ({ver} baseline)", pre_s)
+    print_row(f"POST ({ver}-era)", post_s)
+    print("  " + "─" * 80)
+
+    if pre_s["n"] != cutover:
+        print(f"  ⚠ PRE segment n={pre_s['n']} != recorded cutover {cutover} "
+              f"(eval logs changed since the marker was written).")
+
+    n_post = post_s["n"]
+    if n_post == 0:
+        print(f"\n  VERDICT: {ver} UNPROVEN — no forward trades evaluated yet.")
+        print("  Keep scanning; after the first v11.3 setups resolve, eval-scan populates POST.")
+        return
+
+    print(f"\n  Delta (POST - PRE): WR {post_s['wr'] - pre_s['wr']:+.1f}pp, "
+          f"expectancy {post_s['expectancy'] - pre_s['expectancy']:+.3f}R, "
+          f"avg R:R {post_s['avg_rr'] - pre_s['avg_rr']:+.3f}")
+
+    # Gate-compliance audit — these should be impossible under v11.3's validate_setups.
+    viol_conf = sum(1 for t in post if (t.get("tf_confluence") or 0) < config.LONG_MIN_CONFLUENCE)
+    viol_44_rank1 = sum(1 for t in post
+                        if str(t.get("rank")) == "1" and (t.get("tf_confluence") or 0) >= 4)
+    print(f"  Gate compliance (expect 0): confluence<{config.LONG_MIN_CONFLUENCE} = {viol_conf}, "
+          f"4/4-at-rank1 = {viol_44_rank1}")
+    if viol_conf or viol_44_rank1:
+        print("  ⚠ A v11.3 gate is NOT being enforced — investigate main.py::validate_setups.")
+
+    if n_post < min_trades:
+        print(f"\n  VERDICT: {ver} VALIDATING ({n_post}/{min_trades} forward trades) — too early to conclude.")
+    elif post_s["wr"] >= wr_target and post_s["expectancy"] >= exp_target:
+        print(f"\n  VERDICT: {ver} VALIDATED — {n_post} forward trades at {post_s['wr']:.0f}% WR / "
+              f"{post_s['expectancy']:+.2f}R (targets {wr_target:.0f}% / {exp_target:+.2f}R). It's working.")
+    else:
+        print(f"\n  VERDICT: {ver} NOT VALIDATING — REVIEW NEEDED. {n_post} forward trades at "
+              f"{post_s['wr']:.0f}% WR / {post_s['expectancy']:+.2f}R vs targets "
+              f"{wr_target:.0f}% / {exp_target:+.2f}R. Re-audit before adding more rules.")
+
+
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
@@ -660,6 +748,7 @@ def main():
     parser.add_argument("--combo", action="store_true", help="Auto-discover best filter combos")
     parser.add_argument("--monthly", action="store_true", help="Monthly trend")
     parser.add_argument("--stops", action="store_true", help="Stop timing analysis")
+    parser.add_argument("--version", action="store_true", help="v11.3 before/after cutover segment report")
     parser.add_argument("--filter", action="append", default=[], help="Filter: key=value (repeatable)")
     parser.add_argument("--exclude", type=str, default="", help="Blacklist symbols: SYM1,SYM2")
     parser.add_argument("--min-confluence", type=int, default=0, help="Minimum TF confluence")
@@ -692,7 +781,7 @@ def main():
     # Determine which reports to run
     specific = any([
         args.baseline, args.t1_sweep, args.symbols, args.rank_sweep,
-        args.regime_sweep, args.combo, args.monthly, args.stops,
+        args.regime_sweep, args.combo, args.monthly, args.stops, args.version,
     ])
     run_all = not specific
 
@@ -730,6 +819,9 @@ def main():
 
     if run_all or args.combo:
         report_combo(trades)
+
+    if run_all or args.version:
+        report_version_segments(trades)
 
     if run_all:
         report_findings(trades)

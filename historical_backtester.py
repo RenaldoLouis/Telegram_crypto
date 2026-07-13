@@ -1833,7 +1833,8 @@ def main():
         section("STEP 3/3 — CLAUDE EVAL COMBO ANALYSIS")
         try:
             from backtester import (load_all_evals, load_setup_lookup, merge_trades,
-                                    report_baseline, report_combo, report_findings)
+                                    report_baseline, report_combo, report_findings,
+                                    report_version_segments)
             trades = load_all_evals()
             setup_lookup = load_setup_lookup()
             trades = merge_trades(trades, setup_lookup)
@@ -1841,6 +1842,7 @@ def main():
                 print(f"  Loaded {len(trades)} evaluated trades.")
                 report_baseline(trades)
                 report_combo(trades)
+                report_version_segments(trades)  # v11.3 before/after segment + verdict
             else:
                 print("  No evaluated trades found.")
         except Exception as e:
