@@ -1,0 +1,167 @@
+{
+  "last_delta_trade_count": 237,
+  "last_delta_date": "2026-07-12",
+  "wr_at_last_delta": "30.4%",
+  "insights": [
+    {
+      "id": "ada_short_edge",
+      "text": "ADAUSDT shorts are 13/22 (59% WR, +8.61R overall) \u2014 the single best symbol/direction combo in the dataset. ACTION: When ADAUSDT short setup appears, prioritize it as Rank #1 or #2 regardless of broader market scan. Treat as default anchor trade.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 55
+    },
+    {
+      "id": "long_bias_structural_loss",
+      "text": "Longs are 49/165 (30% WR, -28.33R) vs shorts 6/17 (35% WR, +1.19R). Long volume is ~10\u00d7 short volume but long R:R is deeply negative. ACTION: Require stricter entry criteria for longs \u2014 demand confirmed higher-low structure on 2+ timeframes before including any long setup.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 55
+    },
+    {
+      "id": "low_mfe_stop_loss_pattern",
+      "text": "Recent losing trades show MFE of 0.0\u20130.52R before stopping out. When MFE < 0.5R on stop-loss trades, the setup likely triggered into adverse momentum. ACTION: If entry candle closes more than 0.3R against position immediately, flag as \"no follow-through\" \u2014 consider tighter initial stop or skip setup.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 55
+    },
+    {
+      "id": "rank2_scalp_outlier",
+      "text": "The only 2 scalp trades show +4.12R combined (1W/1L), with RESOLVUSDT hitting 5.12R. Scalp timeframe is tiny sample but positive. ACTION: Do not suppress scalp setups if structure is clean \u2014 tag them explicitly and set T1 at 0.75R per Rule #6, letting runners go.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 55
+    },
+    {
+      "id": "wld_ena_avoid_longs",
+      "text": "WLDUSDT and ENAUSDT longs are 0/6 combined (-6R). Both appear repeatedly in recent losing runs. ACTION: Explicitly exclude WLDUSDT and ENAUSDT long setups until a structural trend reversal is confirmed on the daily. Shorts only, with full confluence required.",
+      "added_at_trade_count": 182,
+      "added_date": "2026-06-26",
+      "status": "experimental",
+      "trades_since": 55
+    },
+    {
+      "id": "labusdt_funding_squeeze_failure",
+      "text": "LABUSDT funding_squeeze longs are 0/4 (-4R total) across 4 consecutive attempts. The extreme funding signal is not producing reversals \u2014 the token is in structural decline overriding squeeze dynamics. ACTION: Exclude LABUSDT from all long setups regardless of funding signal until a confirmed daily higher-high is printed. Treat as blacklisted.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 37
+    },
+    {
+      "id": "risk_off_regime_shorts_only",
+      "text": "In risk_off regime, the 2 winning trades this batch (TAIKOUSDT long exception, KORUUSDT short) both used explicit override rules. The ADAUSDT short in risk_off lost. Risk_off regime has produced 2 wins from non-standard longs and 1 short loss. ACTION: In risk_off, default to shorts only; only permit longs with explicit decoupled-momentum + extreme-funding override combo \u2014 never on trend_pullback alone.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 37
+    },
+    {
+      "id": "ada_short_edge_revoked",
+      "text": "ADA shorts are now 0/3 in recent batch despite 59% historical WR. Recent ADA shorts show MFE of 0.27\u20131.50R then reversal, suggesting ADA has shifted to a ranging/bouncing structure. ACTION: Suspend ada_short_edge priority rule immediately. Require fresh 4H downtrend confirmation + no bullish divergence before re-enabling ADA short prioritization.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 37
+    },
+    {
+      "id": "be_stop_mfe_waste",
+      "text": "4 trades this batch hit BE stop with MFE of 1.07\u20132.24R (SOLUSDT x2, ADAUSDT x2). These are structural wins being given back. ACTION: When MFE exceeds 1.0R and partial profit rule is active, move stop to +0.3R (not breakeven) to lock in partial gain rather than returning to zero.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 37
+    },
+    {
+      "id": "risk_on_regime_avoid",
+      "text": "risk_on regime is 0/4 (-4R) in the full dataset and produced 3 losses this batch (HYPEUSDT, LABUSDT, IDUSDT). The label \"risk_on\" appears to coincide with extended/exhausted moves, not clean pullbacks. ACTION: During risk_on regime, output maximum 1 setup and require short direction or confirmed pullback to a major structural level on 4H+. Do not take funding_squeeze longs in risk_on.",
+      "added_at_trade_count": 200,
+      "added_date": "2026-07-03",
+      "status": "experimental",
+      "trades_since": 37
+    },
+    {
+      "id": "cautious_short_bias_combo",
+      "text": "In cautious regime with short_bias rule active, recent trades went 3/3 (XRPUSDT, BTCUSDT, MIRAUSDT) including two T2 hits. This specific combo is the highest-confidence cluster in the dataset. ACTION: When regime=cautious AND short_bias applicable, prioritize as Rank #1-2 and apply partial_profit rule explicitly.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 22
+    },
+    {
+      "id": "validated_vs_backtested_priority",
+      "text": "validated_signal_priority is 3/6 (50% WR) while backtested_signal_priority is 2/3 (67% WR) but with one large loss skewing R:R. Recent batch shows validated rules producing T2 wins whereas backtested produced mixed results. ACTION: Treat validated_signal_priority as minimum gate; backtested_signal_priority is acceptable only in cautious regime.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 22
+    },
+    {
+      "id": "btc_bearish_daily_anchor",
+      "text": "btc_bearish_daily rule produced 2/2 wins (+3.48R combined) in the most recent run (20260706). Both were short setups. ACTION: When btc_bearish_daily rule is triggered and regime is cautious, treat BTC and correlated-alt short setups as high-priority regardless of broader scan ranking.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 22
+    },
+    {
+      "id": "neutral_regime_short_only",
+      "text": "Neutral regime produced 2 wins (BTCUSDT long at +1.08R, XLMUSDT long at +1.92R) but also 4 losses including SNDKUSDT and BREVUSDT shorts and HYPEUSDT long. Net neutral regime is -3.76R lifetime. ACTION: In neutral regime, restrict to maximum 2 setups; prefer shorts with volume confirmation; avoid longs unless RSI bull divergence rule is explicitly present.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 22
+    },
+    {
+      "id": "low_mfe_short_obscure_symbols",
+      "text": "BREVUSDT (MFE 0.13R), SNDKUSDT (MFE 0.56R), SPCXUSDT (MFE 0.21R) \u2014 all low-liquidity shorts with minimal follow-through, all -1R. Low-cap/obscure symbols with MFE under 0.6R on stop-outs suggest liquidity insufficient to sustain directional moves. ACTION: Require average daily volume confirmation gate for any symbol outside top-15 market cap before including as a short setup.",
+      "added_at_trade_count": 215,
+      "added_date": "2026-07-08",
+      "status": "experimental",
+      "trades_since": 22
+    },
+    {
+      "id": "risk_off_shorts_also_fail",
+      "text": "Risk_off shorts went 0/5 this batch (-4.83R combined) after 0/7 lifetime. Risk_off regime has now produced 0 wins in any direction across 10 trades. ACTION: In risk_off regime, output zero setups unless explicit decoupled-momentum + extreme-funding override applies. Treat risk_off as a no-trade zone by default.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "btc_bearish_anchor_is_contra",
+      "text": "btc_bearish_daily_anchor tagged 4 trades this batch, all full stops. Lifetime: 0/4 (-3.95R). The rule appears to fire on counter-trend shorts during BTC bounces, not confirmed breakdowns. ACTION: Remove btc_bearish_daily_anchor as a positive signal. When it appears alone without regime_cautious + ada_short combo, treat as a warning flag and skip the setup.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "ada_cautious_regime_only",
+      "text": "ADA shorts recovered with 2x T2 hits but exclusively in cautious regime. The ada_short_edge_revoked batch losses occurred in non-cautious contexts. Win/loss split appears regime-gated. ACTION: Re-enable ada_short_edge prioritization strictly in cautious regime only. In risk_off or neutral, require 4H downtrend confirmation before including ADA shorts.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "rank1_short_underperforms_rank2",
+      "text": "Rank 1 lifetime: 21/82 (26% WR, -19.67R). Rank 2 lifetime: 24/73 (33% WR, +2.76R). Recent batch confirms: rank 2 shorts won (ESPORTSUSDT +1.21R, ADAUSDT +2.25R, SPCXUSDT +0.59R) while rank 1 shorts dominated the losses. ACTION: When outputting 2 setups, assign the highest-conviction setup Rank 2, not Rank 1. Reserve Rank 1 only for setups with 4/4 TF confluence + volume confirmed.",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "high_mfe_stop_out_pattern",
+      "text": "KORUUSDT (MFE 1.03R, stop -1R), SKHYNIXUSDT (MFE 1.09R, stop -1R), SUIUSDT (MFE 0.98R, stop -1R)",
+      "added_at_trade_count": 237,
+      "added_date": "2026-07-12",
+      "status": "experimental",
+      "trades_since": 0
+    }
+  ]
+}

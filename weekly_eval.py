@@ -406,6 +406,11 @@ def run_evaluation():
                 result["rank"] = setup.get("rank", 0)
                 # Self-learning: capture reasoning for rule-level attribution
                 result["rules_applied"] = setup.get("reasoning", {}).get("rules_applied", [])
+                # Stamp regime per-result (was only on the wrapper → per-trade regime analysis
+                # was unreliable). Prefer per-setup regime, fall back to file-level. audit 2026-07-13
+                result["regime"] = setup.get("regime") or record.get("regime", "neutral")
+                # Capture pre-filter interest score for selection-quality correlation.
+                result["interest_score"] = setup.get("interest_score")
                 eval_results.append(result)
 
                 status = result["status"]
@@ -493,6 +498,7 @@ def _empty_lifetime_stats():
         "target_stats": {"t1_hits": 0, "t2_hits": 0},
         "by_symbol": {},
         "by_regime": {},
+        "by_confluence": {},
         "by_rule_applied": {},
         "simulated_t1": {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0},
         "partial_profit": {
@@ -543,6 +549,8 @@ def update_lifetime_stats(all_evals):
         stats["by_symbol"] = {}
     if "by_regime" not in stats:
         stats["by_regime"] = {}
+    if "by_confluence" not in stats:
+        stats["by_confluence"] = {}
     if "by_rule_applied" not in stats:
         stats["by_rule_applied"] = {}
     if "simulated_t1" not in stats:
@@ -598,13 +606,21 @@ def update_lifetime_stats(all_evals):
             _increment_bucket(stats["by_direction"], r.get("direction", "long"), r)
             _increment_bucket(stats["by_symbol"], r.get("symbol", "unknown"), r)
 
-            # Regime tracking (self-learning)
-            regime = ev.get("regime", "neutral")
+            # Regime tracking (self-learning). Prefer per-result regime (audit 2026-07-13);
+            # fall back to the eval wrapper for older records.
+            regime = r.get("regime") or ev.get("regime", "neutral")
             _increment_bucket(stats["by_regime"], regime, r)
 
-            # Rule-applied tracking (self-learning)
+            # TF-confluence tracking. Data shows 3/4 is the edge and 4/4 is the WORST bucket
+            # (exhaustion) — the opposite of the old "more confluence = more confidence" premise.
+            conf_key = str(r.get("tf_confluence", 0))
+            _increment_bucket(stats["by_confluence"], conf_key, r)
+
+            # Rule-applied tracking (self-learning). Only count canonical rule IDs so
+            # attribution is statistically meaningful (drops free-text one-off IDs).
             for rule_id in r.get("rules_applied", []):
-                _increment_bucket(stats["by_rule_applied"], rule_id, r)
+                if rule_id in config.CANONICAL_RULES:
+                    _increment_bucket(stats["by_rule_applied"], rule_id, r)
 
             # Monthly trend
             stats["monthly_trend"][month_key]["total"] += 1
@@ -683,6 +699,58 @@ def update_lifetime_stats(all_evals):
           f"{stats['total_evaluated']} total evaluated trades.")
 
 
+def _version_validation_line(total, overall):
+    """Report whether the latest deployed version is actually improving results.
+
+    Reads logs/performance/version_markers.json. Compares cumulative performance
+    SINCE the cutover trade count against the pre-cutover baseline. This closes the
+    forward-validation loop automatically — the system flags itself if a change that
+    looked good on backtest is NOT working on live trades (i.e. the bad-logic loop
+    would be recurring). audit 2026-07-13
+    """
+    marker_file = PERFORMANCE_DIR / "version_markers.json"
+    if not marker_file.exists():
+        return None
+    try:
+        markers = json.loads(marker_file.read_text(encoding="utf-8")).get("markers", [])
+    except Exception:
+        return None
+    if not markers:
+        return None
+    m = markers[-1]
+    cutover = m.get("cutover_trade_count", 0)
+    fwd_n = total - cutover
+    ver = m.get("version", "latest")
+    tgt = m.get("validation_target", {})
+    min_trades = tgt.get("min_trades", 20)
+
+    if fwd_n <= 0:
+        return (f"0. **{ver} UNPROVEN (MONITOR)**: {ver} just deployed at {cutover} trades; "
+                f"0 forward trades evaluated yet. Baseline was {m.get('baseline_wr')}% WR / "
+                f"{m.get('baseline_expectancy')}R exp. ACTION: keep selecting per the rules below; "
+                f"win rate is validated forward over the next {min_trades} trades, not asserted.")
+
+    # Cumulative-since-cutover performance
+    fwd_wins = overall["wins"] - m.get("baseline_wins", round(m.get("baseline_wr", 0) / 100 * cutover))
+    fwd_wr = fwd_wins / fwd_n * 100 if fwd_n else 0
+    fwd_exp = (overall["rr_sum"] - m.get("baseline_rr_sum", m.get("baseline_expectancy", 0) * cutover)) / fwd_n
+
+    if fwd_n < min_trades:
+        return (f"0. **{ver} VALIDATING ({fwd_n}/{min_trades} forward trades)**: so far "
+                f"{fwd_wr:.0f}% WR / {fwd_exp:+.2f}R exp vs baseline {m.get('baseline_wr')}% / "
+                f"{m.get('baseline_expectancy')}R. ACTION: too early to conclude — keep monitoring.")
+
+    wr_tgt = tgt.get("wr_target", 34.0)
+    exp_tgt = tgt.get("expectancy_target", 0.0)
+    if fwd_wr >= wr_tgt and fwd_exp >= exp_tgt:
+        return (f"0. **{ver} VALIDATED**: {fwd_n} forward trades at {fwd_wr:.0f}% WR / {fwd_exp:+.2f}R "
+                f"exp (targets {wr_tgt:.0f}% / {exp_tgt:+.2f}R). The change is working — maintain it.")
+    return (f"0. **{ver} NOT VALIDATING — REVIEW NEEDED**: {fwd_n} forward trades only reached "
+            f"{fwd_wr:.0f}% WR / {fwd_exp:+.2f}R exp vs targets {wr_tgt:.0f}% / {exp_tgt:+.2f}R. "
+            f"ACTION: the last change did NOT deliver — re-audit before adding more rules (do not "
+            f"pile on new delta insights, that is how the bad-logic loop returns).")
+
+
 def generate_strategic_rules():
     """Derive compact, prescriptive rules from lifetime_stats.json.
 
@@ -724,6 +792,12 @@ def generate_strategic_rules():
         "",
     ]
 
+    # --- Version self-validation: is the latest change actually working? ---
+    val_line = _version_validation_line(total, overall)
+    if val_line:
+        lines.append(val_line)
+        lines.append("")
+
     # --- Overall selectivity ---
     if win_rate < 20:
         lines.append(
@@ -761,8 +835,29 @@ def generate_strategic_rules():
             lines.append(
                 f"{rule_num}. **CONFIDENCE MISCALIBRATED**: 'High' confidence is {conf_stats['high']['wins']}/{conf_stats['high']['total']} "
                 f"({high_wr:.0f}% WR) but 'Medium' is {conf_stats['medium']['wins']}/{conf_stats['medium']['total']} ({med_wr:.0f}% WR). "
-                "ACTION: Only label a setup 'high confidence' if it has 4/4 TF confluence + volume confirmed + "
-                "clean structure. If unsure, label 'medium' — it actually performs better."
+                "ACTION: Reserve 'high confidence' for setups with 3/4 TF confluence + volume confirmed + clean "
+                "structure. Do NOT equate 4/4 confluence with high confidence (see confluence rule below). "
+                "If unsure, label 'medium' — it actually performs better."
+            )
+            rule_num += 1
+
+    # --- TF-confluence performance (audit 2026-07-13): the core-premise inversion ---
+    by_conf = stats.get("by_confluence", {})
+    c3 = by_conf.get("3", {})
+    c4 = by_conf.get("4", {})
+    if c3.get("total", 0) >= config.RULE_MIN_SAMPLE and c4.get("total", 0) >= 10:
+        c3_wr = c3["wins"] / c3["total"] * 100
+        c3_rr = c3["rr_sum"] / c3["total"]
+        c4_wr = c4["wins"] / c4["total"] * 100
+        c4_rr = c4["rr_sum"] / c4["total"]
+        if c4_rr < c3_rr - 0.1:
+            lines.append(
+                f"{rule_num}. **3/4 CONFLUENCE BEATS 4/4**: 3/4 TF is {c3['wins']}/{c3['total']} "
+                f"({c3_wr:.0f}% WR, {c3_rr:+.2f} avg R:R) but 4/4 TF is {c4['wins']}/{c4['total']} "
+                f"({c4_wr:.0f}% WR, {c4_rr:+.2f} avg R:R). 4/4 alignment = exhausted/late move, not higher "
+                "probability. ACTION: Treat 3/4 confluence as the sweet spot. When all 4 TFs already agree, the "
+                "move is likely mature — demand a fresh pullback/retest entry or SKIP; never rank a 4/4 setup #1 "
+                "just because it is 4/4."
             )
             rule_num += 1
 
@@ -803,7 +898,7 @@ def generate_strategic_rules():
             if wr == 0:
                 lines.append(
                     f"{rule_num}. **NO {direction.upper()} WINS**: 0/{ds['total']} {direction} trades won. "
-                    f"ACTION: Avoid {direction} setups until market conditions change. Only include if 4/4 TF confluence."
+                    f"ACTION: Avoid {direction} setups until market conditions change. Only include with 3/4 TF confluence + volume + fresh entry."
                 )
                 rule_num += 1
             elif wr < 15:
@@ -858,13 +953,24 @@ def generate_strategic_rules():
                         f"{wr:.0f}% WR, {avg:.2f} avg R:R. ACTION: Apply extra scrutiny — check entries and stops."
                     )
                 rule_num += 1
-    if best_type and best_type_wr >= 25 and stats["by_setup_type"][best_type]["total"] >= 5:
+    # BEST TYPE requires POSITIVE EXPECTANCY, not just win rate. A high-WR type can still
+    # bleed net R (e.g. trend_pullback was 32% WR but -20.7R). audit 2026-07-13
+    if best_type and best_type_wr >= 25 and stats["by_setup_type"][best_type]["total"] >= config.RULE_MIN_SAMPLE:
         bt = stats["by_setup_type"][best_type]
-        lines.append(
-            f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR over {bt['total']} trades. "
-            "ACTION: Prioritize this setup type. At least 2 of your top setups should be this type if available."
-        )
-        rule_num += 1
+        bt_avg = bt["rr_sum"] / bt["total"]
+        if bt_avg > 0.05:
+            lines.append(
+                f"{rule_num}. **BEST TYPE: '{best_type}'**: {best_type_wr:.0f}% WR, {bt_avg:+.2f} avg R:R over "
+                f"{bt['total']} trades. ACTION: Prioritize this setup type when structure is clean."
+            )
+            rule_num += 1
+        elif bt_avg < -0.15:
+            lines.append(
+                f"{rule_num}. **NO PROFITABLE SETUP TYPE YET**: highest-WR type '{best_type}' still nets "
+                f"{bt_avg:+.2f} avg R:R over {bt['total']} trades. ACTION: Do NOT anchor on any setup type. "
+                "Select purely on structural quality + expectancy, not type familiarity."
+            )
+            rule_num += 1
 
     # --- Rank anomaly detection (NEW) ---
     rank_stats = stats.get("by_rank", {})
@@ -996,7 +1102,7 @@ def generate_strategic_rules():
         losers_str = ", ".join(f"{s[0]} (0/{s[1]})" for s in sorted(losing_symbols, key=lambda x: -x[1])[:5])
         lines.append(
             f"{rule_num}. **LOSING SYMBOLS**: {losers_str}. "
-            "ACTION: Require 4/4 TF confluence + volume confirmed for these symbols. Do not include as filler."
+            "ACTION: Require 3/4+ TF confluence + volume confirmed for these symbols. Do not include as filler."
         )
         rule_num += 1
 
@@ -1049,53 +1155,71 @@ def generate_strategic_rules():
         rule_num += 1
 
     # --- Per-regime performance (self-learning) ---
+    # Hard regime rules need REGIME_RULE_MIN_TRADES (20) — a 10-16 trade bucket generating a
+    # "no-trade zone" / "maintain approach" directive is how the old system whipsawed. Below
+    # threshold we emit a NEEDS-DATA note instead of a hard rule. audit 2026-07-13
     by_regime = stats.get("by_regime", {})
     for regime_label, rs in by_regime.items():
-        if rs["total"] >= 5:
-            r_wr = rs["wins"] / rs["total"] * 100
-            r_rr = rs["rr_sum"] / rs["total"]
-            if r_wr < 15:
+        if rs["total"] < 8:
+            continue
+        r_wr = rs["wins"] / rs["total"] * 100
+        r_rr = rs["rr_sum"] / rs["total"]
+        if rs["total"] < config.REGIME_RULE_MIN_TRADES:
+            if r_rr < -0.2:
                 lines.append(
-                    f"{rule_num}. **{regime_label.upper()} REGIME LOSING**: {rs['wins']}/{rs['total']} "
-                    f"({r_wr:.0f}% WR, {r_rr:.2f} avg R:R). "
-                    f"ACTION: During {regime_label}, reduce to max 1-2 setups and require 4/4 TF + volume."
+                    f"{rule_num}. **{regime_label.upper()} REGIME WEAK (NEEDS DATA)**: {rs['wins']}/{rs['total']} "
+                    f"({r_wr:.0f}% WR, {r_rr:+.2f} avg R:R, only {rs['total']} trades). "
+                    f"ACTION: In {regime_label}, stay selective (max 2 setups) but do NOT hard-block — "
+                    "sample too small to be sure."
                 )
                 rule_num += 1
-            elif r_wr >= 40 and rs["total"] >= 8:
-                lines.append(
-                    f"{rule_num}. **{regime_label.upper()} REGIME STRONG**: {rs['wins']}/{rs['total']} "
-                    f"({r_wr:.0f}% WR, {r_rr:.2f} avg R:R). "
-                    f"ACTION: During {regime_label}, maintain current approach — it's working."
-                )
-                rule_num += 1
+            continue
+        # >= 20 trades: hard rules, gated on expectancy not just WR
+        if r_rr < -0.15:
+            lines.append(
+                f"{rule_num}. **{regime_label.upper()} REGIME LOSING**: {rs['wins']}/{rs['total']} "
+                f"({r_wr:.0f}% WR, {r_rr:+.2f} avg R:R over {rs['total']} trades). "
+                f"ACTION: During {regime_label}, reduce to max 1-2 setups and require 3/4 TF + volume + fresh entry."
+            )
+            rule_num += 1
+        elif r_rr > 0.1 and r_wr >= 40:
+            lines.append(
+                f"{rule_num}. **{regime_label.upper()} REGIME STRONG**: {rs['wins']}/{rs['total']} "
+                f"({r_wr:.0f}% WR, {r_rr:+.2f} avg R:R over {rs['total']} trades). "
+                f"ACTION: During {regime_label}, maintain current approach — it's working."
+            )
+            rule_num += 1
 
     # --- Rule-applied effectiveness (self-learning) ---
+    # Gated on RULE_MIN_SAMPLE + expectancy sign (not WR alone), over canonical rule IDs only.
+    # audit 2026-07-13
     by_rule = stats.get("by_rule_applied", {})
     effective_rules = []
     ineffective_rules = []
     for rule_id, rs in by_rule.items():
-        if rs["total"] >= 5:
+        if rs["total"] >= config.RULE_MIN_SAMPLE:
             r_wr = rs["wins"] / rs["total"] * 100
-            if r_wr >= 40:
-                effective_rules.append((rule_id, rs["wins"], rs["total"], r_wr))
-            elif r_wr < 15:
-                ineffective_rules.append((rule_id, rs["wins"], rs["total"], r_wr))
+            r_rr = rs["rr_sum"] / rs["total"]
+            if r_wr >= 40 and r_rr > 0:
+                effective_rules.append((rule_id, rs["wins"], rs["total"], r_wr, r_rr))
+            elif r_rr < -0.15:
+                ineffective_rules.append((rule_id, rs["wins"], rs["total"], r_wr, r_rr))
 
     if effective_rules:
-        eff_str = ", ".join(f"{r[0]} ({r[1]}/{r[2]}={r[3]:.0f}%)" for r in
-                           sorted(effective_rules, key=lambda x: -x[3])[:3])
+        eff_str = ", ".join(f"{r[0]} ({r[1]}/{r[2]}={r[3]:.0f}%, {r[4]:+.2f}R)" for r in
+                           sorted(effective_rules, key=lambda x: -x[4])[:3])
         lines.append(
             f"{rule_num}. **EFFECTIVE RULES**: {eff_str}. "
-            "ACTION: Continue applying these rules — they correlate with wins."
+            "ACTION: Continue applying these rules — they correlate with positive expectancy."
         )
         rule_num += 1
 
     if ineffective_rules:
-        ineff_str = ", ".join(f"{r[0]} ({r[1]}/{r[2]}={r[3]:.0f}%)" for r in
-                             sorted(ineffective_rules, key=lambda x: x[3])[:3])
+        ineff_str = ", ".join(f"{r[0]} ({r[1]}/{r[2]}={r[3]:.0f}%, {r[4]:+.2f}R)" for r in
+                             sorted(ineffective_rules, key=lambda x: x[4])[:3])
         lines.append(
             f"{rule_num}. **INEFFECTIVE RULES**: {ineff_str}. "
-            "ACTION: Reconsider setups based on these rules — they correlate with losses."
+            "ACTION: Stop leaning on these rules — they correlate with net losses."
         )
         rule_num += 1
 
@@ -1991,17 +2115,16 @@ def maybe_run_delta_analysis(all_evals):
             if old_status != insight["status"]:
                 print(f"  Insight '{insight['id']}': {old_status} → {insight['status']}")
 
-    # Update trades_since for surviving insights
+    # Update trades_since; STALE-expire experimental insights not re-affirmed within ~2 batches.
+    # (Old behaviour auto-graduated to 'confirmed', locking in unvalidated noise — removed.)
+    # audit 2026-07-13
+    stale_after = config.DELTA_ANALYSIS_TRADE_THRESHOLD * 2
     for insight in registry.get("insights", []):
         if insight["status"] != "expired":
             insight["trades_since"] = total - insight["added_at_trade_count"]
-            # Auto-graduate: experimental → confirmed after 20+ trades if not graded
-            if (insight["status"] == "experimental"
-                    and insight["trades_since"] >= 20
-                    and insight["id"] not in grades):
-                # If not explicitly graded after 20 trades, keep as experimental
-                # (it needs explicit EFFECTIVE grade to confirm)
-                pass
+            if insight["status"] == "experimental" and insight["trades_since"] >= stale_after:
+                insight["status"] = "expired"
+                print(f"  Insight '{insight['id']}': expired (stale after {insight['trades_since']} trades)")
 
     # Parse new insights
     new_insights = _parse_delta_insights(analysis, total)
@@ -2017,6 +2140,16 @@ def maybe_run_delta_analysis(all_evals):
     for ni in new_insights:
         if ni["id"] not in existing_ids:
             surviving.append(ni)
+
+    # Cap active insights so Claude never receives a wall of (often contradictory) rules.
+    # Keep confirmed first, then most-recent experimental. audit 2026-07-13
+    cap = config.MAX_ACTIVE_DELTA_INSIGHTS
+    if len(surviving) > cap:
+        surviving.sort(key=lambda i: (i["status"] != "confirmed", -i.get("added_at_trade_count", 0)))
+        for dropped in surviving[cap:]:
+            dropped["status"] = "expired"
+            print(f"  Insight '{dropped['id']}': expired (over active cap of {cap})")
+        surviving = surviving[:cap]
 
     # Update registry
     registry["last_delta_trade_count"] = total

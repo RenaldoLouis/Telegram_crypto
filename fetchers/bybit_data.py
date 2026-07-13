@@ -583,9 +583,15 @@ class BybitFetcher:
             except Exception as e:
                 print(f"  Error fetching {sym}: {e}")
 
+        # Instrumentation (audit 2026-07-13): expose the pre-filter interest score per symbol
+        # so the eval can correlate selection score -> outcome (previously a total blind spot —
+        # we never knew whether high-scored candidates actually won).
+        score_map = {t["symbol"]: float(s) for t, s in scored}
+
         return {
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             "top_movers": selected_movers,
             "technicals": technicals,
             "market_regime": market_regime,
+            "interest_scores": score_map,
         }

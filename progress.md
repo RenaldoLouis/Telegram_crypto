@@ -314,6 +314,22 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-07-13 (v11.3) — Self-Learning De-Noise + Core-Logic De-Inversion
+
+**Context**: Audit (`AUDIT_2026-07-13.md`) of the full flow found the system stuck in a bad-logic loop AND running on inverted premises. Evidence (237 trades): 4/4 TF confluence is the WORST bucket (18% WR, −0.36R avg) while 3/4 is the only edge (+0.01R); rank-1 picks lose (−19.7R) vs rank-2 (+2.8R); trend_pullback was crowned "BEST TYPE" on WR despite −20.7R net; longs run 29%/−33R (the entire net loss). The learning loop amplified noise: ~120 free-text rule IDs across 60 setups (n=1–3 each), 20 delta insights that never expired (0 confirmed/0 expired), openly contradicting each other (ADA 3×, BTC-anchor 2×, risk_off shorts-only→no-trade). Regime was written at file level but read per-record → 100% defaulted, so regime learning was fiction.
+
+**Fixes (Tier 0 + Tier 2 + hard long gate):**
+- **De-noise the loop**: canonical rule taxonomy (`config.CANONICAL_RULES`, 28 IDs) — Claude may only cite these; non-canonical IDs dropped on save (`main.py`) and ignored in stats. Delta insights capped at `MAX_ACTIVE_DELTA_INSIGHTS=6`, stale-expire after 2× threshold, removed the dangerous auto-graduate-to-confirmed. Delta trigger raised 15→25 trades. Purged all 20 contradictory insights.
+- **Expectancy over win-rate**: BEST-TYPE, EFFECTIVE/INEFFECTIVE-rules, and regime rules now gate on `avg R:R` sign + `RULE_MIN_SAMPLE=20` / `REGIME_RULE_MIN_TRADES=20` (regimes below threshold emit a soft NEEDS-DATA note, not a hard block — mirrors the direction safeguard).
+- **De-invert core logic**: new `by_confluence` bucket + "3/4 CONFLUENCE BEATS 4/4" rule; killed the false "label high-confidence with 4/4" instruction and stale "require 4/4" texts. **Rank de-trust**: hard rule (prompt + `validate_setups`) that a 4/4-confluence setup may never be ranked #1 (rank-1 lost −19.7R, 4/4 bucket −0.36R exp).
+- **Validated on history**: replaying the shipped gates over 237 trades moves the book from −34R/PF 0.75 → ≈−13R/PF 0.87, WR 30%→33% (the long gate removed the 20 worst longs at −0.544R each). See `AUDIT_2026-07-13.md` §C.
+- **Hard long structural gate**: longs require volume_confirmed AND `tf_confluence≥3` (`LONG_MIN_CONFLUENCE`) AND a stated 2-TF higher-low (prompt) — enforced in `validate_setups`. Confluence floor `≥3` extended to BOTH directions (2/4 loses in longs and shorts).
+- **Regime-aware long cap** (`LONG_CAP_BY_REGIME`): risk_off/cautious ≤1 long, neutral ≤2, risk_on ≤5. Longs are the entire net loss (29% WR / −33R over 181 trades); shorts ~breakeven. The excess-long trades this removes are −0.191R exp / −13R over 68 trades. Serves regime-adaptivity + win rate.
+- **Fix regime plumbing**: regime stamped per eval result + per setup; `by_regime` prefers per-result. Historical backfilled by rebuilding `lifetime_stats.json` from all 89 eval files.
+- Strategic rules went from 34 (20 base + 14 contradictory delta) → 13 clean, non-contradictory, expectancy-gated rules. Pre-audit artifacts backed up in `logs/performance/_pre_audit_bak/`.
+
+**Files**: config.py, main.py, weekly_eval.py, analyzer/prompts.py, CLAUDE.md. No R:R-floor change, no execution path, no expanded perms.
+
 ### 2026-07-12 (v11.2) — Execution Overhaul: T1→T2 Floor Relocation, Long Volume Gate, +0.3R Trail
 
 **Context**: With 237 evaluated trades (30% WR, −34R, PF 0.75), re-ran `backtester.py` to quantify fixes for the long-standing execution leak. Diagnosis held: **direction is right 64% of the time (avg MFE 1.03R) but targets sit past the average excursion** — trades reach ~1R, never tag T1, reverse, and pay the full −1R stop. Three fixes implemented and backtested; #4 (regime tightening) scoped out for now.

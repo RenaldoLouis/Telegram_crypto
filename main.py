@@ -130,6 +130,15 @@ def validate_setups(setups, regime_label):
             violations.append(f"{sym}: LONG without volume_confirmed (long volume gate)")
         if direction == "long" and sym in long_blacklist:
             violations.append(f"{sym}: LONG on blacklisted symbol (negative long history)")
+        # Confluence floor (audit 2026-07-13): the 2/4 bucket loses in BOTH directions
+        # (2/4 long -0.66R/18t, 2/4 short -0.80R/5t; conf=2 overall 9% WR over 23 trades).
+        # 3/4 is the empirical sweet spot, so require >= 3/4 for ANY setup. This subsumes the
+        # earlier long-only gate. audit 2026-07-13
+        if s.get("tf_confluence", 0) < config.LONG_MIN_CONFLUENCE:
+            violations.append(
+                f"{sym}: {direction} with tf_confluence {s.get('tf_confluence', 0)} "
+                f"< {config.LONG_MIN_CONFLUENCE} (confluence floor — 2/4 loses in both directions)"
+            )
 
         if s.get("setup_type") not in valid_types:
             violations.append(f"{sym}: unknown setup_type '{s.get('setup_type')}'")
@@ -137,6 +146,17 @@ def validate_setups(setups, regime_label):
             violations.append(f"{sym}: invalid direction '{s.get('direction')}'")
         if s.get("timeframe") not in ("scalp", "intraday"):
             violations.append(f"{sym}: invalid timeframe '{s.get('timeframe')}'")
+
+    # Confluence de-trust (audit 2026-07-13): 4/4 confluence is the WORST bucket (57 trades,
+    # 18% WR, -0.36R exp, PF 0.44). Counterfactual: never ranking a 4/4 setup #1 moves the book
+    # from -23R to -13R. A 4/4 setup entered on a fresh pullback can still be valid, but it must
+    # NOT be the anchor/#1 pick just for being fully aligned (= usually a late, extended move).
+    for s in setups:
+        if str(s.get("rank")) == "1" and (s.get("tf_confluence") or 0) >= 4:
+            violations.append(
+                f"{s.get('symbol','?')}: 4/4-confluence setup ranked #1 "
+                "(4/4 = late/extended move; do not anchor on it — rank it #2+ or replace)"
+            )
 
     symbols = [s.get("symbol") for s in setups]
     dupes = {sym for sym in symbols if symbols.count(sym) > 1}
@@ -147,6 +167,16 @@ def validate_setups(setups, regime_label):
         shorts = [s for s in setups if s.get("direction") == "short"]
         if not shorts:
             violations.append("RISK_OFF: no short setup included (at least 1 required)")
+
+    # Regime-aware long cap (audit 2026-07-13): longs are the entire net loss (-33R/29% WR);
+    # outside a confirmed risk_on rally, limit how many longs a single run may hold.
+    longs = [s for s in setups if s.get("direction") == "long"]
+    long_cap = config.LONG_CAP_BY_REGIME.get(regime_label, 2)
+    if len(longs) > long_cap:
+        violations.append(
+            f"TOO MANY LONGS: {len(longs)} longs > {regime_label} long cap {long_cap} "
+            "(longs run 29% WR / -33R; prefer shorts outside risk_on)"
+        )
 
     return violations
 
@@ -203,6 +233,23 @@ async def run_screener():
             print("  ⚠️ Setup violations detected:")
             for v in violations:
                 print(f"    - {v}")
+
+        # Normalize rules_applied to canonical taxonomy + stamp per-setup regime so the
+        # self-learning attribution stays meaningful and regime survives to eval. audit 2026-07-13
+        interest_scores = market.get("interest_scores", {}) or {}
+        for s in setups:
+            s["regime"] = regime_label
+            # Instrumentation: attach the pre-filter interest score so eval can correlate
+            # selection score -> outcome (audit 2026-07-13).
+            s["interest_score"] = interest_scores.get(s.get("symbol"))
+            reasoning = s.get("reasoning") or {}
+            applied = reasoning.get("rules_applied", []) or []
+            canonical = [r for r in applied if r in config.CANONICAL_RULES]
+            dropped = [r for r in applied if r not in config.CANONICAL_RULES]
+            if dropped:
+                print(f"    - {s.get('symbol','?')}: dropped non-canonical rule IDs {dropped}")
+            reasoning["rules_applied"] = canonical
+            s["reasoning"] = reasoning
 
         setups_dir = Path("logs/setups")
         setups_dir.mkdir(parents=True, exist_ok=True)

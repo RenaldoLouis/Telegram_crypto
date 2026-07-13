@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-12 07:29 UTC",
+  "last_updated": "2026-07-13 02:08 UTC",
   "total_setups": 253,
   "total_evaluated": 237,
   "total_not_triggered": 16,
@@ -537,6 +537,132 @@
       "rr_sum": 1.21
     }
   },
+  "by_regime": {
+    "neutral": {
+      "wins": 61,
+      "losses": 140,
+      "total": 201,
+      "rr_sum": -29.32000000000001
+    },
+    "risk_off": {
+      "wins": 2,
+      "losses": 8,
+      "total": 10,
+      "rr_sum": -1.5899999999999999
+    },
+    "cautious": {
+      "wins": 7,
+      "losses": 9,
+      "total": 16,
+      "rr_sum": 1.5500000000000003
+    },
+    "risk_on": {
+      "wins": 2,
+      "losses": 8,
+      "total": 10,
+      "rr_sum": -4.68
+    }
+  },
+  "by_confluence": {
+    "4": {
+      "wins": 10,
+      "losses": 47,
+      "total": 57,
+      "rr_sum": -20.36
+    },
+    "3": {
+      "wins": 59,
+      "losses": 96,
+      "total": 155,
+      "rr_sum": 1.2100000000000004
+    },
+    "2": {
+      "wins": 2,
+      "losses": 21,
+      "total": 23,
+      "rr_sum": -15.92
+    },
+    "1": {
+      "wins": 1,
+      "losses": 1,
+      "total": 2,
+      "rr_sum": 1.0299999999999998
+    }
+  },
+  "by_rule_applied": {
+    "dead_cat_bounce_risk": {
+      "wins": 0,
+      "losses": 3,
+      "total": 3,
+      "rr_sum": -2.44
+    },
+    "tight_t1": {
+      "wins": 2,
+      "losses": 9,
+      "total": 11,
+      "rr_sum": -3.9699999999999993
+    },
+    "regime_risk_off": {
+      "wins": 0,
+      "losses": 7,
+      "total": 7,
+      "rr_sum": -4.95
+    },
+    "regime_cautious": {
+      "wins": 8,
+      "losses": 8,
+      "total": 16,
+      "rr_sum": 3.75
+    },
+    "rank_reeval": {
+      "wins": 0,
+      "losses": 4,
+      "total": 4,
+      "rr_sum": -4.0
+    },
+    "btc_bearish_guard": {
+      "wins": 2,
+      "losses": 4,
+      "total": 6,
+      "rr_sum": 1.46
+    },
+    "short_bias": {
+      "wins": 14,
+      "losses": 17,
+      "total": 31,
+      "rr_sum": 2.020000000000001
+    },
+    "partial_profit": {
+      "wins": 2,
+      "losses": 4,
+      "total": 6,
+      "rr_sum": 0.21000000000000008
+    },
+    "funding_squeeze": {
+      "wins": 0,
+      "losses": 2,
+      "total": 2,
+      "rr_sum": -2.0
+    },
+    "regime_neutral": {
+      "wins": 3,
+      "losses": 1,
+      "total": 4,
+      "rr_sum": 1.5799999999999998
+    },
+    "setup8_exhaustion": {
+      "wins": 1,
+      "losses": 0,
+      "total": 1,
+      "rr_sum": 1.38
+    },
+    "losing_streak_caution": {
+      "wins": 1,
+      "losses": 1,
+      "total": 2,
+      "rr_sum": 1.38
+    }
+  },
   "simulated_t1": {
     "sim_075r_hits": 84,
     "sim_100r_hits": 66,
@@ -547,6 +673,7 @@
     "blended_wins": 52,
     "blended_losses": 84,
     "be_stops": 18,
+    "trail_stops": 0,
     "t1_then_t2": 27,
     "t1_then_be": 18,
     "t1_then_expire": 22
@@ -641,753 +768,5 @@
     "20260709_0726",
     "20260709_1424",
     "20260710_0238"
-  ],
-  "by_regime": {
-    "neutral": {
-      "wins": 6,
-      "losses": 14,
-      "total": 20,
-      "rr_sum": -3.18
-    },
-    "risk_off": {
-      "wins": 2,
-      "losses": 8,
-      "total": 10,
-      "rr_sum": -1.5899999999999999
-    },
-    "cautious": {
-      "wins": 7,
-      "losses": 9,
-      "total": 16,
-      "rr_sum": 1.5500000000000003
-    },
-    "risk_on": {
-      "wins": 2,
-      "losses": 8,
-      "total": 10,
-      "rr_sum": -4.68
-    }
-  },
-  "by_rule_applied": {
-    "risk_off_short_mandate": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "ada_priority": {
-      "wins": 1,
-      "losses": 3,
-      "total": 4,
-      "rr_sum": -0.2999999999999998
-    },
-    "dead_cat_bounce_risk": {
-      "wins": 0,
-      "losses": 3,
-      "total": 3,
-      "rr_sum": -2.44
-    },
-    "wait_for_retest_entry": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "tight_t1": {
-      "wins": 2,
-      "losses": 9,
-      "total": 11,
-      "rr_sum": -3.9699999999999993
-    },
-    "regime_risk_off": {
-      "wins": 0,
-      "losses": 7,
-      "total": 7,
-      "rr_sum": -4.95
-    },
-    "regime_cautious": {
-      "wins": 8,
-      "losses": 8,
-      "total": 16,
-      "rr_sum": 3.75
-    },
-    "btc_bearish_guard_decoupled_exception": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "funding_squeeze_extreme": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "4tf_confluence_long_exception": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "rank_reeval": {
-      "wins": 0,
-      "losses": 4,
-      "total": 4,
-      "rr_sum": -4.0
-    },
-    "ada_short_edge": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.06
-    },
-    "btc_bearish_daily_guard_aligned": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.06
-    },
-    "short_setup_requirement": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.06
-    },
-    "fade_bounce_not_low": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.06
-    },
-    "bullish_divergence_bounce_risk": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.06
-    },
-    "btc_bearish_guard": {
-      "wins": 2,
-      "losses": 4,
-      "total": 6,
-      "rr_sum": 1.46
-    },
-    "decoupled_alt_priority": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -1.0
-    },
-    "long_bias_structural_loss": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -1.0
-    },
-    "funding_squeeze_setup5": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "btc_bearish_guard_decoupled": {
-      "wins": 0,
-      "losses": 3,
-      "total": 3,
-      "rr_sum": -3.0
-    },
-    "dead_cat_bounce_check_passed": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "partial_profit_rule": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "losing_symbols_check_passed": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "setup8_ath_exhaustion": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "short_bias_requirement": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "extreme_funding_long_crowded": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "wait_for_rejection_candle": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "volume_divergence_flag": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "short_bias": {
-      "wins": 14,
-      "losses": 17,
-      "total": 31,
-      "rr_sum": 2.020000000000001
-    },
-    "partial_profit": {
-      "wins": 2,
-      "losses": 4,
-      "total": 6,
-      "rr_sum": 0.21000000000000008
-    },
-    "volume_gate": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "funding_squeeze_priority": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "1d_bullish_trend_anchor": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "partial_profit_t1": {
-      "wins": 1,
-      "losses": 2,
-      "total": 3,
-      "rr_sum": -0.08000000000000007
-    },
-    "1d_above_sma200": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "1h_strong_adx": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "15m_oversold_entry_timing": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "btc_decoupled_exception": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.92
-    },
-    "dead_cat_bounce_low_conf": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.92
-    },
-    "rsi_bull_div_4h": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.92
-    },
-    "recovery_bounce_label": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.92
-    },
-    "funding_extreme_-1.154pct": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "btc_bearish_guard_high_risk": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "correlated_alt_flag": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "half_position_size": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "wait_15m_reversal_trigger": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "risk_off_short_requirement": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.22
-    },
-    "positive_funding_short_edge": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.22
-    },
-    "wait_for_bounce_entry": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.22
-    },
-    "risk_off_long_exception": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.14
-    },
-    "decoupled_momentum": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.14
-    },
-    "extreme_funding_override": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.14
-    },
-    "dead_cat_bounce_detection": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "ada_historical_edge": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "low_volume_env": {
-      "wins": 1,
-      "losses": 1,
-      "total": 2,
-      "rr_sum": 0.08000000000000007
-    },
-    "macd_4h_flip": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.08
-    },
-    "partial_profit_50pct": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.08
-    },
-    "4tf_confluence_exception": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "rsi_overbought_4h": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "daily_bearish_guard": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "exhaustion_short": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "multi_tf_rsi_overbought": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "4h_bearish_divergence": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -1.0
-    },
-    "buying_climax_volume": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "funding_squeeze": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -2.0
-    },
-    "extreme_negative_funding": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "daily_bullish_structure": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "low_volume_gate": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -1.88
-    },
-    "validated_signal_priority": {
-      "wins": 6,
-      "losses": 7,
-      "total": 13,
-      "rr_sum": 0.6499999999999999
-    },
-    "rsi_rejection_short": {
-      "wins": 1,
-      "losses": 1,
-      "total": 2,
-      "rr_sum": -0.76
-    },
-    "parabolic_exhaustion": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.24
-    },
-    "partial_profit_helps": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.24
-    },
-    "trend_pullback_short": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "1d_bearish_guard": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "low_volume_flag": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "4h_oversold_risk": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "backtested_signal_priority": {
-      "wins": 2,
-      "losses": 1,
-      "total": 3,
-      "rr_sum": -0.1499999999999999
-    },
-    "btc_daily_bearish_guard": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "ada_short_edge_revoked": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "volume_confirmed_gate": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.52
-    },
-    "adx_trend_check": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "regime_neutral": {
-      "wins": 3,
-      "losses": 1,
-      "total": 4,
-      "rr_sum": 1.5799999999999998
-    },
-    "losing_streak_alert": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": 0.0
-    },
-    "btc_bearish_daily": {
-      "wins": 2,
-      "losses": 0,
-      "total": 2,
-      "rr_sum": 3.48
-    },
-    "losing_streak_selective": {
-      "wins": 2,
-      "losses": 0,
-      "total": 2,
-      "rr_sum": 3.48
-    },
-    "setup8_exhaustion": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.38
-    },
-    "losing_streak_caution": {
-      "wins": 1,
-      "losses": 1,
-      "total": 2,
-      "rr_sum": 1.38
-    },
-    "dead_cat_bounce_rule": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": 0.0
-    },
-    "volume_confirmation": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": 0.0
-    },
-    "4tf_confluence_override_volume": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "sma200_bullish_filter": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "losing_streak_selectivity": {
-      "wins": 1,
-      "losses": 3,
-      "total": 4,
-      "rr_sum": -0.8599999999999999
-    },
-    "15m_oversold_h_bull_divergence": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "4h_trend_pullback_priority": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "reduced_size_low_confidence": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "4tf_bearish_required": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "losing_streak_quality_filter": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "trend_pullback_priority": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "volume_confirmed_cautious_gate": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "medium_over_high_confidence": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "bounce_entry_not_chase": {
-      "wins": 2,
-      "losses": 0,
-      "total": 2,
-      "rr_sum": 2.58
-    },
-    "volume_confirmed_4h": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.33
-    },
-    "ada_short_historical_edge": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 2.25
-    },
-    "risk_off_short_bias": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -0.12
-    },
-    "macro_bearish_sma200": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": 0.0
-    },
-    "1h_volume_confirmed": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.12
-    },
-    "btc_bearish_daily_anchor": {
-      "wins": 0,
-      "losses": 4,
-      "total": 4,
-      "rr_sum": -3.95
-    },
-    "cautious_short_bias_combo": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -1.95
-    },
-    "dead_cat_bounce_entry_wait": {
-      "wins": 0,
-      "losses": 2,
-      "total": 2,
-      "rr_sum": -1.83
-    },
-    "4tf_bearish_alignment": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -0.88
-    },
-    "risk_off_regime_shorts_only": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "regime_riskoff": {
-      "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
-    },
-    "extreme_funding_edge": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.61
-    },
-    "conditional_entry_bounce_required": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.59
-    },
-    "downtrend_continuation_divergence": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.59
-    },
-    "regime_risk_on_caution": {
-      "wins": 1,
-      "losses": 1,
-      "total": 2,
-      "rr_sum": 0.11000000000000001
-    },
-    "adx_trend_confirmation": {
-      "wins": 1,
-      "losses": 1,
-      "total": 2,
-      "rr_sum": 1.0899999999999999
-    },
-    "dead_cat_bounce_awareness": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 1.21
-    },
-    "prior_win_same_setup": {
-      "wins": 1,
-      "losses": 0,
-      "total": 1,
-      "rr_sum": 0.23
-    }
-  }
+  ]
 }

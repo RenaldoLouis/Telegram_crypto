@@ -1,0 +1,16 @@
+{
+  "markers": [
+    {
+      "version": "v11.3",
+      "date": "2026-07-13",
+      "cutover_trade_count": 237,
+      "baseline_wins": 72,
+      "baseline_rr_sum": -34.04,
+      "baseline_wr": 30.4,
+      "baseline_expectancy": -0.144,
+      "baseline_pf": 0.75,
+      "hypothesis": "De-noise + de-invert (canonical taxonomy, expectancy gates, 3/4>4/4, long conf>=3, no 4/4 rank#1, regime plumbing) lifts WR toward mid-30s and expectancy toward >=0 within ~20 forward trades.",
+      "validation_target": {"min_trades": 20, "wr_target": 34.0, "expectancy_target": 0.0}
+    }
+  ]
+}

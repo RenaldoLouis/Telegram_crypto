@@ -76,5 +76,36 @@ REGIME_BULLISH_COMBO_BTC = 3.0
 DIRECTION_RULE_MIN_TRADES = 15
 
 # === Self-Learning (Delta Analysis) Settings ===
-DELTA_ANALYSIS_TRADE_THRESHOLD = 15  # Trigger delta analysis after N new evaluated trades
+DELTA_ANALYSIS_TRADE_THRESHOLD = 25  # Trigger delta analysis after N new evaluated trades (raised 15→25 to cut overfit)
 DELTA_ANALYSIS_MIN_TRADES = 20       # Minimum total trades before first delta analysis
+
+# --- Anti-overfit gates for strategic rules & delta insights (audit 2026-07-13) ---
+RULE_MIN_SAMPLE = 20          # a prioritize/avoid rule needs >= this many trades
+REGIME_RULE_MIN_TRADES = 20   # a regime-specific hard rule needs >= this many trades (was effectively 5)
+MAX_ACTIVE_DELTA_INSIGHTS = 6 # cap active delta insights sent to Claude (was unbounded → 20 contradictory rules)
+LONG_MIN_CONFLUENCE = 3       # longs require >= 3/4 TF confluence (hard structural gate; longs run -33R)
+# Regime-aware long cap: longs are the entire net loss (29% WR / -33R over 181 trades) while shorts
+# are ~breakeven (36% / 56). Outside a confirmed risk_on rally, cap the number of longs per run so a
+# bearish/neutral tape can't be filled with the losing direction. audit 2026-07-13
+LONG_CAP_BY_REGIME = {"risk_off": 1, "cautious": 1, "neutral": 2, "risk_on": 5}
+
+# Canonical rule taxonomy. Claude may ONLY cite these IDs in reasoning.rules_applied.
+# Free-text IDs are dropped on save so attribution stays statistically meaningful
+# (history had ~120 one-off IDs across 60 setups → every rule was n=1-3 noise).
+CANONICAL_RULES = {
+    # regime
+    "regime_risk_off", "regime_cautious", "regime_neutral", "regime_risk_on",
+    # direction / structure
+    "short_bias", "long_structural_confirmed", "btc_bearish_guard", "decoupled_alt",
+    # setup mechanics
+    "validated_signal", "trend_pullback", "range_reversion", "funding_squeeze",
+    "setup8_exhaustion", "liquidity_sweep", "post_liquidation",
+    # execution
+    "tight_t1", "partial_profit", "wait_for_retest", "rank_reeval",
+    # confluence / confidence
+    "confluence_3of4", "volume_confirmed", "medium_over_high_conf",
+    # divergence
+    "rsi_divergence", "macd_divergence",
+    # risk controls
+    "losing_streak_caution", "dead_cat_bounce_risk", "symbol_priority", "symbol_avoid",
+}

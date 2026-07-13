@@ -402,7 +402,7 @@ See `progress.md` for:
 - **Setup**: a trading opportunity with entry zone, stop, target 1+2, R:R, and confidence. T1 is a partial-profit level at 0.75–1.0R; T2 (the reward leg) must be >= 1.5R. Every long must also have `volume_confirmed=true`.
 - **setups_json**: structured JSON block Claude appends to every brief for machine-readable tracking.
 - **Pre-filter**: Python scoring of 50 tickers down to 25 before kline fetching, using knowledge-derived rules.
-- **Multi-TF confluence**: how many of 4 timeframes agree on direction. 4/4=High, 3/4=Medium, 2/4=Low.
+- **Multi-TF confluence**: how many of 4 timeframes agree on direction. Empirically (237 trades, audit 2026-07-13) **3/4 is the edge (+0.01R), 4/4 is the WORST bucket (−0.36R) — full alignment = exhausted/late move, not higher probability.** Do NOT map 4/4→high confidence. Longs require ≥3/4 (`config.LONG_MIN_CONFLUENCE`, enforced in `main.py::validate_setups`). `weekly_eval.py` tracks `by_confluence` and surfaces the 3/4-beats-4/4 rule.
 - **Watchlist**: symbols always analyzed regardless of pre-filter score (BTC, ETH, SOL).
 - **Phase A / Phase B**: analyst-only (current) vs. auto-execution (future, requires preconditions).
 - **Interest score**: numeric score from `_ticker_interest_score()` used to rank 50 tickers for pre-filtering.
