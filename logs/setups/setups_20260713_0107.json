@@ -1,0 +1,102 @@
+{
+  "run_timestamp_utc": "2026-07-13T01:07:54.602320+00:00",
+  "run_tag": "20260713_0107",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0733,
+      "entry_high": 0.0738,
+      "stop_loss": 0.0748,
+      "target_1": 0.0723,
+      "target_2": 0.0716,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "neutral_regime_short_only",
+          "regime_neutral",
+          "rank1_short_underperforms_rank2",
+          "btc_bearish_daily_anchor"
+        ],
+        "key_factor": "1D ADX 33.74 = strongest confirmed bearish trend in scan; price at 1h EMA20 reload zone below SMA200"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.59,
+          "rsi": 43.59,
+          "macd": -0.000223,
+          "macd_hist": -6.5e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.38,
+          "range_pct": 4.5
+        },
+        "tf_1h": {
+          "adx": 25.08,
+          "rsi": 51.59,
+          "macd": -0.000166,
+          "macd_hist": 1.5e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.06,
+          "range_pct": 2.51
+        },
+        "backtested_signal": null
+      }
+    },
+    {
+      "rank": 2,
+      "symbol": "FARTCOINUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.147,
+      "entry_high": 0.1495,
+      "stop_loss": 0.155,
+      "target_1": 0.1427,
+      "target_2": 0.1385,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal_priority",
+          "short_bias",
+          "neutral_regime_short_only",
+          "rank1_short_underperforms_rank2",
+          "regime_neutral"
+        ],
+        "key_factor": "Validated backtested signal (N=111, +0.28 expect, 100% robust) at 4h EMA20 with 4/4 TF bearish confluence and 1h hidden bearish divergence"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 17.54,
+          "rsi": 50.9,
+          "macd": -0.00053,
+          "macd_hist": 0.000137,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.32,
+          "range_pct": 9.05
+        },
+        "tf_1h": {
+          "adx": 13.07,
+          "rsi": 38.02,
+          "macd": -0.000567,
+          "macd_hist": -0.000287,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.57,
+          "range_pct": 5.37
+        },
+        "backtested_signal": "trend_pullback_short"
+      }
+    }
+  ]
+}
