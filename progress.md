@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-07-12 (v11.2)_
+_Last updated: 2026-07-13 (v11.3)_
 
 ---
 
@@ -328,7 +328,13 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 - **Fix regime plumbing**: regime stamped per eval result + per setup; `by_regime` prefers per-result. Historical backfilled by rebuilding `lifetime_stats.json` from all 89 eval files.
 - Strategic rules went from 34 (20 base + 14 contradictory delta) → 13 clean, non-contradictory, expectancy-gated rules. Pre-audit artifacts backed up in `logs/performance/_pre_audit_bak/`.
 
-**Files**: config.py, main.py, weekly_eval.py, analyzer/prompts.py, CLAUDE.md. No R:R-floor change, no execution path, no expanded perms.
+**Forward-measurement tooling (how we'll know if v11.3 actually worked):**
+- `logs/performance/version_markers.json` records the v11.3 cutover (237 trades, baseline 30.4% WR / −0.144R / PF 0.75, targets: ≥34% WR & ≥0 expectancy over 20 trades).
+- `weekly_eval.py::_version_validation_line()` prints a rule-0 verdict at the top of `strategic_rules.md` every `eval-scan`.
+- `backtester.py::report_version_segments()` (`python backtester.py --version`, also wired into `backtest` Step 3b) splits trades PRE vs POST v11.3 (POST = trades carrying `interest_score`), compares WR/expectancy/PF, prints `UNPROVEN→VALIDATING→VALIDATED/NOT-VALIDATING`, and audits POST for gate violations (confluence<3, 4/4-at-rank1 — expect 0).
+- **CRITICAL for future sessions**: the monthly `backtest` (signal-formula validation + eval combo) does NOT test v11.3's *selection* logic — it reads the 237 pre-v11.3 trades and validates mechanical formulas v11.3 never touched. v11.3's gates are FORWARD selection; the ONLY way to validate them is `eval-scan` scoring new picks → the version segment. As of 2026-07-13 the verdict is `UNPROVEN` (0 v11.3 trades evaluated; ADA/XRP shorts from the first v11.3 scan still open, need ~2 days + an `eval-scan`).
+
+**Files**: config.py, main.py, weekly_eval.py, analyzer/prompts.py, fetchers/bybit_data.py (interest_score), backtester.py + historical_backtester.py (version segment), CLAUDE.md, progress.md, AUDIT_2026-07-13.md, logs/performance/version_markers.json. No R:R-floor change, no execution path, no expanded perms. Commits: aa66077 (v11.3 core), 02097c7 (version segment report).
 
 ### 2026-07-12 (v11.2) — Execution Overhaul: T1→T2 Floor Relocation, Long Volume Gate, +0.3R Trail
 

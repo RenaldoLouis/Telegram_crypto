@@ -232,10 +232,11 @@ python trade_logger.py close     # Close an open trade, enter exit price
 python trade_logger.py list      # Show all trades with summary
 
 # What-if backtester (uses existing eval data, zero tokens)
-python backtester.py                    # Full report (all analyses)
+python backtester.py                    # Full report (all analyses, incl. version segment)
 python backtester.py --t1-sweep         # T1 distance analysis
 python backtester.py --combo            # Best filter combinations
 python backtester.py --symbols          # Per-symbol breakdown
+python backtester.py --version          # v11.3 PRE-vs-POST cutover segment + VALIDATED/UNPROVEN verdict
 
 # Historical strategy backtester (uses cached Bybit klines, zero tokens)
 python historical_backtester.py                              # Default: 6 coins, 1h
@@ -249,7 +250,7 @@ python historical_backtester.py --validate all --interval 240 --symbols ADAUSDT,
 - `scan` — run nightly screener (includes git pull for latest hot list)
 - `pulse` — run momentum pulse locally
 - `eval-scan` — run weekly evaluation + delta analysis (auto-triggers every 15 new trades)
-- `backtest` — full backtest pipeline: validate signal formulas on 4h + 1h (15 symbols, fresh data) + eval combo analysis
+- `backtest` — full backtest pipeline: validate signal formulas on 4h + 1h (15 symbols, fresh data) + eval combo analysis + **v11.3 version segment** (PRE-vs-POST cutover verdict). NOTE: this validates the mechanical signal FORMULAS and re-analyzes PAST trades — it does NOT test whether v11.3's *selection* logic (confluence floor, rank de-trust, long cap) works. That is forward-only via `eval-scan` → the version segment.
 - `trade` — manage manual trade log (`trade open`, `trade close`, `trade list`)
 - `quarterly-scan` — quarterly deep analysis (optional — superseded by `backtest` + delta analysis)
 
@@ -437,6 +438,8 @@ See `progress.md` for:
 - **Post-scan validation**: pure Python validator in `main.py` that checks Claude's output against hard rules (setup count, T1 ≤ 1.0R cap, T2 ≥ 1.5R edge floor, long volume gate + long blacklist, valid types, regime requirements). Zero token cost. Logs violations as warnings.
 - **Validated signals**: mechanical signal formulas that passed out-of-sample train/test validation on 15 symbols. Detected by `_check_validated_signals()` in `bybit_data.py` during each scan. When they fire, injected into Claude's user content as `BACKTESTED SIGNALS` section. Current confirmed signals (Jul 2026 re-validation): `rsi_rejection_short` (RSI exhaustion at >75, ★ STRONG both TFs), `macd_momentum_long` (MACD hist flip positive in uptrend, confirmed both TFs), `trend_pullback_short` (downtrend pullback to EMA20, **4h ONLY** — 1h rejected as overfit). `macd_momentum_short` was removed after degrading to overfit on both TFs. Other signals (trend_pullback_long, range_reversion_long/short, rsi_bounce_long) remain rejected/single-TF-only. The set is re-checked monthly via `backtest`; when a signal drifts, `_check_validated_signals()` is manually updated to match.
 - **Historical backtester** (`historical_backtester.py`): fetches Bybit klines (cached locally), defines 12 mechanical signal rules, runs parameter sweep optimization (`--optimize`), and validates with train/test split (`--validate`). Tests on 1h (42 days) and 4h (167 days) of data. Zero Claude tokens.
-- **What-if backtester** (`backtester.py`): reads existing eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbol blacklists), reports expectancy/WR/profit factor. Useful for answering "what if we changed X?" Zero Claude tokens.
+- **What-if backtester** (`backtester.py`): reads existing eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbol blacklists), reports expectancy/WR/profit factor. Useful for answering "what if we changed X?" Zero Claude tokens. Also hosts `report_version_segments()` (`--version`).
+- **Version segment / version_markers** (added v11.3): the mechanism that measures whether a shipped change actually improved live results. `logs/performance/version_markers.json` records a cutover (version, `cutover_trade_count`, baseline WR/rr_sum, `validation_target` = min_trades/wr_target/expectancy_target). `backtester.py::report_version_segments()` splits evaluated trades PRE vs POST cutover — POST = trades carrying `interest_score` (a field only the post-v11.3 pipeline writes, so it's an unambiguous era marker) — compares WR/expectancy/PF and prints a verdict: `UNPROVEN` (0 forward trades) → `VALIDATING (n/min)` → `VALIDATED` / `NOT VALIDATING`. It also audits POST trades for gate violations that should be impossible (confluence<3, 4/4-at-rank1). `weekly_eval.py::_version_validation_line()` prints the same verdict (from lifetime counters) as rule-0 of `strategic_rules.md` each eval-scan. **Key distinction**: the `backtest` command validates signal formulas + proposes rules from past trades; it CANNOT test a forward-selection change like v11.3 (past trades were picked by the old logic). Only `eval-scan` scoring new picks feeds the version segment. So a fresh v11.3 change reads `UNPROVEN` on the backtest until ~20 new trades are evaluated over the following weeks.
+- **interest_score** (per-setup, added v11.3): the pre-filter `_ticker_interest_score()` value, now stamped onto each setup + eval record (`main.py` → `weekly_eval.py`). Two purposes: (1) makes pre-filter selection quality measurable (previously a blind spot), and (2) serves as the structural marker distinguishing v11.3-era trades from pre-v11.3 in the version segment.
 - **Train/test validation**: splits cached kline data 60/40 — optimizes parameters on train half, evaluates on test (unseen) half. If test expectancy is negative, the formula is overfit and rejected. Prevents integrating patterns that only work in hindsight.
 - **Robustness score**: for each top formula, checks if neighboring parameter values (±1 step) also have positive expectancy. High robustness (>50%) means the formula works across a range of conditions, not just one lucky parameterization.
