@@ -1,0 +1,152 @@
+{
+  "run_timestamp_utc": "2026-07-14T13:19:35.410739+00:00",
+  "run_tag": "20260714_1319",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.073,
+      "entry_high": 0.0735,
+      "stop_loss": 0.0748,
+      "target_1": 0.0722,
+      "target_2": 0.0703,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "validated_signal",
+          "confluence_3of4"
+        ],
+        "key_factor": "Validated trend_pullback_short N=111 100% robust; EMA20<EMA50 on 4h and 1D; price bouncing into EMA20 resistance with 15m RSI 83 overbought"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 23.24,
+          "rsi": 54.85,
+          "macd": -0.000403,
+          "macd_hist": 4.4e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.62,
+          "range_pct": 6.35
+        },
+        "tf_1h": {
+          "adx": 17.38,
+          "rsi": 73.77,
+          "macd": 0.00015,
+          "macd_hist": 0.000182,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.61,
+          "range_pct": 3.46
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "cautious",
+      "interest_score": 2.0
+    },
+    {
+      "rank": 2,
+      "symbol": "SOLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 76.5,
+      "entry_high": 76.8,
+      "stop_loss": 78.45,
+      "target_1": 75.3,
+      "target_2": 73.1,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "validated_signal",
+          "confluence_3of4"
+        ],
+        "key_factor": "Validated trend_pullback_short N=111 100% robust; price below SMA200 ($91.29); 4h EMA20<EMA50 with ADX 30; 1h hidden bearish RSI+MACD divergence signals continuation"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 29.99,
+          "rsi": 50.92,
+          "macd": -0.738479,
+          "macd_hist": 0.017374,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.18,
+          "range_pct": 6.28
+        },
+        "tf_1h": {
+          "adx": 24.66,
+          "rsi": 70.17,
+          "macd": 0.044644,
+          "macd_hist": 0.235734,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.96,
+          "range_pct": 3.79
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "cautious",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 3,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.161,
+      "entry_high": 0.163,
+      "stop_loss": 0.1676,
+      "target_1": 0.1578,
+      "target_2": 0.1536,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "confluence_3of4",
+          "symbol_priority"
+        ],
+        "key_factor": "Price at 4h EMA20 resistance (0.16191) in confirmed 3/4 TF bearish structure; 15m/1h RSI overbought (78-79) at key resistance; ADA shorts historically best-performing pattern"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 29.26,
+          "rsi": 45.96,
+          "macd": -0.002529,
+          "macd_hist": 0.000204,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.18,
+          "range_pct": 11.82
+        },
+        "tf_1h": {
+          "adx": 24.17,
+          "rsi": 79.31,
+          "macd": 0.00028,
+          "macd_hist": 0.000634,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.38,
+          "range_pct": 4.43
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 1.0
+    }
+  ]
+}
