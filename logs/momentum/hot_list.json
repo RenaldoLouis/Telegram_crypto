@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-07-14T06:13:06.361943+00:00",
+  "generated_utc": "2026-07-14T10:01:11.087483+00:00",
   "market_regime": {
-    "regime": "neutral",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 54.0,
-      "median_change_pct": -0.13,
-      "btc_change_pct": -0.07,
-      "avg_funding_pct": 0.0034,
-      "large_decline_count": 7
+      "pct_declining": 68.0,
+      "median_change_pct": -0.97,
+      "btc_change_pct": -0.69,
+      "avg_funding_pct": -0.0151,
+      "large_decline_count": 6
     },
-    "detected_utc": "2026-07-14T06:13:06.361363+00:00",
-    "previous_regime": "cautious"
+    "detected_utc": "2026-07-14T10:01:11.086876+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
@@ -62,22 +62,6 @@
       "price_acceleration_pct": 13.3762
     },
     {
-      "symbol": "SKLUSDT",
-      "flagged_utc": "2026-07-12T09:53:08.590714+00:00",
-      "expires_utc": "2026-07-14T09:53:08.590714+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.004575,
-      "price_change_24h_pct": -10.029399999999999,
-      "turnover_24h_usd": 9963266.1658,
-      "funding_rate_pct": -0.068037,
-      "open_interest": 579670578.0,
-      "volume_acceleration": 0.7740732012198123,
-      "price_acceleration_pct": -0.17270000000000074
-    },
-    {
       "symbol": "TUSDT",
       "flagged_utc": "2026-07-13T11:14:45.605484+00:00",
       "expires_utc": "2026-07-15T11:14:45.605484+00:00",
@@ -95,19 +79,19 @@
     },
     {
       "symbol": "SXTUSDT",
-      "flagged_utc": "2026-07-13T11:14:45.605484+00:00",
-      "expires_utc": "2026-07-15T11:14:45.605484+00:00",
+      "flagged_utc": "2026-07-14T10:01:11.086644+00:00",
+      "expires_utc": "2026-07-16T10:01:11.086644+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.007741,
-      "price_change_24h_pct": -14.8029,
-      "turnover_24h_usd": 13899135.8959,
-      "funding_rate_pct": -0.178251,
-      "open_interest": 201559900.0,
-      "volume_acceleration": 0.7617362542037013,
-      "price_acceleration_pct": 4.541599999999999
+      "last_price": 0.009532,
+      "price_change_24h_pct": 20.3991,
+      "turnover_24h_usd": 16800069.1322,
+      "funding_rate_pct": -1.189308,
+      "open_interest": 342539208.0,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
     },
     {
       "symbol": "GWEIUSDT",
