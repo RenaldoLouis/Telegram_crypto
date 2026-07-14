@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 237 evaluated trades — solid sample)
-_Last updated: 2026-07-13 02:08 UTC_
+_Last updated: 2026-07-13 10:25 UTC_
 
 0. **v11.3 UNPROVEN (MONITOR)**: v11.3 just deployed at 237 trades; 0 forward trades evaluated yet. Baseline was 30.4% WR / -0.144R exp. ACTION: keep selecting per the rules below; win rate is validated forward over the next 20 trades, not asserted.
 
