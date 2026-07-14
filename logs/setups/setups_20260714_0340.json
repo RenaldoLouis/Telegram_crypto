@@ -1,0 +1,104 @@
+{
+  "run_timestamp_utc": "2026-07-14T03:40:28.605643+00:00",
+  "run_tag": "20260714_0340",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BILLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.057,
+      "entry_high": 0.059,
+      "stop_loss": 0.066,
+      "target_1": 0.052,
+      "target_2": 0.046,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "regime_cautious",
+          "confluence_3of4"
+        ],
+        "key_factor": "Backtested rsi_rejection_short signal on 4h (RSI 78.2\u219271.5, ADX 47.6) after +45% two-day pump; 1D bearish divergences confirm exhaustion"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 47.58,
+          "rsi": 71.54,
+          "macd": 0.004764,
+          "macd_hist": 0.001267,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.41,
+          "range_pct": 42.52
+        },
+        "tf_1h": {
+          "adx": 27.06,
+          "rsi": 51.42,
+          "macd": 0.001926,
+          "macd_hist": -0.000542,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.03,
+          "range_pct": 24.59
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "regime": "cautious",
+      "interest_score": 3.0
+    },
+    {
+      "rank": 2,
+      "symbol": "SXTUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_breakout",
+      "entry_low": 0.0079,
+      "entry_high": 0.0082,
+      "stop_loss": 0.00762,
+      "target_1": 0.00843,
+      "target_2": 0.00877,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "long_structural_confirmed",
+          "decoupled_alt",
+          "volume_confirmed",
+          "regime_cautious"
+        ],
+        "key_factor": "Decoupled alt breaking 20-period high on 2.92x volume with 4h bullish trend (ADX 37.4) and confirmed higher-low on 4h and 1h; RSI 35.7 on 4h is deep value in a trending structure"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 37.4,
+          "rsi": 35.7,
+          "macd": 0.000145,
+          "macd_hist": -0.000121,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.1,
+          "range_pct": 45.68
+        },
+        "tf_1h": {
+          "adx": 11.73,
+          "rsi": 59.37,
+          "macd": -8.1e-05,
+          "macd_hist": 6.4e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.71,
+          "range_pct": 6.9
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": null
+    }
+  ]
+}
