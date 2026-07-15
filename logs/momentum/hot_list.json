@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-07-14T21:02:30.126978+00:00",
+  "generated_utc": "2026-07-15T02:41:20.822850+00:00",
   "market_regime": {
     "regime": "risk_on",
     "metrics": {
-      "pct_declining": 12.0,
-      "median_change_pct": 4.19,
-      "btc_change_pct": 3.81,
-      "avg_funding_pct": 0.0046,
-      "large_decline_count": 2
+      "pct_declining": 14.0,
+      "median_change_pct": 3.02,
+      "btc_change_pct": 3.19,
+      "avg_funding_pct": 0.0033,
+      "large_decline_count": 4
     },
-    "detected_utc": "2026-07-14T21:02:30.126317+00:00",
+    "detected_utc": "2026-07-15T02:41:20.822359+00:00",
     "previous_regime": "risk_on"
   },
   "coins": [
@@ -207,19 +207,51 @@
     },
     {
       "symbol": "SKHYUSDT",
-      "flagged_utc": "2026-07-14T21:02:30.126036+00:00",
-      "expires_utc": "2026-07-16T21:02:30.126036+00:00",
+      "flagged_utc": "2026-07-15T02:41:20.822088+00:00",
+      "expires_utc": "2026-07-17T02:41:20.822088+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 187.19,
-      "price_change_24h_pct": 22.6831,
-      "turnover_24h_usd": 25378025.4952,
-      "funding_rate_pct": -0.11420899999999999,
-      "open_interest": 21752.4,
-      "volume_acceleration": 1.2887382801872598,
-      "price_acceleration_pct": 5.6677
+      "last_price": 188.93,
+      "price_change_24h_pct": 23.515900000000002,
+      "turnover_24h_usd": 33070940.6298,
+      "funding_rate_pct": -0.059185,
+      "open_interest": 24799.97,
+      "volume_acceleration": 1.3031329263994567,
+      "price_acceleration_pct": 0.8328000000000024
+    },
+    {
+      "symbol": "B3USDT",
+      "flagged_utc": "2026-07-15T02:41:20.822088+00:00",
+      "expires_utc": "2026-07-17T02:41:20.822088+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.0005886,
+      "price_change_24h_pct": 22.3955,
+      "turnover_24h_usd": 21311816.099,
+      "funding_rate_pct": -0.069953,
+      "open_interest": 2892837300.0,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
+    },
+    {
+      "symbol": "IBMUSDT",
+      "flagged_utc": "2026-07-15T02:41:20.822088+00:00",
+      "expires_utc": "2026-07-17T02:41:20.822088+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 219.33,
+      "price_change_24h_pct": -23.9309,
+      "turnover_24h_usd": 17594088.94,
+      "funding_rate_pct": 0.060265000000000006,
+      "open_interest": 15266.36,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
     }
   ]
 }
