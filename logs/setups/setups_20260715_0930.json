@@ -1,0 +1,152 @@
+{
+  "run_timestamp_utc": "2026-07-15T09:30:40.640338+00:00",
+  "run_tag": "20260715_0930",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "EWYUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 175.5,
+      "entry_high": 177.5,
+      "stop_loss": 183.5,
+      "target_1": 170.0,
+      "target_2": 166.0,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "confluence_3of4",
+          "short_bias",
+          "partial_profit"
+        ],
+        "key_factor": "Validated trend_pullback_short signal on 4h; price at EMA20 resistance in strong 1D downtrend (ADX 38.8); 3/4 TF bearish alignment"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.65,
+          "rsi": 61.72,
+          "macd": -0.98318,
+          "macd_hist": 1.109869,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.08,
+          "range_pct": 14.25
+        },
+        "tf_1h": {
+          "adx": 26.79,
+          "rsi": 46.64,
+          "macd": 1.453684,
+          "macd_hist": -0.479344,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.25,
+          "range_pct": 5.6
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "risk_on",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.163,
+      "entry_high": 0.166,
+      "stop_loss": 0.17,
+      "target_1": 0.1596,
+      "target_2": 0.156,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "confluence_3of4",
+          "short_bias",
+          "symbol_priority"
+        ],
+        "key_factor": "Validated signal at 4h EMA20; strongest short win history in recent 75-trade sample; price below SMA200 on 1D with EMA20<EMA50"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 23.79,
+          "rsi": 64.29,
+          "macd": -0.000744,
+          "macd_hist": 0.000899,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.56,
+          "range_pct": 7.89
+        },
+        "tf_1h": {
+          "adx": 25.1,
+          "rsi": 56.14,
+          "macd": 0.000827,
+          "macd_hist": -0.000142,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.93,
+          "range_pct": 3.88
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "risk_on",
+      "interest_score": 3.0
+    },
+    {
+      "rank": 3,
+      "symbol": "SKHYNIXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1365.0,
+      "entry_high": 1385.0,
+      "stop_loss": 1475.0,
+      "target_1": 1275.0,
+      "target_2": 1210.0,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "confluence_3of4",
+          "short_bias",
+          "partial_profit"
+        ],
+        "key_factor": "Validated signal at 4h EMA20; highest 1D ADX in scan (39.16) confirming strong structural downtrend; wide ATR requires careful entry timing after 15m oversold bounce"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.21,
+          "rsi": 57.66,
+          "macd": -18.058049,
+          "macd_hist": 16.262535,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.03,
+          "range_pct": 24.3
+        },
+        "tf_1h": {
+          "adx": 21.41,
+          "rsi": 45.58,
+          "macd": 19.310318,
+          "macd_hist": -7.364452,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.38,
+          "range_pct": 11.76
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "risk_on",
+      "interest_score": 0.0
+    }
+  ]
+}
