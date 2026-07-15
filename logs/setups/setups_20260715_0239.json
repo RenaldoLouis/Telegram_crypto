@@ -1,0 +1,152 @@
+{
+  "run_timestamp_utc": "2026-07-15T02:39:50.745174+00:00",
+  "run_tag": "20260715_0239",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "TRIAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.009046,
+      "entry_high": 0.00926,
+      "stop_loss": 0.00955,
+      "target_1": 0.008855,
+      "target_2": 0.0083,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "Validated trend_pullback_short (100% robust, N=111) on 4h with EMA20<EMA50, ADX 30, price retesting 4h EMA20 inside deeply bearish daily downtrend"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.04,
+          "rsi": 58.01,
+          "macd": -0.00075,
+          "macd_hist": 0.000448,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.26,
+          "range_pct": 37.03
+        },
+        "tf_1h": {
+          "adx": 25.44,
+          "rsi": 50.08,
+          "macd": 0.00013,
+          "macd_hist": -4e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.38,
+          "range_pct": 22.25
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "risk_on",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1.1,
+      "entry_high": 1.107,
+      "stop_loss": 1.117,
+      "target_1": 1.095,
+      "target_2": 1.086,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 1h (RSI 81.1\u219260.56, ADX 35) with 1D and 4h both in bearish structure; wait for 15m RSI bounce from 21.67 before entry"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.86,
+          "rsi": 49.74,
+          "macd": -0.000552,
+          "macd_hist": 0.004348,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.51,
+          "range_pct": 6.19
+        },
+        "tf_1h": {
+          "adx": 35.05,
+          "rsi": 60.56,
+          "macd": 0.008227,
+          "macd_hist": -0.000482,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.19,
+          "range_pct": 4.9
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "regime": "risk_on",
+      "interest_score": 4.0
+    },
+    {
+      "rank": 3,
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 64600.0,
+      "entry_high": 64750.0,
+      "stop_loss": 65200.0,
+      "target_1": 64150.0,
+      "target_2": 63700.0,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 1h (RSI 82.8\u219263.25, ADX 38.4) with 1D bearish (price below 1D EMA50 at 65110) and hidden bearish divergences; 4h still bullish is the key risk"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.73,
+          "rsi": 52.64,
+          "macd": 205.680314,
+          "macd_hist": 199.457422,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.13,
+          "range_pct": 5.12
+        },
+        "tf_1h": {
+          "adx": 38.39,
+          "rsi": 63.25,
+          "macd": 490.999568,
+          "macd_hist": 9.070393,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.87,
+          "range_pct": 4.06
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "regime": "risk_on",
+      "interest_score": 0.0
+    }
+  ]
+}
