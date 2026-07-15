@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-07-15T06:17:24.886355+00:00",
+  "generated_utc": "2026-07-15T10:05:45.540997+00:00",
   "market_regime": {
     "regime": "risk_on",
     "metrics": {
-      "pct_declining": 24.0,
-      "median_change_pct": 3.02,
-      "btc_change_pct": 3.67,
-      "avg_funding_pct": -0.0069,
-      "large_decline_count": 5
+      "pct_declining": 22.0,
+      "median_change_pct": 3.03,
+      "btc_change_pct": 3.41,
+      "avg_funding_pct": -0.0254,
+      "large_decline_count": 4
     },
-    "detected_utc": "2026-07-15T06:17:24.885863+00:00",
+    "detected_utc": "2026-07-15T10:05:45.540459+00:00",
     "previous_regime": "risk_on"
   },
   "coins": [
@@ -28,22 +28,6 @@
       "open_interest": 4903947.6,
       "volume_acceleration": 0.9660506097710988,
       "price_acceleration_pct": 22.861000000000008
-    },
-    {
-      "symbol": "VANRYUSDT",
-      "flagged_utc": "2026-07-13T06:56:32.484708+00:00",
-      "expires_utc": "2026-07-15T06:56:32.484708+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.00572,
-      "price_change_24h_pct": -17.5436,
-      "turnover_24h_usd": 19022896.2582,
-      "funding_rate_pct": -0.079495,
-      "open_interest": 726606989.0,
-      "volume_acceleration": 0.7652327264895109,
-      "price_acceleration_pct": 13.3762
     },
     {
       "symbol": "TUSDT",
@@ -124,22 +108,6 @@
       "open_interest": 41579.98,
       "volume_acceleration": 1.1449781833024226,
       "price_acceleration_pct": -4.049200000000001
-    },
-    {
-      "symbol": "VELVETUSDT",
-      "flagged_utc": "2026-07-13T06:56:32.484708+00:00",
-      "expires_utc": "2026-07-15T06:56:32.484708+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.5599,
-      "price_change_24h_pct": 26.531,
-      "turnover_24h_usd": 17839095.4915,
-      "funding_rate_pct": -0.050431000000000004,
-      "open_interest": 5941530.0,
-      "volume_acceleration": 1.128309615346928,
-      "price_acceleration_pct": 1.7045999999999992
     },
     {
       "symbol": "BABAUSDT",
@@ -223,35 +191,35 @@
     },
     {
       "symbol": "B3USDT",
-      "flagged_utc": "2026-07-15T06:17:24.885647+00:00",
-      "expires_utc": "2026-07-17T06:17:24.885647+00:00",
+      "flagged_utc": "2026-07-15T10:05:45.540214+00:00",
+      "expires_utc": "2026-07-17T10:05:45.540214+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.0006495,
-      "price_change_24h_pct": 37.112,
-      "turnover_24h_usd": 28585144.8709,
-      "funding_rate_pct": -0.558292,
-      "open_interest": 3088639000.0,
-      "volume_acceleration": 1.3412815096617356,
-      "price_acceleration_pct": 14.716500000000003
+      "last_price": 0.0006659,
+      "price_change_24h_pct": 37.3272,
+      "turnover_24h_usd": 33559514.0669,
+      "funding_rate_pct": -1.435468,
+      "open_interest": 2895843800.0,
+      "volume_acceleration": 1.1740193802923127,
+      "price_acceleration_pct": 0.21519999999999584
     },
     {
       "symbol": "IBMUSDT",
-      "flagged_utc": "2026-07-15T06:17:24.885647+00:00",
-      "expires_utc": "2026-07-17T06:17:24.885647+00:00",
+      "flagged_utc": "2026-07-15T10:05:45.540214+00:00",
+      "expires_utc": "2026-07-17T10:05:45.540214+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 218.34,
-      "price_change_24h_pct": -24.499399999999998,
-      "turnover_24h_usd": 17829979.3175,
-      "funding_rate_pct": 0.067654,
-      "open_interest": 15511.42,
-      "volume_acceleration": 1.013407365297768,
-      "price_acceleration_pct": 0.5684999999999967
+      "last_price": 219.84,
+      "price_change_24h_pct": -23.9228,
+      "turnover_24h_usd": 18423051.8525,
+      "funding_rate_pct": 0.110723,
+      "open_interest": 15634.76,
+      "volume_acceleration": 1.0332626597282648,
+      "price_acceleration_pct": -0.5765999999999991
     }
   ]
 }
