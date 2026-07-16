@@ -1,10 +1,21 @@
 # Recent Performance (last 4 weeks)
-_75 trades: 23W / 52L (31% WR, -0.05 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 44% WR, -0.04 avg blended R:R_
+_86 trades: 28W / 58L (33% WR, -0.02 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 47% WR, -0.01 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-13 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 0.3 (W) | 0.43 | trail_stop | 1.14R |
+| 2026-07-13 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 0.9 | -0.13 (L) | -0.13 | expired | 0.18R |
+| 2026-07-13 | XRPUSDT | S | intra | trend_pullba | med | 4/4 | 0.9 | 0.0 (L) | 0.25 | be_stop | 0.82R |
+| 2026-07-13 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.06 (L) | -0.06 | expired | 0.23R |
+| 2026-07-13 | XRPUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.25R |
+| 2026-07-13 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 1.13 (W) | 0.9 | target_2 | 1.16R |
+| 2026-07-13 | FARTCOINUS | S | intra | trend_pullba | med | 4/4 | 0.9 | 1.06 (W) | 0.8 | target_2 | 1.07R |
+| 2026-07-12 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | 0.0 (L) | 0.31 | be_stop | 0.77R |
+| 2026-07-12 | HMSTRUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.49 (W) | 0.49 | expired | 0.56R |
+| 2026-07-12 | XPINUSDT | L | intra | other | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.24R |
+| 2026-07-12 | HBARUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 1.31 (W) | 1.31 | target_1 | 1.78R |
 | 2026-07-10 | VINEUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -0.12 (L) | -0.12 | expired | 0.2R |
 | 2026-07-10 | ESPORTSUSD | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.21 (W) | 1.21 | target_1 | 1.51R |
 | 2026-07-10 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.23 (W) | 0.23 | expired | 0.58R |
@@ -81,8 +92,8 @@ _Partial profit model (50% at T1 + BE stop): 44% WR, -0.04 avg blended R:R_
 | 2026-06-17 | XLMUSDT | L | intra | trend_pullba | med | 4/4 | 1.5 | 0.0 (L) | 0.38 | be_stop | 0.77R |
 | 2026-06-17 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.73 | target_1 | 1.94R |
 
-- Recent 'trend_pullback': 18/56 (32% WR)
-- Recent 'other': 4/11 (36% WR)
+- Recent 'trend_pullback': 23/66 (35% WR)
+- Recent 'other': 4/12 (33% WR)
 - Recent 'funding_squeeze': 1/6 (17% WR)
 
 ## Trader's Recent Actual Trades
