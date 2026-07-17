@@ -1,0 +1,105 @@
+{
+  "run_timestamp_utc": "2026-07-17T02:15:36.360172+00:00",
+  "run_tag": "20260717_0215",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SNDKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1385.0,
+      "entry_high": 1420.0,
+      "stop_loss": 1460.0,
+      "target_1": 1352.0,
+      "target_2": 1315.0,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "funding_squeeze",
+          "confluence_3of4"
+        ],
+        "key_factor": "Funding rate +0.1032% with longs trapped in -13% session; bounce to EMA resistance provides re-entry before continuation lower"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 40.06,
+          "rsi": 18.4,
+          "macd": -107.491507,
+          "macd_hist": -28.385995,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.71,
+          "range_pct": 34.59
+        },
+        "tf_1h": {
+          "adx": 41.18,
+          "rsi": 11.07,
+          "macd": -59.12772,
+          "macd_hist": -2.03066,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.8,
+          "range_pct": 17.06
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "KORUUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "funding_squeeze",
+      "entry_low": 18.2,
+      "entry_high": 18.8,
+      "stop_loss": 19.55,
+      "target_1": 17.44,
+      "target_2": 16.45,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "regime_cautious",
+          "short_bias",
+          "funding_squeeze",
+          "confluence_3of4",
+          "symbol_priority"
+        ],
+        "key_factor": "Most extreme funding rate in scan (+0.1869%) with historical win record; 4h/1D data partial (null RSI/ADX) limits full TF scoring"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": null,
+          "rsi": null,
+          "macd": -1.285958,
+          "macd_hist": -0.46768,
+          "trend": "bearish",
+          "ema20_dist_atr": null,
+          "range_pct": null
+        },
+        "tf_1h": {
+          "adx": 37.84,
+          "rsi": 31.02,
+          "macd": -0.788939,
+          "macd_hist": -0.046213,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.77,
+          "range_pct": 17.38
+        },
+        "backtested_signal": null
+      },
+      "regime": "cautious",
+      "interest_score": 0.0
+    }
+  ]
+}
