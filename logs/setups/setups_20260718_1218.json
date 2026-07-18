@@ -1,0 +1,104 @@
+{
+  "run_timestamp_utc": "2026-07-18T12:18:46.007705+00:00",
+  "run_tag": "20260718_1218",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "1000XECUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.00988,
+      "entry_high": 0.0101,
+      "stop_loss": 0.01075,
+      "target_1": 0.00925,
+      "target_2": 0.0087,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "setup8_exhaustion",
+          "short_bias",
+          "partial_profit",
+          "medium_over_high_conf"
+        ],
+        "key_factor": "RSI overbought on all 4 TFs (71/75/77/78) after +25% 24h pump with rsi_bear divergence on 1h; climactic 2.33x vol spike on 1D = buyer exhaustion signal"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 49.69,
+          "rsi": 77.55,
+          "macd": 0.000835,
+          "macd_hist": 0.000273,
+          "trend": "bullish",
+          "ema20_dist_atr": 3.19,
+          "range_pct": 41.63
+        },
+        "tf_1h": {
+          "adx": 54.89,
+          "rsi": 75.25,
+          "macd": 0.000527,
+          "macd_hist": 0.000148,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.57,
+          "range_pct": 26.31
+        },
+        "backtested_signal": null
+      },
+      "regime": "neutral",
+      "interest_score": 12.0
+    },
+    {
+      "rank": 2,
+      "symbol": "USUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.047,
+      "entry_high": 0.049,
+      "stop_loss": 0.04456,
+      "target_1": 0.0511,
+      "target_2": 0.05316,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "decoupled_alt",
+          "long_structural_confirmed",
+          "partial_profit"
+        ],
+        "key_factor": "Backtested macd_momentum_long signal fired on 1h (MACD hist flipped +, RSI 51.9, ADX 30.4) with +0.25R out-of-sample expectancy; coin decoupled +9.3% vs flat market"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 47.95,
+          "rsi": 59.94,
+          "macd": 0.004848,
+          "macd_hist": -2e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.51,
+          "range_pct": 42.28
+        },
+        "tf_1h": {
+          "adx": 30.41,
+          "rsi": 51.95,
+          "macd": 0.000782,
+          "macd_hist": 9.1e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.02,
+          "range_pct": 16.38
+        },
+        "backtested_signal": "macd_momentum_long"
+      },
+      "regime": "neutral",
+      "interest_score": 8.0
+    }
+  ]
+}
