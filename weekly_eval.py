@@ -2095,6 +2095,7 @@ def maybe_run_delta_analysis(all_evals):
         response = client.messages.create(
             model=config.CLAUDE_MODEL,
             max_tokens=1500,
+            temperature=0,  # deterministic: same stats → same insights (kills run-to-run variance)
             messages=[{"role": "user", "content": prompt}],
         )
     except Exception as e:

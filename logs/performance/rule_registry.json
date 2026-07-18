@@ -1,6 +1,47 @@
 {
-  "last_delta_trade_count": 237,
-  "last_delta_date": "2026-07-12",
-  "wr_at_last_delta": "30.4%",
-  "insights": []
+  "last_delta_trade_count": 263,
+  "last_delta_date": "2026-07-18",
+  "wr_at_last_delta": "31.6%",
+  "insights": [
+    {
+      "id": "cautious_regime_shorts_failing",
+      "text": "In the recent 20 trades, cautious-regime shorts went 1/8 (12% WR), with 5 full stops and near-zero MFE on failures. The regime label \"cautious\" is not filtering adequately \u2014 shorts are being taken anyway. ACTION: In cautious regime, require MFE signal (price must move 0.3R toward target before committing mentally) or skip shorts entirely unless confluence is 3/4 AND volume confirmed is present.",
+      "added_at_trade_count": 263,
+      "added_date": "2026-07-18",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "risk_on_short_mixed_signal",
+      "text": "Recent risk_on shorts were 3/5 (60% WR) with clean T2 hits, but the 2 losses had MFE \u2264 0.23R \u2014 essentially immediate reversals. ACTION: In risk_on regime, skip short setups where MFE at entry bar is near zero; only take shorts with prior session showing clear lower-high structure. Do not fade momentum blindly.",
+      "added_at_trade_count": 263,
+      "added_date": "2026-07-18",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "adausdt_short_fatigue",
+      "text": "ADAUSDT shorts appeared 5 times in recent 20 trades with 1/5 WR. Despite lifetime edge (16/37 overall), it is being over-traded intraday \u2014 multiple setups per run dilute quality. ACTION: Cap ADAUSDT at 1 short setup per run. If it appears twice, take only the higher-ranked one.",
+      "added_at_trade_count": 263,
+      "added_date": "2026-07-18",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "rank2_positive_expectancy",
+      "text": "Lifetime rank 2 is 29/84 (35% WR, +0.04 avg R:R) \u2014 the only rank with positive RR sum (+3.46R). Rank 1 is 26/93 (28% WR, -0.20 avg R:R). ACTION: When forced to choose between two similar setups, prefer rank 2 over rank 1. Do not auto-promote a setup to rank 1 solely on confluence score.",
+      "added_at_trade_count": 263,
+      "added_date": "2026-07-18",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "wait_for_retest_underperforms",
+      "text": "`wait_for_retest` rule appears in 3 trades: 0/3 WR, -0.63 avg blended R:R. Trades using it show low MFE (0.18\u20130.82R) and fail to reach T1. ACTION: Remove `wait_for_retest` as a standalone justification. If a retest is needed, wait for it to complete before logging the setup \u2014 do not pre-log a setup pending retest.",
+      "added_at_trade_count": 263,
+      "added_date": "2026-07-18",
+      "status": "experimental",
+      "trades_since": 0
+    }
+  ]
 }
