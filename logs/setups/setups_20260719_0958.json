@@ -1,0 +1,152 @@
+{
+  "run_timestamp_utc": "2026-07-19T09:58:04.128234+00:00",
+  "run_tag": "20260719_0958",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BILLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0265,
+      "entry_high": 0.0272,
+      "stop_loss": 0.0285,
+      "target_1": 0.0256,
+      "target_2": 0.0244,
+      "predicted_rr": 0.76,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h (EMA20<EMA50, ADX 30.5, +0.28R expect N=111) with price bouncing into EMA20 resistance and 15m RSI at 80.54 (overbought exhaustion)"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.55,
+          "rsi": 53.0,
+          "macd": -0.003323,
+          "macd_hist": 0.001009,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.18,
+          "range_pct": 34.53
+        },
+        "tf_1h": {
+          "adx": 26.8,
+          "rsi": 60.63,
+          "macd": 0.000555,
+          "macd_hist": 0.000139,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.19,
+          "range_pct": 17.15
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "neutral",
+      "interest_score": 6.0
+    },
+    {
+      "rank": 2,
+      "symbol": "DRAMUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 52.9,
+      "entry_high": 53.4,
+      "stop_loss": 54.6,
+      "target_1": 52.0,
+      "target_2": 51.0,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h (EMA20<EMA50, ADX 27.7) with 1h RSI at 83.58 \u2014 extreme overbought at EMA20 resistance; 1D ADX 42.6 confirms strong downtrend context"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 27.72,
+          "rsi": 60.08,
+          "macd": -1.299207,
+          "macd_hist": 0.380801,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.15,
+          "range_pct": 15.37
+        },
+        "tf_1h": {
+          "adx": 21.29,
+          "rsi": 83.58,
+          "macd": 0.198942,
+          "macd_hist": 0.126689,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.39,
+          "range_pct": 3.0
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "neutral",
+      "interest_score": null
+    },
+    {
+      "rank": 3,
+      "symbol": "SOLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 75.7,
+      "entry_high": 76.2,
+      "stop_loss": 77.0,
+      "target_1": 75.1,
+      "target_2": 74.4,
+      "predicted_rr": 0.77,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "range_reversion"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 1h (+0.81R expect); RSI rolled from 75.2 to 65.2 with ADX 33.6 on 1h; 4h ADX 15 (ranging) means compressed targets and aggressive management required"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.13,
+          "rsi": 60.38,
+          "macd": -0.215435,
+          "macd_hist": 0.166588,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.38,
+          "range_pct": 5.66
+        },
+        "tf_1h": {
+          "adx": 33.61,
+          "rsi": 65.17,
+          "macd": 0.263415,
+          "macd_hist": 0.04253,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.71,
+          "range_pct": 2.59
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "regime": "neutral",
+      "interest_score": 0.0
+    }
+  ]
+}
