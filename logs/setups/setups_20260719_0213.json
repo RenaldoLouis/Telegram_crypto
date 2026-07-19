@@ -1,0 +1,107 @@
+{
+  "run_timestamp_utc": "2026-07-19T02:13:29.856140+00:00",
+  "run_tag": "20260719_0213",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SOLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 75.8,
+      "entry_high": 76.1,
+      "stop_loss": 77.2,
+      "target_1": 74.9,
+      "target_2": 74.2,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "btc_bearish_guard",
+          "confluence_3of4",
+          "dead_cat_bounce_risk",
+          "partial_profit"
+        ],
+        "key_factor": "Backtested trend_pullback_short on 4h: EMA20<EMA50, RSI 54, ADX 15.5, near EMA20 \u2014 +0.28R expectancy, N=111, 100% robust; 15m volume spike 7.41x marks exhaustion entry zone"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.52,
+          "rsi": 54.05,
+          "macd": -0.33871,
+          "macd_hist": 0.120495,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.63,
+          "range_pct": 5.84
+        },
+        "tf_1h": {
+          "adx": 21.41,
+          "rsi": 78.11,
+          "macd": 0.186523,
+          "macd_hist": 0.090713,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.21,
+          "range_pct": 2.37
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "regime": "neutral",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "SNDKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1355.0,
+      "entry_high": 1368.0,
+      "stop_loss": 1378.0,
+      "target_1": 1344.0,
+      "target_2": 1334.0,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "confluence_3of4",
+          "btc_bearish_guard",
+          "partial_profit",
+          "medium_over_high_conf"
+        ],
+        "key_factor": "4h ADX 38.58 strong downtrend with EMA20<EMA50; 15m RSI 86.8 + volume 4.15x = exhaustion signal on counter-trend bounce against 1h/4h/1D bearish structure"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 38.58,
+          "rsi": 43.82,
+          "macd": -86.514449,
+          "macd_hist": 8.781749,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.3,
+          "range_pct": 23.3
+        },
+        "tf_1h": {
+          "adx": 17.4,
+          "rsi": 71.57,
+          "macd": -5.313095,
+          "macd_hist": 3.594173,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.25,
+          "range_pct": 1.5
+        },
+        "backtested_signal": null
+      },
+      "regime": "neutral",
+      "interest_score": null
+    }
+  ]
+}
