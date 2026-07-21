@@ -120,6 +120,9 @@ class BybitFetcher:
             "macd": round(float(latest["macd"]), 6) if pd.notna(latest["macd"]) else None,
             "macd_hist": round(float(latest["macd_hist"]), 6) if pd.notna(latest["macd_hist"]) else None,
             "range_pct": round(float((latest["high_20"] - latest["low_20"]) / latest["close"] * 100), 2) if pd.notna(latest["high_20"]) and pd.notna(latest["low_20"]) and latest["close"] > 0 else None,
+            # 20-candle range extremes — structural levels for mechanical T1 selection.
+            "high_20": round(float(latest["high_20"]), 6) if pd.notna(latest["high_20"]) else None,
+            "low_20": round(float(latest["low_20"]), 6) if pd.notna(latest["low_20"]) else None,
             "last_3_candles_pct": [
                 round(float((df.iloc[-i]["close"] - df.iloc[-i]["open"]) / df.iloc[-i]["open"] * 100), 2)
                 for i in [3, 2, 1]
@@ -135,6 +138,14 @@ class BybitFetcher:
         if divergences:
             result["divergences"] = divergences
 
+        # Nearest swing-high / swing-low pivots — structural candidate levels for
+        # mechanical T1 placement (reuses the order-3 fractal logic of divergences).
+        swing_high, swing_low = BybitFetcher._recent_swing_levels(df)
+        if swing_high is not None:
+            result["swing_high"] = round(swing_high, 6)
+        if swing_low is not None:
+            result["swing_low"] = round(swing_low, 6)
+
         return result
 
     @staticmethod
@@ -145,6 +156,8 @@ class BybitFetcher:
           - rsi_rejection_short : confirmed both 1h + 4h
           - macd_momentum_long  : confirmed both 1h + 4h
           - trend_pullback_short: 4h ONLY (1h rejected as overfit)
+          - failed_breakout_short: 4h ONLY (Phase 3; 1h only marginal) — trades a
+                                    failed breakout of the prior 20-candle high.
         macd_momentum_short removed — degraded to overfit on both TFs.
         Only called for 1h and 4h.
 
@@ -259,6 +272,33 @@ class BybitFetcher:
                 "historical": "+0.28 expect (4h test, N=111, 100% robust)",
             })
 
+        # --- Signal 4: Failed Breakout Short (4h ONLY) ---
+        # Price pokes above the prior 20-candle high intrabar then closes back
+        # below it (bull trap / upthrust). STRUCTURAL stop at the fired candle's
+        # high + 0.25 ATR, so we carry an explicit stop_price (not a flat stop_atr).
+        # Validated (Jul 2026, Phase 3): 4h test +0.120, N=75, 100% robust,
+        # params buffer_atr=0.25 / rsi_gate=45. 1h only ~MARGINAL → gated to 4h.
+        if (tf_label == "4h" and len(df) >= 22):
+            prior_high = float(df["high"].iloc[-21:-1].max())
+            atr = float(c["atr"])
+            if (float(c["high"]) > prior_high and
+                    float(c["close"]) < prior_high and
+                    float(c["close"]) < float(c["open"]) and
+                    c["rsi"] > 45 and atr > 0):
+                stop_price = float(c["high"]) + 0.25 * atr
+                risk = stop_price - float(c["close"])
+                if risk > 0:
+                    signals.append({
+                        "signal": "failed_breakout_short",
+                        "tf": tf_label,
+                        "direction": "short",
+                        "target_r": 2.0,
+                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
+                        "stop_price": round(stop_price, 8),  # exact structural stop
+                        "indicators": f"failed breakout of {prior_high:.4f}, RSI {c['rsi']:.1f}",
+                        "historical": "+0.12 expect (4h test, N=75, 100% robust)",
+                    })
+
         return signals
 
     @staticmethod
@@ -331,6 +371,34 @@ class BybitFetcher:
                         divergences.append(f"{ind_name}_h_bull")
 
         return divergences
+
+    @staticmethod
+    def _recent_swing_levels(df, order=3):
+        """Most recent swing-high and swing-low prices (order-3 fractal pivots,
+        same peak/trough definition as _detect_divergences). Structural candidate
+        levels for mechanical T1 placement. Returns (swing_high, swing_low); either
+        may be None if no pivot exists yet.
+        """
+        n = len(df)
+        if n < 2 * order + 2:
+            return None, None
+        swing_high = None
+        swing_low = None
+        # Scan from the most recent confirmable pivot backward.
+        for i in range(n - order - 1, order - 1, -1):
+            if swing_high is None and all(
+                df["high"].iat[i] > df["high"].iat[i + j]
+                for j in range(-order, order + 1) if j != 0
+            ):
+                swing_high = float(df["high"].iat[i])
+            if swing_low is None and all(
+                df["low"].iat[i] < df["low"].iat[i + j]
+                for j in range(-order, order + 1) if j != 0
+            ):
+                swing_low = float(df["low"].iat[i])
+            if swing_high is not None and swing_low is not None:
+                break
+        return swing_high, swing_low
 
     def get_klines_with_indicators(self, symbol):
         """Fetches 1h candles and calculates basic indicators (legacy single-TF)."""

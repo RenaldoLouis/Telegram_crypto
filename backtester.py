@@ -716,14 +716,14 @@ def report_version_segments(trades):
           f"expectancy {post_s['expectancy'] - pre_s['expectancy']:+.3f}R, "
           f"avg R:R {post_s['avg_rr'] - pre_s['avg_rr']:+.3f}")
 
-    # Gate-compliance audit — these should be impossible under v11.3's validate_setups.
+    # Gate-compliance audit — these should be impossible under main.py::enforce_setups.
     viol_conf = sum(1 for t in post if (t.get("tf_confluence") or 0) < config.LONG_MIN_CONFLUENCE)
     viol_44_rank1 = sum(1 for t in post
                         if str(t.get("rank")) == "1" and (t.get("tf_confluence") or 0) >= 4)
     print(f"  Gate compliance (expect 0): confluence<{config.LONG_MIN_CONFLUENCE} = {viol_conf}, "
           f"4/4-at-rank1 = {viol_44_rank1}")
     if viol_conf or viol_44_rank1:
-        print("  ⚠ A v11.3 gate is NOT being enforced — investigate main.py::validate_setups.")
+        print("  ⚠ A v11.3 gate is NOT being enforced — investigate main.py::enforce_setups.")
 
     if n_post < min_trades:
         print(f"\n  VERDICT: {ver} VALIDATING ({n_post}/{min_trades} forward trades) — too early to conclude.")

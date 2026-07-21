@@ -448,6 +448,146 @@ def signal_rsi_rejection_short(df, i):
     return None
 
 
+# ─── Phase 3 candidate signals (candle-only, testable via the slow factory path) ──
+# These trade breakout FAILURE (opposite of the continuation-style volume_breakout).
+# funding_squeeze / post_liquidation archetypes are intentionally NOT here: the
+# backtester has only OHLCV klines (no funding/OI columns), so they can't be
+# mechanized or validated in this harness.
+
+def make_failed_breakout(direction, buffer_atr=0.5, rsi_gate=50, body_confirm=True):
+    """Failed breakout / trap: price pokes beyond the prior 20-candle extreme
+    intrabar, then closes back inside — an upthrust (short) or spring (long).
+    Uses only candles <= i (no lookahead)."""
+    def signal(df, i):
+        if not _valid(df, i) or i < 21:
+            return None
+        r = df.iloc[i]
+        atr = r["atr_14"]
+        if not pd.notna(atr) or atr <= 0:
+            return None
+        window = df.iloc[i - 20:i]  # 20 candles BEFORE i
+        if direction == "short":
+            prior_high = window["high"].max()
+            body_ok = (not body_confirm) or (r["close"] < r["open"])
+            if (r["high"] > prior_high and r["close"] < prior_high and
+                    body_ok and r["rsi_14"] > rsi_gate):
+                entry = r["close"]
+                stop = r["high"] + buffer_atr * atr
+                risk = stop - entry
+                if risk <= 0:
+                    return None
+                return {"direction": "short", "entry": entry, "stop": stop, "risk": risk}
+        else:
+            prior_low = window["low"].min()
+            body_ok = (not body_confirm) or (r["close"] > r["open"])
+            if (r["low"] < prior_low and r["close"] > prior_low and
+                    body_ok and r["rsi_14"] < (100 - rsi_gate)):
+                entry = r["close"]
+                stop = r["low"] - buffer_atr * atr
+                risk = entry - stop
+                if risk <= 0:
+                    return None
+                return {"direction": "long", "entry": entry, "stop": stop, "risk": risk}
+        return None
+    return signal
+
+
+def make_liquidity_sweep(direction, pierce_atr=0.15, wick_frac=0.5, rsi_gate=50):
+    """Liquidity sweep: a wick pierces the prior 20-candle extreme by >= pierce_atr
+    ATRs (stop-hunt), the piercing wick is >= wick_frac of the candle range, and
+    price closes back inside. Distinct from failed_breakout by requiring a dominant
+    rejection wick, not just a close reclaim."""
+    def signal(df, i):
+        if not _valid(df, i) or i < 21:
+            return None
+        r = df.iloc[i]
+        atr = r["atr_14"]
+        rng = r["high"] - r["low"]
+        if not pd.notna(atr) or atr <= 0 or rng <= 0:
+            return None
+        window = df.iloc[i - 20:i]
+        if direction == "short":
+            prior_high = window["high"].max()
+            pierce = r["high"] - prior_high
+            upper_wick = r["high"] - max(r["open"], r["close"])
+            if (pierce >= pierce_atr * atr and r["close"] < prior_high and
+                    upper_wick >= wick_frac * rng and r["rsi_14"] > rsi_gate):
+                entry = r["close"]
+                stop = r["high"] + 0.25 * atr
+                risk = stop - entry
+                if risk <= 0:
+                    return None
+                return {"direction": "short", "entry": entry, "stop": stop, "risk": risk}
+        else:
+            prior_low = window["low"].min()
+            pierce = prior_low - r["low"]
+            lower_wick = min(r["open"], r["close"]) - r["low"]
+            if (pierce >= pierce_atr * atr and r["close"] > prior_low and
+                    lower_wick >= wick_frac * rng and r["rsi_14"] < (100 - rsi_gate)):
+                entry = r["close"]
+                stop = r["low"] - 0.25 * atr
+                risk = entry - stop
+                if risk <= 0:
+                    return None
+                return {"direction": "long", "entry": entry, "stop": stop, "risk": risk}
+        return None
+    return signal
+
+
+# ─── Confluence stacking ─────────────────────────────────────────────────────
+# Wrap any base signal to additionally require N-of-M same-candle confirmations
+# (trend, momentum, strength, volume). Tests the hypothesis that MORE confirmation
+# raises expectancy — validate a *_stacked variant head-to-head against its base.
+# (This is the single-TF proxy for the live multi-TF confluence gate.)
+
+def make_confluence_stack(base_signal_fn, min_confirms=2):
+    """Require >= min_confirms of {trend, macd, ADX>25, volume>1.5x} to agree with
+    the base signal's direction. Returns the base signal only if the bar is met."""
+    def signal(df, i):
+        base = base_signal_fn(df, i)
+        if base is None:
+            return None
+        r = df.iloc[i]
+        d = base["direction"]
+        confirms = 0
+        if pd.notna(r["ema_20"]) and pd.notna(r["ema_50"]):
+            if (d == "long" and r["ema_20"] > r["ema_50"]) or \
+               (d == "short" and r["ema_20"] < r["ema_50"]):
+                confirms += 1
+        if pd.notna(r["macd"]):
+            if (d == "long" and r["macd"] > 0) or (d == "short" and r["macd"] < 0):
+                confirms += 1
+        if pd.notna(r["adx_14"]) and r["adx_14"] > 25:
+            confirms += 1
+        if pd.notna(r["vol_spike"]) and r["vol_spike"] > 1.5:
+            confirms += 1
+        return base if confirms >= min_confirms else None
+    return signal
+
+
+def make_failed_breakout_stacked(direction, min_confirms=2, buffer_atr=0.5,
+                                 rsi_gate=50, body_confirm=True):
+    base = make_failed_breakout(direction, buffer_atr=buffer_atr, rsi_gate=rsi_gate,
+                                body_confirm=body_confirm)
+    return make_confluence_stack(base, min_confirms=min_confirms)
+
+
+def make_liquidity_sweep_stacked(direction, min_confirms=2, pierce_atr=0.15,
+                                 wick_frac=0.5, rsi_gate=50):
+    base = make_liquidity_sweep(direction, pierce_atr=pierce_atr, wick_frac=wick_frac,
+                                rsi_gate=rsi_gate)
+    return make_confluence_stack(base, min_confirms=min_confirms)
+
+
+# Default-param instances for normal-mode backtest (ALL_SIGNALS).
+signal_failed_breakout_long = make_failed_breakout("long")
+signal_failed_breakout_short = make_failed_breakout("short")
+signal_liquidity_sweep_long = make_liquidity_sweep("long")
+signal_liquidity_sweep_short = make_liquidity_sweep("short")
+signal_failed_breakout_short_stacked = make_failed_breakout_stacked("short")
+signal_liquidity_sweep_long_stacked = make_liquidity_sweep_stacked("long")
+
+
 # Registry of all signal rules
 ALL_SIGNALS = {
     "trend_pullback_long": signal_trend_pullback_long,
@@ -462,6 +602,12 @@ ALL_SIGNALS = {
     "macd_momentum_short": signal_macd_momentum_short,
     "rsi_bounce_long": signal_rsi_bounce_long,
     "rsi_rejection_short": signal_rsi_rejection_short,
+    "failed_breakout_long": signal_failed_breakout_long,
+    "failed_breakout_short": signal_failed_breakout_short,
+    "liquidity_sweep_long": signal_liquidity_sweep_long,
+    "liquidity_sweep_short": signal_liquidity_sweep_short,
+    "failed_breakout_short_stacked": signal_failed_breakout_short_stacked,
+    "liquidity_sweep_long_stacked": signal_liquidity_sweep_long_stacked,
 }
 
 
@@ -1111,6 +1257,56 @@ PARAM_GRIDS = {
         },
         "targets": [0.5, 0.75, 1.0, 1.5],
     },
+    # Phase 3 candidates — NO fast sweep; optimized/validated via the generic slow
+    # factory path. Grids are kept SMALL so the slow path stays practical.
+    "failed_breakout_short": {
+        "factory": lambda **kw: make_failed_breakout("short", **kw),
+        "params": {
+            "buffer_atr":  [0.25, 0.5],
+            "rsi_gate":    [45, 50, 55],
+            "body_confirm": [True, False],
+        },
+        "targets": [1.0, 1.5, 2.0],
+    },
+    "failed_breakout_long": {
+        "factory": lambda **kw: make_failed_breakout("long", **kw),
+        "params": {
+            "buffer_atr":  [0.25, 0.5],
+            "rsi_gate":    [45, 50, 55],
+            "body_confirm": [True, False],
+        },
+        "targets": [1.0, 1.5, 2.0],
+    },
+    "liquidity_sweep_short": {
+        "factory": lambda **kw: make_liquidity_sweep("short", **kw),
+        "params": {
+            "pierce_atr": [0.1, 0.2],
+            "wick_frac":  [0.4, 0.5, 0.6],
+            "rsi_gate":   [50, 55],
+        },
+        "targets": [1.0, 1.5, 2.0],
+    },
+    "liquidity_sweep_long": {
+        "factory": lambda **kw: make_liquidity_sweep("long", **kw),
+        "params": {
+            "pierce_atr": [0.1, 0.2],
+            "wick_frac":  [0.4, 0.5, 0.6],
+            "rsi_gate":   [50, 55],
+        },
+        "targets": [1.0, 1.5, 2.0],
+    },
+    # Confluence-stacked variants — sweep min_confirms to test whether requiring
+    # more same-candle confirmation raises expectancy vs the un-stacked base.
+    "failed_breakout_short_stacked": {
+        "factory": lambda **kw: make_failed_breakout_stacked("short", **kw),
+        "params": {"min_confirms": [1, 2, 3], "buffer_atr": [0.5], "rsi_gate": [50]},
+        "targets": [1.0, 1.5, 2.0],
+    },
+    "liquidity_sweep_long_stacked": {
+        "factory": lambda **kw: make_liquidity_sweep_stacked("long", **kw),
+        "params": {"min_confirms": [1, 2, 3], "wick_frac": [0.5], "rsi_gate": [50]},
+        "targets": [1.0, 1.5, 2.0],
+    },
 }
 
 
@@ -1419,8 +1615,29 @@ FAST_SWEEP_MAP = {
 }
 
 
+def _eval_combo(signal_name, grid, params, targets, cooldown, eval_window,
+                fast_arrs=None, dfs=None):
+    """Return trades for ONE parameter combo. Uses the fast vectorized sweep when
+    the signal has one AND fast_arrs is supplied; otherwise builds the signal from
+    its `factory` and runs the generic (slower) backtest over `dfs`. This is what
+    lets NEW signals be optimized/validated without a hand-written numpy sweep.
+    """
+    if signal_name in FAST_SWEEP_MAP and fast_arrs is not None:
+        sweep_fn, direction = FAST_SWEEP_MAP[signal_name]
+        return sweep_fn(fast_arrs, direction, params, targets, cooldown, eval_window)
+    factory = grid.get("factory")
+    if factory is None or dfs is None:
+        return []
+    sig_fn = factory(**params)
+    trades = []
+    for symbol, df in dfs.items():
+        trades.extend(run_backtest(df, symbol, {signal_name: sig_fn}, targets, cooldown, eval_window))
+    return trades
+
+
 def run_param_sweep(dfs, signal_name, grid, cooldown=12, eval_window=48, min_trades=15):
-    """Sweep all parameter combinations using fast numpy-based evaluation."""
+    """Sweep all parameter combinations. Fast numpy sweep when available, else the
+    generic factory path (for signals without a vectorized sweep)."""
     param_names = list(grid["params"].keys())
     param_values = [grid["params"][k] for k in param_names]
     targets = grid["targets"]
@@ -1431,15 +1648,15 @@ def run_param_sweep(dfs, signal_name, grid, cooldown=12, eval_window=48, min_tra
 
     print(f"\n  Sweeping {signal_name}: {total_combos} param combos × {len(targets)} targets")
 
-    # Pre-compute numpy arrays for all symbols
-    arrs = [_precompute_arrays(df) for df in dfs.values()]
-
-    # Get fast sweep function
-    if signal_name not in FAST_SWEEP_MAP:
-        print(f"  No fast sweep for '{signal_name}', skipping.")
+    has_fast = signal_name in FAST_SWEEP_MAP
+    if not has_fast and grid.get("factory") is None:
+        print(f"  No fast sweep or factory for '{signal_name}', skipping.")
         return []
+    if not has_fast:
+        print(f"  (slow factory path — no vectorized sweep for '{signal_name}')")
 
-    sweep_fn, direction = FAST_SWEEP_MAP[signal_name]
+    # Fast path pre-computes numpy arrays; slow path works directly on DataFrames.
+    arrs = [_precompute_arrays(df) for df in dfs.values()] if has_fast else None
 
     results = []
     tested = 0
@@ -1451,8 +1668,8 @@ def run_param_sweep(dfs, signal_name, grid, cooldown=12, eval_window=48, min_tra
         if "rsi_lo" in params and "rsi_hi" in params and params["rsi_lo"] >= params["rsi_hi"]:
             continue
 
-        # Run fast sweep
-        all_trades = sweep_fn(arrs, direction, params, targets, cooldown, eval_window)
+        all_trades = _eval_combo(signal_name, grid, params, targets,
+                                 cooldown, eval_window, fast_arrs=arrs, dfs=dfs)
 
         # Group by target and record stats
         for tr in targets:
@@ -1631,22 +1848,30 @@ def run_validation(dfs_all, signal_names, cooldown, eval_window, min_trades, spl
     print(f"  Split: {split_ratio*100:.0f}% train / {(1-split_ratio)*100:.0f}% test")
     print(f"  If test expectancy drops to 0 or negative → overfit, discard.\n")
 
-    # Split all DataFrames
+    # Split all DataFrames — numpy arrays for the fast path, DataFrame slices for
+    # the generic slow (factory) path. Slices keep the indicators already computed
+    # on the full history.
     train_arrs, test_arrs = [], []
-    for df in dfs_all.values():
+    train_dfs, test_dfs = {}, {}
+    for sym, df in dfs_all.items():
         arr = _precompute_arrays(df)
         train, test = _split_arrays(arr, split_ratio)
         train_arrs.append(train)
         test_arrs.append(test)
+        split_idx = int(len(df) * split_ratio)
+        train_dfs[sym] = df.iloc[:split_idx].reset_index(drop=True)
+        test_dfs[sym] = df.iloc[split_idx:].reset_index(drop=True)
 
     validated = []
 
     for sig_name in signal_names:
-        if sig_name not in PARAM_GRIDS or sig_name not in FAST_SWEEP_MAP:
+        if sig_name not in PARAM_GRIDS:
+            continue
+        grid = PARAM_GRIDS[sig_name]
+        has_fast = sig_name in FAST_SWEEP_MAP
+        if not has_fast and grid.get("factory") is None:
             continue
 
-        grid = PARAM_GRIDS[sig_name]
-        sweep_fn, direction = FAST_SWEEP_MAP[sig_name]
         param_names = list(grid["params"].keys())
         param_values = [grid["params"][k] for k in param_names]
         targets = grid["targets"]
@@ -1657,7 +1882,8 @@ def run_validation(dfs_all, signal_names, cooldown, eval_window, min_trades, spl
             params = dict(zip(param_names, values))
             if "rsi_lo" in params and "rsi_hi" in params and params["rsi_lo"] >= params["rsi_hi"]:
                 continue
-            trades = sweep_fn(train_arrs, direction, params, targets, cooldown, eval_window)
+            trades = _eval_combo(sig_name, grid, params, targets, cooldown, eval_window,
+                                 fast_arrs=train_arrs if has_fast else None, dfs=train_dfs)
             for tr in targets:
                 tr_trades = [t for t in trades if t["target_r"] == tr]
                 if len(tr_trades) < max(8, min_trades // 2):  # lower bar for train half
@@ -1683,7 +1909,8 @@ def run_validation(dfs_all, signal_names, cooldown, eval_window, min_trades, spl
             ts = train_r["stats"]
 
             # === TEST: evaluate same params on unseen data ===
-            test_trades = sweep_fn(test_arrs, direction, params, [tr], cooldown, eval_window)
+            test_trades = _eval_combo(sig_name, grid, params, [tr], cooldown, eval_window,
+                                      fast_arrs=test_arrs if has_fast else None, dfs=test_dfs)
             test_s = compute_stats(test_trades)
 
             # Verdict
@@ -1753,6 +1980,123 @@ def run_validation(dfs_all, signal_names, cooldown, eval_window, min_trades, spl
     return validated
 
 
+def _slice_arrays(arr, start_frac, end_frac):
+    """Slice precomputed arrays to the [start_frac, end_frac) index window."""
+    n = arr["n"]
+    a, b = int(n * start_frac), int(n * end_frac)
+    out = {}
+    for key, val in arr.items():
+        if key == "n":
+            out["n"] = max(0, b - a)
+        elif isinstance(val, np.ndarray):
+            out[key] = val[a:b]
+        else:
+            out[key] = val
+    return out
+
+
+def run_walkforward(dfs_all, signal_names, cooldown, eval_window, min_trades,
+                    n_windows=4, train_frac=0.5):
+    """Walk-forward validation: slide successive out-of-sample TEST windows across
+    the tail of the data, each preceded by an expanding TRAIN window. A signal is
+    ROBUST only if it holds up across MOST windows — a stronger bar than a single
+    60/40 split, which can get lucky on one cut.
+
+    For window w: train on [0, train_frac + w·step), test on the next step-slice.
+    Best train params (by expectancy) are carried to that window's test slice.
+    Uses the fast sweep when available, else the generic factory path.
+    """
+    section("WALK-FORWARD VALIDATION (rolling out-of-sample windows)")
+    print(f"  {n_windows} windows, expanding train from {train_frac*100:.0f}%. "
+          f"A signal must PASS a majority of windows to be considered robust.\n")
+
+    precomp = {sym: _precompute_arrays(df) for sym, df in dfs_all.items()}
+    step = (1.0 - train_frac) / n_windows
+    summary = []
+
+    for sig_name in signal_names:
+        if sig_name not in PARAM_GRIDS:
+            continue
+        grid = PARAM_GRIDS[sig_name]
+        has_fast = sig_name in FAST_SWEEP_MAP
+        if not has_fast and grid.get("factory") is None:
+            continue
+        param_names = list(grid["params"].keys())
+        param_values = [grid["params"][k] for k in param_names]
+        targets = grid["targets"]
+
+        window_rows = []
+        for w in range(n_windows):
+            tr_end = train_frac + step * w
+            te_end = train_frac + step * (w + 1)
+
+            # Build this window's train/test data (both representations).
+            train_arrs = [_slice_arrays(precomp[s], 0.0, tr_end) for s in dfs_all]
+            test_arrs = [_slice_arrays(precomp[s], tr_end, te_end) for s in dfs_all]
+            train_dfs, test_dfs = {}, {}
+            for sym, df in dfs_all.items():
+                n = len(df)
+                train_dfs[sym] = df.iloc[:int(n * tr_end)].reset_index(drop=True)
+                test_dfs[sym] = df.iloc[int(n * tr_end):int(n * te_end)].reset_index(drop=True)
+
+            # Optimize on train.
+            best = None
+            for values in product(*param_values):
+                params = dict(zip(param_names, values))
+                if "rsi_lo" in params and "rsi_hi" in params and params["rsi_lo"] >= params["rsi_hi"]:
+                    continue
+                trades = _eval_combo(sig_name, grid, params, targets, cooldown, eval_window,
+                                     fast_arrs=train_arrs if has_fast else None, dfs=train_dfs)
+                for tr in targets:
+                    tt = [t for t in trades if t["target_r"] == tr]
+                    if len(tt) < max(6, min_trades // 2):
+                        continue
+                    s = compute_stats(tt)
+                    if best is None or s["expectancy"] > best["stats"]["expectancy"]:
+                        best = {"params": dict(params), "target_r": tr, "stats": s}
+
+            if best is None:
+                window_rows.append(None)
+                continue
+
+            # Test the winning params on the unseen window.
+            tt = _eval_combo(sig_name, grid, best["params"], [best["target_r"]],
+                             cooldown, eval_window,
+                             fast_arrs=test_arrs if has_fast else None, dfs=test_dfs)
+            ts = compute_stats(tt)
+            passed = ts["n"] >= 5 and ts["expectancy"] > 0 and ts["pf"] > 1.0
+            window_rows.append({"train": best, "test": ts, "passed": passed})
+
+        valid = [v for v in window_rows if v]
+        n_pass = sum(1 for v in valid if v["passed"])
+        avg_test_exp = (sum(v["test"]["expectancy"] for v in valid) / len(valid)) if valid else 0.0
+
+        print(f"  {sig_name}:  passed {n_pass}/{len(valid)} windows, "
+              f"avg test expectancy {avg_test_exp:+.3f}R")
+        for w, v in enumerate(window_rows, 1):
+            if v is None:
+                print(f"    window {w}: (no viable train combos)")
+            else:
+                mark = "✓" if v["passed"] else "✗"
+                print(f"    window {w}: {mark} test {v['test']['n']}t "
+                      f"WR {v['test']['wr']:.0f}% exp {v['test']['expectancy']:+.3f} "
+                      f"PF {v['test']['pf']}  (target {v['train']['target_r']}R)")
+        summary.append((sig_name, n_pass, len(valid), avg_test_exp))
+
+    section("WALK-FORWARD SUMMARY (robust across windows)")
+    if not summary:
+        print("  No signals evaluated.")
+        return summary
+    print(f"  {'Signal':<28s} {'Pass/Win':>9s} {'AvgTestExp':>11s}  {'Robust?'}")
+    print("  " + "─" * 60)
+    for sig_name, n_pass, n_win, avg in sorted(summary, key=lambda x: x[3], reverse=True):
+        robust = n_win > 0 and n_pass >= (n_win + 1) // 2 and avg > 0
+        print(f"  {sig_name:<28s} {f'{n_pass}/{n_win}':>9s} {avg:>+10.3f}  "
+              f"{'★ ROBUST' if robust else '—'}")
+    print(f"\n  Only signals ROBUST across a majority of windows should go live.")
+    return summary
+
+
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main():
@@ -1787,6 +2131,10 @@ def main():
                         help="Show top N results per signal in optimize (default: 20)")
     parser.add_argument("--full", action="store_true",
                         help="Full pipeline: validate on 4h + 1h (15 symbols, fresh data) + eval combo analysis")
+    parser.add_argument("--walkforward", type=str, default="",
+                        help="Walk-forward validation across rolling windows. Signal names or 'all'")
+    parser.add_argument("--wf-windows", type=int, default=4,
+                        help="Number of walk-forward windows (default: 4)")
     args = parser.parse_args()
 
     # ── Full pipeline mode: validate both TFs + eval combo ──
@@ -1963,6 +2311,35 @@ def main():
 
         run_validation(dfs, val_signals, args.cooldown, args.eval_window,
                        args.min_trades, args.split)
+        print()
+        sys.exit(0)
+
+    # ── Walk-forward mode: rolling out-of-sample windows ──
+    if args.walkforward:
+        if args.walkforward.lower() == "all":
+            wf_signals = list(PARAM_GRIDS.keys())
+        else:
+            wf_signals = []
+            for name in args.walkforward.split(","):
+                name = name.strip()
+                for grid_name in PARAM_GRIDS:
+                    if name in grid_name:
+                        wf_signals.append(grid_name)
+            if not wf_signals:
+                print(f"  No grids matched '{args.walkforward}'")
+                sys.exit(1)
+
+        dfs = {}
+        for sym in symbols:
+            candles = fetch_klines(sym, interval, limit, use_cache=not args.no_cache)
+            if candles and len(candles) >= 100:
+                dfs[sym] = compute_indicators_df(candles)
+        if not dfs:
+            print("  No valid data for walk-forward.")
+            sys.exit(1)
+
+        run_walkforward(dfs, wf_signals, args.cooldown, args.eval_window,
+                        args.min_trades, n_windows=args.wf_windows, train_frac=args.split)
         print()
         sys.exit(0)
 

@@ -8,7 +8,8 @@ import config
 from fetchers.bybit_data import BybitFetcher
 from fetchers.telegram_reader import TelegramReader
 from analyzer.claude_client import ClaudeAnalyzer
-from delivery.telegram_bot import send_brief
+from delivery.telegram_bot import send_brief, format_mechanical_brief
+from mechanical_setups import build_mechanical_setups
 
 
 def parse_setups_json(brief_text):
@@ -78,107 +79,149 @@ def enrich_with_entry_indicators(setups, technicals):
     return setups
 
 
-def validate_setups(setups, regime_label):
-    """Pure Python validation of Claude's setup output against hard rules.
+# Symbols with a deeply negative long history (237-trade backtest).
+LONG_BLACKLIST = {"ENAUSDT", "ETHUSDT", "HBARUSDT", "WLDUSDT",
+                  "HYPEUSDT", "ONDOUSDT", "LABUSDT"}
+VALID_SETUP_TYPES = {
+    "trend_pullback", "range_breakout", "wyckoff_spring",
+    "liquidity_sweep", "funding_squeeze", "post_liquidation",
+    "failed_breakout", "range_mean_reversion", "recovery_bounce", "other",
+}
+REGIME_COUNT_LIMITS = {"risk_off": 2, "cautious": 3, "neutral": 3, "risk_on": 5}
 
-    Catches obvious violations that Claude's output should never have.
-    Returns list of violation strings (empty = all good).
+
+def _rank_key(s):
+    """Sort key on the setup's rank; missing/garbage ranks sort last."""
+    try:
+        return int(s.get("rank", 999))
+    except (TypeError, ValueError):
+        return 999
+
+
+def setup_violations(setup, regime_label):
+    """Per-setup BLOCKING checks. A non-empty return means the setup is dropped
+    by enforce_setups(). Cross-setup rules (count cap, dedupe, long cap, 4/4-rank-1)
+    live in enforce_setups, not here.
     """
     violations = []
+    sym = setup.get("symbol", "?")
+    direction = setup.get("direction")
 
-    valid_types = {
-        "trend_pullback", "range_breakout", "wyckoff_spring",
-        "liquidity_sweep", "funding_squeeze", "post_liquidation",
-        "failed_breakout", "range_mean_reversion", "recovery_bounce", "other",
-    }
-    regime_limits = {"risk_off": 2, "cautious": 3, "neutral": 3, "risk_on": 5}
-    max_setups = regime_limits.get(regime_label, 3)
+    # T1 must be a partial-profit level at 0.75-1.0R, NOT the 1.5R edge level.
+    # (The 1.5:1 minimum edge now lives on target_2 — see below.)
+    pr = setup.get("predicted_rr", 0)
+    if pr > 1.1:  # small tolerance over the 1.0R cap
+        violations.append(f"predicted_rr {pr} exceeds 1.0R T1 cap (T1 too far)")
 
-    if len(setups) > max_setups:
+    # target_2 carries the 1.5:1 edge floor. Compute R:R to T2 from mid-entry.
+    try:
+        entry_mid = (float(setup["entry_low"]) + float(setup["entry_high"])) / 2
+        risk = abs(entry_mid - float(setup["stop_loss"]))
+        t2 = float(setup["target_2"])
+        if risk > 0:
+            t2_rr = (t2 - entry_mid) / risk if direction == "long" else (entry_mid - t2) / risk
+            if t2_rr < 1.4:  # small tolerance under the 1.5 floor
+                violations.append(f"R:R to target_2 {t2_rr:.2f} below 1.5 edge floor")
+        else:
+            violations.append("zero risk (entry == stop)")
+    except (KeyError, TypeError, ValueError):
+        violations.append("missing/invalid price fields for R:R check")
+
+    # Long volume gate: every long must have volume confirmation.
+    if direction == "long" and not setup.get("volume_confirmed", False):
+        violations.append("LONG without volume_confirmed (long volume gate)")
+    if direction == "long" and sym in LONG_BLACKLIST:
+        violations.append("LONG on blacklisted symbol (negative long history)")
+    # Confluence floor (audit 2026-07-13): the 2/4 bucket loses in BOTH directions
+    # (2/4 long -0.66R/18t, 2/4 short -0.80R/5t; conf=2 overall 9% WR over 23 trades).
+    # 3/4 is the empirical sweet spot, so require >= 3/4 for ANY setup.
+    if setup.get("tf_confluence", 0) < config.LONG_MIN_CONFLUENCE:
         violations.append(
-            f"COUNT EXCEEDS REGIME LIMIT: {len(setups)} setups > {regime_label} max {max_setups}"
+            f"tf_confluence {setup.get('tf_confluence', 0)} "
+            f"< {config.LONG_MIN_CONFLUENCE} (confluence floor — 2/4 loses in both directions)"
         )
 
-    # Symbols with a deeply negative long history (237-trade backtest).
-    long_blacklist = {"ENAUSDT", "ETHUSDT", "HBARUSDT", "WLDUSDT",
-                      "HYPEUSDT", "ONDOUSDT", "LABUSDT"}
-
-    for s in setups:
-        sym = s.get("symbol", "?")
-        direction = s.get("direction")
-
-        # T1 must be a partial-profit level at 0.75-1.0R, NOT the 1.5R edge level.
-        # (The 1.5:1 minimum edge now lives on target_2 — see below.)
-        pr = s.get("predicted_rr", 0)
-        if pr > 1.1:  # small tolerance over the 1.0R cap
-            violations.append(f"{sym}: predicted_rr {pr} exceeds 1.0R T1 cap (T1 too far)")
-
-        # target_2 carries the 1.5:1 edge floor. Compute R:R to T2 from mid-entry.
-        try:
-            entry_mid = (float(s["entry_low"]) + float(s["entry_high"])) / 2
-            risk = abs(entry_mid - float(s["stop_loss"]))
-            t2 = float(s["target_2"])
-            if risk > 0:
-                t2_rr = (t2 - entry_mid) / risk if direction == "long" else (entry_mid - t2) / risk
-                if t2_rr < 1.4:  # small tolerance under the 1.5 floor
-                    violations.append(f"{sym}: R:R to target_2 {t2_rr:.2f} below 1.5 edge floor")
-        except (KeyError, TypeError, ValueError):
-            violations.append(f"{sym}: missing/invalid price fields for R:R check")
-
-        # Long volume gate: every long must have volume confirmation.
-        if direction == "long" and not s.get("volume_confirmed", False):
-            violations.append(f"{sym}: LONG without volume_confirmed (long volume gate)")
-        if direction == "long" and sym in long_blacklist:
-            violations.append(f"{sym}: LONG on blacklisted symbol (negative long history)")
-        # Confluence floor (audit 2026-07-13): the 2/4 bucket loses in BOTH directions
-        # (2/4 long -0.66R/18t, 2/4 short -0.80R/5t; conf=2 overall 9% WR over 23 trades).
-        # 3/4 is the empirical sweet spot, so require >= 3/4 for ANY setup. This subsumes the
-        # earlier long-only gate. audit 2026-07-13
-        if s.get("tf_confluence", 0) < config.LONG_MIN_CONFLUENCE:
-            violations.append(
-                f"{sym}: {direction} with tf_confluence {s.get('tf_confluence', 0)} "
-                f"< {config.LONG_MIN_CONFLUENCE} (confluence floor — 2/4 loses in both directions)"
-            )
-
-        if s.get("setup_type") not in valid_types:
-            violations.append(f"{sym}: unknown setup_type '{s.get('setup_type')}'")
-        if direction not in ("long", "short"):
-            violations.append(f"{sym}: invalid direction '{s.get('direction')}'")
-        if s.get("timeframe") not in ("scalp", "intraday"):
-            violations.append(f"{sym}: invalid timeframe '{s.get('timeframe')}'")
-
-    # Confluence de-trust (audit 2026-07-13): 4/4 confluence is the WORST bucket (57 trades,
-    # 18% WR, -0.36R exp, PF 0.44). Counterfactual: never ranking a 4/4 setup #1 moves the book
-    # from -23R to -13R. A 4/4 setup entered on a fresh pullback can still be valid, but it must
-    # NOT be the anchor/#1 pick just for being fully aligned (= usually a late, extended move).
-    for s in setups:
-        if str(s.get("rank")) == "1" and (s.get("tf_confluence") or 0) >= 4:
-            violations.append(
-                f"{s.get('symbol','?')}: 4/4-confluence setup ranked #1 "
-                "(4/4 = late/extended move; do not anchor on it — rank it #2+ or replace)"
-            )
-
-    symbols = [s.get("symbol") for s in setups]
-    dupes = {sym for sym in symbols if symbols.count(sym) > 1}
-    if dupes:
-        violations.append(f"DUPLICATE SYMBOLS: {dupes}")
-
-    if regime_label == "risk_off" and len(setups) > 0:
-        shorts = [s for s in setups if s.get("direction") == "short"]
-        if not shorts:
-            violations.append("RISK_OFF: no short setup included (at least 1 required)")
-
-    # Regime-aware long cap (audit 2026-07-13): longs are the entire net loss (-33R/29% WR);
-    # outside a confirmed risk_on rally, limit how many longs a single run may hold.
-    longs = [s for s in setups if s.get("direction") == "long"]
-    long_cap = config.LONG_CAP_BY_REGIME.get(regime_label, 2)
-    if len(longs) > long_cap:
-        violations.append(
-            f"TOO MANY LONGS: {len(longs)} longs > {regime_label} long cap {long_cap} "
-            "(longs run 29% WR / -33R; prefer shorts outside risk_on)"
-        )
+    if setup.get("setup_type") not in VALID_SETUP_TYPES:
+        violations.append(f"unknown setup_type '{setup.get('setup_type')}'")
+    if direction not in ("long", "short"):
+        violations.append(f"invalid direction '{setup.get('direction')}'")
+    if setup.get("timeframe") not in ("scalp", "intraday"):
+        violations.append(f"invalid timeframe '{setup.get('timeframe')}'")
 
     return violations
+
+
+def _demote_4of4_from_top(setups):
+    """Confluence de-trust (audit 2026-07-13): 4/4 confluence is the WORST bucket
+    (57 trades, 18% WR, -0.36R exp). Never anchor a run on a fully-aligned (=late,
+    extended) setup. If the #1 slot is a 4/4, swap in the first sub-4/4 setup.
+    `setups` must already be sorted by rank ascending. Mutates order, returns list.
+    """
+    if setups and (setups[0].get("tf_confluence") or 0) >= 4:
+        for i, s in enumerate(setups):
+            if (s.get("tf_confluence") or 0) < 4:
+                setups.insert(0, setups.pop(i))
+                print(f"  ↕ DEMOTE {setups[1].get('symbol','?')}: 4/4 setup can't be rank #1 "
+                      "(4/4 = late/extended move)")
+                break
+    return setups
+
+
+def enforce_setups(setups, regime_label):
+    """Drop rule-breaking setups and apply cross-setup trims, returning the kept
+    list (re-ranked 1..N). This REPLACES the old log-only validate_setups: violators
+    are now actually removed, so the deterministic risk layer is an enforcer, not a
+    logger. Applied to whichever source is the delivered output.
+    """
+    # 1. Drop per-setup violators.
+    kept = []
+    for s in setups:
+        v = setup_violations(s, regime_label)
+        if v:
+            print(f"  ✂ DROP {s.get('symbol','?')} ({s.get('direction','?')}): {'; '.join(v)}")
+            continue
+        kept.append(s)
+
+    # 2. Dedupe by symbol — keep the best-ranked instance.
+    seen = {}
+    for s in sorted(kept, key=_rank_key):
+        sym = s.get("symbol")
+        if sym in seen:
+            print(f"  ✂ DROP {sym}: duplicate symbol (kept better-ranked instance)")
+            continue
+        seen[sym] = s
+    kept = list(seen.values())
+
+    # 3. Regime-aware long cap (audit 2026-07-13): longs are the entire net loss
+    # (-33R / 29% WR); outside a confirmed risk_on rally, cap longs per run.
+    long_cap = config.LONG_CAP_BY_REGIME.get(regime_label, 2)
+    longs_sorted = sorted((s for s in kept if s.get("direction") == "long"), key=_rank_key)
+    if len(longs_sorted) > long_cap:
+        keep_ids = {id(s) for s in longs_sorted[:long_cap]}
+        for s in longs_sorted[long_cap:]:
+            print(f"  ✂ DROP {s.get('symbol','?')}: long cap {long_cap} for {regime_label} "
+                  "(longs run 29% WR / -33R; prefer shorts outside risk_on)")
+        kept = [s for s in kept if s.get("direction") != "long" or id(s) in keep_ids]
+
+    # 4. Regime count cap — keep the top-N by rank.
+    max_setups = REGIME_COUNT_LIMITS.get(regime_label, 3)
+    kept = sorted(kept, key=_rank_key)
+    if len(kept) > max_setups:
+        for s in kept[max_setups:]:
+            print(f"  ✂ DROP {s.get('symbol','?')}: exceeds {regime_label} max {max_setups}")
+        kept = kept[:max_setups]
+
+    # 5. 4/4-at-rank-1 demotion (re-rank, do not drop), then renumber 1..N.
+    kept = _demote_4of4_from_top(kept)
+    for i, s in enumerate(kept, 1):
+        s["rank"] = i
+
+    # 6. Advisory only (cannot be auto-fixed): risk_off with no short. The mechanical
+    # path cannot fabricate a short, so this is a warning, not a drop.
+    if regime_label == "risk_off" and kept and not any(s.get("direction") == "short" for s in kept):
+        print("  ⚠ risk_off: no short setup in output (advisory — none available to include)")
+
+    return kept
 
 
 def strip_pre_analysis(brief_text):
@@ -194,87 +237,121 @@ def strip_pre_analysis(brief_text):
     return brief_text
 
 
+def _stamp_setups(setups, regime_label, interest_scores, source):
+    """Stamp source/regime/interest_score/model and normalize rules_applied to the
+    canonical taxonomy. Idempotent — safe to call on either source's setups.
+    """
+    for s in setups:
+        s["source"] = source
+        s["regime"] = regime_label
+        s["model"] = config.MECHANICAL_MODEL_TAG if source == "mechanical" else config.CLAUDE_MODEL
+        if s.get("interest_score") is None:
+            s["interest_score"] = interest_scores.get(s.get("symbol"))
+        reasoning = s.get("reasoning") or {}
+        applied = reasoning.get("rules_applied", []) or []
+        canonical = [r for r in applied if r in config.CANONICAL_RULES]
+        dropped = [r for r in applied if r not in config.CANONICAL_RULES]
+        if dropped:
+            print(f"    - {s.get('symbol','?')}: dropped non-canonical rule IDs {dropped}")
+        reasoning["rules_applied"] = canonical
+        s["reasoning"] = reasoning
+
+
+def _prepare_source(setups, regime_label, interest_scores, technicals, source):
+    """Shared pipeline for either source: enrich → enforce → stamp. Returns kept."""
+    enrich_with_entry_indicators(setups, technicals)
+    before = len(setups)
+    kept = enforce_setups(setups, regime_label)
+    if len(kept) != before:
+        print(f"  [{source}] enforcement kept {len(kept)}/{before} setups")
+    _stamp_setups(kept, regime_label, interest_scores, source)
+    return kept
+
+
 async def run_screener():
     print(f"[{datetime.now()}] Starting screener run...")
     run_ts = datetime.now(timezone.utc)
     run_tag = run_ts.strftime("%Y%m%d_%H%M")
 
-    # 1. Fetch market data
+    # 1. Fetch market data (required for BOTH the mechanical and Claude paths).
     print("→ Fetching Bybit data...")
     bybit = BybitFetcher()
     market = bybit.get_full_market_snapshot()
     print(f"  Got {len(market['top_movers'])} movers (from 50), {len(market['technicals'])} with multi-TF data")
+    regime_info = market.get("market_regime") or {}
+    regime_label = regime_info.get("regime", "neutral")
+    interest_scores = market.get("interest_scores", {}) or {}
+    technicals = market.get("technicals", [])
 
-    # 2. Fetch Telegram signals
-    print("→ Reading Telegram groups...")
-    tg = TelegramReader()
-    messages = await tg.read_groups()
-    print(f"  Got {len(messages)} messages")
+    # 2. PRIMARY: mechanical setups — built FIRST, with ZERO dependency on Claude.
+    # This guarantees a scan always produces output even if Claude is down.
+    print("→ Building mechanical setups (primary)...")
+    mechanical = _prepare_source(
+        build_mechanical_setups(market), regime_label, interest_scores, technicals, "mechanical"
+    )
+    print(f"  Mechanical: {len(mechanical)} setups (regime: {regime_label})")
 
-    # 3. Analyze with Claude
-    print("→ Calling Claude...")
-    analyzer = ClaudeAnalyzer()
-    brief, usage = analyzer.analyze(market, messages)
-    print(f"  Used {usage['input_tokens']}+{usage['output_tokens']} tokens")
+    # 3. SHADOW: Claude — wrapped so ANY failure (quota, $ cap, timeout, API/network
+    # error) degrades to mechanical-only instead of crashing the scan.
+    claude_setups, brief, usage = [], None, None
+    try:
+        print("→ Reading Telegram groups...")
+        tg = TelegramReader()
+        messages = await tg.read_groups()
+        print(f"  Got {len(messages)} messages")
 
-    # 4. Parse structured setups from Claude's output
-    setups = parse_setups_json(brief)
-    if setups:
-        # Extract regime for tracking (self-learning)
-        regime_info = market.get("market_regime", {})
-        regime_label = regime_info.get("regime", "neutral") if regime_info else "neutral"
+        print("→ Calling Claude (shadow)...")
+        analyzer = ClaudeAnalyzer()
+        brief, usage = analyzer.analyze(market, messages)
+        print(f"  Used {usage['input_tokens']}+{usage['output_tokens']} tokens")
 
-        # Attach entry-time indicator snapshot for later analysis (instrumentation only)
-        enrich_with_entry_indicators(setups, market.get("technicals", []))
+        parsed = parse_setups_json(brief) or []
+        if parsed:
+            claude_setups = _prepare_source(
+                parsed, regime_label, interest_scores, technicals, "claude"
+            )
+    except Exception as e:
+        print(f"  ⚠ Claude shadow failed ({type(e).__name__}: {e}) — continuing mechanical-only")
 
-        # Validate setups against hard rules
-        violations = validate_setups(setups, regime_label)
-        if violations:
-            print("  ⚠️ Setup violations detected:")
-            for v in violations:
-                print(f"    - {v}")
-
-        # Normalize rules_applied to canonical taxonomy + stamp per-setup regime so the
-        # self-learning attribution stays meaningful and regime survives to eval. audit 2026-07-13
-        interest_scores = market.get("interest_scores", {}) or {}
-        for s in setups:
-            s["regime"] = regime_label
-            # Instrumentation: attach the pre-filter interest score so eval can correlate
-            # selection score -> outcome (audit 2026-07-13).
-            s["interest_score"] = interest_scores.get(s.get("symbol"))
-            reasoning = s.get("reasoning") or {}
-            applied = reasoning.get("rules_applied", []) or []
-            canonical = [r for r in applied if r in config.CANONICAL_RULES]
-            dropped = [r for r in applied if r not in config.CANONICAL_RULES]
-            if dropped:
-                print(f"    - {s.get('symbol','?')}: dropped non-canonical rule IDs {dropped}")
-            reasoning["rules_applied"] = canonical
-            s["reasoning"] = reasoning
-
+    # 4. Persist BOTH sources to one file, each tagged `source` (head-to-head data).
+    all_setups = mechanical + claude_setups
+    if all_setups:
         setups_dir = Path("logs/setups")
         setups_dir.mkdir(parents=True, exist_ok=True)
         setup_record = {
             "run_timestamp_utc": run_ts.isoformat(),
             "run_tag": run_tag,
-            "model": config.CLAUDE_MODEL,
+            "model": config.CLAUDE_MODEL,            # kept for backward-compat (Claude era)
+            "mechanical_model": config.MECHANICAL_MODEL_TAG,
+            "primary_source": config.PRIMARY_SOURCE,
             "regime": regime_label,
-            "setups": setups,
+            "sources": {"mechanical": len(mechanical), "claude": len(claude_setups)},
+            "setups": all_setups,
         }
         setup_file = setups_dir / f"setups_{run_tag}.json"
         setup_file.write_text(json.dumps(setup_record, indent=2), encoding="utf-8")
-        print(f"  Saved {len(setups)} setups to {setup_file} (regime: {regime_label})")
+        print(f"  Saved {len(all_setups)} setups "
+              f"(mechanical={len(mechanical)}, claude={len(claude_setups)}) to {setup_file}")
     else:
-        print("  No structured setups saved (parse failed or missing)")
+        print("  No setups from either source this run")
 
-    # 5. Archive the brief (without JSON block or pre-analysis notes)
+    # 5. Decide what to DELIVER. Mechanical when it's primary OR when Claude failed.
+    deliver_mechanical = (config.PRIMARY_SOURCE == "mechanical") or (brief is None)
+    if deliver_mechanical:
+        reason = "PRIMARY_SOURCE=mechanical" if config.PRIMARY_SOURCE == "mechanical" else "Claude unavailable"
+        print(f"→ Delivering MECHANICAL brief ({reason})...")
+        clean_brief = format_mechanical_brief(mechanical, regime_label)
+    else:
+        print("→ Delivering CLAUDE brief (shadow mode)...")
+        clean_brief = strip_pre_analysis(strip_json_block(brief))
+
+    # 6. Archive + deliver.
     archive_path = Path("logs/briefs")
     archive_path.mkdir(parents=True, exist_ok=True)
-    clean_brief = strip_pre_analysis(strip_json_block(brief))
     fname = archive_path / f"brief_{run_tag}.md"
     fname.write_text(clean_brief, encoding="utf-8")
     print(f"  Archived to {fname}")
 
-    # 6. Deliver via Telegram (clean brief only)
     print("→ Sending to Telegram...")
     send_brief(clean_brief, usage)
 

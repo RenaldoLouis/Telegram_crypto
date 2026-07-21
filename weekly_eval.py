@@ -374,11 +374,15 @@ def run_evaluation():
             setups = record["setups"]
             print(f"\nEvaluating {run_tag} [{model}] ({len(setups)} setups)...")
 
-            # Find already-evaluated symbols for this run (from partial eval)
+            # Find already-evaluated (symbol, source) pairs for this run (from partial
+            # eval). Keyed on BOTH because one run can now carry the same symbol from
+            # mechanical AND claude — keying on symbol alone would drop one source's
+            # copy and corrupt the head-to-head. audit 2026-07-21
             existing_eval = next((e for e in all_evals if e["run_tag"] == run_tag), None)
             already_evaluated = set()
             if existing_eval:
-                already_evaluated = {r["symbol"] for r in existing_eval["results"]}
+                already_evaluated = {(r["symbol"], r.get("source", "claude"))
+                                     for r in existing_eval["results"]}
 
             eval_results = []
 
@@ -386,7 +390,7 @@ def run_evaluation():
                 symbol = setup["symbol"]
 
                 # Skip if already evaluated in a previous partial run
-                if symbol in already_evaluated:
+                if (symbol, setup.get("source", "claude")) in already_evaluated:
                     continue
 
                 print(f"  → {symbol} ({setup['direction']} {setup['timeframe']})...", end=" ")
@@ -411,6 +415,11 @@ def run_evaluation():
                 result["regime"] = setup.get("regime") or record.get("regime", "neutral")
                 # Capture pre-filter interest score for selection-quality correlation.
                 result["interest_score"] = setup.get("interest_score")
+                # Head-to-head: which engine produced this setup (mechanical vs claude),
+                # and whether a backtest-validated signal actually backed it. Old
+                # Claude-only records have no source → default "claude". audit 2026-07-21
+                result["source"] = setup.get("source", "claude")
+                result["backtested_signal"] = setup.get("entry_indicators", {}).get("backtested_signal")
                 eval_results.append(result)
 
                 status = result["status"]
@@ -458,6 +467,8 @@ def run_evaluation():
     generate_recent_performance(all_evals)
     # Human report: regenerate summary.md for human readability
     generate_summary(all_evals)
+    # Head-to-head: mechanical vs Claude (human-only report)
+    generate_head_to_head(all_evals)
 
     # --- Phase 4: Self-learning delta analysis ---
     # Auto-triggers every N new evaluated trades. Finds patterns,
@@ -500,6 +511,8 @@ def _empty_lifetime_stats():
         "by_regime": {},
         "by_confluence": {},
         "by_rule_applied": {},
+        "by_source": {},          # mechanical vs claude (head-to-head)
+        "by_signal_backed": {},   # signal_backed vs discretionary
         "simulated_t1": {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0},
         "partial_profit": {
             "blended_rr_sum": 0.0,
@@ -525,6 +538,75 @@ def _increment_bucket(bucket, key, result):
         bucket[key]["wins"] += 1
     else:
         bucket[key]["losses"] += 1
+
+
+def _group_stats(results):
+    """WR / expectancy / profit-factor for a list of evaluated result dicts."""
+    n = len(results)
+    if not n:
+        return {"n": 0, "wr": 0.0, "exp": 0.0, "pf": 0.0, "wins": 0}
+    rr = [r.get("actual_rr", 0) for r in results]
+    wins = sum(1 for r in results if r.get("won"))
+    gross_win = sum(x for x in rr if x > 0)
+    gross_loss = abs(sum(x for x in rr if x < 0))
+    pf = gross_win / gross_loss if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
+    return {"n": n, "wr": wins / n * 100, "exp": sum(rr) / n, "pf": pf, "wins": wins}
+
+
+def generate_head_to_head(all_evals):
+    """Mechanical-vs-Claude head-to-head on WR / expectancy / profit factor (plus a
+    signal-backed vs discretionary split). Writes logs/performance/head_to_head.md
+    (human-only — NOT sent to Claude) and prints a one-line summary. This is the
+    payoff of the shadow architecture: it answers 'does our mechanical logic beat
+    Claude?' with our own evaluated trade data.
+    """
+    evaluated = [r for ev in all_evals for r in ev.get("results", [])
+                 if r.get("status") == "evaluated"]
+    if not evaluated:
+        print("Head-to-head: no evaluated trades yet.")
+        return
+
+    def fmt_pf(pf):
+        return "∞" if pf == float("inf") else f"{pf:.2f}"
+
+    by_source, by_backed = {}, {}
+    for r in evaluated:
+        by_source.setdefault(r.get("source", "claude"), []).append(r)
+        key = "signal_backed" if r.get("backtested_signal") else "discretionary"
+        by_backed.setdefault(key, []).append(r)
+
+    lines = ["# Head-to-Head: Mechanical vs Claude", "",
+             f"Total evaluated trades: {len(evaluated)}", "",
+             "## By source", "",
+             "| source | n | win% | expectancy (R) | profit factor |",
+             "|---|---|---|---|---|"]
+    for src in sorted(by_source):
+        s = _group_stats(by_source[src])
+        lines.append(f"| {src} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+
+    lines += ["", "## By signal backing", "",
+              "| backing | n | win% | expectancy (R) | profit factor |",
+              "|---|---|---|---|---|"]
+    for key in sorted(by_backed):
+        s = _group_stats(by_backed[key])
+        lines.append(f"| {key} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+
+    m, c = _group_stats(by_source.get("mechanical", [])), _group_stats(by_source.get("claude", []))
+    lines += ["", "## Verdict"]
+    if m["n"] >= 20 and c["n"] >= 20:
+        lead = "Mechanical" if m["exp"] > c["exp"] else "Claude"
+        lines.append(f"**{lead} LEADS on expectancy** "
+                     f"(mechanical {m['exp']:+.3f}R vs claude {c['exp']:+.3f}R; "
+                     f"n={m['n']}/{c['n']}).")
+    else:
+        lines.append(f"**INSUFFICIENT DATA** — need >=20 evaluated trades per source "
+                     f"(mechanical={m['n']}, claude={c['n']}). Keep running the shadow.")
+
+    PERFORMANCE_DIR.mkdir(parents=True, exist_ok=True)
+    out = PERFORMANCE_DIR / "head_to_head.md"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Head-to-head → mechanical {m['n']}t {m['exp']:+.3f}R vs "
+          f"claude {c['n']}t {c['exp']:+.3f}R  ({out})")
 
 
 def update_lifetime_stats(all_evals):
@@ -553,6 +635,10 @@ def update_lifetime_stats(all_evals):
         stats["by_confluence"] = {}
     if "by_rule_applied" not in stats:
         stats["by_rule_applied"] = {}
+    if "by_source" not in stats:
+        stats["by_source"] = {}
+    if "by_signal_backed" not in stats:
+        stats["by_signal_backed"] = {}
     if "simulated_t1" not in stats:
         stats["simulated_t1"] = {"sim_075r_hits": 0, "sim_100r_hits": 0, "sim_total": 0}
     if "partial_profit" not in stats:
@@ -621,6 +707,11 @@ def update_lifetime_stats(all_evals):
             for rule_id in r.get("rules_applied", []):
                 if rule_id in config.CANONICAL_RULES:
                     _increment_bucket(stats["by_rule_applied"], rule_id, r)
+
+            # Head-to-head: mechanical vs claude, and signal-backed vs discretionary.
+            _increment_bucket(stats["by_source"], r.get("source", "claude"), r)
+            backed = "signal_backed" if r.get("backtested_signal") else "discretionary"
+            _increment_bucket(stats["by_signal_backed"], backed, r)
 
             # Monthly trend
             stats["monthly_trend"][month_key]["total"] += 1

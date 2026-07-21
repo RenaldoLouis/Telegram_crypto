@@ -12,6 +12,13 @@ TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
+# === Setup Source (mechanical-primary / Claude-shadow) ===
+# "claude"     — deliver Claude's brief; mechanical setups generated + logged in shadow.
+# "mechanical" — deliver mechanical setups; Claude logged in shadow (and skipped if it fails).
+# A Claude failure ALWAYS falls back to mechanical delivery regardless of this flag.
+PRIMARY_SOURCE = "claude"
+MECHANICAL_MODEL_TAG = "mechanical_v1"   # recorded as `model` on mechanical setups for eval
+
 # === Claude Settings ===
 CLAUDE_MODEL = "claude-sonnet-4-6"   # use sonnet when tuning
 # CLAUDE_MODEL = "claude-haiku-4-5"      # Cheap for daily use;

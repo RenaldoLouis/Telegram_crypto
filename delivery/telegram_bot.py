@@ -108,6 +108,84 @@ def _smart_chunk(text, max_len=4000):
     return final
 
 
+def _fmt_price(p):
+    """Format a price with a sensible number of significant digits."""
+    try:
+        p = float(p)
+    except (TypeError, ValueError):
+        return str(p)
+    ap = abs(p)
+    if ap >= 100:
+        return f"{p:,.2f}"
+    if ap >= 1:
+        return f"{p:.4f}"
+    return f"{p:.6f}"
+
+
+def _t2_rr(setup):
+    """R:R to target_2 from mid-entry (for display)."""
+    try:
+        entry_mid = (float(setup["entry_low"]) + float(setup["entry_high"])) / 2
+        risk = abs(entry_mid - float(setup["stop_loss"]))
+        t2 = float(setup["target_2"])
+        if risk <= 0:
+            return None
+        return (t2 - entry_mid) / risk if setup.get("direction") == "long" else (entry_mid - t2) / risk
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def format_mechanical_brief(setups, regime="neutral"):
+    """Render mechanically-constructed setups as a markdown brief in the same style
+    as Claude's output, so send_brief() can deliver it unchanged. Pure formatting —
+    no analysis. Used when PRIMARY_SOURCE == 'mechanical' or Claude failed.
+    """
+    lines = ["## 📊 Market Context (mechanical engine)"]
+    if not setups:
+        lines.append(
+            f"Regime: **{regime}**. No backtest-validated signals fired this scan — "
+            "0 setups. An empty scan is a valid outcome; no forced trades."
+        )
+        lines.append("\n## 🧠 One-Line Takeaway")
+        lines.append("Nothing met the validated-signal bar. Stand aside.")
+        return "\n".join(lines)
+
+    lines.append(
+        f"Regime: **{regime}**. {len(setups)} setup(s) from backtest-validated signals "
+        "(deterministic — no LLM). Ranked by out-of-sample expectancy."
+    )
+    lines.append("\n## 🏆 Top Opportunities")
+
+    for s in setups:
+        direction = (s.get("direction") or "?").capitalize()
+        tf = (s.get("timeframe") or "?").capitalize()
+        lines.append(f"\n### #{s.get('rank','?')} — {s.get('symbol','?')} | {direction} | {tf}")
+        exp = s.get("signal_expectancy")
+        exp_str = f" · validated expectancy {exp:+.2f}R" if isinstance(exp, (int, float)) else ""
+        lines.append(f"**Signal:** `{s.get('signal_name','?')}` ({s.get('signal_tf','?')}){exp_str}")
+        t2rr = _t2_rr(s)
+        pr = s.get("predicted_rr")
+        lines.append("**Trade Plan:**")
+        lines.append(f"- Entry zone: {_fmt_price(s.get('entry_low'))} — {_fmt_price(s.get('entry_high'))}")
+        lines.append(f"- Stop loss: {_fmt_price(s.get('stop_loss'))}")
+        pr_str = f" (R:R {pr:.2f}:1)" if isinstance(pr, (int, float)) else ""
+        lines.append(f"- Target 1: {_fmt_price(s.get('target_1'))}{pr_str} — partial profit, take 50%")
+        t2_str = f" (R:R {t2rr:.2f}:1)" if t2rr is not None else ""
+        lines.append(f"- Target 2: {_fmt_price(s.get('target_2'))}{t2_str} — reward leg")
+        lines.append(f"- Confidence: {s.get('confidence','?')}")
+        lines.append(f"- TF confluence: {s.get('tf_confluence','?')}/4")
+        lines.append(f"- Volume confirmed: {'Yes' if s.get('volume_confirmed') else 'No'}")
+        kf = (s.get("reasoning") or {}).get("key_factor")
+        if kf:
+            lines.append(f"- Key factor: {kf}")
+
+    lines.append("\n## ⚠️ Position Management")
+    lines.append("- Take 50% at T1, move stop to breakeven. Once +1R, tighten stop to +0.3R and let the rest run to T2.")
+    lines.append("\n## 🧠 One-Line Takeaway")
+    lines.append("These are mechanical, backtest-validated signals — you make the final call and place every order manually.")
+    return "\n".join(lines)
+
+
 def send_brief(brief_text, usage=None):
     """Sends brief to your personal Telegram chat via bot."""
     url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendMessage"
