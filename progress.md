@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-07-13 (v11.3)_
+_Last updated: 2026-07-21 (v12.0)_
 
 ---
 
@@ -77,6 +77,38 @@ Quarterly deep analysis (quarterly_analysis.py, manual — still available for d
     → Feeds lifetime_stats.json + recent trades to Claude
     → Finds non-obvious patterns: temporal, symbol-specific, interaction effects
 ```
+
+---
+
+## Current Status & Roadmap (READ FIRST when resuming)
+
+_As of 2026-07-21 (v12.0). Single source of truth for where the mechanical-primary migration stands and what to do next. Full plan: `~/.claude/plans/ok-becauase-in-my-refactored-locket.md`._
+
+**Big picture.** Migrating from *Claude-as-decision-maker* to a pure-Python **mechanical engine as the primary setup source**, with Claude running in **shadow** (built + logged + evaluated head-to-head, not necessarily delivered). Goal: prove mechanical beats Claude on **expectancy**, then Claude can be dropped → independence from a model Anthropic can change/deprecate anytime. Optimize expectancy, NOT win rate.
+
+**CURRENT MODE = SHADOW.** `config.PRIMARY_SOURCE = "claude"`. `scan` still delivers *Claude's* brief to Telegram; mechanical setups are built + saved silently alongside for comparison. Delivery behavior is unchanged until Phase 4. A Claude failure (quota/$cap/timeout) now degrades to mechanical-only delivery instead of crashing.
+
+**Done (committed 2026-07-21 `3fada87`, Phases 0-3):**
+- Phase 0: prompt cleanup; `enforce_setups()` now DROPS rule-breakers (was log-only) + re-ranks.
+- Phase 1: `signal_levels.py`, `mechanical_setups.py`, structural levels surfaced in `bybit_data`, `run_screener` rebuilt (mechanical-first + Claude in try/except), `format_mechanical_brief`, `PRIMARY_SOURCE` flag.
+- Phase 2: `weekly_eval` tags `source`/`backtested_signal`, `by_source`/`by_signal_backed` buckets, `generate_head_to_head()` → `logs/performance/head_to_head.md`.
+- Phase 3: new backtester signals (`failed_breakout`, `liquidity_sweep`, `*_stacked`), generic slow factory path (`_eval_combo`) + walk-forward (`--walkforward`). Promoted `failed_breakout_short` LIVE (4h-only).
+
+**Live validated signals (4):** `rsi_rejection_short` (both TF), `macd_momentum_long` (both TF), `trend_pullback_short` (4h-only), `failed_breakout_short` (4h-only, NEW). Mechanical is LOW-FREQUENCY (0-1 setups/scan) until more signals validate — this is the main thing Phase 3 keeps chipping at.
+
+**Roadmap / what's next:**
+1. **Ongoing:** run `scan` (daily) + `eval-scan` (weekly). Watch `logs/performance/head_to_head.md`.
+2. **Phase 4 — flip to mechanical-primary.** ONLY after head_to_head shows **mechanical expectancy ≥ Claude expectancy AND ≥20 evaluated trades EACH source**. Then set `PRIMARY_SOURCE="mechanical"` + write a `version_markers.json` cutover marker. One line, reversible. Do NOT flip early.
+3. **Phase 5 — owned ML meta-filter.** Train a scikit-learn take/skip model on `logs/evaluations/*` to replace Claude's discretion (fully owned, deterministic). Only after enough eval data accumulates (avoid overfitting).
+4. **Ongoing signal expansion:** monthly `backtest`; promote signals passing out-of-sample validation on REAL data into `_check_validated_signals` + `mechanical_setups.EXPECTANCY/SETUP_TYPE/SETUP_RULE`. **HELD candidates:** `failed_breakout_short_stacked` (4h strong but 1h overfit), `liquidity_sweep_*` (overfit) — re-check with more data.
+
+**Gotchas for future sessions (avoid re-learning the hard way):**
+- Use `venv/bin/python` or the `scan`/`eval-scan`/`backtest` aliases — bare `python` is **Python 2** on this Mac (the aliases already use the venv).
+- `failed_breakout_short` uses a STRUCTURAL stop → its signal dict carries an explicit `stop_price`, which `mechanical_setups._build_one` honors. Any future structural-stop signal must do the same (a flat `stop_atr` won't represent it).
+- **Walk-forward is uninformative at 4h** — windows too sparse, everything (incl. proven live signals) shows 0/N. Use `--validate` (single split) at 4h; walk-forward needs 1h or `--wf-windows 2`.
+- A new backtester signal needs a `PARAM_GRIDS` entry **with a `factory`** to be optimize/validate-able (generic slow path). A `FAST_SWEEP_MAP` entry is optional (speed only).
+- A signal goes LIVE only after passing out-of-sample validation on REAL Bybit data. Never hardcode unvalidated signals into `_check_validated_signals`.
+- The `backtest`/`--validate` gate tests signal FORMULAS; the head_to_head + version-segment (forward, via `eval-scan`) tests SELECTION. They answer different questions.
 
 ---
 
@@ -313,6 +345,30 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-07-21 (v12.0) — Mechanical-Primary / Claude-Shadow Architecture (Phases 0-3)
+
+**Why:** Claude was inventing every price (entry/stop/T1/T2) + ranking/direction — the system's core edge depended on a black box Anthropic can change or deprecate anytime, and a Claude API failure crashed the entire scan. Goal: make a pure-Python mechanical engine the primary source, run Claude in shadow, and prove (with our own eval data) whether mechanical beats Claude on expectancy → path to full independence. See "Current Status & Roadmap" at top for live state and next steps.
+
+**Phase 0 — enforce + prompt cleanup:**
+- `analyzer/prompts.py`: removed stale "predicted_rr = 1.5" lines that contradicted the 0.75-1.0R T1 rule.
+- `main.py`: split `validate_setups` → `setup_violations()` (per-setup blocking checks) + `enforce_setups()` which now **DROPS** rule-breakers (T1>1.0R, T2<1.5R, long-volume, blacklist, confluence<3, bad enums) and re-ranks — previously violations were only logged.
+
+**Phase 1 — mechanical engine + graceful degradation (shadow: delivery unchanged):**
+- `signal_levels.py` (new): shared entry/stop/target math, drift-guarded by `test_signal_levels.py` (6 tests).
+- `mechanical_setups.py` (new): `build_mechanical_setups()` turns fired validated signals into full setups (entry/stop/T1/T2 + deterministic rank/confidence/confluence), zero LLM.
+- `fetchers/bybit_data.py`: surface `high_20`/`low_20`/`swing_high`/`swing_low` for structural T1.
+- `main.py`: `run_screener` rebuilt — mechanical built FIRST, Claude wrapped in try/except → any Claude failure (quota/$cap/timeout/API) degrades to mechanical-only delivery, never crashes. Both sources saved to one setup file tagged `source`.
+- `delivery/telegram_bot.py`: `format_mechanical_brief()`. `config.py`: `PRIMARY_SOURCE` (default `"claude"` = shadow) + `MECHANICAL_MODEL_TAG`.
+
+**Phase 2 — head-to-head measurement:**
+- `weekly_eval.py`: per-result `source` + `backtested_signal` tags, `by_source`/`by_signal_backed` lifetime buckets, `generate_head_to_head()` → `logs/performance/head_to_head.md` (WR/expectancy/PF, mechanical vs Claude; "INSUFFICIENT DATA" until ≥20/source). Fixed partial-eval dedup to key on `(symbol, source)`.
+
+**Phase 3 — expand + harden signal library:**
+- `historical_backtester.py`: new candle-only signals `failed_breakout_long/short`, `liquidity_sweep_long/short` + confluence-`*_stacked` variants (min_confirms sweep); generic slow factory path (`_eval_combo`) so signals without a hand-vectorized sweep are still optimize/validate-able; walk-forward validation (`run_walkforward`, `--walkforward`/`--wf-windows`, `_slice_arrays`). (No funding_squeeze/post_liquidation — backtester has no funding/OI columns.)
+- Real 4h+1h validation across 15 symbols → **promoted `failed_breakout_short` LIVE (4h-only)** into `_check_validated_signals` (test +0.120R, N=75, 100% robust; buffer_atr=0.25/rsi_gate=45/2.0R). Uses a structural stop → carries explicit `stop_price` honored by `mechanical_setups`. Confluence-stacking helped on 4h (+0.667 vs +0.120) but stacked overfit on 1h → held. `failed_breakout_long`/`liquidity_sweep_*` rejected (overfit).
+
+**Verification:** unit tests + mocked/synthetic integration tests all green; real-data validation run. Committed `3fada87`. Still shadow mode — Telegram delivery behavior unchanged.
 
 ### 2026-07-13 (v11.3) — Self-Learning De-Noise + Core-Logic De-Inversion
 

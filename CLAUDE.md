@@ -11,6 +11,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Phase A — Analyst mode (signal-only, NOT auto-trading).**
 Claude analyzes data and surfaces setups. The human makes every trading decision and executes every order manually. Phase B (auto-execution) is explicitly out of scope until Phase A has shown measurable edge.
 
+### Setup Source — Mechanical-Primary / Claude-Shadow (v12.0, in progress)
+
+As of v12.0 the system is migrating from Claude-as-decision-maker to a pure-Python **mechanical engine** (`mechanical_setups.py` + `signal_levels.py`) as the primary setup source, with Claude running in **shadow** for head-to-head comparison. `config.PRIMARY_SOURCE` toggles which source is DELIVERED (`"claude"` = current shadow mode; `"mechanical"` = post-cutover). `main.py::run_screener` builds mechanical FIRST and wraps Claude in try/except, so **a Claude failure degrades to mechanical-only, never crashes**. Both sources are saved per-run tagged `source`; `weekly_eval.py::generate_head_to_head()` compares them in `logs/performance/head_to_head.md`.
+
+**→ Before doing ANY work on this migration, read `progress.md` § "Current Status & Roadmap (READ FIRST when resuming)" — it holds the live state, the Phase 4/5 roadmap, the exact flip criteria, and the gotchas. The full plan is `~/.claude/plans/ok-becauase-in-my-refactored-locket.md`.** Do not flip `PRIMARY_SOURCE` to mechanical until head_to_head shows mechanical ≥ Claude on expectancy over ≥20 evaluated trades each.
+
 ### Non-Goals (Important)
 
 - Do NOT add order execution logic, even if asked casually.
