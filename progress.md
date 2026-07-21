@@ -116,7 +116,9 @@ _As of 2026-07-21 (v12.0). Single source of truth for where the mechanical-prima
 
 | File | Lines | Purpose |
 |---|---|---|
-| `main.py` | 158 | Orchestrator — fetch → analyze → validate → parse JSON → archive → deliver |
+| `main.py` | ~360 | Orchestrator — fetch → **build mechanical setups (primary)** → **Claude in try/except (shadow)** → `enforce_setups` (drops violators) → save BOTH sources tagged `source` → deliver per `config.PRIMARY_SOURCE` (mechanical fallback if Claude fails) |
+| `mechanical_setups.py` | ~150 | **Mechanical setup constructor** — turns fired validated signals into full setups (entry/stop/T1/T2 + deterministic rank/confidence), zero LLM |
+| `signal_levels.py` | ~90 | Shared pure entry/stop/target math (drift-guarded vs backtester by `test_signal_levels.py`) |
 | `config.py` | 79 | Settings: API keys, model, limits, timeframes, watchlist, momentum + regime thresholds, delta analysis |
 | `fetchers/bybit_data.py` | ~475 | Bybit API: 50 tickers → scoring + hot list + regime → top 25 → multi-TF klines (incl. ADX, range_pct, MACD, SMA200) + validated signal detection (4 cross-TF confirmed formulas) |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
@@ -128,7 +130,7 @@ _As of 2026-07-21 (v12.0). Single source of truth for where the mechanical-prima
 | `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
 | `trade_logger.py` | 195 | CLI trade journal manager — open/close/list trades from recent setups |
 | `backtester.py` | ~350 | **What-if backtester**: loads eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbols, combos), reports expectancy/WR/PF. Zero Claude tokens. |
-| `historical_backtester.py` | ~1600 | **Historical strategy backtester**: fetches Bybit klines, defines 12 mechanical signal rules, parameter sweep optimizer with train/test validation + robustness scoring. Caches data locally. Zero Claude tokens. |
+| `historical_backtester.py` | ~2100 | **Historical strategy backtester**: fetches Bybit klines, 18 mechanical signal rules, parameter sweep optimizer, train/test validation + robustness scoring, **walk-forward validation** (`--walkforward`), generic slow factory path for signals without a vectorized sweep. Caches data locally. Zero Claude tokens. |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
 | `.github/workflows/` | — | GitHub Actions: momentum pulse every 4h (secrets via repo settings) |
 | `progress.md` | — | This file — project progress tracker |
@@ -210,9 +212,9 @@ _Prompt caching saves ~90% on system prompt for runs within 5 min, but once-nigh
 
 ## Performance & Win Rate
 
-**Status: 48 runs evaluated (161 trades triggered, 172 total setups). Active since 2026-04-22.**
+> **⚠️ HISTORICAL SNAPSHOT (2026-06-05, pre-v8/v9 fixes). NOT current — do not read these as today's numbers.** Kept because the stats + diagnoses below explain *why* the v7–v11 changes were made. For LIVE performance read `logs/performance/lifetime_stats.json` (backing data) and `logs/performance/summary.md` (human report); for mechanical-vs-Claude read `logs/performance/head_to_head.md`.
 
-### Current Stats (as of 2026-06-05)
+### Historical Stats (snapshot 2026-06-05)
 | Metric | Value |
 |---|---|
 | Overall win rate | **29.8%** (48W / 113L) ⚠️ declining |
@@ -1265,101 +1267,13 @@ Combined effect: instead of 20 trades with 16 SLs, the system would have produce
 
 ## What's Next (Backlog)
 
-### Short Term (next 1-2 weeks)
+### Short Term
 
-> **⏭️ NEXT SYSTEM-IMPROVEMENT SESSION — the strict-gate re-check (queued 2026-07-06, v11.1)**
-> When the user asks to "improve the system" / "check our improvement" again, START HERE. This is a data-gated decision that was deliberately deferred until enough instrumented trades exist.
->
-> **Precondition**: at least ~15-20 setups saved with an `entry_indicators` block (added v11.1) have been scored by `eval-scan`. Check: count `logs/setups/*.json` entries that have `entry_indicators` AND a matching evaluated result. If too few, tell the user to keep running `scan` + weekly `eval-scan` and come back later.
->
-> **The analysis** (join `logs/setups/*.json` ↔ `logs/evaluations/*.json` by run_tag + symbol; entry_indicators lives on the setup side):
-> 1. Do trend_pullbacks meeting the **strict gate** (`tf_4h.adx > 25` AND `tf_4h.ema20_dist_atr < ~0.7` AND `tf_4h.macd` confirms direction) win more than loose ones? Compare WR + expectancy, strict vs loose subset.
-> 2. Do setups with `entry_indicators.backtested_signal != null` win more than those without?
-> 3. Re-check the `vol_confirmed` long subset (was n=25, +0.204 vs −0.172 for longs overall) — has it held with more data?
->
-> **Decision rule**:
-> - If strict subset clearly wins → implement a hard **DROP** rule (drop, not relabel — confidence labels are inert, proven v11.1) for trend_pullbacks failing the gate. Likely in `main.py::validate_setups` (Python, zero tokens) or as a prompt DROP directive.
-> - If strict subset still loses → the leak is **stop placement / entry timing**, NOT labeling. Pivot to that (e.g. wider ATR stops vs the 57% stop-out rate) — but mind the prior T1/SL over-correction (see memory [[feedback-overcorrection-fix]]), so validate on data first.
-> - Do NOT re-propose the rejected confidence-gate (Edit B) — it changes no outcomes. Full context in memory [[project-root-cause-trend-pullback]] and the v11.1 changelog above.
+_The active roadmap + "resume here" pointer live in **"Current Status & Roadmap (READ FIRST)"** at the TOP of this file — that supersedes any older "next session" note that used to sit here. Completed work is in the Changelog below and is NOT repeated as a checklist._
 
-- [ ] **(v11.1) Strict-gate re-check** — after ~15-20 instrumented trades are eval-scored, run the analysis above and decide DROP-rule vs stop-placement pivot
-- [ ] **(v11.1) Monthly `backtest` re-validation** — re-run and reconcile `_check_validated_signals` to the fresh results (last done 2026-07-06)
-- [x] **Explicit regime enforcement** — regime limits + direction requirements injected into user content, not just system prompt (v9.2)
-- [x] **Effective limit computation** — resolves regime + streak + loss rate into single number, removes ambiguity (v9.2)
-- [x] **Drop swing timeframe** — only scalp/intraday allowed, reduces overnight risk (v9.2)
-- [x] **Fix predicted_rr example** — JSON example showed 2.5, now correctly shows 1.5 (v9.2)
-- [x] **Trade logger CLI** — `trade_logger.py` for managing my_trades.json (open/close/list), `trade` alias (v9.1)
-- [ ] Run `scan` in current risk_off market and verify: max 2 setups, at least 1 short, effective limit shown
-- [ ] Run `eval-scan` after a few v9.2 runs to measure impact of regime enforcement + short inclusion
-- [x] **Self-learning delta analysis** — auto-triggers every 15 new trades, grades previous insights, generates new ACTION rules (v10.1)
-- [x] **Reasoning capture** — `reasoning` field in setup JSON with `rules_applied` + `key_factor` for rule-level attribution (v10.1)
-- [x] **Regime tagging** — regime saved in setup + eval records, tracked in `by_regime` stats (v10.1)
-- [x] **Post-scan validation** — pure Python validator catches rule violations before saving (v10.1)
-- [x] **Rule-applied effectiveness tracking** — `by_rule_applied` in lifetime_stats, surfaces effective/ineffective rules (v10.1)
-- [x] **Rule lifecycle management** — experimental → confirmed → expired, auto-prune from strategic rules (v10.1)
-- [x] **What-if backtester** — `backtester.py`: sweeps T1 distance, filters, regime limits, symbol blacklists across 185 eval trades (v11.0)
-- [x] **Historical strategy backtester** — `historical_backtester.py`: 12 mechanical signal rules, parameter sweep optimizer, train/test validation (v11.0)
-- [x] **Cross-TF validation** — validated on both 1h (42 days) and 4h (167 days) across 15 symbols. 4 of 8 signals confirmed, 4 rejected as overfit (v11.0)
-- [x] **Validated signal integration** — confirmed formulas injected into Claude's prompt when they fire (v11.0). Set reconciled v11.1: rsi_rejection_short + macd_momentum_long (both TFs), trend_pullback_short (4h only); macd_momentum_short removed as overfit
-- [ ] Run `eval-scan` to trigger first delta analysis (need 15+ new trades since last analysis)
-- [x] **`backtest` terminal shortcut** — runs full pipeline (`--full`): validate 4h + 1h + eval combos in one command (v11.0)
-- [x] **`quarterly-scan` superseded** — `backtest` + delta analysis replaces quarterly deep analysis for routine use (v11.0)
-- [ ] Run several `scan` cycles with validated signals active and compare WR vs pre-v11 setups
-- [ ] Monitor validated signal hit rate — how often do they fire, and do Claude's setups align with them?
-- [ ] Monthly: run `backtest` to re-validate signal formulas with fresh market data
-- [ ] Review per-symbol stats — BTCUSDT (1/8, 12% WR) and ETHUSDT (2/9, 22% WR) consistently underperform
-- [x] **ADX trend strength indicator** — ADX(14) + range_pct per timeframe, distinguishes ranging from trending (v9)
-- [x] **Choppy/range market rules** — new prompt section: ADX interpretation, range-boundary-only trading, max 2 setups when ranging (v9)
-- [x] **BTC Daily Trend Guard** — extracts BTC 1D trend/RSI/ADX, warns when correlated alt longs are HIGH RISK (v9)
-- [x] **Recent loss rate injection (drought alert)** — activates dead `recent_losses` code, 15+/20 → SEVERE DROUGHT max 1-2 setups (v9)
-- [x] **range_mean_reversion setup type** — new type for fading range extremes, quick 4-8h holds (v9)
-- [x] **ADX validation check** — mandatory pre-inclusion check: ADX < 20 → cannot be "trend_pullback", auto-DROP (v9)
-- [x] **Cautious regime tier** — 4th tier between neutral and risk_off, catches soft bearish markets (v8)
-- [x] **Losing streak circuit breaker** — reads eval files, 5+ SLs → max 2 setups + strict quality gate (v8)
-- [x] **Regime always injected** — Claude always sees market breadth metrics, not just when non-neutral (v8)
-- [x] **Dead cat bounce detection** — distinguishes real trend pullbacks from recovery bounces in downtrends (v8)
-- [x] **T1 hard cap** — predicted_rr must be 1.5 (floor = ceiling), based on MFE avg of 1.08R (v8)
-- [x] **Volume hard gate** — low volume environment → max 2 setups, not 5 with caveats (v8)
-- [x] **Short requirement** — must search for shorts when >50% coins declining (v8)
-- [x] **Default max 3 setups** — regime-specific: risk_off=2, cautious=3, neutral=3, risk_on=5 (v8)
-- [x] **ATH/ATL Exhaustion Reversal setup** — Setup 8 in playbook: multi-TF overbought at ATH → short with golden pocket target (v7)
-- [x] **Fibonacci retracement framework** — golden pocket (0.618) + key levels added to market structure knowledge (v7)
-- [x] **Strategic rules short unblock** — re-ran eval-scan, "Avoid shorts" → "NEEDS DATA" + "DIRECTIONAL BLIND SPOT" (v7)
-- [x] **Market regime detection** — risk_off/neutral/risk_on from 50-ticker aggregate, zero extra API calls (v6)
-- [x] **Regime-aware analysis** — Claude instructed per regime: shorts during risk_off, longs during risk_on (v6)
-- [x] **Short avoidance feedback loop fix** — direction rules require 15+ trades, NEEDS DATA for small samples (v6)
-- [x] **Momentum pulse scanner** — intra-day momentum detection every 4h on GitHub Actions, zero Claude cost (v5)
-- [x] **Dynamic watchlist (hot list)** — pulse-flagged coins auto-included in main scan (v5)
-- [x] **Volume acceleration bonus** — hot list coins get +2/+4 pre-filter scoring bonus (v5)
-- [x] **GitHub Actions deployment** — automated pulse with secrets, auto-commit back to repo (v5)
-- [x] **Security hardening** — scrubbed session/pyc/.DS_Store from git history, enhanced .gitignore (v5)
-- [x] **Breakeven stop model** — T1 hit → stop moves to entry, not full loss (v4)
-- [x] **Partial profit model** — blended_rr: 50% at T1 + 50% trails with BE stop (v4)
-- [x] **R:R floor lowered to 1.5:1** — based on 98-trade backtest showing avg MFE 1.15R (v4)
-- [x] **Prescriptive strategic rules** — all rules now include ACTION lines (v3)
-- [x] **MFE-based optimal T1** — uses avg MFE to compute specific T1 distance ceiling (v3)
-- [x] **Simulated closer-T1 backtest** — backtests T1 at 0.75R and 1.0R per trade (v3)
-- [x] **Per-symbol tracking** — by_symbol bucket in lifetime_stats (v3)
-- [x] **High confidence calibration** — detects when high underperforms medium (v3)
-- [x] **Timeframe/direction rules** — flags swing (11% WR) and shorts (0% WR) (v3)
-- [x] **Rank anomaly detection** — flags when #2 beats #1 (v3)
-- [x] **`quarterly-scan` terminal alias** — run quarterly_analysis.py with one command (v3)
-- [x] Tiered knowledge distillation: lifetime_stats.json + strategic_rules.md + recent_performance.md
-- [x] Quarterly deep analysis script (quarterly_analysis.py) for Claude-powered pattern detection
-- [x] Decouple summary.md (human report) from Claude's prompt (now reads compact tiered files)
-- [x] Fix feedback loop: add per-trade results table so Claude sees specific failures
-- [x] Add MFE tracking to diagnose direction vs execution problems
-- [x] Add win rate trend tracking with previous vs current comparison
-- [x] Add validation checklist to enforce rules Claude was violating
-- [x] Fix duplicate trader notes wasting tokens
-- [x] Add prediction accuracy gap metric
-- [x] Fix eval bug: partial evaluation support (swing no longer blocks intraday)
-- [x] Enrich trade journal: link each trade to Claude's recommendation + failure categories
-- [x] Cap feedback loop token cost: last 10 trades/notes in prompt, aggregates uncapped
-- [x] Try a few runs on Haiku to start model comparison data (switched daily to Haiku 4.5)
-- [x] Upgrade system prompt to professional trader mindset
-- [x] Add manual trade journal with notes/lessons fed back to Claude
-- [x] Weekly eval: 7-week window for new evals + cumulative learning from all history
+- [ ] **Monthly `backtest` re-validation** — re-run `backtest`, reconcile `_check_validated_signals` + `mechanical_setups.EXPECTANCY/SETUP_TYPE/SETUP_RULE` to fresh results, promote/demote signals (last full run 2026-07-21).
+- [ ] **Per-symbol / long-blacklist review** — BTCUSDT/ETHUSDT historically weak; ETHUSDT already long-blacklisted. Revisit the blacklist with fresh eval data.
+- [ ] _(Superseded by the mechanical migration)_ the old v11.1 "strict-gate re-check" for Claude's trend_pullback labeling — the same ADX/EMA/MACD confirmation gate is now tested mechanically via confluence-stacking (Phase 3). Context in memory `project-root-cause-trend-pullback`; no separate action needed.
 
 ### Medium Term (next 1-2 months)
 - [ ] Enable Telegram signal group reading (add groups to config)
