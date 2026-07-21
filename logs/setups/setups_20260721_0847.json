@@ -1,0 +1,165 @@
+{
+  "run_timestamp_utc": "2026-07-21T08:47:09.289605+00:00",
+  "run_tag": "20260721_0847",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 1,
+    "claude": 2
+  },
+  "setups": [
+    {
+      "symbol": "1000BONKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.00304815,
+      "entry_high": 0.00308985,
+      "stop_loss": 0.0032775,
+      "target_1": 0.00291263,
+      "target_2": 0.002652,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 64.2, ADX 34.9, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "risk_on",
+      "interest_score": 5.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 34.92,
+          "rsi": 64.24,
+          "macd": -6e-05,
+          "macd_hist": 5.6e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.18,
+          "range_pct": 17.63
+        },
+        "tf_1h": {
+          "adx": 27.77,
+          "rsi": 52.89,
+          "macd": 3.8e-05,
+          "macd_hist": -1.7e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.14,
+          "range_pct": 9.71
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    },
+    {
+      "rank": 1,
+      "symbol": "1000BONKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.003065,
+      "entry_high": 0.003095,
+      "stop_loss": 0.00329,
+      "target_1": 0.002923,
+      "target_2": 0.002662,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "confluence_3of4",
+          "short_bias",
+          "partial_profit"
+        ],
+        "key_factor": "Validated trend_pullback_short signal on 4h (N=111, +0.28R expect, 100% robust): EMA20<EMA50, ADX 34.9, RSI 64.2, price tagging 4h EMA20 resistance in confirmed bearish structure"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 34.92,
+          "rsi": 64.24,
+          "macd": -6e-05,
+          "macd_hist": 5.6e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.18,
+          "range_pct": 17.63
+        },
+        "tf_1h": {
+          "adx": 27.77,
+          "rsi": 52.89,
+          "macd": 3.8e-05,
+          "macd_hist": -1.7e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.14,
+          "range_pct": 9.71
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 5.0
+    },
+    {
+      "rank": 2,
+      "symbol": "FARTCOINUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1395,
+      "entry_high": 0.1405,
+      "stop_loss": 0.14681,
+      "target_1": 0.13489,
+      "target_2": 0.12638,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "confluence_3of4",
+          "short_bias",
+          "partial_profit"
+        ],
+        "key_factor": "Validated rsi_rejection_short on 4h (+0.44R expect / +0.81R on 1h): RSI rejected from 82.1 to 71.1 with bearish EMA structure (EMA20<EMA50); 15m price below both EMAs with sequential negative candles confirming momentum fade"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 18.54,
+          "rsi": 71.12,
+          "macd": 0.000507,
+          "macd_hist": 0.00137,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.95,
+          "range_pct": 11.71
+        },
+        "tf_1h": {
+          "adx": 37.62,
+          "rsi": 53.47,
+          "macd": 0.001992,
+          "macd_hist": 5.3e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.45,
+          "range_pct": 9.55
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 3.0
+    }
+  ]
+}
