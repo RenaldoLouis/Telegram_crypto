@@ -64,11 +64,9 @@ def fetch_klines(symbol, interval, limit=1000, use_cache=True):
         return data["candles"]
 
     print(f"    Fetching: {symbol} {INTERVAL_LABELS.get(interval, interval)} ({limit} candles)...")
-    client = HTTP(
-        testnet=False,
-        api_key=config.BYBIT_API_KEY,
-        api_secret=config.BYBIT_API_SECRET,
-    )
+    # Public market data only (get_kline) — no auth needed. Keyless avoids
+    # the 90-day API-key expiry and IP-whitelist requirement.
+    client = HTTP(testnet=False)
 
     try:
         res = client.get_kline(

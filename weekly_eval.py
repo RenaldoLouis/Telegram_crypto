@@ -49,11 +49,9 @@ RECENT_WINDOW_WEEKS = 4
 
 
 def get_bybit_client():
-    return HTTP(
-        testnet=False,
-        api_key=config.BYBIT_API_KEY,
-        api_secret=config.BYBIT_API_SECRET,
-    )
+    # Public market data only (get_kline) — no auth needed. Keyless avoids
+    # the 90-day API-key expiry and IP-whitelist requirement.
+    return HTTP(testnet=False)
 
 
 def fetch_klines_after(client, symbol, start_time_utc, days):

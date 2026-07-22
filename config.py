@@ -5,8 +5,10 @@ load_dotenv()
 
 # === API Keys ===
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-BYBIT_API_KEY = os.getenv("BYBIT_API_KEY")
-BYBIT_API_SECRET = os.getenv("BYBIT_API_SECRET")
+# NOTE: Bybit API key removed — the screener reads only PUBLIC market data
+# (get_tickers / get_kline), which needs no auth. Keyless avoids the 90-day
+# key expiry and IP-whitelist requirement. Do NOT re-add unless a private
+# (account/order) endpoint is ever introduced (Phase B only).
 TELEGRAM_API_ID = int(os.getenv("TELEGRAM_API_ID", 0))
 TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")

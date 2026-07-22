@@ -196,10 +196,10 @@ Before adding data to the Claude call:
 
 Required `.env` keys:
 
+Note: **no Bybit API key** — the screener reads only PUBLIC market data (get_tickers / get_kline), which needs no auth. This avoids the 90-day key expiry and IP-whitelist requirement.
+
 ```
 ANTHROPIC_API_KEY=sk-ant-...
-BYBIT_API_KEY=...               # Read-Only, IP-whitelisted
-BYBIT_API_SECRET=...
 TELEGRAM_API_ID=...              # from my.telegram.org (Telethon)
 TELEGRAM_API_HASH=...            # from my.telegram.org (Telethon)
 TELEGRAM_BOT_TOKEN=...           # from @BotFather (for delivery)

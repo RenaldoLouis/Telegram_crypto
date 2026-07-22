@@ -9,11 +9,10 @@ import config
 
 class BybitFetcher:
     def __init__(self):
-        self.client = HTTP(
-            testnet=False,
-            api_key=config.BYBIT_API_KEY,
-            api_secret=config.BYBIT_API_SECRET,
-        )
+        # Screener reads only public market data (get_tickers / get_kline),
+        # which need no auth. Keyless avoids the 90-day API-key expiry and any
+        # IP-whitelist requirement. Matches momentum_pulse.py.
+        self.client = HTTP(testnet=False)
 
     def get_top_movers(self, limit=50):
         """Returns top N USDT perpetuals by 24h turnover + price change."""

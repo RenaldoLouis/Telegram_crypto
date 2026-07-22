@@ -960,7 +960,7 @@ Combined effect: instead of 20 trades with 16 SLs, the system would have produce
 
 **GitHub Actions Deployment** (`.github/workflows/momentum_pulse.yml`)
 - Runs on `cron: '0 */4 * * *'` (every 4h UTC) + manual trigger via `workflow_dispatch`
-- Secrets stored as GitHub repository secrets (BYBIT_API_KEY, BYBIT_API_SECRET, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+- Secrets stored as GitHub repository secrets (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID) — no Bybit key (public data only)
 - Auto-commits `hot_list.json` and `last_snapshot.json` back to the repo
 - `scan` alias updated to `git pull` first, so local runs get the latest hot list
 
