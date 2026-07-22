@@ -348,6 +348,22 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-07-22 — Keyless Bybit (removed API key entirely)
+
+**Why:** The Bybit API key expired (ErrCode 33004). Investigation showed the whole system only ever calls **public** Bybit endpoints (`get_tickers`, `get_kline`) — verified live: identical 755 tickers returned WITH the expired key and with NO key. The key authenticated only *private account* endpoints (balance/positions/orders), which this Phase-A analyst system deliberately never touches. Without an IP whitelist Bybit keys auto-expire every 90 days, and a dynamic VPN IP can't be usefully whitelisted (whitelist = fixed IP list) — so going keyless kills the whole recurring problem. `momentum_pulse.py` was already keyless; this makes the rest consistent.
+
+**Changes:**
+- Keyless `HTTP(testnet=False)` in `fetchers/bybit_data.py`, `weekly_eval.py::get_bybit_client()`, `historical_backtester.py`.
+- Removed `BYBIT_API_KEY`/`BYBIT_API_SECRET` from `config.py` (comment left explaining why — do NOT re-add unless a private/order endpoint is ever added in Phase B), `.env`, and the `.github/workflows/momentum_pulse.yml` env block.
+- Docs updated: `CLAUDE.md` (Environment Setup) + `progress.md` (GitHub Actions secrets line).
+
+**Unchanged / notes:**
+- **Data accuracy unaffected** — public market data is identical regardless of key.
+- **VPN still required** for local runs — Indonesian ISPs block Bybit's servers (network reachability, not auth).
+- User-side (optional): delete `BYBIT_API_KEY`/`BYBIT_API_SECRET` from GitHub repo secrets; revoke the old expired key on Bybit.
+
+**Verification:** `config` no longer exposes the key vars; keyless `get_top_movers(5)` + `get_kline` → `retMsg: OK`; grep confirms zero remaining `BYBIT_API_*` references in code/docs.
+
 ### 2026-07-21 (v12.0) — Mechanical-Primary / Claude-Shadow Architecture (Phases 0-3)
 
 **Why:** Claude was inventing every price (entry/stop/T1/T2) + ranking/direction — the system's core edge depended on a black box Anthropic can change or deprecate anytime, and a Claude API failure crashed the entire scan. Goal: make a pure-Python mechanical engine the primary source, run Claude in shadow, and prove (with our own eval data) whether mechanical beats Claude on expectancy → path to full independence. See "Current Status & Roadmap" at top for live state and next steps.

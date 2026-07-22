@@ -1,0 +1,165 @@
+{
+  "run_timestamp_utc": "2026-07-22T05:23:50.233370+00:00",
+  "run_tag": "20260722_0523",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 1,
+    "claude": 2
+  },
+  "setups": [
+    {
+      "symbol": "1000BONKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0029782,
+      "entry_high": 0.0030178,
+      "stop_loss": 0.003196,
+      "target_1": 0.0028495,
+      "target_2": 0.002602,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 62.0, ADX 27.0, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "risk_on",
+      "interest_score": 1.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 27.02,
+          "rsi": 62.05,
+          "macd": -4.2e-05,
+          "macd_hist": 2.6e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.3,
+          "range_pct": 17.61
+        },
+        "tf_1h": {
+          "adx": 15.95,
+          "rsi": 32.82,
+          "macd": -1.2e-05,
+          "macd_hist": -6e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.0,
+          "range_pct": 6.17
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    },
+    {
+      "rank": 1,
+      "symbol": "WLDUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.377,
+      "entry_high": 0.381,
+      "stop_loss": 0.394,
+      "target_1": 0.368,
+      "target_2": 0.3565,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "symbol_avoid",
+          "confluence_3of4"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h (N=111, +0.28R expect, 100% robust): EMA20<EMA50 with RSI 62.7 elevated in downtrend, price bouncing into EMA20 resistance at 0.3776; 1D bearish with SMA200 overhead"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 21.57,
+          "rsi": 62.7,
+          "macd": -0.00091,
+          "macd_hist": 0.001473,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.1,
+          "range_pct": 9.32
+        },
+        "tf_1h": {
+          "adx": 16.21,
+          "rsi": 44.93,
+          "macd": 0.000354,
+          "macd_hist": -0.000337,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.74,
+          "range_pct": 3.45
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 1.0
+    },
+    {
+      "rank": 2,
+      "symbol": "1000BONKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.003,
+      "entry_high": 0.00304,
+      "stop_loss": 0.00322,
+      "target_1": 0.00287,
+      "target_2": 0.00272,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "dead_cat_bounce_risk"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h (N=111, +0.28R expect, 100% robust): EMA20<EMA50, RSI 62 elevated in strong downtrend (1D ADX 29.64), post dead-cat bounce (+14.4% then -5.9%) fading back into EMA20 resistance"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 27.02,
+          "rsi": 62.05,
+          "macd": -4.2e-05,
+          "macd_hist": 2.6e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.3,
+          "range_pct": 17.61
+        },
+        "tf_1h": {
+          "adx": 15.95,
+          "rsi": 32.82,
+          "macd": -1.2e-05,
+          "macd_hist": -6e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.0,
+          "range_pct": 6.17
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 1.0
+    }
+  ]
+}
