@@ -1,0 +1,215 @@
+{
+  "run_timestamp_utc": "2026-07-22T02:58:51.760640+00:00",
+  "run_tag": "20260722_0258",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 1,
+    "claude": 3
+  },
+  "setups": [
+    {
+      "symbol": "1000BONKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0030262,
+      "entry_high": 0.0030658,
+      "stop_loss": 0.003244,
+      "target_1": 0.0028975,
+      "target_2": 0.00265,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 63.0, ADX 28.6, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "risk_on",
+      "interest_score": 2.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 28.59,
+          "rsi": 62.97,
+          "macd": -4.1e-05,
+          "macd_hist": 3.3e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.02,
+          "range_pct": 17.33
+        },
+        "tf_1h": {
+          "adx": 18.14,
+          "rsi": 33.33,
+          "macd": -1e-05,
+          "macd_hist": -8e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.12,
+          "range_pct": 6.07
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    },
+    {
+      "rank": 1,
+      "symbol": "SKHYNIXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 1330.0,
+      "entry_high": 1352.0,
+      "stop_loss": 1385.0,
+      "target_1": 1297.0,
+      "target_2": 1265.0,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "symbol_priority"
+        ],
+        "key_factor": "Dual validated signals (rsi_rejection_short 1h +0.44R exp + failed_breakout_short 4h): price failed to hold breakout above 1352.10, 1D bearish ADX 40, winning symbol historically"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 37.11,
+          "rsi": 69.72,
+          "macd": 25.295322,
+          "macd_hist": 16.992208,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.45,
+          "range_pct": 15.83
+        },
+        "tf_1h": {
+          "adx": 43.16,
+          "rsi": 70.12,
+          "macd": 25.928588,
+          "macd_hist": -0.298822,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.75,
+          "range_pct": 7.79
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "1000BONKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.00304,
+      "entry_high": 0.003065,
+      "stop_loss": 0.003268,
+      "target_1": 0.00286,
+      "target_2": 0.00274,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "trend_pullback"
+        ],
+        "key_factor": "Validated trend_pullback_short fires: EMA20 < EMA50 on 4h, price precisely at 4h EMA20 pullback zone, 1D macro downtrend below SMA200, 15m rsi_h_bear divergence confirms continuation"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 28.59,
+          "rsi": 62.97,
+          "macd": -4.1e-05,
+          "macd_hist": 3.3e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.02,
+          "range_pct": 17.33
+        },
+        "tf_1h": {
+          "adx": 18.14,
+          "rsi": 33.33,
+          "macd": -1e-05,
+          "macd_hist": -8e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.12,
+          "range_pct": 6.07
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 2.0
+    },
+    {
+      "rank": 3,
+      "symbol": "ERAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.09,
+      "entry_high": 0.096,
+      "stop_loss": 0.108,
+      "target_1": 0.079,
+      "target_2": 0.071,
+      "predicted_rr": 0.9,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "wait_for_retest"
+        ],
+        "key_factor": "Highest-expectancy validated signal in scan (+0.44R 4h, +0.81R 1h): RSI rejected from 78.4 to 69.3 on 4h with ADX 57.9; entry conditional on 1h RSI bounce from extreme oversold (13.5) to 35-50 before shorting"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 57.88,
+          "rsi": 69.35,
+          "macd": 0.00635,
+          "macd_hist": 0.002928,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.67,
+          "range_pct": 58.78
+        },
+        "tf_1h": {
+          "adx": 33.06,
+          "rsi": 13.5,
+          "macd": 0.001791,
+          "macd_hist": -0.0027,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.87,
+          "range_pct": 27.69
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "source": "claude",
+      "regime": "risk_on",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    }
+  ]
+}
