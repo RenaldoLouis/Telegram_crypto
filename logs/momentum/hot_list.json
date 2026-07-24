@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-07-24T10:21:30.176903+00:00",
+  "generated_utc": "2026-07-24T13:49:55.048449+00:00",
   "market_regime": {
-    "regime": "cautious",
+    "regime": "risk_off",
     "metrics": {
       "pct_declining": 76.0,
-      "median_change_pct": -1.6,
-      "btc_change_pct": -1.06,
-      "avg_funding_pct": -0.0011,
-      "large_decline_count": 9
+      "median_change_pct": -2.33,
+      "btc_change_pct": -1.1,
+      "avg_funding_pct": -0.001,
+      "large_decline_count": 11
     },
-    "detected_utc": "2026-07-24T10:21:30.176297+00:00",
+    "detected_utc": "2026-07-24T13:49:55.047826+00:00",
     "previous_regime": "cautious"
   },
   "coins": [
@@ -76,22 +76,6 @@
       "open_interest": 3855815.0,
       "volume_acceleration": 1.0824908089060754,
       "price_acceleration_pct": -11.206900000000001
-    },
-    {
-      "symbol": "LAUSDT",
-      "flagged_utc": "2026-07-22T10:28:06.901832+00:00",
-      "expires_utc": "2026-07-24T10:28:06.901832+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.05473,
-      "price_change_24h_pct": -3.7968,
-      "turnover_24h_usd": 15745536.0134,
-      "funding_rate_pct": -0.339404,
-      "open_interest": 53854237.4,
-      "volume_acceleration": 0.6805441691271243,
-      "price_acceleration_pct": -14.335
     },
     {
       "symbol": "ESPORTSUSDT",
@@ -268,6 +252,22 @@
       "open_interest": 32804.98,
       "volume_acceleration": 0.9946817841206071,
       "price_acceleration_pct": -1.688200000000002
+    },
+    {
+      "symbol": "LAUSDT",
+      "flagged_utc": "2026-07-24T13:49:55.047601+00:00",
+      "expires_utc": "2026-07-26T13:49:55.047601+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.07444,
+      "price_change_24h_pct": 32.3613,
+      "turnover_24h_usd": 25659303.3151,
+      "funding_rate_pct": -0.084548,
+      "open_interest": 69900467.8,
+      "volume_acceleration": 1.2062472082625644,
+      "price_acceleration_pct": 14.537599999999998
     }
   ]
 }
