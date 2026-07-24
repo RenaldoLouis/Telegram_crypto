@@ -1,10 +1,13 @@
 # Recent Performance (last 4 weeks)
-_92 trades: 35W / 57L (38% WR, -0.04 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 48% WR, -0.05 avg blended R:R_
+_95 trades: 38W / 57L (40% WR, -0.02 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 49% WR, -0.03 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-21 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.66 (W) | 0.66 | target_1 | 0.76R |
+| 2026-07-21 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.63 (W) | 0.63 | target_1 | 0.77R |
+| 2026-07-21 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.66 (W) | 0.66 | target_1 | 0.8R |
 | 2026-07-20 | 1000PEPEUS | L | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.78 | trail_stop | 1.9R |
 | 2026-07-20 | WLDUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | 0.0 (L) | 0.23 | be_stop | 0.6R |
 | 2026-07-19 | BILLUSDT | S | intra | trend_pullba | med | 3/4 | 0.76 | 1.52 (W) | 1.15 | target_2 | 1.55R |
@@ -98,7 +101,7 @@ _Partial profit model (50% at T1 + BE stop): 48% WR, -0.05 avg blended R:R_
 | 2026-06-26 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -0.06 (L) | -0.06 | expired | 0.27R |
 | 2026-06-26 | ADAUSDT | S | intra | trend_pullba | low | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.27R |
 
-- Recent 'trend_pullback': 30/73 (41% WR)
+- Recent 'trend_pullback': 33/76 (43% WR)
 - Recent 'funding_squeeze': 1/7 (14% WR)
 - Recent 'other': 3/9 (33% WR)
 
