@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-07-25T09:50:50.233584+00:00",
+  "generated_utc": "2026-07-25T13:40:08.180800+00:00",
   "market_regime": {
-    "regime": "risk_off",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 86.0,
-      "median_change_pct": -2.76,
-      "btc_change_pct": -1.69,
-      "avg_funding_pct": -0.0434,
-      "large_decline_count": 17
+      "pct_declining": 58.0,
+      "median_change_pct": -0.52,
+      "btc_change_pct": -0.23,
+      "avg_funding_pct": -0.0126,
+      "large_decline_count": 8
     },
-    "detected_utc": "2026-07-25T09:50:50.232861+00:00",
+    "detected_utc": "2026-07-25T13:40:08.180167+00:00",
     "previous_regime": "risk_off"
   },
   "coins": [
@@ -47,19 +47,20 @@
     },
     {
       "symbol": "DEXEUSDT",
-      "flagged_utc": "2026-07-25T09:50:50.232592+00:00",
-      "expires_utc": "2026-07-27T09:50:50.232592+00:00",
+      "flagged_utc": "2026-07-25T13:40:08.179902+00:00",
+      "expires_utc": "2026-07-27T13:40:08.179902+00:00",
       "trigger": "big_move",
       "all_triggers": [
-        "big_move"
+        "big_move",
+        "funding_squeeze"
       ],
-      "last_price": 5.911,
-      "price_change_24h_pct": 115.88750000000002,
-      "turnover_24h_usd": 235588533.4043,
-      "funding_rate_pct": 0.00125,
-      "open_interest": 2839866.8,
-      "volume_acceleration": 1.184957348577398,
-      "price_acceleration_pct": -20.801699999999983
+      "last_price": 4.512,
+      "price_change_24h_pct": 74.8837,
+      "turnover_24h_usd": 312917066.1531,
+      "funding_rate_pct": -0.43635899999999994,
+      "open_interest": 2554994.3,
+      "volume_acceleration": 1.3282355538760215,
+      "price_acceleration_pct": -41.00380000000001
     },
     {
       "symbol": "ESPORTSUSDT",
@@ -330,6 +331,22 @@
       "turnover_24h_usd": 22544189.186,
       "funding_rate_pct": -0.120539,
       "open_interest": 26600022.0,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
+    },
+    {
+      "symbol": "MORPHOUSDT",
+      "flagged_utc": "2026-07-25T13:40:08.179902+00:00",
+      "expires_utc": "2026-07-27T13:40:08.179902+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 2.0169,
+      "price_change_24h_pct": 4.0443,
+      "turnover_24h_usd": 13565249.8374,
+      "funding_rate_pct": -0.050327,
+      "open_interest": 3997860.0,
       "volume_acceleration": null,
       "price_acceleration_pct": null
     }
