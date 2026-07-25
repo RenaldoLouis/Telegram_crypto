@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-07-25T15:53:39.477558+00:00",
+  "run_tag": "20260725_1553",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0
+  },
+  "setups": [
+    {
+      "symbol": "GWEIUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0238251,
+      "entry_high": 0.0246549,
+      "stop_loss": 0.028389,
+      "target_1": 0.02112825,
+      "target_2": 0.015942,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 54.7, ADX 40.0, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "cautious",
+      "interest_score": 4.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 40.04,
+          "rsi": 54.66,
+          "macd": -0.000195,
+          "macd_hist": 0.000829,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.24,
+          "range_pct": 48.06
+        },
+        "tf_1h": {
+          "adx": 28.36,
+          "rsi": 40.81,
+          "macd": 0.000324,
+          "macd_hist": -0.000635,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.88,
+          "range_pct": 29.33
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
