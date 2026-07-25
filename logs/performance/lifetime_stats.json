@@ -1,19 +1,19 @@
 {
-  "last_updated": "2026-07-23 13:52 UTC",
-  "total_setups": 297,
-  "total_evaluated": 280,
-  "total_not_triggered": 17,
+  "last_updated": "2026-07-24 12:05 UTC",
+  "total_setups": 304,
+  "total_evaluated": 286,
+  "total_not_triggered": 18,
   "overall": {
-    "wins": 93,
-    "losses": 187,
-    "rr_sum": -29.149999999999995
+    "wins": 97,
+    "losses": 189,
+    "rr_sum": -28.409999999999997
   },
   "by_setup_type": {
     "trend_pullback": {
-      "wins": 84,
-      "losses": 155,
-      "total": 239,
-      "rr_sum": -14.270000000000001
+      "wins": 88,
+      "losses": 156,
+      "total": 244,
+      "rr_sum": -12.53
     },
     "range_breakout": {
       "wins": 2,
@@ -47,9 +47,9 @@
     },
     "other": {
       "wins": 5,
-      "losses": 11,
-      "total": 16,
-      "rr_sum": -4.0200000000000005
+      "losses": 12,
+      "total": 17,
+      "rr_sum": -5.0200000000000005
     },
     "range_mean_reversion": {
       "wins": 0,
@@ -66,10 +66,10 @@
       "rr_sum": -2.42
     },
     "medium": {
-      "wins": 78,
-      "losses": 150,
-      "total": 228,
-      "rr_sum": -21.410000000000007
+      "wins": 82,
+      "losses": 152,
+      "total": 234,
+      "rr_sum": -20.67000000000001
     },
     "low": {
       "wins": 13,
@@ -80,16 +80,16 @@
   },
   "by_rank": {
     "1": {
-      "wins": 33,
-      "losses": 68,
-      "total": 101,
-      "rr_sum": -14.000000000000005
+      "wins": 35,
+      "losses": 69,
+      "total": 104,
+      "rr_sum": -13.870000000000005
     },
     "3": {
       "wins": 15,
-      "losses": 29,
-      "total": 44,
-      "rr_sum": -7.449999999999999
+      "losses": 30,
+      "total": 45,
+      "rr_sum": -8.45
     },
     "4": {
       "wins": 8,
@@ -104,10 +104,10 @@
       "rr_sum": -2.8600000000000008
     },
     "2": {
-      "wins": 31,
+      "wins": 33,
       "losses": 60,
-      "total": 91,
-      "rr_sum": 1.419999999999999
+      "total": 93,
+      "rr_sum": 3.0299999999999994
     }
   },
   "by_model": {
@@ -118,10 +118,10 @@
       "rr_sum": -2.46
     },
     "claude-sonnet-4-6": {
-      "wins": 91,
-      "losses": 177,
-      "total": 268,
-      "rr_sum": -24.69
+      "wins": 95,
+      "losses": 179,
+      "total": 274,
+      "rr_sum": -23.950000000000003
     },
     "claude-haiku-4-5": {
       "wins": 1,
@@ -138,10 +138,10 @@
       "rr_sum": -2.23
     },
     "intraday": {
-      "wins": 89,
-      "losses": 177,
-      "total": 266,
-      "rr_sum": -31.040000000000013
+      "wins": 93,
+      "losses": 179,
+      "total": 272,
+      "rr_sum": -30.300000000000015
     },
     "scalp": {
       "wins": 1,
@@ -158,10 +158,10 @@
       "rr_sum": -33.68
     },
     "short": {
-      "wins": 39,
-      "losses": 56,
-      "total": 95,
-      "rr_sum": 4.53
+      "wins": 43,
+      "losses": 58,
+      "total": 101,
+      "rr_sum": 5.2700000000000005
     }
   },
   "monthly_trend": {
@@ -181,28 +181,28 @@
       "total": 40
     },
     "2026-07": {
-      "wins": 37,
-      "losses": 45,
-      "total": 82
+      "wins": 41,
+      "losses": 47,
+      "total": 88
     }
   },
   "prediction_gap": {
-    "sum_predicted": 466.0899999999996,
-    "sum_actual": -29.149999999999995,
-    "count": 280
+    "sum_predicted": 471.1899999999995,
+    "sum_actual": -28.409999999999997,
+    "count": 286
   },
   "mfe_stats": {
-    "reached_05r": 180,
-    "total_with_mfe": 280,
-    "mfe_sum": 281.01999999999987
+    "reached_05r": 184,
+    "total_with_mfe": 286,
+    "mfe_sum": 285.0399999999999
   },
   "stop_timing": {
-    "total_stops": 144,
+    "total_stops": 146,
     "fast_stops": 18,
-    "candles_sum": 9136
+    "candles_sum": 9197
   },
   "target_stats": {
-    "t1_hits": 98,
+    "t1_hits": 101,
     "t2_hits": 37
   },
   "by_symbol": {
@@ -364,9 +364,9 @@
     },
     "WLDUSDT": {
       "wins": 0,
-      "losses": 4,
-      "total": 4,
-      "rr_sum": -3.0
+      "losses": 5,
+      "total": 5,
+      "rr_sum": -4.0
     },
     "FIDAUSDT": {
       "wins": 0,
@@ -376,9 +376,9 @@
     },
     "ERAUSDT": {
       "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": -1.0
+      "losses": 2,
+      "total": 2,
+      "rr_sum": -2.0
     },
     "SEIUSDT": {
       "wins": 0,
@@ -585,10 +585,10 @@
       "rr_sum": -1.0
     },
     "1000BONKUSDT": {
-      "wins": 2,
+      "wins": 6,
       "losses": 0,
-      "total": 2,
-      "rr_sum": 1.29
+      "total": 6,
+      "rr_sum": 4.03
     }
   },
   "by_regime": {
@@ -611,10 +611,10 @@
       "rr_sum": 2.2700000000000005
     },
     "risk_on": {
-      "wins": 9,
-      "losses": 10,
-      "total": 19,
-      "rr_sum": 0.20000000000000062
+      "wins": 13,
+      "losses": 12,
+      "total": 25,
+      "rr_sum": 0.9400000000000006
     }
   },
   "by_confluence": {
@@ -625,10 +625,10 @@
       "rr_sum": -20.82
     },
     "3": {
-      "wins": 77,
-      "losses": 110,
-      "total": 187,
-      "rr_sum": 6.5600000000000005
+      "wins": 81,
+      "losses": 112,
+      "total": 193,
+      "rr_sum": 7.3
     },
     "2": {
       "wins": 2,
@@ -645,10 +645,10 @@
   },
   "by_rule_applied": {
     "dead_cat_bounce_risk": {
-      "wins": 0,
+      "wins": 1,
       "losses": 4,
-      "total": 4,
-      "rr_sum": -3.44
+      "total": 5,
+      "rr_sum": -2.6399999999999997
     },
     "tight_t1": {
       "wins": 2,
@@ -681,10 +681,10 @@
       "rr_sum": -0.54
     },
     "short_bias": {
-      "wins": 32,
-      "losses": 37,
-      "total": 69,
-      "rr_sum": 6.740000000000001
+      "wins": 34,
+      "losses": 39,
+      "total": 73,
+      "rr_sum": 6.3500000000000005
     },
     "partial_profit": {
       "wins": 11,
@@ -717,10 +717,10 @@
       "rr_sum": 1.38
     },
     "confluence_3of4": {
-      "wins": 14,
-      "losses": 14,
-      "total": 28,
-      "rr_sum": 1.8600000000000008
+      "wins": 16,
+      "losses": 16,
+      "total": 32,
+      "rr_sum": 1.4700000000000009
     },
     "volume_confirmed": {
       "wins": 2,
@@ -730,9 +730,9 @@
     },
     "wait_for_retest": {
       "wins": 0,
-      "losses": 4,
-      "total": 4,
-      "rr_sum": -1.13
+      "losses": 5,
+      "total": 5,
+      "rr_sum": -2.13
     },
     "macd_divergence": {
       "wins": 0,
@@ -741,10 +741,10 @@
       "rr_sum": -1.0
     },
     "validated_signal": {
-      "wins": 12,
-      "losses": 10,
-      "total": 22,
-      "rr_sum": 3.11
+      "wins": 16,
+      "losses": 12,
+      "total": 28,
+      "rr_sum": 3.8500000000000005
     },
     "long_structural_confirmed": {
       "wins": 2,
@@ -778,31 +778,31 @@
     },
     "symbol_avoid": {
       "wins": 0,
-      "losses": 1,
-      "total": 1,
-      "rr_sum": 0.0
+      "losses": 2,
+      "total": 2,
+      "rr_sum": -1.0
     },
     "trend_pullback": {
-      "wins": 1,
+      "wins": 4,
       "losses": 0,
-      "total": 1,
-      "rr_sum": 0.66
+      "total": 4,
+      "rr_sum": 2.6
     }
   },
   "simulated_t1": {
-    "sim_075r_hits": 109,
+    "sim_075r_hits": 113,
     "sim_100r_hits": 84,
-    "sim_total": 200
+    "sim_total": 206
   },
   "partial_profit": {
-    "blended_rr_sum": -20.50000000000001,
-    "blended_wins": 78,
-    "blended_losses": 101,
+    "blended_rr_sum": -19.760000000000012,
+    "blended_wins": 82,
+    "blended_losses": 103,
     "be_stops": 23,
     "trail_stops": 4,
     "t1_then_t2": 37,
     "t1_then_be": 26,
-    "t1_then_expire": 28
+    "t1_then_expire": 31
   },
   "processed_run_tags": [
     "20260422_0240",
@@ -911,28 +911,30 @@
     "20260719_0213",
     "20260719_0958",
     "20260720_0209",
-    "20260721_0847"
+    "20260721_0847",
+    "20260722_0258",
+    "20260722_0523"
   ],
   "by_source": {
     "claude": {
-      "wins": 9,
-      "losses": 7,
-      "total": 16,
-      "rr_sum": 2.95
+      "wins": 11,
+      "losses": 9,
+      "total": 20,
+      "rr_sum": 2.5600000000000005
     },
     "mechanical": {
-      "wins": 1,
+      "wins": 3,
       "losses": 0,
-      "total": 1,
-      "rr_sum": 0.66
+      "total": 3,
+      "rr_sum": 1.7899999999999998
     }
   },
   "by_signal_backed": {
     "signal_backed": {
-      "wins": 8,
-      "losses": 4,
-      "total": 12,
-      "rr_sum": 3.18
+      "wins": 12,
+      "losses": 6,
+      "total": 18,
+      "rr_sum": 3.920000000000001
     },
     "discretionary": {
       "wins": 2,
