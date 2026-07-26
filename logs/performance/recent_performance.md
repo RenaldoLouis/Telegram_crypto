@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_97 trades: 43W / 54L (44% WR, 0.02 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 53% WR, 0.00 avg blended R:R_
+_95 trades: 43W / 52L (45% WR, 0.04 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 54% WR, 0.03 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -100,12 +100,10 @@ _Partial profit model (50% at T1 + BE stop): 53% WR, 0.00 avg blended R:R_
 | 2026-06-30 | HYPEUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.3R |
 | 2026-06-29 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -0.44 (L) | -0.44 | expired | 0.43R |
 | 2026-06-29 | ETHUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.54R |
-| 2026-06-28 | LABUSDT | L | intra | funding_sque | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.43R |
-| 2026-06-28 | VELVETUSDT | S | intra | other | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
 
-- Recent 'funding_squeeze': 1/6 (17% WR)
-- Recent 'other': 3/10 (30% WR)
 - Recent 'trend_pullback': 38/78 (49% WR)
+- Recent 'funding_squeeze': 1/5 (20% WR)
+- Recent 'other': 3/9 (33% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
