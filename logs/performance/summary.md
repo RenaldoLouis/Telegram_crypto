@@ -1,18 +1,18 @@
 # Performance Summary
-_Last updated: 2026-07-25 05:25 UTC_
-_Total runs evaluated: 109_
+_Last updated: 2026-07-25 16:05 UTC_
+_Total runs evaluated: 110_
 
 ## Overall Stats
-- Total setups: 304
-- Triggered: 286 (94%)
+- Total setups: 305
+- Triggered: 287 (94%)
 - Not triggered: 18
-- **Win rate: 33.9%** (97W / 189L)  (**↑ +0.0%** from previous eval: 33.9%)
+- **Win rate: 34.1%** (98W / 189L)  (**↑ +0.2%** from previous eval: 33.9%)
 - Avg actual R:R: -0.10
-- Avg winning R:R: 1.30
+- Avg winning R:R: 1.29
 - Avg losing R:R: -0.82
 
 ### Partial Profit Model (50% at T1 + BE stop)
-- **Blended win rate: 44.3%** (82W / 103L)
+- **Blended win rate: 44.6%** (83W / 103L)
 - Avg blended R:R: -0.11
 - BE stops (T1 hit then reversed to entry): 23
 
@@ -129,13 +129,12 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | 2026-07-21 | 3 | 3 | 0 | 100% | 33.2% |
 | 2026-07-22 | 3 | 2 | 1 | 67% | 33.6% |
 | 2026-07-22 | 3 | 2 | 1 | 67% | 33.9% |
-
-**⚠️ Win rate is NOT improving across recent runs. Review what changed and whether the feedback loop is being followed.**
+| 2026-07-23 | 1 | 1 | 0 | 100% | 34.1% |
 
 ## By Setup Type
 | Setup Type | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
-| trend_pullback | 244 | 88 | 156 | 36% | -0.05 |
+| trend_pullback | 245 | 89 | 156 | 36% | -0.05 |
 | other | 17 | 5 | 12 | 29% | -0.30 |
 | funding_squeeze | 8 | 1 | 7 | 12% | -0.48 |
 | failed_breakout | 7 | 0 | 7 | 0% | -1.00 |
@@ -148,13 +147,13 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Confidence | Trades | Wins | Losses | Win Rate |
 |---|---|---|---|---|
 | high | 9 | 2 | 7 | 22% |
-| medium | 234 | 82 | 152 | 35% |
+| medium | 235 | 83 | 152 | 35% |
 | low | 43 | 13 | 30 | 30% |
 
 ## By Rank Position
 | Rank | Trades | Win Rate |
 |---|---|---|
-| #1 | 104 | 34% |
+| #1 | 105 | 34% |
 | #2 | 93 | 35% |
 | #3 | 45 | 33% |
 | #4 | 25 | 32% |
@@ -164,7 +163,7 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Model | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
 | claude-haiku-4-5 | 8 | 1 | 7 | 12% | -0.25 |
-| claude-sonnet-4-6 | 274 | 95 | 179 | 35% | -0.09 |
+| claude-sonnet-4-6 | 275 | 96 | 179 | 35% | -0.09 |
 | unknown | 4 | 1 | 3 | 25% | -0.61 |
 
 ## Your Predictions vs Reality (LEARN FROM EACH ONE)
@@ -172,6 +171,7 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 
 | Date | Symbol | Dir | TF | Conf | TF-Conf | Pred R:R | Actual R:R | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|
+| 2026-07-23 | LABUSDT | S | intra | med | 3/4 | 0.75 | 0.12 | expired | 0.51R |
 | 2026-07-22 | 1000BONK | S | intra | med | 3/4 | 0.75 | 0.41 | expired | 0.91R |
 | 2026-07-22 | WLDUSDT | S | intra | med | 3/4 | 0.9 | -1.0 | stop_loss | 0.17R |
 | 2026-07-22 | 1000BONK | S | intra | med | 3/4 | 0.9 | 0.8 | target_1 | 0.88R |
@@ -191,10 +191,9 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 | 2026-07-18 | 1000XECU | S | intra | med | 4/4 | 0.9 | 0.3 | trail_stop | 1.09R |
 | 2026-07-18 | USUSDT | L | intra | med | 4/4 | 0.9 | -1.0 | stop_loss | 0.32R |
 | 2026-07-17 | SNDKUSDT | S | intra | med | 3/4 | 0.75 | 1.13 | target_2 | 1.13R |
-| 2026-07-17 | KORUUSDT | S | intra | med | 3/4 | 0.75 | 0.0 | be_stop | 0.89R |
 
 **Prediction gap: avg predicted R:R = 1.6, avg actual = -0.10 (gap of 1.7R)**
-**Direction accuracy: 184/286 (64%) reached 0.5R+ favorable. Avg MFE: 1.00R**
+**Direction accuracy: 185/287 (64%) reached 0.5R+ favorable. Avg MFE: 0.99R**
 
 ## Trader's Actual Trades (Manual Log)
 - Closed trades: 4 (1W / 3L)
@@ -241,5 +240,5 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 - Worst setup type: **failed_breakout** (0/7 wins, 0%) — deprioritize unless 4/4 TF confluence
 - CALIBRATION ISSUE: 'High' confidence setups don't outperform 'Medium'. Recalibrate confidence scoring.
 - Best performing model: **claude-sonnet-4-6** (35% win rate, -0.09 avg R:R)
-- claude-sonnet-4-6: 35% win rate, -0.09 avg R:R over 274 trades
+- claude-sonnet-4-6: 35% win rate, -0.09 avg R:R over 275 trades
 - claude-haiku-4-5: 12% win rate, -0.25 avg R:R over 8 trades

@@ -1,10 +1,11 @@
 # Recent Performance (last 4 weeks)
-_98 trades: 42W / 56L (43% WR, 0.01 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 52% WR, -0.00 avg blended R:R_
+_97 trades: 43W / 54L (44% WR, 0.02 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 53% WR, 0.00 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-23 | LABUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.12 (W) | 0.12 | expired | 0.51R |
 | 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.41 (W) | 0.41 | expired | 0.91R |
 | 2026-07-22 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.17R |
 | 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.9 | 0.8 (W) | 0.8 | target_1 | 0.88R |
@@ -101,12 +102,10 @@ _Partial profit model (50% at T1 + BE stop): 52% WR, -0.00 avg blended R:R_
 | 2026-06-29 | ETHUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.54R |
 | 2026-06-28 | LABUSDT | L | intra | funding_sque | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.43R |
 | 2026-06-28 | VELVETUSDT | S | intra | other | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
-| 2026-06-27 | SOLUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | 0.0 (L) | 0.53 | be_stop | 1.07R |
-| 2026-06-27 | IDUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.95R |
 
-- Recent 'trend_pullback': 37/79 (47% WR)
 - Recent 'funding_squeeze': 1/6 (17% WR)
 - Recent 'other': 3/10 (30% WR)
+- Recent 'trend_pullback': 38/78 (49% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
