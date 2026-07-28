@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_96 trades: 45W / 51L (47% WR, 0.07 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 55% WR, 0.05 avg blended R:R_
+_94 trades: 45W / 49L (48% WR, 0.09 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 56% WR, 0.07 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -99,11 +99,9 @@ _Partial profit model (50% at T1 + BE stop): 55% WR, 0.05 avg blended R:R_
 | 2026-07-01 | TAIKOUSDT | L | intra | funding_sque | low | 3/4 | 1.5 | 2.14 (W) | 1.66 | target_2 | 2.15R |
 | 2026-06-30 | XLMUSDT | L | intra | trend_pullba | low | 3/4 | 1.5 | 1.92 (W) | 1.68 | target_2 | 1.95R |
 | 2026-06-30 | LABUSDT | L | intra | funding_sque | low | 1/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.15R |
-| 2026-06-30 | LABUSDT | L | intra | funding_sque | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.34R |
-| 2026-06-30 | HYPEUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.3R |
 
-- Recent 'funding_squeeze': 1/5 (20% WR)
-- Recent 'trend_pullback': 40/78 (51% WR)
+- Recent 'trend_pullback': 40/77 (52% WR)
+- Recent 'funding_squeeze': 1/4 (25% WR)
 - Recent 'other': 3/9 (33% WR)
 
 ## Trader's Recent Actual Trades
