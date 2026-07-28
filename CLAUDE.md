@@ -268,8 +268,10 @@ python historical_backtester.py --walkforward all --interval 240  # Walk-forward
 
 ### Scheduled Runs
 
-- **Momentum pulse**: GitHub Actions, every 4 hours (`.github/workflows/momentum_pulse.yml`). Zero Claude tokens. Auto-commits hot_list.json back to repo. Secrets stored as GitHub repository secrets.
-- **Nightly screener**: macOS `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`). Default: 9pm local.
+- **Momentum pulse + mechanical scan**: GitHub Actions, every 4 hours (`.github/workflows/momentum_pulse.yml`). One job runs the pulse, then `main.py`, then a single race-safe commit. The scan runs **mechanical-only** because CI has **no `ANTHROPIC_API_KEY`** — the Claude shadow call throws, is swallowed, and `main.py` delivers the mechanical brief (near-zero Claude cost). Reuses the WireGuard VPN (`WG_CONF`) for Bybit access. Auto-commits `hot_list.json` + `logs/setups/` + `logs/briefs/` back to the repo. Secrets are GitHub repository secrets.
+- **Nightly screener (Claude shadow)**: macOS `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`). Default: 9pm local. This is the ONLY run that calls Claude (has the key locally) — it keeps the mechanical-vs-Claude head-to-head alive.
+- **Cross-run dedup**: because the scan now runs 6×/day, `main.py::_active_setup_keys` / `_drop_active_duplicates` suppress a coin already carrying an active `(symbol, direction, source)` setup within the 2-day eval window — prevents correlated pseudo-replicate trades from polluting the eval / flip gate.
+- **Commit races**: both CI (6×/day bot) and the local nightly push to `master`. The CI commit step does `git pull --rebase origin master` + retry; the local commit should do the same (`git add logs/ && git commit && for i in 1 2 3; do git pull --rebase && git push && break || sleep 5; done`). `eval-scan` must `git pull --rebase` first to pick up CI-pushed setups before scoring.
 - Do NOT migrate to cron — launchd handles wake-from-sleep better.
 
 ---

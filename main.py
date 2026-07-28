@@ -268,6 +268,55 @@ def _prepare_source(setups, regime_label, interest_scores, technicals, source):
     return kept
 
 
+# Longest eval window is `intraday` = 2 days (weekly_eval.EVAL_WINDOWS). A setup from a
+# scan within that window is still "open" for scoring, so re-emitting the same
+# symbol+direction+source would create a correlated pseudo-replicate trade (matters now
+# that CI scans every 4h = 6x/day). Kept local to avoid importing weekly_eval.
+_DEDUP_LOOKBACK_DAYS = 2
+
+
+def _active_setup_keys(now_utc, lookback_days=_DEDUP_LOOKBACK_DAYS):
+    """Return the set of (symbol, direction, source) tuples that already have a setup
+    from a recent run still inside its eval window. Reads prior logs/setups/*.json.
+
+    Best-effort instrumentation: any read/parse failure is swallowed and treated as
+    "no active keys" so a malformed log can never crash a scan.
+    """
+    keys = set()
+    cutoff = now_utc.timestamp() - lookback_days * 86400
+    try:
+        for f in Path("logs/setups").glob("setups_*.json"):
+            try:
+                record = json.loads(f.read_text(encoding="utf-8"))
+                ts = datetime.fromisoformat(record["run_timestamp_utc"])
+                if ts.timestamp() < cutoff:
+                    continue
+                for s in record.get("setups", []):
+                    keys.add((s.get("symbol"), s.get("direction"), s.get("source")))
+            except Exception:
+                continue  # skip one bad file, keep scanning the rest
+    except Exception:
+        return set()
+    return keys
+
+
+def _drop_active_duplicates(setups, active_keys, source):
+    """Filter out setups whose (symbol, direction, source) is already active within the
+    eval window. Per-source so the mechanical-vs-claude head-to-head stays fair.
+    """
+    kept, dropped = [], []
+    for s in setups:
+        key = (s.get("symbol"), s.get("direction"), source)
+        if key in active_keys:
+            dropped.append(s.get("symbol", "?"))
+        else:
+            kept.append(s)
+    if dropped:
+        print(f"  [{source}] cross-run dedup: suppressed {len(dropped)} still-active "
+              f"({', '.join(dropped)})")
+    return kept
+
+
 async def run_screener():
     print(f"[{datetime.now()}] Starting screener run...")
     run_ts = datetime.now(timezone.utc)
@@ -312,6 +361,14 @@ async def run_screener():
             )
     except Exception as e:
         print(f"  ⚠ Claude shadow failed ({type(e).__name__}: {e}) — continuing mechanical-only")
+
+    # 3b. Cross-run dedup: with CI scanning every 4h, the same coin re-flagged in
+    # consecutive windows would log correlated pseudo-replicate trades that pollute the
+    # eval / flip-gate counter. Drop any (symbol, direction, source) still active from a
+    # recent scan. Per-source so the head-to-head comparison stays fair.
+    active = _active_setup_keys(run_ts)
+    mechanical = _drop_active_duplicates(mechanical, active, "mechanical")
+    claude_setups = _drop_active_duplicates(claude_setups, active, "claude")
 
     # 4. Persist BOTH sources to one file, each tagged `source` (head-to-head data).
     all_setups = mechanical + claude_setups

@@ -1,4 +1,4 @@
-name: Momentum Pulse Scanner
+name: Momentum Pulse + Mechanical Scan
 
 on:
   schedule:
@@ -10,6 +10,7 @@ on:
 jobs:
   pulse:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # scan is longer-running than the pulse alone
     permissions:
       contents: write  # needed to push commits back
 
@@ -35,7 +36,10 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install pybit requests python-dotenv
+        # anthropic/telethon only satisfy main.py's top-level imports; with no
+        # ANTHROPIC_API_KEY and no Telethon session the Claude/TG-read paths fail
+        # inside try/except and the scan degrades to mechanical-only.
+        run: pip install pybit requests python-dotenv pandas anthropic telethon
 
       - name: Run momentum pulse
         env:
@@ -43,15 +47,28 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python momentum_pulse.py
 
+      - name: Run mechanical scan (mechanical-only, no ANTHROPIC key)
+        # No ANTHROPIC_API_KEY on purpose → Claude shadow throws → main.py delivers
+        # the mechanical brief. Runs after the pulse so it reads the fresh hot list.
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main.py
+
       - name: Disconnect VPN
         if: always()
         run: sudo wg-quick down wg0 || true
 
-      - name: Commit and push hot list
+      - name: Commit and push pulse + scan output
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add logs/momentum/hot_list.json logs/momentum/last_snapshot.json
-          # Only commit if there are changes
-          git diff --cached --quiet || git commit -m "pulse: update momentum hot list [skip ci]"
-          git push
+          git add logs/momentum/hot_list.json logs/momentum/last_snapshot.json logs/setups/ logs/briefs/
+          # Nothing changed → clean exit.
+          git diff --cached --quiet && exit 0
+          git commit -m "scan+pulse: 4h auto-run [skip ci]"
+          # Race-safe push: the local nightly run also pushes to master, so rebase
+          # onto any concurrent commit and retry rather than failing on non-fast-forward.
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push && break || sleep 5
+          done
