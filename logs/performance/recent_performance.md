@@ -1,10 +1,13 @@
 # Recent Performance (last 4 weeks)
-_95 trades: 43W / 52L (45% WR, 0.04 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 54% WR, 0.03 avg blended R:R_
+_96 trades: 45W / 51L (47% WR, 0.07 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 55% WR, 0.05 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-26 | TSLAUSDT | S | scalp | range_mean_r | hig | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.18R |
+| 2026-07-25 | GWEIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 1.39R |
+| 2026-07-25 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.76 (W) | 1.19 | target_2 | 1.91R |
 | 2026-07-23 | LABUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.12 (W) | 0.12 | expired | 0.51R |
 | 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.41 (W) | 0.41 | expired | 0.91R |
 | 2026-07-22 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.17R |
@@ -98,11 +101,9 @@ _Partial profit model (50% at T1 + BE stop): 54% WR, 0.03 avg blended R:R_
 | 2026-06-30 | LABUSDT | L | intra | funding_sque | low | 1/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.15R |
 | 2026-06-30 | LABUSDT | L | intra | funding_sque | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.34R |
 | 2026-06-30 | HYPEUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.3R |
-| 2026-06-29 | ADAUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -0.44 (L) | -0.44 | expired | 0.43R |
-| 2026-06-29 | ETHUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.54R |
 
-- Recent 'trend_pullback': 38/78 (49% WR)
 - Recent 'funding_squeeze': 1/5 (20% WR)
+- Recent 'trend_pullback': 40/78 (51% WR)
 - Recent 'other': 3/9 (33% WR)
 
 ## Trader's Recent Actual Trades
