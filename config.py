@@ -29,7 +29,7 @@ THINKING_BUDGET = 10000              # Extended thinking budget — reasoning to
 
 # === Bybit Settings ===
 BYBIT_CATEGORY = "linear"            # USDT perpetuals
-TOP_MOVERS_LIMIT = 25                # Screen top 25 by volume
+TOP_MOVERS_LIMIT = 30                # Screen top 30 by volume (liquidity filter caps real set ~24)
 KLINE_INTERVALS = {                  # Multi-timeframe candle config
     "15": 100,                       # 15m — scalp (last ~25h)
     "60": 100,                       # 1h  — intraday (last ~4 days)

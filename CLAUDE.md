@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**crypto-screener** is a personal, scheduled screener for Bybit USDT perpetual futures. It scans 50 coins, pre-filters to 25 using knowledge-based scoring, analyzes them across 4 timeframes via Claude API, delivers the 5 best trade setups to Telegram, and self-evaluates past recommendations against actual price data.
+**crypto-screener** is a personal, scheduled screener for Bybit USDT perpetual futures. It scans 100 coins, pre-filters to 30 using knowledge-based scoring, analyzes them across 4 timeframes via Claude API, delivers the 5 best trade setups to Telegram, and self-evaluates past recommendations against actual price data.
 
 ### Current Phase
 
@@ -34,13 +34,13 @@ Auto-execution will only be considered after: (a) 60+ days of evaluated Phase A 
 main.py  (orchestrator, async)
   │
   ├── fetchers/bybit_data.py       → BybitFetcher:
-  │                                    get_top_movers(50) → single API call
+  │                                    get_top_movers(100) → single API call
   │                                    _ticker_interest_score() → knowledge-based pre-filter + hot list bonus
   │                                    _load_hot_list() → reads momentum pulse hot list
   │                                    get_multi_tf_indicators() → 15m/1h/4h/1D klines + validated signal check
   │                                    _compute_indicators() → RSI, EMA20/50, ATR, ADX, MACD, SMA200 (1D only), divergences
   │                                    _check_validated_signals() → 3 backtest-validated formulas (2 cross-TF, 1 4h-only)
-  │                                    get_full_market_snapshot() → 50 → score → top 25 + hot list → multi-TF
+  │                                    get_full_market_snapshot() → 100 → score → top 30 + hot list → multi-TF
   │
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
   │
@@ -90,10 +90,10 @@ main.py  (orchestrator, async)
 ### Data Flow
 
 0. Every 4h: `momentum_pulse.py` (GitHub Actions) → fetches 50 tickers, detects acceleration vs previous snapshot → flags coins to `logs/momentum/hot_list.json` + classifies market regime (`risk_off`/`cautious`/`neutral`/`risk_on`) → Telegram alert (regime changes + new flags)
-1. `BybitFetcher.get_top_movers(50)` → 50 tickers by turnover (single API call)
+1. `BybitFetcher.get_top_movers(100)` → 100 tickers by turnover (single API call)
 2. `_load_hot_list()` → loads momentum pulse hot list (dynamic watchlist, 48h expiry) + market regime
 3. `_ticker_interest_score()` → disqualify illiquid (<$10M vol, <$50M OI), score rest + volume acceleration bonus for hot list coins
-4. Keep top 25 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 25 = 100 kline calls) + `_check_validated_signals()` on 1h/4h (zero extra API calls)
+4. Keep top 30 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 30 = 120 kline calls; liquidity filter usually caps the real set at ~24) + `_check_validated_signals()` on 1h/4h (zero extra API calls)
 5. `ClaudeAnalyzer.analyze(market, messages)` → extended thinking enabled (reasoning in separate thinking block, not in output) → injects regime metrics + explicit regime limits + effective limit computation + losing streak detection + BTC trend guard + **validated signals** into user content → readable brief + `setups_json` block
 6. `main.py` parses JSON block → validates against rules (Python, free) → saves to `logs/setups/` (includes model name, regime, reasoning)
 7. Clean brief (JSON stripped + pre-analysis stripped) → archived to `logs/briefs/` + delivered via Telegram

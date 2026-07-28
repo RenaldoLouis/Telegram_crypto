@@ -585,8 +585,10 @@ class BybitFetcher:
           6. Fetch multi-TF klines only for those ~25
           7. Send all with full detail to Claude
         """
-        # Step 1: Get broad pool of 50 tickers
-        broad_pool = self.get_top_movers(50)
+        # Step 1: Get broad pool of 100 tickers. Only ~24 USDT perps market-wide pass
+        # the liquidity filter, and ~7 of them sit in rank 50-100 — fetching 100 (not 50)
+        # captures the full liquid universe. Rank 100+ is all illiquid, so 100 is the cap.
+        broad_pool = self.get_top_movers(100)
         print(f"  Fetched {len(broad_pool)} tickers from Bybit")
 
         # Step 2: Load momentum pulse hot list (dynamic watchlist) + market regime
