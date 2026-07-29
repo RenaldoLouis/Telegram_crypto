@@ -20,28 +20,27 @@ import signal_levels as sl
 # re-validation baked into bybit_data.py::_check_validated_signals docstrings/labels.
 # Keep in sync when signals are re-validated monthly via `backtest`.
 EXPECTANCY = {
-    ("rsi_rejection_short", "1h"): 0.81,
-    ("rsi_rejection_short", "4h"): 0.44,
-    ("macd_momentum_long", "1h"): 0.59,
-    ("macd_momentum_long", "4h"): 0.25,
+    ("rsi_rejection_short", "1h"): 0.17,    # Jul 29 re-run: 1h-only (4h dropped)
     ("trend_pullback_short", "4h"): 0.28,
     ("failed_breakout_short", "4h"): 0.12,   # Phase 3, validated 4h-only (N=75)
+    ("liquidity_sweep_long", "1h"): 0.08,    # Jul 29: confirmed both TFs, 100% robust
+    ("liquidity_sweep_long", "4h"): 0.04,
 }
 
 # Map a signal name to the canonical setup_type (must be in main.VALID_SETUP_TYPES).
 SETUP_TYPE = {
     "rsi_rejection_short": "range_mean_reversion",  # fading an RSI exhaustion extreme
-    "macd_momentum_long": "trend_pullback",
     "trend_pullback_short": "trend_pullback",
     "failed_breakout_short": "failed_breakout",
+    "liquidity_sweep_long": "liquidity_sweep",
 }
 
 # Canonical reasoning rule per signal (must be in config.CANONICAL_RULES).
 SETUP_RULE = {
     "rsi_rejection_short": "setup8_exhaustion",
-    "macd_momentum_long": "trend_pullback",
     "trend_pullback_short": "trend_pullback",
     "failed_breakout_short": "liquidity_sweep",  # a failed breakout is a swept level
+    "liquidity_sweep_long": "liquidity_sweep",
 }
 
 VOLUME_CONFIRM_RATIO = 1.5

@@ -154,17 +154,27 @@ def setup_violations(setup, regime_label):
 def _demote_4of4_from_top(setups):
     """Confluence de-trust (audit 2026-07-13): 4/4 confluence is the WORST bucket
     (57 trades, 18% WR, -0.36R exp). Never anchor a run on a fully-aligned (=late,
-    extended) setup. If the #1 slot is a 4/4, swap in the first sub-4/4 setup.
-    `setups` must already be sorted by rank ascending. Mutates order, returns list.
+    extended) setup, so a 4/4 must never occupy rank #1.
+
+    Partition by confluence, preserving rank order: all sub-4/4 setups first, then
+    any 4/4 setups demoted below them. If EVERY setup is 4/4 there is nothing to
+    anchor rank #1 — DROP them all (better an empty scan than a worst-bucket trade).
+    This closes the leak the old swap-one logic left when the whole slate was 4/4.
+    `setups` must already be sorted by rank ascending. Returns the new list.
     """
-    if setups and (setups[0].get("tf_confluence") or 0) >= 4:
-        for i, s in enumerate(setups):
-            if (s.get("tf_confluence") or 0) < 4:
-                setups.insert(0, setups.pop(i))
-                print(f"  ↕ DEMOTE {setups[1].get('symbol','?')}: 4/4 setup can't be rank #1 "
-                      "(4/4 = late/extended move)")
-                break
-    return setups
+    if not setups:
+        return setups
+    non_4of4 = [s for s in setups if (s.get("tf_confluence") or 0) < 4]
+    four_of4 = [s for s in setups if (s.get("tf_confluence") or 0) >= 4]
+    if not non_4of4:
+        for s in four_of4:
+            print(f"  ✂ DROP {s.get('symbol','?')}: 4/4 confluence and no sub-4/4 to "
+                  "anchor rank #1 (4/4 = late/extended move, worst bucket)")
+        return []
+    if (setups[0].get("tf_confluence") or 0) >= 4:
+        print(f"  ↕ DEMOTE {four_of4[0].get('symbol','?')}: 4/4 setup can't be rank #1 "
+              "(4/4 = late/extended move)")
+    return non_4of4 + four_of4
 
 
 def enforce_setups(setups, regime_label):

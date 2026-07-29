@@ -151,13 +151,16 @@ class BybitFetcher:
     def _check_validated_signals(candles, tf_label):
         """Check validated signal formulas against candle data.
 
-        Passed out-of-sample train/test validation on 15 symbols (Jul 2026 re-run):
-          - rsi_rejection_short : confirmed both 1h + 4h
-          - macd_momentum_long  : confirmed both 1h + 4h
+        Passed out-of-sample train/test validation on 15 symbols (Jul 29 2026 re-run):
+          - rsi_rejection_short : 1h ONLY (★ STRONG, test +0.17). 4h DROPPED —
+                                   degraded to overfit on the Jul 29 re-run.
           - trend_pullback_short: 4h ONLY (1h rejected as overfit)
           - failed_breakout_short: 4h ONLY (Phase 3; 1h only marginal) — trades a
                                     failed breakout of the prior 20-candle high.
-        macd_momentum_short removed — degraded to overfit on both TFs.
+          - liquidity_sweep_long: confirmed BOTH 1h + 4h (100% robust each) — a
+                                   wick sweeps the prior 20-candle low then reclaims.
+        macd_momentum_long REMOVED (Jul 29) — degraded to overfit on BOTH TFs.
+        macd_momentum_short removed earlier — same reason.
         Only called for 1h and 4h.
 
         Returns list of signal dicts (empty if none fire).
@@ -215,13 +218,14 @@ class BybitFetcher:
         if c["atr"] <= 0:
             return []
 
-        # --- Signal 1: RSI Rejection Short ---
+        # --- Signal 1: RSI Rejection Short (1h ONLY) ---
         # RSI was >75 (overbought), now crossing back down. Exhaustion reversal.
-        # Validated (Jul 2026 re-run): ★ STRONG both TFs — 4h test +0.438, 1h test +0.809
-        if (pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
+        # Validated (Jul 29 2026 re-run): 1h ★ STRONG (test +0.17, 100% robust).
+        # 4h DROPPED — the 4h variant degraded to overfit/marginal on this re-run.
+        if (tf_label == "1h" and
+            pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
             p2["rsi"] > 75 and p["rsi"] > 70 and
             c["rsi"] < 72 and c["rsi"] > 50 and c["rsi"] < p["rsi"]):
-            risk = 2.0 * float(c["atr"])
             signals.append({
                 "signal": "rsi_rejection_short",
                 "tf": tf_label,
@@ -229,26 +233,41 @@ class BybitFetcher:
                 "target_r": 2.0,
                 "stop_atr": 2.0,
                 "indicators": f"RSI {c['rsi']:.1f} (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
-                "historical": "+0.44 expect (4h test), +0.81 (1h test)",
+                "historical": "+0.17 expect (1h test, 100% robust)",
             })
 
-        # --- Signal 2: MACD Momentum Long ---
-        # MACD histogram flips positive in uptrend. Trend continuation.
-        # Validated (Jul 2026 re-run): confirmed both TFs — 4h test +0.250, 1h test +0.591
-        if (pd.notna(p["macd_hist"]) and
-            p["macd_hist"] <= 0 and c["macd_hist"] > 0 and
-            c["ema20"] > c["ema50"] and
-            c["adx"] > 20 and
-            35 <= c["rsi"] <= 65):
-            signals.append({
-                "signal": "macd_momentum_long",
-                "tf": tf_label,
-                "direction": "long",
-                "target_r": 1.5,
-                "stop_atr": 1.5,
-                "indicators": f"MACD hist flipped +, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
-                "historical": "+0.25 expect (4h test), +0.59 (1h test)",
-            })
+        # --- Signal 2: Liquidity Sweep Long (1h + 4h) ---
+        # A lower wick pierces the prior 20-candle low by >=0.15 ATR (a stop-hunt),
+        # the piercing wick is >= 50% of the candle range, and price closes back
+        # ABOVE the swept low with RSI < 50. Structural stop at the swept low - 0.25
+        # ATR (carry an explicit stop_price, like failed_breakout_short).
+        # Validated (Jul 29 2026 re-run): confirmed BOTH TFs — 4h test +0.044
+        # (N=94, 100% robust), 1h test +0.084 (N=83, 100% robust). This is the
+        # ONLY long signal after macd_momentum_long was dropped.
+        if len(df) >= 22:
+            prior_low = float(df["low"].iloc[-21:-1].min())
+            atr = float(c["atr"])
+            rng = float(c["high"]) - float(c["low"])
+            pierce = prior_low - float(c["low"])
+            lower_wick = min(float(c["open"]), float(c["close"])) - float(c["low"])
+            if (rng > 0 and atr > 0 and
+                    pierce >= 0.15 * atr and
+                    float(c["close"]) > prior_low and
+                    lower_wick >= 0.5 * rng and
+                    c["rsi"] < 50):
+                stop_price = float(c["low"]) - 0.25 * atr
+                risk = float(c["close"]) - stop_price
+                if risk > 0:
+                    signals.append({
+                        "signal": "liquidity_sweep_long",
+                        "tf": tf_label,
+                        "direction": "long",
+                        "target_r": 2.0,
+                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
+                        "stop_price": round(stop_price, 8),  # exact structural stop
+                        "indicators": f"swept {prior_low:.4f} low, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
+                        "historical": "+0.04 expect (4h test N=94), +0.08 (1h test N=83)",
+                    })
 
         # --- Signal 3: Trend Pullback Short (4h ONLY) ---
         # Downtrend + price pulled back to EMA20 + MACD confirms.
