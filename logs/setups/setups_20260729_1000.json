@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-07-29T10:00:11.530895+00:00",
+  "run_tag": "20260729_1000",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0
+  },
+  "setups": [
+    {
+      "symbol": "VANRYUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0041231,
+      "entry_high": 0.0042149,
+      "stop_loss": 0.004628,
+      "target_1": 0.00382475,
+      "target_2": 0.003251,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 51.8, ADX 20.1, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 11.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 20.1,
+          "rsi": 51.78,
+          "macd": -5.1e-05,
+          "macd_hist": 2e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.6,
+          "range_pct": 29.7
+        },
+        "tf_1h": {
+          "adx": 23.15,
+          "rsi": 26.31,
+          "macd": -6.1e-05,
+          "macd_hist": -4.1e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.51,
+          "range_pct": 23.6
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
