@@ -22,7 +22,7 @@ git pull --rebase --quiet
 
 source venv/bin/activate
 python main.py
-status=$?
+scan_status=$?
 
 git add -A && git commit -q -m "scan: update logs [skip ci]" 2>/dev/null
 # Race-safe push: the CI bot also pushes to master every 4h. Rebase onto any
@@ -30,4 +30,4 @@ git add -A && git commit -q -m "scan: update logs [skip ci]" 2>/dev/null
 for i in 1 2 3; do
   git pull --rebase --quiet && git push --quiet && break || sleep 5
 done
-echo "=== done (main.py exit $status) ==="
+echo "=== done (main.py exit $scan_status) ==="
