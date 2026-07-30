@@ -1,10 +1,12 @@
 # Recent Performance (last 4 weeks)
-_93 trades: 42W / 51L (45% WR, 0.03 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 56% WR, 0.02 avg blended R:R_
+_92 trades: 43W / 49L (47% WR, 0.06 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 58% WR, 0.06 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-28 | DEXEUSDT | S | scalp | range_mean_r | hig | 3/4 | 0.75 | 0.89 (W) | 0.89 | target_1 | 1.48R |
+| 2026-07-27 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.73 (W) | 1.16 | target_2 | 1.85R |
 | 2026-07-27 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
 | 2026-07-27 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.32 | be_stop | 0.86R |
 | 2026-07-27 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.3 | be_stop | 0.85R |
@@ -95,13 +97,11 @@ _Partial profit model (50% at T1 + BE stop): 56% WR, 0.02 avg blended R:R_
 | 2026-07-03 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.9R |
 | 2026-07-03 | FARTCOINUS | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
 | 2026-07-03 | SLXUSDT | L | intra | funding_sque | low | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
-| 2026-07-02 | BTCUSDT | L | intra | trend_pullba | low | 3/4 | 1.5 | 1.08 (W) | 1.08 | target_1 | 1.45R |
-| 2026-07-02 | SPCXUSDT | S | intra | trend_pullba | low | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
-| 2026-07-01 | ADAUSDT | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.31R |
 
-- Recent 'other': 3/9 (33% WR)
-- Recent 'trend_pullback': 38/78 (49% WR)
+- Recent 'trend_pullback': 38/77 (49% WR)
+- Recent 'other': 3/8 (38% WR)
 - Recent 'funding_squeeze': 0/2 (0% WR)
+- Recent 'range_mean_reversion': 1/2 (50% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
