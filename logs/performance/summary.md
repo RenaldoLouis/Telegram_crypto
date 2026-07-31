@@ -1,12 +1,12 @@
 # Performance Summary
-_Last updated: 2026-07-30 10:54 UTC_
+_Last updated: 2026-07-31 02:26 UTC_
 _Total runs evaluated: 117_
 
 ## Overall Stats
 - Total setups: 313
 - Triggered: 295 (94%)
 - Not triggered: 18
-- **Win rate: 34.6%** (102W / 193L)  (**↑ +0.5%** from previous eval: 34.1%)
+- **Win rate: 34.6%** (102W / 193L)  (**↓ -0.0%** from previous eval: 34.6%) ⚠️ REGRESSION
 - Avg actual R:R: -0.09
 - Avg winning R:R: 1.28
 - Avg losing R:R: -0.81

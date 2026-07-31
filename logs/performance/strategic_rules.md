@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 295 evaluated trades — solid sample)
-_Last updated: 2026-07-30 10:54 UTC_
+_Last updated: 2026-07-31 02:26 UTC_
 
 0. **v11.3 VALIDATED**: 58 forward trades at 52% WR / +0.15R exp (targets 34% / +0.00R). The change is working — maintain it.
 

@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_92 trades: 43W / 49L (47% WR, 0.06 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 58% WR, 0.06 avg blended R:R_
+_89 trades: 43W / 46L (48% WR, 0.10 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 60% WR, 0.09 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -94,13 +94,9 @@ _Partial profit model (50% at T1 + BE stop): 58% WR, 0.06 avg blended R:R_
 | 2026-07-05 | MIRAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.52 (W) | 0.52 | expired | 0.54R |
 | 2026-07-04 | HMSTRUSDT | S | intra | other | med | 3/4 | 1.5 | 0.24 (W) | 0.24 | expired | 1.01R |
 | 2026-07-04 | BREVUSDT | S | intra | trend_pullba | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
-| 2026-07-03 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.9R |
-| 2026-07-03 | FARTCOINUS | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
-| 2026-07-03 | SLXUSDT | L | intra | funding_sque | low | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.45R |
 
-- Recent 'trend_pullback': 38/77 (49% WR)
-- Recent 'other': 3/8 (38% WR)
-- Recent 'funding_squeeze': 0/2 (0% WR)
+- Recent 'other': 3/7 (43% WR)
+- Recent 'trend_pullback': 38/76 (50% WR)
 - Recent 'range_mean_reversion': 1/2 (50% WR)
 
 ## Trader's Recent Actual Trades
