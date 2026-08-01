@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-08-01T13:27:24.502735+00:00",
+  "run_tag": "20260801_1327",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0
+  },
+  "setups": [
+    {
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0698651,
+      "entry_high": 0.0700949,
+      "stop_loss": 0.071129,
+      "target_1": 0.06911825,
+      "target_2": 0.067682,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 52.6, ADX 18.2, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "cautious",
+      "interest_score": 1.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 18.17,
+          "rsi": 52.56,
+          "macd": -0.000286,
+          "macd_hist": 4.5e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.13,
+          "range_pct": 3.87
+        },
+        "tf_1h": {
+          "adx": 13.18,
+          "rsi": 66.14,
+          "macd": 2e-06,
+          "macd_hist": 1e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.4,
+          "range_pct": 1.33
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
