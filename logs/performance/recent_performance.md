@@ -1,10 +1,13 @@
 # Recent Performance (last 4 weeks)
-_89 trades: 43W / 46L (48% WR, 0.10 avg R:R)_
+_92 trades: 44W / 48L (48% WR, 0.10 avg R:R)_
 _Partial profit model (50% at T1 + BE stop): 60% WR, 0.09 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-30 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
+| 2026-07-29 | VANRYUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.8 (W) | 0.8 | target_1 | 1.24R |
+| 2026-07-29 | SPCXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.43 | be_stop | 0.91R |
 | 2026-07-28 | DEXEUSDT | S | scalp | range_mean_r | hig | 3/4 | 0.75 | 0.89 (W) | 0.89 | target_1 | 1.48R |
 | 2026-07-27 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.73 (W) | 1.16 | target_2 | 1.85R |
 | 2026-07-27 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
@@ -96,7 +99,7 @@ _Partial profit model (50% at T1 + BE stop): 60% WR, 0.09 avg blended R:R_
 | 2026-07-04 | BREVUSDT | S | intra | trend_pullba | med | 2/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
 
 - Recent 'other': 3/7 (43% WR)
-- Recent 'trend_pullback': 38/76 (50% WR)
+- Recent 'trend_pullback': 39/79 (49% WR)
 - Recent 'range_mean_reversion': 1/2 (50% WR)
 
 ## Trader's Recent Actual Trades

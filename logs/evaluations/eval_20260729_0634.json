@@ -1,0 +1,44 @@
+{
+  "run_tag": "20260729_0634",
+  "run_timestamp_utc": "2026-07-29T06:34:44.026161+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-08-01T03:34:04.524845+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 115.56,
+      "exit_price": 115.56,
+      "exit_reason": "be_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": true,
+      "trail_stop_hit": false,
+      "actual_rr": 0.0,
+      "blended_rr": 0.43,
+      "won": false,
+      "max_favorable_rr": 0.91,
+      "candles_to_exit": 41,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
