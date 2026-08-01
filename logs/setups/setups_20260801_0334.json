@@ -1,0 +1,164 @@
+{
+  "run_timestamp_utc": "2026-08-01T03:34:57.209251+00:00",
+  "run_tag": "20260801_0334",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 3
+  },
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "SNDKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1218.0,
+      "entry_high": 1232.0,
+      "stop_loss": 1352.0,
+      "target_1": 1131.0,
+      "target_2": 1036.0,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback",
+          "regime_cautious",
+          "short_bias"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h with +0.28 expectancy; EMA20<EMA50, ADX 30.31, price bounced to EMA20 resistance in confirmed daily downtrend"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.31,
+          "rsi": 66.61,
+          "macd": -4.39916,
+          "macd_hist": 16.766971,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.07,
+          "range_pct": 38.48
+        },
+        "tf_1h": {
+          "adx": 20.5,
+          "rsi": 38.23,
+          "macd": -14.136731,
+          "macd_hist": -7.29921,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.97,
+          "range_pct": 17.5
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "cautious",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "1000RATSUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.052,
+      "entry_high": 0.056,
+      "stop_loss": 0.0685,
+      "target_1": 0.0426,
+      "target_2": 0.0315,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "regime_cautious",
+          "short_bias",
+          "volume_confirmed"
+        ],
+        "key_factor": "Validated failed_breakout_short on 4h; 92% pump then sharp reversal with 5.7x volume spike at 0.0657 high \u2014 climactic top confirmed, entering on 15m oversold bounce"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 33.31,
+          "rsi": 77.52,
+          "macd": 0.006586,
+          "macd_hist": 0.003436,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.76,
+          "range_pct": 77.1
+        },
+        "tf_1h": {
+          "adx": 60.34,
+          "rsi": 65.25,
+          "macd": 0.006738,
+          "macd_hist": -0.000653,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.35,
+          "range_pct": 75.07
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "source": "claude",
+      "regime": "cautious",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 8.0
+    },
+    {
+      "rank": 3,
+      "symbol": "KORUUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 15.2,
+      "entry_high": 15.42,
+      "stop_loss": 17.55,
+      "target_1": 13.63,
+      "target_2": 11.97,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback",
+          "regime_cautious",
+          "short_bias"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h with +0.28 expectancy; EMA20<EMA50, ADX 26.3, corrective bounce into EMA20 resistance within bearish daily structure; low volume = reduced sizing"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.29,
+          "rsi": 63.83,
+          "macd": -0.127391,
+          "macd_hist": 0.248864,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.2,
+          "range_pct": 53.16
+        },
+        "tf_1h": {
+          "adx": 22.55,
+          "rsi": 37.25,
+          "macd": -0.267205,
+          "macd_hist": -0.130538,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.91,
+          "range_pct": 22.62
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "cautious",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    }
+  ]
+}
