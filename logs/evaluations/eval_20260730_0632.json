@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260730_0632",
+  "run_timestamp_utc": "2026-07-30T06:32:11.004693+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-08-02T04:00:39.655435+00:00",
+  "results": [
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    },
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 4,
+      "rank": 3,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "cautious",
+      "interest_score": 2.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}

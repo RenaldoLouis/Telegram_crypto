@@ -1,0 +1,44 @@
+{
+  "run_tag": "20260730_1028",
+  "run_timestamp_utc": "2026-07-30T10:28:06.407343+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-08-02T04:00:54.252951+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.07019,
+      "exit_price": 0.069736,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.5,
+      "won": true,
+      "max_favorable_rr": 1.16,
+      "candles_to_exit": 123,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 4,
+      "rank": 3,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 1.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
