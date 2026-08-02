@@ -213,6 +213,33 @@ def enforce_setups(setups, regime_label):
                   "(longs run 29% WR / -33R; prefer shorts outside risk_on)")
         kept = [s for s in kept if s.get("direction") != "long" or id(s) in keep_ids]
 
+    # 3b. Regime-aware short cap (audit 2026-08-02): symmetric to the long cap. Shorting a
+    # bullish tape is the mechanical engine's mirror-image leak (07-30 17:38: 3 shorts in
+    # risk_on, all stopped at MFE ~0.10R). Cap shorts hard in bullish regimes.
+    short_cap = config.SHORT_CAP_BY_REGIME.get(regime_label, 5)
+    shorts_sorted = sorted((s for s in kept if s.get("direction") == "short"), key=_rank_key)
+    if len(shorts_sorted) > short_cap:
+        keep_ids = {id(s) for s in shorts_sorted[:short_cap]}
+        for s in shorts_sorted[short_cap:]:
+            print(f"  ✂ DROP {s.get('symbol','?')}: short cap {short_cap} for {regime_label} "
+                  "(shorting a bullish tape stops out at ~0.1R MFE)")
+        kept = [s for s in kept if s.get("direction") != "short" or id(s) in keep_ids]
+
+    # 3c. Per-run same-direction concentration cap (audit 2026-08-02): N identical-direction
+    # setups in one run is one correlated bet sized N×. Cap each direction so a single bad
+    # read can't become a multi-loss streak (both 07-30 batches were 3× short → 3 stops).
+    conc_cap = config.MAX_SAME_DIRECTION_PER_RUN
+    if conc_cap is not None:
+        for direction in ("long", "short"):
+            side = sorted((s for s in kept if s.get("direction") == direction), key=_rank_key)
+            if len(side) > conc_cap:
+                keep_ids = {id(s) for s in side[:conc_cap]}
+                for s in side[conc_cap:]:
+                    print(f"  ✂ DROP {s.get('symbol','?')}: same-direction cap {conc_cap} "
+                          f"({direction}s this run — avoid correlated stop-out batch)")
+                kept = [s for s in kept
+                        if s.get("direction") != direction or id(s) in keep_ids]
+
     # 4. Regime count cap — keep the top-N by rank.
     max_setups = REGIME_COUNT_LIMITS.get(regime_label, 3)
     kept = sorted(kept, key=_rank_key)

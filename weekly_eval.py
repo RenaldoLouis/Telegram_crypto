@@ -102,6 +102,34 @@ def fetch_klines_after(client, symbol, start_time_utc, days):
     return all_candles
 
 
+def trade_cost_rr(result):
+    """Round-trip transaction cost for ONE evaluated trade, expressed in R.
+
+    Costs live in % of notional (taker fee + slippage per side, plus funding over the
+    hold). We convert to R via the trade's own risk_pct = |entry-stop|/entry, because a
+    fixed % fee costs proportionally MORE R on a tight-stop setup than a wide-stop one —
+    that asymmetry is exactly what a naive gross-R backtest hides.
+
+    Works on historical evals too: if risk_pct wasn't stored, recover it from
+    actual_rr = price_move/risk  →  risk = |exit-entry|/|actual_rr|. Falls back to the
+    median risk_pct only for degenerate/breakeven exits where the move is ~0.
+    """
+    if not config.COST_MODEL_ENABLED:
+        return 0.0
+    rp = result.get("risk_pct")
+    if not rp:
+        entry, exitp = result.get("entry_price"), result.get("exit_price")
+        rr = result.get("actual_rr")
+        if entry and exitp is not None and rr:
+            rp = (abs(exitp - entry) / abs(rr)) / entry
+    if not rp or rp <= 0:
+        rp = config.FALLBACK_RISK_PCT
+    roundtrip = 2 * (config.TAKER_FEE_PCT + config.SLIPPAGE_PCT)   # entry + exit legs
+    hold_hours = (result.get("candles_to_exit") or 0) * 15 / 60.0  # eval uses 15m candles
+    funding = config.FUNDING_PCT_PER_8H * (hold_hours / 8.0)
+    return round((roundtrip + funding) / rp, 4)
+
+
 def evaluate_setup(client, setup, run_timestamp_utc):
     """Evaluate a single setup against actual price data."""
     symbol = setup["symbol"]
@@ -292,7 +320,7 @@ def evaluate_setup(client, setup, run_timestamp_utc):
                     sim_t1_100r = True
                     break
 
-    return {
+    result = {
         "status": "evaluated",
         "entry_triggered": True,
         "entry_price": round(entry_price, 6),
@@ -308,9 +336,18 @@ def evaluate_setup(client, setup, run_timestamp_utc):
         "won": won,
         "max_favorable_rr": round(max_favorable_rr, 2),
         "candles_to_exit": candles_to_exit,
+        "risk_pct": round(risk / entry_price, 6) if entry_price else None,
         "sim_t1_075r_hit": sim_t1_075r,
         "sim_t1_100r_hit": sim_t1_100r,
     }
+    # Net-of-cost R (audit 2026-08-02): the honest number. gross expectancy here is thin
+    # enough that fees+slippage can flip it negative — so score every trade net too.
+    cost_rr = trade_cost_rr(result)
+    result["cost_rr"] = cost_rr
+    result["net_rr"] = round(actual_rr - cost_rr, 3)
+    result["net_blended_rr"] = round(blended_rr - cost_rr, 3)
+    result["won_net"] = result["net_rr"] > 0
+    return result
 
 
 def run_evaluation():
@@ -548,7 +585,15 @@ def _group_stats(results):
     gross_win = sum(x for x in rr if x > 0)
     gross_loss = abs(sum(x for x in rr if x < 0))
     pf = gross_win / gross_loss if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
-    return {"n": n, "wr": wins / n * 100, "exp": sum(rr) / n, "pf": pf, "wins": wins}
+    # Net-of-cost twins (audit 2026-08-02). trade_cost_rr recovers risk_pct from stored
+    # fields, so net stats are correct for historical evals scored before the cost model.
+    nrr = [r.get("net_rr", r.get("actual_rr", 0) - trade_cost_rr(r)) for r in results]
+    nwins = sum(1 for x in nrr if x > 0)
+    ngw = sum(x for x in nrr if x > 0)
+    ngl = abs(sum(x for x in nrr if x < 0))
+    npf = ngw / ngl if ngl > 0 else (float("inf") if ngw > 0 else 0.0)
+    return {"n": n, "wr": wins / n * 100, "exp": sum(rr) / n, "pf": pf, "wins": wins,
+            "net_wr": nwins / n * 100, "net_exp": sum(nrr) / n, "net_pf": npf}
 
 
 def generate_head_to_head(all_evals):
@@ -568,26 +613,60 @@ def generate_head_to_head(all_evals):
         return "∞" if pf == float("inf") else f"{pf:.2f}"
 
     by_source, by_backed = {}, {}
+    by_src_dir, by_mech_signal = {}, {}
     for r in evaluated:
-        by_source.setdefault(r.get("source", "claude"), []).append(r)
+        src = r.get("source", "claude")
+        by_source.setdefault(src, []).append(r)
         key = "signal_backed" if r.get("backtested_signal") else "discretionary"
         by_backed.setdefault(key, []).append(r)
+        # Concentration diagnostics (audit 2026-08-02): the aggregate expectancy
+        # hides that mechanical was 100% shorts / one signal for its first ~23
+        # trades. Surface direction + per-signal splits so a fragile, one-legged
+        # book can't read as a broad edge in the head-to-head.
+        by_src_dir.setdefault((src, r.get("direction", "?")), []).append(r)
+        if src == "mechanical":
+            by_mech_signal.setdefault(r.get("backtested_signal") or "(none)", []).append(r)
 
+    rt_pct = 2 * (config.TAKER_FEE_PCT + config.SLIPPAGE_PCT)
     lines = ["# Head-to-Head: Mechanical vs Claude", "",
-             f"Total evaluated trades: {len(evaluated)}", "",
-             "## By source", "",
-             "| source | n | win% | expectancy (R) | profit factor |",
-             "|---|---|---|---|---|"]
+             f"Total evaluated trades: {len(evaluated)}",
+             f"Cost model: {rt_pct*100:.3f}% round-trip (fee {config.TAKER_FEE_PCT*100:.3f}%"
+             f" + slippage {config.SLIPPAGE_PCT*100:.3f}% ×2) + funding; net = gross − cost.", "",
+             "## By source (gross → net of cost)", "",
+             "| source | n | win% | gross exp (R) | **net exp (R)** | net PF |",
+             "|---|---|---|---|---|---|"]
     for src in sorted(by_source):
         s = _group_stats(by_source[src])
-        lines.append(f"| {src} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+        lines.append(f"| {src} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
+                     f"**{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} |")
 
-    lines += ["", "## By signal backing", "",
-              "| backing | n | win% | expectancy (R) | profit factor |",
-              "|---|---|---|---|---|"]
+    lines += ["", "## By signal backing (gross → net of cost)", "",
+              "| backing | n | win% | gross exp (R) | **net exp (R)** | net PF |",
+              "|---|---|---|---|---|---|"]
     for key in sorted(by_backed):
         s = _group_stats(by_backed[key])
-        lines.append(f"| {key} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+        lines.append(f"| {key} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
+                     f"**{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} |")
+
+    lines += ["", "## By source × direction", "",
+              "| source | direction | n | win% | expectancy (R) | profit factor |",
+              "|---|---|---|---|---|---|"]
+    for (src, direction) in sorted(by_src_dir):
+        s = _group_stats(by_src_dir[(src, direction)])
+        lines.append(f"| {src} | {direction} | {s['n']} | {s['wr']:.1f}% | "
+                     f"{s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+
+    lines += ["", "## Mechanical by signal", "",
+              "| signal | n | win% | expectancy (R) | profit factor |",
+              "|---|---|---|---|---|"]
+    if by_mech_signal:
+        for sig in sorted(by_mech_signal, key=lambda k: -sum(x.get("actual_rr", 0)
+                                                              for x in by_mech_signal[k])):
+            s = _group_stats(by_mech_signal[sig])
+            lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | "
+                         f"{s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+    else:
+        lines.append("| _(no mechanical trades yet)_ | 0 | — | — | — |")
 
     m, c = _group_stats(by_source.get("mechanical", [])), _group_stats(by_source.get("claude", []))
     lines += ["", "## Verdict"]
@@ -596,9 +675,47 @@ def generate_head_to_head(all_evals):
         lines.append(f"**{lead} LEADS on expectancy** "
                      f"(mechanical {m['exp']:+.3f}R vs claude {c['exp']:+.3f}R; "
                      f"n={m['n']}/{c['n']}).")
+        # Concentration guard: the count gate can pass while the mechanical book
+        # is one-directional or one-signal (audit 2026-08-02: 23t, 100% shorts,
+        # 21/23 trend_pullback_short). Flag it so the lead isn't mistaken for a
+        # broad, flip-ready edge.
+        mech = by_source.get("mechanical", [])
+        if mech:
+            dirs = {r.get("direction") for r in mech}
+            top_sig = max(by_mech_signal.values(), key=len) if by_mech_signal else []
+            warns = []
+            if len(dirs) < 2:
+                warns.append(f"one-directional ({next(iter(dirs))}-only)")
+            if len(top_sig) / len(mech) >= 0.75:
+                warns.append(f"{len(top_sig)}/{len(mech)} from a single signal")
+            if warns:
+                lines.append(f"⚠️ CONCENTRATION: mechanical book is {', '.join(warns)} — "
+                             f"lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE "
+                             f"until both directions and >1 signal have live data.")
     else:
         lines.append(f"**INSUFFICIENT DATA** — need >=20 evaluated trades per source "
                      f"(mechanical={m['n']}, claude={c['n']}). Keep running the shadow.")
+
+    # Net-of-cost reality check (audit 2026-08-02): the gross edge here is thin enough
+    # that fees+slippage can flip it. This is the number that decides if anything is real.
+    alls = _group_stats(evaluated)
+    backed = _group_stats(by_backed.get("signal_backed", []))
+    lines += ["", "## Net-of-cost reality check",
+              f"- Whole book: gross {alls['exp']:+.3f}R → **net {alls['net_exp']:+.3f}R** "
+              f"(PF {fmt_pf(alls['net_pf'])}, n={alls['n']})",
+              f"- Mechanical: gross {m['exp']:+.3f}R → **net {m['net_exp']:+.3f}R** (n={m['n']})",
+              f"- Signal-backed: gross {backed['exp']:+.3f}R → **net {backed['net_exp']:+.3f}R** "
+              f"(n={backed['n']}) — the only cut that should be near a real net edge"]
+    best_net = max((_group_stats(v)["net_exp"], k) for k, v in by_source.items())
+    survives = best_net[0] > 0
+    lines.append(
+        f"- **VERDICT: {'an edge SURVIVES costs' if survives else 'NO edge survives costs yet'}** — "
+        f"best source net {best_net[0]:+.3f}R ({best_net[1]}). "
+        + ("Net-positive on a real cost model — this is tradeable-grade, keep pushing sample."
+           if survives else
+           "Every source is net-negative or breakeven. The gross edge is a cost illusion; "
+           "the only path to a real edge is cutting the losing longs and/or raising per-trade "
+           "R by widening targets or entering closer to stop — NOT more rule-tuning."))
 
     PERFORMANCE_DIR.mkdir(parents=True, exist_ok=True)
     out = PERFORMANCE_DIR / "head_to_head.md"

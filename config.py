@@ -97,6 +97,28 @@ LONG_MIN_CONFLUENCE = 3       # longs require >= 3/4 TF confluence (hard structu
 # are ~breakeven (36% / 56). Outside a confirmed risk_on rally, cap the number of longs per run so a
 # bearish/neutral tape can't be filled with the losing direction. audit 2026-07-13
 LONG_CAP_BY_REGIME = {"risk_off": 1, "cautious": 1, "neutral": 2, "risk_on": 5}
+# Symmetric short cap (audit 2026-08-02): mirror of the long cap for the opposite side.
+# Shorting a rising tape is the mechanical engine's version of the long-in-a-selloff leak
+# — the 07-30 17:38 batch fired 3 shorts in risk_on (all stopped, MFE ~0.10R). Cap shorts
+# hard in bullish regimes; leave them uncapped where shorts are the edge (risk_off/cautious).
+SHORT_CAP_BY_REGIME = {"risk_off": 5, "cautious": 5, "neutral": 3, "risk_on": 1}
+# Per-run same-direction concentration cap (audit 2026-08-02): N identical-direction setups
+# in one run from one signal is one bet sized N×, so a single bad read becomes a correlated
+# multi-loss streak (both 07-30 batches were 3× trend_pullback_short → 3 simultaneous stops).
+# Cap same-direction setups per run so correlated drawdown can't compound. None = no cap.
+MAX_SAME_DIRECTION_PER_RUN = 2
+
+# --- Transaction cost model (audit 2026-08-02) -----------------------------------------
+# A +0.04R GROSS expectancy is meaningless until it survives real perp costs. Costs are
+# a % of notional per side; the eval converts them to R per-trade via each trade's own
+# risk_pct (|entry-stop|/entry). That conversion is the whole point: median risk here is
+# ~3.1% of price, so a 0.17% round-trip already costs ~0.055R — LARGER than the gross edge.
+# Tight-stop setups (small risk_pct) correctly pay MORE R per unit of fee.
+COST_MODEL_ENABLED = True
+TAKER_FEE_PCT = 0.00055        # Bybit USDT-perp taker fee, each side (~0.055%)
+SLIPPAGE_PCT = 0.0003          # assumed slippage each side (entry + exit fill), tunable
+FUNDING_PCT_PER_8H = 0.0001    # avg |funding| per 8h, applied as a cost over the hold
+FALLBACK_RISK_PCT = 0.031      # median recovered risk_pct — used when a trade's own is unrecoverable
 
 # Canonical rule taxonomy. Claude may ONLY cite these IDs in reasoning.rules_applied.
 # Free-text IDs are dropped on save so attribution stays statistically meaningful
