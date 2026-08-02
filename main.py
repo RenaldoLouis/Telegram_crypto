@@ -132,6 +132,17 @@ def setup_violations(setup, regime_label):
         violations.append("LONG without volume_confirmed (long volume gate)")
     if direction == "long" and sym in LONG_BLACKLIST:
         violations.append("LONG on blacklisted symbol (negative long history)")
+    # Long signal-backing gate (audit 2026-08-02, lever #1): discretionary longs are the
+    # entire net loss (185t, 29% WR, -0.25R net). A long must be backed by a validated long
+    # signal (set on entry_indicators by enrich_with_entry_indicators, which runs before this).
+    # Signal-backed longs pass in ALL regimes — this bans unbacked longs, not longs-in-rallies.
+    if direction == "long" and config.LONG_REQUIRE_SIGNAL_BACKING:
+        sig_backed = (setup.get("backtested_signal")
+                      or setup.get("entry_indicators", {}).get("backtested_signal"))
+        escape = config.ALLOW_DISCRETIONARY_LONGS_IN_RISK_ON and regime_label == "risk_on"
+        if not sig_backed and not escape:
+            violations.append("LONG without validated signal backing "
+                              "(discretionary longs run -0.25R net over 185t; lever #1)")
     # Confluence floor (audit 2026-07-13): the 2/4 bucket loses in BOTH directions
     # (2/4 long -0.66R/18t, 2/4 short -0.80R/5t; conf=2 overall 9% WR over 23 trades).
     # 3/4 is the empirical sweet spot, so require >= 3/4 for ANY setup.

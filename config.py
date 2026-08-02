@@ -120,6 +120,21 @@ SLIPPAGE_PCT = 0.0003          # assumed slippage each side (entry + exit fill),
 FUNDING_PCT_PER_8H = 0.0001    # avg |funding| per 8h, applied as a cost over the hold
 FALLBACK_RISK_PCT = 0.031      # median recovered risk_pct — used when a trade's own is unrecoverable
 
+# --- Long policy (audit 2026-08-02, lever #1) ------------------------------------------
+# Discretionary longs are the ENTIRE net loss: 185 trades, 29% WR, -0.25R NET (-46R total),
+# vs a short-only book at -0.03R net. Cutting them is the single largest, most statistically
+# defensible improvement available (n=185 across 4 months / all regimes — not a small-sample
+# tune). So a long must be backed by a VALIDATED long signal (entry_indicators.backtested_signal
+# set — today that's liquidity_sweep_long). This does NOT ban longs in rallies: a signal-backed
+# long passes in every regime. The correct way to get long exposure in risk_on is a GOOD long
+# signal, not re-enabling losing discretionary longs.
+LONG_REQUIRE_SIGNAL_BACKING = True
+# Off-by-default escape hatch: allow UNBACKED longs during a confirmed risk_on rally. Kept for
+# tunability but DISABLED — we have zero risk_on-tagged long trades to justify it either way.
+# Flip to True only to deliberately A/B test long participation once a validated long signal
+# has accumulated live risk_on trades.
+ALLOW_DISCRETIONARY_LONGS_IN_RISK_ON = False
+
 # Canonical rule taxonomy. Claude may ONLY cite these IDs in reasoning.rules_applied.
 # Free-text IDs are dropped on save so attribution stays statistically meaningful
 # (history had ~120 one-off IDs across 60 setups → every rule was n=1-3 noise).
