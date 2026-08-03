@@ -1,10 +1,14 @@
 # Recent Performance (last 4 weeks)
-_98 trades: 45W / 53L (46% WR, 0.05 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 57% WR, 0.04 avg blended R:R_
+_97 trades: 46W / 51L (47% WR, 0.06 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 58% WR, 0.06 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-31 | MUUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.02 (L) | -0.02 | expired | 0.5R |
+| 2026-07-31 | CFXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.08 (W) | 0.08 | expired | 0.38R |
+| 2026-07-31 | ESPUSDT | S | intra | trend_pullba | med | 3/4 | 0.786 | 0.14 (W) | 0.14 | expired | 0.4R |
+| 2026-07-31 | FARTCOINUS | S | intra | trend_pullba | med | 4/4 | 0.959 | 0.3 (W) | 0.3 | trail_stop | 1.09R |
 | 2026-07-30 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.11R |
 | 2026-07-30 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.09R |
 | 2026-07-30 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.11R |
@@ -98,13 +102,8 @@ _Partial profit model (50% at T1 + BE stop): 57% WR, 0.04 avg blended R:R_
 | 2026-07-06 | DOGEUSDT | L | intra | post_liquida | low | 3/4 | 1.5 | 0.0 (L) | 0.84 | be_stop | 1.88R |
 | 2026-07-06 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.73 (W) | 1.51 | target_2 | 2.12R |
 | 2026-07-06 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.75 (W) | 1.49 | target_2 | 1.84R |
-| 2026-07-05 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.56R |
-| 2026-07-05 | ENAUSDT | L | intra | trend_pullba | low | 2/4 | 1.5 | 0.0 (L) | 0.33 | be_stop | 1.67R |
-| 2026-07-05 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.31R |
-| 2026-07-05 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.33 (W) | 0.33 | expired | 0.62R |
-| 2026-07-05 | MIRAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.52 (W) | 0.52 | expired | 0.54R |
 
-- Recent 'trend_pullback': 41/86 (48% WR)
+- Recent 'trend_pullback': 42/85 (49% WR)
 - Recent 'other': 2/6 (33% WR)
 - Recent 'range_mean_reversion': 1/2 (50% WR)
 
