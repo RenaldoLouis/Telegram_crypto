@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-08-03T03:17:28.645237+00:00",
+  "generated_utc": "2026-08-03T07:31:13.487065+00:00",
   "market_regime": {
-    "regime": "neutral",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 60.0,
-      "median_change_pct": -0.15,
-      "btc_change_pct": -0.45,
-      "avg_funding_pct": -0.0248,
+      "pct_declining": 86.0,
+      "median_change_pct": -1.61,
+      "btc_change_pct": -1.32,
+      "avg_funding_pct": -0.0045,
       "large_decline_count": 10
     },
-    "detected_utc": "2026-08-03T03:17:28.644593+00:00",
-    "previous_regime": "risk_on"
+    "detected_utc": "2026-08-03T07:31:13.486440+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
@@ -47,19 +47,19 @@
     },
     {
       "symbol": "BANKUSDT",
-      "flagged_utc": "2026-08-02T20:59:05.021938+00:00",
-      "expires_utc": "2026-08-04T20:59:05.021938+00:00",
+      "flagged_utc": "2026-08-03T07:31:13.486190+00:00",
+      "expires_utc": "2026-08-05T07:31:13.486190+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.04719,
-      "price_change_24h_pct": -11.1634,
-      "turnover_24h_usd": 23657999.3195,
-      "funding_rate_pct": -0.075256,
-      "open_interest": 125182540.0,
-      "volume_acceleration": 0.9585212536176847,
-      "price_acceleration_pct": -0.3202999999999996
+      "last_price": 0.04326,
+      "price_change_24h_pct": -11.822199999999999,
+      "turnover_24h_usd": 24948706.3635,
+      "funding_rate_pct": -0.073916,
+      "open_interest": 140337650.0,
+      "volume_acceleration": 1.1275827343550437,
+      "price_acceleration_pct": 1.2195999999999998
     },
     {
       "symbol": "COTIUSDT",
@@ -79,19 +79,19 @@
     },
     {
       "symbol": "MMTUSDT",
-      "flagged_utc": "2026-08-03T03:17:28.644336+00:00",
-      "expires_utc": "2026-08-05T03:17:28.644336+00:00",
+      "flagged_utc": "2026-08-03T07:31:13.486190+00:00",
+      "expires_utc": "2026-08-05T07:31:13.486190+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.15602,
-      "price_change_24h_pct": -12.510499999999999,
-      "turnover_24h_usd": 11375698.6305,
-      "funding_rate_pct": -0.276875,
-      "open_interest": 26124517.0,
-      "volume_acceleration": 0.9105076308760007,
-      "price_acceleration_pct": 0.9669999999999987
+      "last_price": 0.15176,
+      "price_change_24h_pct": -15.698200000000002,
+      "turnover_24h_usd": 10118185.5192,
+      "funding_rate_pct": -0.137338,
+      "open_interest": 26262389.0,
+      "volume_acceleration": 0.8894561861960361,
+      "price_acceleration_pct": 3.187700000000003
     },
     {
       "symbol": "1000RATSUSDT",
@@ -175,19 +175,19 @@
     },
     {
       "symbol": "EULUSDT",
-      "flagged_utc": "2026-08-03T03:17:28.644336+00:00",
-      "expires_utc": "2026-08-05T03:17:28.644336+00:00",
+      "flagged_utc": "2026-08-03T07:31:13.486190+00:00",
+      "expires_utc": "2026-08-05T07:31:13.486190+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 1.4619,
-      "price_change_24h_pct": -11.351600000000001,
-      "turnover_24h_usd": 11931905.8406,
-      "funding_rate_pct": -0.790058,
-      "open_interest": 2488606.1,
-      "volume_acceleration": 0.8234996582912516,
-      "price_acceleration_pct": 5.224300000000001
+      "last_price": 1.3724,
+      "price_change_24h_pct": -5.9677,
+      "turnover_24h_usd": 10551250.4903,
+      "funding_rate_pct": -0.10897599999999999,
+      "open_interest": 2400070.6,
+      "volume_acceleration": 0.8842887826350317,
+      "price_acceleration_pct": -5.3839000000000015
     },
     {
       "symbol": "AKEUSDT",
@@ -223,35 +223,35 @@
     },
     {
       "symbol": "BLESSUSDT",
-      "flagged_utc": "2026-08-03T03:17:28.644336+00:00",
-      "expires_utc": "2026-08-05T03:17:28.644336+00:00",
+      "flagged_utc": "2026-08-03T07:31:13.486190+00:00",
+      "expires_utc": "2026-08-05T07:31:13.486190+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.020637,
-      "price_change_24h_pct": 59.358999999999995,
-      "turnover_24h_usd": 107625862.8119,
-      "funding_rate_pct": 0.106379,
-      "open_interest": 576878710.0,
-      "volume_acceleration": 1.3772788519419812,
-      "price_acceleration_pct": 1.952299999999994
+      "last_price": 0.018709,
+      "price_change_24h_pct": 36.9819,
+      "turnover_24h_usd": 119957144.8714,
+      "funding_rate_pct": 0.100377,
+      "open_interest": 646076300.0,
+      "volume_acceleration": 1.1145754536811625,
+      "price_acceleration_pct": -22.37709999999999
     },
     {
       "symbol": "HYPERUSDT",
-      "flagged_utc": "2026-08-03T03:17:28.644336+00:00",
-      "expires_utc": "2026-08-05T03:17:28.644336+00:00",
+      "flagged_utc": "2026-08-03T07:31:13.486190+00:00",
+      "expires_utc": "2026-08-05T07:31:13.486190+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.06235,
-      "price_change_24h_pct": -6.4656,
-      "turnover_24h_usd": 27963908.67,
-      "funding_rate_pct": -0.24535999999999997,
-      "open_interest": 40065190.0,
-      "volume_acceleration": 1.0116276646695512,
-      "price_acceleration_pct": -8.505899999999999
+      "last_price": 0.06225,
+      "price_change_24h_pct": -8.8713,
+      "turnover_24h_usd": 24511034.8416,
+      "funding_rate_pct": -0.12411499999999999,
+      "open_interest": 37210328.0,
+      "volume_acceleration": 0.8765239198444285,
+      "price_acceleration_pct": 2.4056999999999995
     },
     {
       "symbol": "HOMEUSDT",
