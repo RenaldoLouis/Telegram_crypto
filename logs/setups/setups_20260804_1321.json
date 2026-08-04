@@ -1,0 +1,114 @@
+{
+  "run_timestamp_utc": "2026-08-04T13:21:29.651129+00:00",
+  "run_tag": "20260804_1321",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 2
+  },
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "BANKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.054,
+      "entry_high": 0.0555,
+      "stop_loss": 0.0605,
+      "target_1": 0.0506,
+      "target_2": 0.0456,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "btc_bearish_guard"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h (N=111, +0.28R): 29% pump into EMA20 resistance with 1h RSI 71.74 overbought and 15m RSI 84.74 exhaustion"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.27,
+          "rsi": 58.23,
+          "macd": -0.017878,
+          "macd_hist": 0.007011,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.25,
+          "range_pct": 37.71
+        },
+        "tf_1h": {
+          "adx": 27.06,
+          "rsi": 71.74,
+          "macd": 0.001949,
+          "macd_hist": 0.001647,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.76,
+          "range_pct": 32.36
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 5.0
+    },
+    {
+      "rank": 2,
+      "symbol": "SPCXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 116.5,
+      "entry_high": 118.65,
+      "stop_loss": 119.5,
+      "target_1": 114.95,
+      "target_2": 113.2,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "btc_bearish_guard",
+          "partial_profit"
+        ],
+        "key_factor": "Validated failed_breakout_short on 4h (N=75, +0.12R): failed break of 118.65 with 1D ADX 36 bearish structure; 1h/15m bounce provides retest entry at resistance"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 18.54,
+          "rsi": 69.69,
+          "macd": 1.451596,
+          "macd_hist": 1.107622,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.58,
+          "range_pct": 12.13
+        },
+        "tf_1h": {
+          "adx": 37.5,
+          "rsi": 56.99,
+          "macd": 1.640131,
+          "macd_hist": -0.032582,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.11,
+          "range_pct": 7.72
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    }
+  ]
+}
