@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_95 trades: 43W / 52L (45% WR, 0.01 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 55% WR, -0.01 avg blended R:R_
+_94 trades: 43W / 51L (46% WR, 0.02 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 55% WR, 0.00 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -99,9 +99,8 @@ _Partial profit model (50% at T1 + BE stop): 55% WR, -0.01 avg blended R:R_
 | 2026-07-08 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -0.12 (L) | -0.12 | expired | 1.04R |
 | 2026-07-07 | SPCXUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 0.33 (W) | 0.33 | expired | 1.0R |
 | 2026-07-07 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.25 (W) | 1.71 | target_2 | 2.25R |
-| 2026-07-07 | RPLUSDT | L | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.27R |
 
-- Recent 'trend_pullback': 40/84 (48% WR)
+- Recent 'trend_pullback': 40/83 (48% WR)
 - Recent 'other': 1/5 (20% WR)
 - Recent 'failed_breakout': 0/2 (0% WR)
 - Recent 'range_mean_reversion': 1/2 (50% WR)
