@@ -1,10 +1,13 @@
 # Recent Performance (last 4 weeks)
-_94 trades: 43W / 51L (46% WR, 0.02 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 55% WR, 0.00 avg blended R:R_
+_93 trades: 42W / 51L (45% WR, -0.01 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 54% WR, -0.03 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-08-03 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
+| 2026-08-03 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.2R |
+| 2026-08-02 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.14 (W) | 1.49 | target_2 | 2.27R |
 | 2026-08-01 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.12R |
 | 2026-08-01 | TSLAUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.07R |
 | 2026-08-01 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.95 (W) | 1.34 | target_2 | 2.02R |
@@ -95,12 +98,8 @@ _Partial profit model (50% at T1 + BE stop): 55% WR, 0.00 avg blended R:R_
 | 2026-07-08 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.55R |
 | 2026-07-08 | XRPUSDT | S | intra | trend_pullba | low | 3/4 | 1.5 | -0.95 (L) | -0.95 | expired | 0.64R |
 | 2026-07-08 | DOGEUSDT | S | intra | trend_pullba | low | 4/4 | 1.5 | -0.88 (L) | -0.88 | expired | 0.24R |
-| 2026-07-08 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.0 (L) | 0.52 | be_stop | 1.29R |
-| 2026-07-08 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -0.12 (L) | -0.12 | expired | 1.04R |
-| 2026-07-07 | SPCXUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 0.33 (W) | 0.33 | expired | 1.0R |
-| 2026-07-07 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 2.25 (W) | 1.71 | target_2 | 2.25R |
 
-- Recent 'trend_pullback': 40/83 (48% WR)
+- Recent 'trend_pullback': 39/82 (48% WR)
 - Recent 'other': 1/5 (20% WR)
 - Recent 'failed_breakout': 0/2 (0% WR)
 - Recent 'range_mean_reversion': 1/2 (50% WR)
