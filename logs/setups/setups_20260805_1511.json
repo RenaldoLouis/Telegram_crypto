@@ -1,0 +1,114 @@
+{
+  "run_timestamp_utc": "2026-08-05T15:11:28.650467+00:00",
+  "run_tag": "20260805_1511",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 2
+  },
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "FARTCOINUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1335,
+      "entry_high": 0.1355,
+      "stop_loss": 0.1405,
+      "target_1": 0.13,
+      "target_2": 0.1255,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "confluence_3of4",
+          "regime_neutral",
+          "partial_profit"
+        ],
+        "key_factor": "4h RSI 72.83 overbought at 1D bearish trend resistance; 1h rsi_h_bear divergence confirms bearish continuation; historical winning symbol on shorts"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 29.32,
+          "rsi": 72.83,
+          "macd": 0.002232,
+          "macd_hist": 0.000221,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.57,
+          "range_pct": 10.1
+        },
+        "tf_1h": {
+          "adx": 21.23,
+          "rsi": 38.29,
+          "macd": 0.000299,
+          "macd_hist": -0.00042,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.3,
+          "range_pct": 5.97
+        },
+        "backtested_signal": null
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 1.0
+    },
+    {
+      "rank": 2,
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0698,
+      "entry_high": 0.0703,
+      "stop_loss": 0.0711,
+      "target_1": 0.06926,
+      "target_2": 0.06847,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "wait_for_retest",
+          "partial_profit"
+        ],
+        "key_factor": "Backtested validated trend_pullback_short (+0.28 expect, N=111); price at 4h EMA20 resistance in 4/4 bearish EMA alignment; historical winning symbol; ranked #2 per 4/4 rule"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.93,
+          "rsi": 61.74,
+          "macd": -3.8e-05,
+          "macd_hist": -1.8e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.02,
+          "range_pct": 3.61
+        },
+        "tf_1h": {
+          "adx": 15.34,
+          "rsi": 45.88,
+          "macd": -7.6e-05,
+          "macd_hist": 1.9e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.31,
+          "range_pct": 1.86
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 1.0
+    }
+  ]
+}
