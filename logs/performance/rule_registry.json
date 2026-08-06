@@ -1,75 +1,60 @@
 {
- "last_delta_trade_count": 298,
- "last_delta_date": "2026-08-01",
- "wr_at_last_delta": "34.6%",
- "last_manual_grading_trade_count": 306,
- "last_manual_grading_date": "2026-08-02",
- "insights": [
-  {
-   "id": "bonk_short_dominance",
-   "text": "1000BONKUSDT shorts are 6/6 lifetime (100% WR, +4.03R), appearing across risk_on and neutral regimes with MFE consistently ≥0.77R. ACTION: When 1000BONKUSDT short appears with `validated_signal` + `trend_pullback`, rank it #1 automatically regardless of other candidates.",
-   "added_at_trade_count": 298,
-   "added_date": "2026-08-01",
-   "status": "experimental",
-   "trades_since": 0,
-   "graded_date": "2026-08-02",
-   "grade": "INCONCLUSIVE",
-   "grade_note": "Still 6/6 but ZERO new trades since added. n=6 per-symbol is exactly the small-sample noise v11.3 de-noise rejects; a hard 'rank #1 automatically regardless of other candidates' directive on n=6 is unsafe. Hold experimental; never promote to a hard always-rank rule on this sample."
-  },
-  {
-   "id": "sui_be_stop_pattern",
-   "text": "SUIUSDT shorts triggered BE stop twice consecutively (MFE 0.85–0.86R, never reaching T1). Lifetime SUIUSDT is 2/11 (-1.61R). ACTION: For SUIUSDT shorts, set T1 tighter (≤0.7R) or skip entirely — price consistently reverses just before T1.",
-   "added_at_trade_count": 298,
-   "added_date": "2026-08-01",
-   "status": "experimental",
-   "trades_since": 0,
-   "graded_date": "2026-08-02",
-   "grade": "EFFECTIVE_WEAK",
-   "grade_note": "Pattern held: SUIUSDT shorts 0/4, all-dir 2/11 (-0.146R). Direction correct but n small and per-symbol. Keep as a SOFT symbol-avoid, not a hard block; revisit if SUI keeps losing over more trades."
-  },
-  {
-   "id": "validated_signal_trend_pullback_combo",
-   "text": "Trades carrying both `validated_signal` AND `trend_pullback` rules in recent 20 went 8/12 (67% WR). This dual-rule combo is the strongest recent signal. ACTION: Prioritize setups where both rules apply simultaneously; deprioritize setups with only one of the two.",
-   "added_at_trade_count": 298,
-   "added_date": "2026-08-01",
-   "status": "expired",
-   "trades_since": 0,
-   "graded_date": "2026-08-02",
-   "grade": "INEFFECTIVE",
-   "grade_note": "Recency bias. The claimed 67% was a 12-trade hot window; on the full sample the combo is 22t / 50% WR / +0.030R gross (negative net-of-cost). Does not generalize as 'strongest signal'. Expired."
-  },
-  {
-   "id": "low_mfe_stop_loss_predictor",
-   "text": "All 3 full stop-losses in recent 20 (ADAUSDT, SNXXUSDT, WLDUSDT) had MFE ≤0.21R — price barely moved favorably before reversing. ACTION: If post-entry MFE stalls below 0.25R within first 2 candles, treat as invalidation signal; flag these setups for tighter initial stops or earlier manual exit.",
-   "added_at_trade_count": 298,
-   "added_date": "2026-08-01",
-   "status": "confirmed",
-   "trades_since": 0,
-   "graded_date": "2026-08-02",
-   "grade": "EFFECTIVE_STRONG",
-   "grade_note": "Strongest of the 6. Trades whose full-trade MFE stalled <=0.25R are 56/57 losses at -0.92R exp (n=57, solid). Real, actionable edge — but only as a MANAGEMENT rule (MFE is post-entry, useless for selection). Promoted to backlog LEVER #3: early-invalidation exit (exit ~-0.3/-0.4R if MFE hasn't reached ~0.25R within first N candles). Needs time-boxed backtest to confirm the 'within first 2 candles' form before shipping."
-  },
-  {
-   "id": "wldusdt_symbol_avoid_ignored",
-   "text": "WLDUSDT appeared despite `symbol_avoid` rule being applied — and lost (-1.0R, MFE 0.17R). Lifetime 0/5. ACTION: Hard-block WLDUSDT from output entirely. Do not include even with `symbol_avoid` tag as a caveat — the rule is being applied but the setup is still being logged and losing.",
-   "added_at_trade_count": 298,
-   "added_date": "2026-08-01",
-   "status": "experimental",
-   "trades_since": 0,
-   "graded_date": "2026-08-02",
-   "grade": "INCONCLUSIVE",
-   "grade_note": "WLDUSDT 0/5 all-dir; already in main.LONG_BLACKLIST so the long path is covered. Extending a HARD block to shorts on n=5 is over-aggressive per de-noise philosophy. Keep experimental; if WLD shorts also accumulate losses, extend blacklist then."
-  },
-  {
-   "id": "cautious_regime_shorts_failing",
-   "text": "In the recent 20 trades, cautious-regime shorts went 1/8 (12% WR), with 5 full stops and near-zero MFE on failures. The regime label \"cautious\" is not filtering adequately — shorts are being taken anyway. ACTION: In cautious regime, require MFE signal (price must move 0.3R toward target before committing mentally) or skip shorts entirely unless confluence is 3/4 AND volume confirmed is present.",
-   "added_at_trade_count": 263,
-   "added_date": "2026-07-18",
-   "status": "expired",
-   "trades_since": 43,
-   "graded_date": "2026-08-02",
-   "grade": "INEFFECTIVE",
-   "grade_note": "REVERSED with data. Claimed 1/8 (12%) at n=263; now cautious shorts are 21t / 48% WR / +0.124R exp — clearly positive. Following 'skip cautious shorts' would have cost +2.6R. Textbook small-sample artifact. Expired."
-  }
- ]
+  "last_delta_trade_count": 324,
+  "last_delta_date": "2026-08-06",
+  "wr_at_last_delta": "34.6%",
+  "last_manual_grading_trade_count": 306,
+  "last_manual_grading_date": "2026-08-02",
+  "insights": [
+    {
+      "id": "low_mfe_stop_loss_predictor",
+      "text": "All 3 full stop-losses in recent 20 (ADAUSDT, SNXXUSDT, WLDUSDT) had MFE \u22640.21R \u2014 price barely moved favorably before reversing. ACTION: If post-entry MFE stalls below 0.25R within first 2 candles, treat as invalidation signal; flag these setups for tighter initial stops or earlier manual exit.",
+      "added_at_trade_count": 298,
+      "added_date": "2026-08-01",
+      "status": "confirmed",
+      "trades_since": 26,
+      "graded_date": "2026-08-02",
+      "grade": "EFFECTIVE_STRONG",
+      "grade_note": "Strongest of the 6. Trades whose full-trade MFE stalled <=0.25R are 56/57 losses at -0.92R exp (n=57, solid). Real, actionable edge \u2014 but only as a MANAGEMENT rule (MFE is post-entry, useless for selection). Promoted to backlog LEVER #3: early-invalidation exit (exit ~-0.3/-0.4R if MFE hasn't reached ~0.25R within first N candles). Needs time-boxed backtest to confirm the 'within first 2 candles' form before shipping."
+    },
+    {
+      "id": "cautious_regime_short_decay",
+      "text": "In the recent 20 trades, cautious regime produced 3W/9L (-4.67R). Wins were tiny (0.02R, 0.08R); losses were full -1.0R. Cautious is no longer behaving like the +0.07R rule suggests. ACTION: Treat cautious regime identically to neutral \u2014 max 1-2 setups, require 3/4 TF + volume confirmed. Do not apply `short_bias` bonus in cautious.",
+      "added_at_trade_count": 324,
+      "added_date": "2026-08-06",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "expired_wins_near_zero",
+      "text": "Recent \"wins\" via expiry are near-zero RR: DOGEUSDT +0.23R, EULUSDT +0.02R, CFXUSDT +0.08R, ESPUSDT +0.14R. These inflate win count but contribute negligible positive expectancy. ACTION: When a setup's T1 is unlikely to be reached within session (MFE historically <0.5R for that symbol), skip or tighten T1 to force a real exit \u2014 do not count expiry-wins as validation.",
+      "added_at_trade_count": 324,
+      "added_date": "2026-08-06",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "soxlusdt_hard_block",
+      "text": "SOXLUSDT is 0/2 (-2.0R) with MFE of 0.72R and 0.11R \u2014 both stopped out. Leveraged ETF perpetuals show erratic behavior. ACTION: Hard-block SOXLUSDT from output entirely, same as WLDUSDT. Do not include regardless of setup quality.",
+      "added_at_trade_count": 324,
+      "added_date": "2026-08-06",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "risk_on_short_divergence",
+      "text": "Recent risk_on trades: BTCUSDT +2.14R (win), FARTCOINUSDT +0.30R (win), ESPUSDT +0.14R (win), SOXLUSDT -1.0R (loss), SNXXUSDT -1.0R (loss). Risk_on shorts work on liquid majors/meme coins but fail on low-liquidity alts. ACTION: In risk_on regime, only take shorts on symbols with lifetime positive RR sum; skip low-liquidity alts entirely.",
+      "added_at_trade_count": 324,
+      "added_date": "2026-08-06",
+      "status": "experimental",
+      "trades_since": 0
+    },
+    {
+      "id": "validated_signal_dilution",
+      "text": "`validated_signal` appears on 18 of the last 20 trades \u2014 it has become a near-universal tag with no discriminatory power (recent batch: 7W/13L). ACTION: Stop treating `validated_signal` alone as a quality filter. Only count it as meaningful when combined with `confluence_3of4` or `short_bias`; a setup with only `validated_signal` + `trend_pullback` should not be ranked #1.",
+      "added_at_trade_count": 324,
+      "added_date": "2026-08-06",
+      "status": "experimental",
+      "trades_since": 0
+    }
+  ]
 }

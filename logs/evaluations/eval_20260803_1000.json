@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260803_1000",
+  "run_timestamp_utc": "2026-08-03T10:00:11.609245+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-08-06T05:29:43.346504+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 1.404068,
+      "exit_price": 1.4005,
+      "exit_reason": "expired",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 0.02,
+      "blended_rr": 0.02,
+      "won": true,
+      "max_favorable_rr": 0.17,
+      "candles_to_exit": 192,
+      "risk_pct": 0.128738,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0179,
+      "net_rr": 0.002,
+      "net_blended_rr": 0.002,
+      "won_net": true,
+      "symbol": "EULUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
