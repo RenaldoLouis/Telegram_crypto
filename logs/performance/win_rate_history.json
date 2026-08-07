@@ -342,5 +342,13 @@
     "losses": 212,
     "win_rate": 34.6,
     "avg_rr": -0.1
+  },
+  {
+    "date": "2026-08-07 11:11 UTC",
+    "total_evaluated": 331,
+    "wins": 114,
+    "losses": 217,
+    "win_rate": 34.4,
+    "avg_rr": -0.11
   }
 ]

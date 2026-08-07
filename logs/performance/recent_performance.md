@@ -1,10 +1,17 @@
 # Recent Performance (last 4 weeks)
-_93 trades: 44W / 49L (47% WR, 0.02 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 56% WR, 0.00 avg blended R:R_
+_94 trades: 42W / 52L (45% WR, -0.02 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 54% WR, -0.04 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-08-05 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.36 | be_stop | 0.79R |
+| 2026-08-05 | HFTUSDT | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
+| 2026-08-05 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.29 (W) | 0.29 | expired | 0.53R |
+| 2026-08-05 | EULUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.29 (W) | 0.94 | target_2 | 1.34R |
+| 2026-08-04 | SOXLUSDT | S | intra | range_mean_r | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.0R |
+| 2026-08-04 | BANKUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.38R |
+| 2026-08-04 | SPCXUSDT | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 1.75R |
 | 2026-08-04 | ETHUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.24R |
 | 2026-08-03 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.859 | -1.0 (L) | -1.0 | stop_loss | 0.72R |
 | 2026-08-03 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.23 (W) | 0.23 | expired | 0.7R |
@@ -92,17 +99,11 @@ _Partial profit model (50% at T1 + BE stop): 56% WR, 0.00 avg blended R:R_
 | 2026-07-12 | HMSTRUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.49 (W) | 0.49 | expired | 0.56R |
 | 2026-07-12 | XPINUSDT | L | intra | other | med | 4/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.24R |
 | 2026-07-12 | HBARUSDT | S | intra | trend_pullba | med | 4/4 | 1.5 | 1.31 (W) | 1.31 | target_1 | 1.78R |
-| 2026-07-10 | VINEUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | -0.12 (L) | -0.12 | expired | 0.2R |
-| 2026-07-10 | ESPORTSUSD | S | intra | trend_pullba | med | 3/4 | 1.5 | 1.21 (W) | 1.21 | target_1 | 1.51R |
-| 2026-07-10 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.23 (W) | 0.23 | expired | 0.58R |
-| 2026-07-09 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 1.5 | 0.61 (W) | 0.61 | expired | 0.87R |
-| 2026-07-09 | SPCXUSDT | S | intra | trend_pullba | low | 3/4 | 1.5 | 0.59 (W) | 0.59 | expired | 0.73R |
-| 2026-07-09 | SUIUSDT | S | intra | other | med | 3/4 | 1.5 | -1.0 (L) | -1.0 | stop_loss | 0.98R |
 
-- Recent 'other': 1/5 (20% WR)
-- Recent 'trend_pullback': 41/82 (50% WR)
-- Recent 'failed_breakout': 0/2 (0% WR)
-- Recent 'range_mean_reversion': 1/2 (50% WR)
+- Recent 'other': 1/4 (25% WR)
+- Recent 'trend_pullback': 39/81 (48% WR)
+- Recent 'failed_breakout': 0/4 (0% WR)
+- Recent 'range_mean_reversion': 1/3 (33% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
