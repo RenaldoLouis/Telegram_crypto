@@ -1,0 +1,166 @@
+{
+  "run_timestamp_utc": "2026-08-07T10:00:12.172064+00:00",
+  "run_tag": "20260807_1000",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 3
+  },
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "ESPORTSUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0184,
+      "entry_high": 0.0188,
+      "stop_loss": 0.0211,
+      "target_1": 0.0165,
+      "target_2": 0.0146,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "confluence_3of4",
+          "partial_profit"
+        ],
+        "key_factor": "Validated trend_pullback_short on 4h (+0.28R expect, N=111, 100% robust); pullback to EMA20 in confirmed bearish structure 4h+1D; positive funding (+0.064%) paying shorts"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 21.98,
+          "rsi": 51.47,
+          "macd": -6.1e-05,
+          "macd_hist": 6.6e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.13,
+          "range_pct": 63.68
+        },
+        "tf_1h": {
+          "adx": 19.8,
+          "rsi": 52.27,
+          "macd": -0.000162,
+          "macd_hist": -2.8e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.45,
+          "range_pct": 18.44
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    },
+    {
+      "rank": 2,
+      "symbol": "1000BONKUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.002535,
+      "entry_high": 0.002565,
+      "stop_loss": 0.00249,
+      "target_1": 0.002609,
+      "target_2": 0.002724,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep",
+          "decoupled_alt",
+          "volume_confirmed",
+          "symbol_priority",
+          "long_structural_confirmed"
+        ],
+        "key_factor": "Validated liquidity_sweep_long on 4h (swept 0.0025, RSI 23, vol 2.77x, +0.04R expect N=94); 6/6 historical WR on this symbol; extreme negative funding -0.098% (shorts crowded); BONK decoupled from BTC (idiosyncratic selloff)"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 22.63,
+          "rsi": 22.98,
+          "macd": -4.8e-05,
+          "macd_hist": -2e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.77,
+          "range_pct": 14.15
+        },
+        "tf_1h": {
+          "adx": 24.21,
+          "rsi": 28.28,
+          "macd": -5.1e-05,
+          "macd_hist": -3e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.71,
+          "range_pct": 14.15
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 10.0
+    },
+    {
+      "rank": 3,
+      "symbol": "ACEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.145,
+      "entry_high": 0.1515,
+      "stop_loss": 0.16,
+      "target_1": 0.132,
+      "target_2": 0.116,
+      "predicted_rr": 0.87,
+      "confidence": "medium",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "short_bias",
+          "wait_for_retest",
+          "rank_reeval"
+        ],
+        "key_factor": "Validated failed_breakout_short on 4h (+0.12R expect, N=75, 100% robust); RSI 74.6 overbought with 87.9% 24h pump exhausting at 0.1515 resistance; conditional retest entry only"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 58.26,
+          "rsi": 74.64,
+          "macd": 0.017248,
+          "macd_hist": 0.007667,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.71,
+          "range_pct": 63.15
+        },
+        "tf_1h": {
+          "adx": 58.98,
+          "rsi": 61.96,
+          "macd": 0.014498,
+          "macd_hist": 0.000858,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.12,
+          "range_pct": 40.3
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 0.0
+    }
+  ]
+}
