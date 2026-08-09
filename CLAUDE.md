@@ -232,9 +232,13 @@ git pull && source venv/bin/activate && python main.py
 source venv/bin/activate
 python momentum_pulse.py
 
-# Liquidation collector (normally a launchd daemon; run manually to spot-check)
+# Liquidation collector (normally the CI chained workflow; run manually to spot-check)
 source venv/bin/activate
-python liquidation_collector.py     # Ctrl-C to stop; daemon version runs persistently
+python liquidation_collector.py     # Ctrl-C to stop; CI/daemon versions run persistently
+
+# Liquidation-cluster backtest (FORK A; run in ~2-4 weeks once artifacts accumulate)
+# Download the `liquidations-*` GitHub Actions artifacts into a dir first, then:
+python liq_cluster_backtest.py --data-dir ./liq_data --interval 240
 
 # Weekly evaluation (run Sundays or whenever)
 source venv/bin/activate
