@@ -93,6 +93,11 @@ RULE_MIN_SAMPLE = 20          # a prioritize/avoid rule needs >= this many trade
 REGIME_RULE_MIN_TRADES = 20   # a regime-specific hard rule needs >= this many trades (was effectively 5)
 MAX_ACTIVE_DELTA_INSIGHTS = 6 # cap active delta insights sent to Claude (was unbounded → 20 contradictory rules)
 LONG_MIN_CONFLUENCE = 3       # longs require >= 3/4 TF confluence (hard structural gate; longs run -33R)
+# 4/4 confluence is the WORST real bucket, not the best: net -0.305R / 23% WR over n=71
+# (net-of-cost cut 2026-08-09), vs 3/4 at -0.095R / 41% over n=237. Full alignment = a late,
+# exhausted move. Previously only DEMOTED from rank #1 (_demote_4of4_from_top) — but a 4/4 could
+# still ship at rank >=2. This escalates to an outright refusal (both directions). Reversible.
+REFUSE_4OF4_CONFLUENCE = True
 # Regime-aware long cap: longs are the entire net loss (29% WR / -33R over 181 trades) while shorts
 # are ~breakeven (36% / 56). Outside a confirmed risk_on rally, cap the number of longs per run so a
 # bearish/neutral tape can't be filled with the losing direction. audit 2026-07-13

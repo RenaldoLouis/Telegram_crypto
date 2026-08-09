@@ -152,6 +152,15 @@ def setup_violations(setup, regime_label):
             f"< {config.LONG_MIN_CONFLUENCE} (confluence floor — 2/4 loses in both directions)"
         )
 
+    # 4/4 confluence refusal (net-of-cost cut 2026-08-09): 4/4 is the worst real bucket
+    # (net -0.305R / 23% WR / n=71) — worse than 3/4 (-0.095R / n=237). Full alignment = a
+    # late, exhausted move. Escalated from demote-only to outright refusal. Reversible.
+    if getattr(config, "REFUSE_4OF4_CONFLUENCE", False) and (setup.get("tf_confluence") or 0) >= 4:
+        violations.append(
+            "tf_confluence 4/4 refused (worst bucket: net -0.305R/23% WR over n=71; "
+            "full alignment = late/exhausted move)"
+        )
+
     if setup.get("setup_type") not in VALID_SETUP_TYPES:
         violations.append(f"unknown setup_type '{setup.get('setup_type')}'")
     if direction not in ("long", "short"):
