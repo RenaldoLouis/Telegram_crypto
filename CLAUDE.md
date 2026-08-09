@@ -24,6 +24,14 @@ As of v12.0 the system is migrating from Claude-as-decision-maker to a pure-Pyth
 - Do NOT expand the Bybit API key permissions beyond Read-Only.
 - Do NOT weaken the 1.5:1 minimum R:R floor or remove risk flags from output. **The 1.5:1 floor lives on target_2 (the reward leg), NOT target_1.** T1 is a partial-profit level at 0.75–1.0R; T2 must be ≥1.5R. (History: floor lowered 2:1→1.5:1, then in v11.2 relocated from T1 to T2 based on a 237-trade backtest — avg MFE only 1.03R, so a 1.5R T1 was unreachable and setting T1 at 0.75R flipped the book from −24.8R to +5.2R. `main.py::validate_setups` enforces T1 ≤ 1.0R AND T2 ≥ 1.5R.)
 
+### CORE PRINCIPLE — Claude is NEVER the trading decision-maker
+
+**The trading edge MUST live in our own deterministic Python logic (`mechanical_setups.py`, `signal_levels.py`, validated signals, the enforcement gates). Claude is a HELPER at the edges — never the core that decides which trade to take, its direction, entry, stop, or targets.** This is a hard architectural rule, not a preference:
+
+- **We cannot gauge or control Claude's output.** It's a hosted model — Anthropic can change, degrade, or deprecate it at any time, and its responses vary run-to-run. An edge we cannot measure, reproduce, or own is not an edge.
+- **It is costly.** Every core decision routed through Claude is recurring token spend for something our own logic should do for free.
+- **Therefore:** the decision path (selection, direction, price levels, risk) is ALWAYS Python. Claude may assist only in bounded, non-core, fully-optional roles (e.g. a shadow comparison, a veto/sanity layer on top of a mechanical setup, prose summarization, pattern research) — and the pipeline MUST degrade gracefully to mechanical-only if Claude is absent. A Claude failure must never change or block a trade decision. This is why `PRIMARY_SOURCE` is migrating to `"mechanical"` and Claude runs in shadow. Any new feature that would make Claude the primary generator of a trade decision is out of scope.
+
 Auto-execution will only be considered after: (a) 60+ days of evaluated Phase A data, (b) a separate hard-coded risk engine (not Claude) for position sizing, (c) model comparison data (Sonnet vs Haiku), and (d) explicit user approval.
 
 ---
