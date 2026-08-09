@@ -232,6 +232,10 @@ git pull && source venv/bin/activate && python main.py
 source venv/bin/activate
 python momentum_pulse.py
 
+# Liquidation collector (normally a launchd daemon; run manually to spot-check)
+source venv/bin/activate
+python liquidation_collector.py     # Ctrl-C to stop; daemon version runs persistently
+
 # Weekly evaluation (run Sundays or whenever)
 source venv/bin/activate
 python weekly_eval.py
@@ -280,6 +284,7 @@ python historical_backtester.py --walkforward all --interval 240  # Walk-forward
 - **Local Claude scan**: macOS `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`) → runs `run_scan.sh` (the alias-equivalent wrapper) at **09:00 / 17:00 / 22:00 local**. This is the ONLY run that calls Claude (has the key in local `.env`) — it feeds the Claude side of the head-to-head. **Requires VPN up at those times** (Bybit + Telegram are ISP-blocked); a scan with VPN down fails at data fetch. launchd logs go to `~/Library/Logs/cryptoscreener_scan.{log,err}` (outside the repo so `git add -A` won't commit them). Reload after editing the plist: `launchctl unload … && launchctl load -w …`.
 - **Cross-run dedup**: because the scan now runs 6×/day, `main.py::_active_setup_keys` / `_drop_active_duplicates` suppress a coin already carrying an active `(symbol, direction, source)` setup within the 2-day eval window — prevents correlated pseudo-replicate trades from polluting the eval / flip gate.
 - **Commit races**: both CI (6×/day bot) and the local nightly push to `master`. The CI commit step does `git pull --rebase origin master` + retry; the local commit should do the same (`git add logs/ && git commit && for i in 1 2 3; do git pull --rebase && git push && break || sleep 5; done`). `eval-scan` must `git pull --rebase` first to pick up CI-pushed setups before scoring.
+- **Liquidation collector** (FORK A, forward-collection): `liquidation_collector.py` runs as a persistent `launchd` KeepAlive daemon (`~/Library/LaunchAgents/com.user.liqcollector.plist`, reference copy in repo root). Subscribes to Bybit's `all_liquidation_stream` WS for ~20 liquid perps and appends raw liquidation prints to `logs/liquidations/liq_YYYY-MM.jsonl` (gitignored — accumulates + backtested locally). **Data-collector ONLY — makes zero trading decisions, touches no order API** (CORE PRINCIPLE). Purpose: true historical liquidation data isn't free, so accumulate it forward and backtest the liquidation-CLUSTER hypothesis once ~2-4 weeks exist. Honest caveat: only collects while Mac awake + VPN up (expect gaps; clusters are what we test). Restarts on VPN-drop exit after `ThrottleInterval=300s`. Daemon logs: `~/Library/Logs/liqcollector.{log,err}`.
 - Do NOT migrate to cron — launchd handles wake-from-sleep better.
 
 ---

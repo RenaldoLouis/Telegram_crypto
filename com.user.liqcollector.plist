@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd daemon for liquidation_collector.py (FORK A forward-collection).
+  Persistent KeepAlive process: collects Bybit liquidation events whenever the
+  Mac is awake AND the VPN is up. Restarts on exit/crash (e.g. VPN drop) after
+  ThrottleInterval. Logs go OUTSIDE the repo so `git add -A` won't commit them.
+
+  Install:
+    cp com.user.liqcollector.plist ~/Library/LaunchAgents/
+    launchctl load -w ~/Library/LaunchAgents/com.user.liqcollector.plist
+  Reload after edits:
+    launchctl unload ~/Library/LaunchAgents/com.user.liqcollector.plist
+    launchctl load -w ~/Library/LaunchAgents/com.user.liqcollector.plist
+  Status / stop:
+    launchctl list | grep liqcollector
+    launchctl unload ~/Library/LaunchAgents/com.user.liqcollector.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.liqcollector</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/renaldolouis/Documents/Personal/crypto-screener/venv/bin/python</string>
+        <string>/Users/renaldolouis/Documents/Personal/crypto-screener/liquidation_collector.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/renaldolouis/Documents/Personal/crypto-screener</string>
+
+    <!-- Restart whenever it exits (VPN drop -> exit 1 -> relaunch) -->
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <!-- Don't hot-loop reconnect attempts when the VPN is down -->
+    <key>ThrottleInterval</key>
+    <integer>300</integer>
+
+    <key>StandardOutPath</key>
+    <string>/Users/renaldolouis/Library/Logs/liqcollector.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/renaldolouis/Library/Logs/liqcollector.err</string>
+</dict>
+</plist>
