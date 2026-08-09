@@ -6,6 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **crypto-screener** is a personal, scheduled screener for Bybit USDT perpetual futures. It scans 100 coins, pre-filters to 30 using knowledge-based scoring, analyzes them across 4 timeframes via Claude API, delivers the 5 best trade setups to Telegram, and self-evaluates past recommendations against actual price data.
 
+## 🎯 Project Goal (NORTH STAR — every recommendation must serve this)
+
+_Defined 2026-08-09. This is the single anchor. Before proposing any change, research, or feature, check it against this section: does it move us toward THE goal, measured THE one way, without violating a non-goal or the operating discipline? If not, don't propose it._
+
+**THE GOAL:** a **proven, owned, fully-mechanical trading edge** for Bybit USDT perps that **eventually trades itself**. Emotion-free — every decision comes from our own Python calculation, never from gut and never from a hosted model. Phase A (analyst; human executes manually) exists to *prove the edge*; Phase B (auto-execution) is the payoff, unlocked ONLY after the edge is proven **and** a separate hardcoded risk engine exists **and** the user explicitly approves.
+
+**THE ONE SUCCESS METRIC — net-of-cost expectancy (R per trade).** Not win rate, not gross R, not lifetime totals (the 2026-08-02 audit proved those are vanity/cost-illusion). **"Edge proven" = net-of-cost expectancy ≥ +0.05R sustained over ≥100 forward-evaluated trades, with BOTH directions and >1 signal contributing** (so it's a broad edge, not one lucky signal). That threshold is the line that flips the project from *searching* → *found it* → clears the Phase 4 flip + is the precondition to even discuss Phase B.
+
+**CURRENT STATE (2026-08-09): still SEARCHING.** Best source is net −0.098R (mechanical); every source is net-negative. Improvement so far came by *subtraction* (cutting losers), which asymptotes at breakeven. 7 experiments (price signals ×4, OI proxy, structure/S-R filters) found no net edge → conclusion: price-pattern engineering is a dead end on this universe. The one live bet is **fork A: liquidation-cluster data** (collector running; backtest in ~2-4 weeks). If it too is empty, the honest end state is a rigorous **analyst tool** — an acceptable, explicit outcome, not a failure to paper over.
+
+**OPERATING DISCIPLINE (how we pursue the goal — non-negotiable):**
+1. **Optimize NET-of-cost expectancy only.** Never chase win rate or gross R.
+2. **Prove before ship.** Every signal/feature must pass out-of-sample train/test (+ walk-forward where possible) on real data before it touches live. In-sample-only results are rejected on principle.
+3. **Subtraction has a ceiling.** Cutting losers reaches ~breakeven, never profit. Real edge requires a *predictive* input, not another gate.
+4. **Claude is never the decision-maker** (see CORE PRINCIPLE below). The edge lives in our Python.
+5. **Honesty over hope.** Report negative results plainly; a proven "no edge" is a valid, valuable answer. No tuning a losing signal into fake positivity.
+
+**NON-GOALS (things that do NOT serve the goal — see also the Non-Goals list below):** vanity metrics; auto-execution before the edge bar + risk engine + approval; Claude as core decider; shipping unvalidated ideas; more price-pattern signal tuning (proven dead end 2026-08-09).
+
 ### Current Phase
 
 **Phase A — Analyst mode (signal-only, NOT auto-trading).**
