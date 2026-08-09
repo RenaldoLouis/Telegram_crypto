@@ -92,11 +92,24 @@ def main():
     signal.signal(signal.SIGTERM, _bye)
     signal.signal(signal.SIGINT, _bye)
 
+    # Optional self-limit for ephemeral CI runners (GitHub Actions job cap is 6h):
+    # exit cleanly after LIQ_MAX_SECONDS so the artifact-upload step still runs.
+    # 0/unset = run forever (the launchd daemon case).
+    try:
+        max_s = int(os.environ.get("LIQ_MAX_SECONDS", "0") or "0")
+    except ValueError:
+        max_s = 0
+    start = time.time()
+
     # keep the main thread alive; pybit runs the socket on its own thread and
-    # auto-reconnects. Heartbeat every 15 min so launchd logs show liveness.
+    # auto-reconnects. Heartbeat every 15 min so logs show liveness.
     last = 0
     while True:
         time.sleep(60)
+        if max_s and time.time() - start >= max_s:
+            print(f"[liq] max_seconds={max_s} reached — clean exit "
+                  f"({_count} events collected this run)", flush=True)
+            sys.exit(0)
         if time.time() - last >= 900:
             print(f"[liq] alive @ {datetime.now(timezone.utc):%Y-%m-%d %H:%M}Z — "
                   f"{_count} events collected this run", flush=True)

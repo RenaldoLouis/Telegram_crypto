@@ -1,0 +1,67 @@
+name: Liquidation Collector (chained)
+
+# FORK A forward-collection on CI (public-repo only — free unlimited minutes).
+# Ephemeral runners can't hold a stream, so we CHAIN ~5.5h jobs: each run collects
+# for LIQ_MAX_SECONDS then uploads its liquidation prints as a dated ARTIFACT
+# (90-day retention). Artifacts, NOT commits, so the git history stays clean.
+# Coverage ≈ 5.5h per 6h window (~92%) minus GitHub's cron scheduling jitter —
+# gaps are fine; liquidation CLUSTERS are what we backtest, not a complete tape.
+#
+# Backtest later: download all artifacts, concat the JSONL, run the cluster map.
+# NOTE: this is a data collector only — zero trading decisions (CORE PRINCIPLE).
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6h UTC; each job runs ~5.5h -> near-continuous
+  workflow_dispatch: {}
+
+# Don't stack overlapping runs if a job overruns / a manual dispatch collides.
+concurrency:
+  group: liq-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355        # under the 6h hard cap; script self-exits before this
+    permissions:
+      contents: read            # artifacts only — no push, no repo write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup WireGuard VPN
+        run: |
+          sudo apt-get install -y -qq wireguard-tools
+          echo "${{ secrets.WG_CONF }}" | base64 -d | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+          sleep 2
+          echo "VPN connected — exit IP: $(curl -s ifconfig.me)"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pybit
+
+      - name: Collect liquidations (~5.5h then clean exit)
+        env:
+          LIQ_MAX_SECONDS: '19800'   # 5h30m — leaves margin under the 355-min job cap
+        run: python liquidation_collector.py
+
+      - name: Disconnect VPN
+        if: always()
+        run: sudo wg-quick down wg0 || true
+
+      - name: Upload liquidation data
+        if: always()               # upload whatever was collected, even on early failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: liquidations-${{ github.run_id }}
+          path: logs/liquidations/*.jsonl
+          retention-days: 90
+          if-no-files-found: warn
