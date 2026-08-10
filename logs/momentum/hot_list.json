@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-08-10T13:16:05.903457+00:00",
+  "generated_utc": "2026-08-10T16:56:13.658598+00:00",
   "market_regime": {
-    "regime": "neutral",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 56.0,
-      "median_change_pct": -0.16,
-      "btc_change_pct": -0.22,
-      "avg_funding_pct": -0.0281,
+      "pct_declining": 70.0,
+      "median_change_pct": -1.73,
+      "btc_change_pct": -2.17,
+      "avg_funding_pct": -0.0376,
       "large_decline_count": 7
     },
-    "detected_utc": "2026-08-10T13:16:05.902950+00:00",
+    "detected_utc": "2026-08-10T16:56:13.658123+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -317,6 +317,22 @@
       "open_interest": 17700629.0,
       "volume_acceleration": null,
       "price_acceleration_pct": null
+    },
+    {
+      "symbol": "CLUSDT",
+      "flagged_utc": "2026-08-10T16:56:13.657907+00:00",
+      "expires_utc": "2026-08-12T16:56:13.657907+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 81.14,
+      "price_change_24h_pct": 5.3355,
+      "turnover_24h_usd": 36420355.4171,
+      "funding_rate_pct": -0.076954,
+      "open_interest": 352300.18,
+      "volume_acceleration": 1.318548379190533,
+      "price_acceleration_pct": 2.9044
     }
   ]
 }
