@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_78 trades: 37W / 41L (47% WR, 0.01 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 56% WR, -0.01 avg blended R:R_
+_75 trades: 34W / 41L (45% WR, -0.03 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 55% WR, -0.05 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -80,11 +80,8 @@ _Partial profit model (50% at T1 + BE stop): 56% WR, -0.01 avg blended R:R_
 | 2026-07-16 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.85 | 2.08 (W) | 1.67 | target_2 | 2.17R |
 | 2026-07-16 | EWYUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 1.04 (W) | 0.86 | target_2 | 1.31R |
 | 2026-07-16 | VANRYUSDT | S | intra | trend_pullba | med | 2/4 | 0.9 | 0.0 (L) | 0.37 | be_stop | 0.77R |
-| 2026-07-15 | EWYUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 1.21 (W) | 0.96 | target_2 | 1.24R |
-| 2026-07-15 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 0.76 (W) | 0.76 | target_1 | 1.08R |
-| 2026-07-15 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 0.9 | 1.48 (W) | 1.17 | target_2 | 1.49R |
 
-- Recent 'trend_pullback': 34/65 (52% WR)
+- Recent 'trend_pullback': 31/62 (50% WR)
 - Recent 'other': 1/4 (25% WR)
 - Recent 'range_mean_reversion': 1/3 (33% WR)
 - Recent 'failed_breakout': 1/4 (25% WR)
