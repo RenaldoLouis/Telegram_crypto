@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-08-13T16:58:48.506076+00:00",
+  "run_tag": "20260813_1658",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0
+  },
+  "setups": [
+    {
+      "symbol": "BANKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0380347,
+      "entry_high": 0.0388453,
+      "stop_loss": 0.042493,
+      "target_1": 0.03540025,
+      "target_2": 0.030334,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 51.9, ADX 22.8, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 3.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 22.83,
+          "rsi": 51.93,
+          "macd": -0.000453,
+          "macd_hist": 0.000646,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.06,
+          "range_pct": 31.43
+        },
+        "tf_1h": {
+          "adx": 42.75,
+          "rsi": 45.15,
+          "macd": 0.000737,
+          "macd_hist": -0.000316,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.56,
+          "range_pct": 19.35
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
