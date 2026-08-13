@@ -1,0 +1,64 @@
+{
+  "run_timestamp_utc": "2026-08-13T02:00:10.852678+00:00",
+  "run_tag": "20260813_0200",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 1
+  },
+  "setups": [
+    {
+      "rank": 1,
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.07,
+      "entry_high": 0.0706,
+      "stop_loss": 0.0714,
+      "target_1": 0.0695,
+      "target_2": 0.0687,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "short_bias",
+          "confluence_3of4",
+          "regime_neutral",
+          "partial_profit"
+        ],
+        "key_factor": "15m RSI overbought (74.31) within confirmed bearish trend (ADX 42.32) signals bounce exhaustion; 3/4 TF bearish alignment with room to fall on 1D (RSI 46.99)"
+      },
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 20.48,
+          "rsi": 49.83,
+          "macd": 0.000128,
+          "macd_hist": -0.000125,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.71,
+          "range_pct": 6.3
+        },
+        "tf_1h": {
+          "adx": 30.52,
+          "rsi": 26.26,
+          "macd": -0.000417,
+          "macd_hist": -0.000127,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.21,
+          "range_pct": 5.0
+        },
+        "backtested_signal": null
+      },
+      "source": "claude",
+      "regime": "neutral",
+      "model": "claude-sonnet-4-6",
+      "interest_score": 5.0
+    }
+  ]
+}
