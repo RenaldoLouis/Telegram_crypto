@@ -1,10 +1,13 @@
 # Recent Performance (last 4 weeks)
-_75 trades: 34W / 41L (45% WR, -0.03 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 55% WR, -0.05 avg blended R:R_
+_73 trades: 30W / 43L (41% WR, -0.14 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 49% WR, -0.15 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-08-11 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.58R |
+| 2026-08-11 | BTRUSDT | S | intra | failed_break | med | 3/4 | 0.82 | -1.0 (L) | -1.0 | stop_loss | 0.25R |
+| 2026-08-11 | SQDUSDT | S | intra | other | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
 | 2026-08-09 | BMTUSDT | S | intra | other | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.41R |
 | 2026-08-09 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.78 (W) | 0.78 | target_1 | 1.85R |
 | 2026-08-07 | ESPORTSUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.14R |
@@ -75,16 +78,11 @@ _Partial profit model (50% at T1 + BE stop): 55% WR, -0.05 avg blended R:R_
 | 2026-07-18 | USUSDT | L | intra | trend_pullba | med | 4/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.32R |
 | 2026-07-17 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.13 (W) | 0.86 | target_2 | 1.13R |
 | 2026-07-17 | KORUUSDT | S | intra | funding_sque | med | 3/4 | 0.75 | 0.0 (L) | 0.32 | be_stop | 0.89R |
-| 2026-07-16 | ETHUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 1.03 (W) | 1.03 | target_1 | 1.53R |
-| 2026-07-16 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 0.85 | 0.3 (W) | 0.81 | trail_stop | 1.62R |
-| 2026-07-16 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.85 | 2.08 (W) | 1.67 | target_2 | 2.17R |
-| 2026-07-16 | EWYUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | 1.04 (W) | 0.86 | target_2 | 1.31R |
-| 2026-07-16 | VANRYUSDT | S | intra | trend_pullba | med | 2/4 | 0.9 | 0.0 (L) | 0.37 | be_stop | 0.77R |
 
-- Recent 'trend_pullback': 31/62 (50% WR)
-- Recent 'other': 1/4 (25% WR)
+- Recent 'trend_pullback': 27/58 (47% WR)
+- Recent 'other': 1/5 (20% WR)
 - Recent 'range_mean_reversion': 1/3 (33% WR)
-- Recent 'failed_breakout': 1/4 (25% WR)
+- Recent 'failed_breakout': 1/5 (20% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
