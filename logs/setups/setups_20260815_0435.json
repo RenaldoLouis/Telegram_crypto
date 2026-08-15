@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-08-15T04:35:12.406527+00:00",
+  "run_tag": "20260815_0435",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0
+  },
+  "setups": [
+    {
+      "symbol": "2ZUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0500127,
+      "entry_high": 0.0508473,
+      "stop_loss": 0.054603,
+      "target_1": 0.04707,
+      "target_2": 0.042084,
+      "predicted_rr": 0.805,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 54.8, ADX 39.8, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 39.8,
+          "rsi": 54.76,
+          "macd": -0.000475,
+          "macd_hist": 0.000187,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.35,
+          "range_pct": 37.32
+        },
+        "tf_1h": {
+          "adx": 29.2,
+          "rsi": 31.73,
+          "macd": -0.000361,
+          "macd_hist": -0.000448,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.2,
+          "range_pct": 18.18
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
