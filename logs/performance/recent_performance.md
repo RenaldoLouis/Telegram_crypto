@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_73 trades: 30W / 43L (41% WR, -0.14 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 49% WR, -0.15 avg blended R:R_
+_62 trades: 26W / 36L (42% WR, -0.13 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 48% WR, -0.16 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -67,20 +67,9 @@ _Partial profit model (50% at T1 + BE stop): 49% WR, -0.15 avg blended R:R_
 | 2026-07-21 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.66 (W) | 0.66 | target_1 | 0.76R |
 | 2026-07-21 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.63 (W) | 0.63 | target_1 | 0.77R |
 | 2026-07-21 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.66 (W) | 0.66 | target_1 | 0.8R |
-| 2026-07-20 | 1000PEPEUS | L | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.78 | trail_stop | 1.9R |
-| 2026-07-20 | WLDUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | 0.0 (L) | 0.23 | be_stop | 0.6R |
-| 2026-07-19 | BILLUSDT | S | intra | trend_pullba | med | 3/4 | 0.76 | 1.52 (W) | 1.15 | target_2 | 1.55R |
-| 2026-07-19 | DRAMUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.44R |
-| 2026-07-19 | SOLUSDT | S | intra | other | med | 3/4 | 0.77 | -1.0 (L) | -1.0 | stop_loss | 0.62R |
-| 2026-07-19 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.59R |
-| 2026-07-19 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.28R |
-| 2026-07-18 | 1000XECUSD | S | intra | other | med | 4/4 | 0.9 | 0.3 (W) | 0.3 | trail_stop | 1.09R |
-| 2026-07-18 | USUSDT | L | intra | trend_pullba | med | 4/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.32R |
-| 2026-07-17 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.13 (W) | 0.86 | target_2 | 1.13R |
-| 2026-07-17 | KORUUSDT | S | intra | funding_sque | med | 3/4 | 0.75 | 0.0 (L) | 0.32 | be_stop | 0.89R |
 
-- Recent 'trend_pullback': 27/58 (47% WR)
-- Recent 'other': 1/5 (20% WR)
+- Recent 'trend_pullback': 24/50 (48% WR)
+- Recent 'other': 0/3 (0% WR)
 - Recent 'range_mean_reversion': 1/3 (33% WR)
 - Recent 'failed_breakout': 1/5 (20% WR)
 
