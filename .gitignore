@@ -17,3 +17,8 @@ logs/backtest_cache/
 
 # Liquidation collector raw data (accumulates locally; backtested locally)
 logs/liquidations/
+# Binance kline dumps cached for cvd_backtest.py (research data, re-downloadable)
+logs/cvd_cache/
+
+# Bybit CVD forward-collection (per-minute taker buckets; CI artifact only)
+logs/cvd/

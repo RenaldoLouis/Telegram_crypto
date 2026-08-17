@@ -1,0 +1,66 @@
+name: CVD Collector (chained)
+
+# Phase 2 of roadmap #4 (2026-08-17). cvd_backtest.py found a robust CVD-slope
+# edge on Binance proxy data; this collects Bybit's OWN taker flow forward so we
+# can confirm the effect ON-VENUE in ~3-4 weeks. Same design as the liquidation
+# collector: ephemeral runners can't hold a stream, so CHAIN ~5.5h jobs, each
+# uploading per-minute CVD buckets as a dated ARTIFACT (90-day retention) — NOT
+# commits, so git history stays clean. Coverage ≈ 5.5h/6h minus cron jitter.
+#
+# Backtest later: download all artifacts, concat the JSONL, rebuild per-bar CVD.
+# NOTE: data collector only — zero trading decisions (CORE PRINCIPLE).
+
+on:
+  schedule:
+    - cron: '30 */6 * * *'   # offset 30m from the liq collector to spread VPN load
+  workflow_dispatch: {}
+
+concurrency:
+  group: cvd-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355        # under the 6h hard cap; script self-exits before this
+    permissions:
+      contents: read            # artifacts only — no push, no repo write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup WireGuard VPN
+        run: |
+          sudo apt-get install -y -qq wireguard-tools
+          echo "${{ secrets.WG_CONF }}" | base64 -d | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+          sleep 2
+          echo "VPN connected — exit IP: $(curl -s ifconfig.me)"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pybit
+
+      - name: Collect CVD (~5.5h then clean exit)
+        env:
+          CVD_MAX_SECONDS: '19800'   # 5h30m — leaves margin under the 355-min job cap
+        run: python cvd_collector.py
+
+      - name: Disconnect VPN
+        if: always()
+        run: sudo wg-quick down wg0 || true
+
+      - name: Upload CVD data
+        if: always()               # upload whatever was collected, even on early failure
+        uses: actions/upload-artifact@v4
+        with:
+          name: cvd-${{ github.run_id }}
+          path: logs/cvd/*.jsonl
+          retention-days: 90
+          if-no-files-found: warn
