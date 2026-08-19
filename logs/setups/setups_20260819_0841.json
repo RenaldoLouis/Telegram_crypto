@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-08-19T08:41:27.789132+00:00",
+  "run_tag": "20260819_0841",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0
+  },
+  "setups": [
+    {
+      "symbol": "KAITOUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.33900185,
+      "entry_high": 0.34419815,
+      "stop_loss": 0.3675815,
+      "target_1": 0.3193,
+      "target_2": 0.289637,
+      "predicted_rr": 0.858,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 50.7, ADX 48.5, near EMA20"
+      },
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 48.53,
+          "rsi": 50.7,
+          "macd": -0.023313,
+          "macd_hist": 0.007283,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.61,
+          "range_pct": 17.24
+        },
+        "tf_1h": {
+          "adx": 18.43,
+          "rsi": 55.5,
+          "macd": 0.000845,
+          "macd_hist": 7.5e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.36,
+          "range_pct": 6.53
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
