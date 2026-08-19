@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-18 02:44 UTC",
-  "total_setups": 377,
+  "last_updated": "2026-08-19 00:27 UTC",
+  "total_setups": 378,
   "total_evaluated": 339,
   "total_not_triggered": 18,
   "overall": {
@@ -1072,7 +1072,8 @@
     "20260814_0540",
     "20260814_2034",
     "20260815_0435",
-    "20260815_2026"
+    "20260815_2026",
+    "20260816_2026"
   ],
   "by_source": {
     "claude": {

@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_62 trades: 26W / 36L (42% WR, -0.13 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 48% WR, -0.16 avg blended R:R_
+_59 trades: 23W / 36L (39% WR, -0.17 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 46% WR, -0.20 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -64,11 +64,8 @@ _Partial profit model (50% at T1 + BE stop): 48% WR, -0.16 avg blended R:R_
 | 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.72 (W) | 0.72 | target_1 | 0.93R |
 | 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.9 | 0.81 (W) | 0.81 | target_1 | 0.83R |
 | 2026-07-22 | ERAUSDT | S | intra | other | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.3R |
-| 2026-07-21 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.66 (W) | 0.66 | target_1 | 0.76R |
-| 2026-07-21 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.63 (W) | 0.63 | target_1 | 0.77R |
-| 2026-07-21 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.66 (W) | 0.66 | target_1 | 0.8R |
 
-- Recent 'trend_pullback': 24/50 (48% WR)
+- Recent 'trend_pullback': 21/47 (45% WR)
 - Recent 'other': 0/3 (0% WR)
 - Recent 'range_mean_reversion': 1/3 (33% WR)
 - Recent 'failed_breakout': 1/5 (20% WR)
