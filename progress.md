@@ -82,11 +82,18 @@ Quarterly deep analysis (quarterly_analysis.py, manual — still available for d
 
 ## Current Status & Roadmap (READ FIRST when resuming)
 
-_As of 2026-08-09. Single source of truth for where the mechanical-primary migration stands and what to do next. Full plan: `~/.claude/plans/ok-becauase-in-my-refactored-locket.md`._
+_As of 2026-08-20. Single source of truth for where the mechanical-primary migration stands and what to do next. Full plan: `~/.claude/plans/ok-becauase-in-my-refactored-locket.md`._
 
 **Big picture.** Migrating from *Claude-as-decision-maker* to a pure-Python **mechanical engine as the primary setup source**, with Claude running in **shadow** (built + logged + evaluated head-to-head, not necessarily delivered). Goal: prove mechanical beats Claude on **expectancy NET OF COSTS**, then Claude can be dropped → independence from a model Anthropic can change/deprecate anytime. Optimize **net expectancy** — NOT win rate, NOT gross R (the 2026-08-02 audit showed the gross edge was mostly fees).
 
 **CURRENT MODE = SHADOW.** `config.PRIMARY_SOURCE = "claude"`. `scan` still delivers *Claude's* brief to Telegram; mechanical setups are built + saved silently alongside for comparison. Delivery behavior is unchanged until Phase 4. A Claude failure (quota/$cap/timeout) now degrades to mechanical-only delivery instead of crashing.
+
+**LATEST (2026-08-20) — WATCH tier + "always an opinion" reframe (user-driven).** User wanted "≥1 opportunity every day." Reconciled with the net-of-cost north star by splitting SURFACING from EXECUTING instead of forcing trades (new CLAUDE.md operating-discipline rule #6: _empty EXECUTION valid; empty SURFACING is a bug_). Shipped:
+- **WATCH tier** (`main.py::build_watch_candidate`): when the EXECUTE lane is empty, surface the single best-available candidate (a watch-tier/gate-rejected fired signal, else an `_observation_candidate` = top-interest coin in its dominant trend). `source="watch"`, bypasses the protective gates, paper-tracked only. Rendered under "👀 Watch Candidate" in the brief. **Excluded from the edge book** — `weekly_eval.update_lifetime_stats` skips `source=="watch"` from all global/edge counters (buckets it only under `by_source["watch"]`); `generate_recent_performance` + `_load_recent_eval_details` filter it out so WATCH never shapes EXECUTE rules; head_to_head keeps a visible `watch` row but excludes it from the backing/direction diagnostics. Verified end-to-end with synthetic evals. Also hardened `_group_stats([])` to a complete zero-dict (empty group KeyError'd head_to_head).
+- **`rsi_bounce_long`** added as the first WATCH-tier signal (oversold bounce, 4h; gross +0.108R/N20/100% robust but net-marginal → watch, not execute). Fires on OVERSOLD so it does NOT chase spikes.
+- **Ride-the-wave long REJECTED:** `momentum_continuation_long` (enter first pullback holding above EMA20 after a breakout) built + validated → OVERFIT (train +0.66R → test −0.56R, WR 56%→15%, N~41). NOT promoted; kept as a documented rejected candidate in `historical_backtester.py`. `volume_breakout_long` still dead. **Confirms again: no validated price-pattern long catches a spike (up or down) on this universe** — WATCH tier (not a manufactured signal) is what guarantees daily long-side coverage until a predictive input (liq clusters / CVD) lands.
+- **Cadence 4h→2h** on CI (`0 */2` cron) — mechanical-only so ~0 extra Claude cost; doubles coverage + eval velocity. Dedup window (2d) + hot_list expiry (48h) are time-based → still correct.
+- **Git hygiene fix:** the local scan wrapper (`run_scan.sh`) + `~/.zshrc` `scan`/`eval-scan` now `git add logs/` instead of `git add -A` (was sweeping uncommitted source edits into "scan: save logs" commits).
 
 **Done (committed 2026-07-21 `3fada87`, Phases 0-3):**
 - Phase 0: prompt cleanup; `enforce_setups()` now DROPS rule-breakers (was log-only) + re-ranks.
@@ -105,7 +112,7 @@ _As of 2026-08-09. Single source of truth for where the mechanical-primary migra
 **Roadmap / what's next.** Items tagged _[WAIT]_ are data-gated (need ~20-30 fresh evals scored AFTER the 2026-08-02 gates — nothing to safely change on those until then); _[NOW]_ items are not blocked and can be done any time.
 
 _[WAIT] Data-gated — let the 4h CI mechanical scans + weekly `eval-scan` accumulate:_
-1. **Ongoing loop.** Mechanical scan runs every 4h on GitHub Actions (mechanical-only, no ANTHROPIC key on CI). The 9pm local `launchd` run is the only Claude call. Run `eval-scan` (which `git pull --rebase`s CI-pushed setups first) weekly. **Watch the NET-of-cost verdict in `head_to_head.md`** — not gross R, not lifetime WR. Lever #1's job: move whole-book net from −0.17R toward the short-only −0.03R as losing longs stop entering. Then lever #2 has to push past breakeven.
+1. **Ongoing loop.** Mechanical scan runs every 2h on GitHub Actions (mechanical-only, no ANTHROPIC key on CI; raised from 4h 2026-08-20). The local `launchd` runs (09:00/17:00/22:00) are the only Claude calls. Run `eval-scan` (which `git pull --rebase`s CI-pushed setups first) weekly. **Watch the NET-of-cost verdict in `head_to_head.md`** — not gross R, not lifetime WR. NOTE (2026-08-20): a `watch` row now also appears in head_to_head — that's the WATCH-tier promotion signal (is `rsi_bounce_long`/observations net-positive enough to graduate to EXECUTE?); it is NOT part of the edge book. Lever #1's job: move whole-book net from −0.17R toward the short-only −0.03R as losing longs stop entering. Then lever #2 has to push past breakeven.
 2. **Lever #2 — raise per-trade R to shrink cost-in-R.** Median risk is 3.1% of price, so fixed fees cost ~0.055R/trade — larger than the whole gross edge. Widening targets and/or entering closer to stop lowers the fraction of R the fees eat. This is the real path to +net after lever #1. **MODEL it first** on existing evals via `backtester.py` (what-if, zero tokens) — do NOT ship blind. Revisit once ~20-30 post-lever-1 evals exist.
 3. **Lever #3 — early-invalidation exit (from 2026-08-02 insight grading).** Trades whose MFE stalls ≤0.25R are 56/57 losses at −0.92R (n=57). If we exit those early (~−0.3/−0.4R) instead of riding to a −1.0R full stop, the saved R is large (~+25-28R across history — potentially bigger than lever #1). Only a MANAGEMENT rule (MFE is post-entry, useless for selection). **MODEL first:** time-box the hypothesis ("MFE hasn't reached ~0.25R within first N candles → exit") in `weekly_eval`/`backtester` before shipping — confirm the early-exit beats holding net-of-cost. Highest-value lead from the insight grading.
 4. ~~**Per-signal T1 + direction review**~~ **— REJECTED 2026-08-09.** The net-of-cost slice cut (below) showed T1 tuning only optimizes the *winning half* of a losing book; median MFE is 0.77R and T2@1.5R hits 13%, so the reward leg is the problem, not T1 placement. Low value. Do not revisit as a standalone lever.
@@ -380,6 +387,15 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-08-20 — WATCH tier ("always an opinion") + ride-the-wave rejection + 2h cadence
+- **WATCH tier** — never a silent scan. EXECUTE (validated → gated → counted) vs WATCH (best-available, `source="watch"`, paper-track only, excluded from the edge book). `main.py::build_watch_candidate` + `_observation_candidate`; rendered under "👀 Watch Candidate". New CLAUDE.md operating-discipline rule #6: _empty EXECUTION valid; empty SURFACING is a bug._
+- **Learning-loop integrity** — `weekly_eval` keeps WATCH out of every EXECUTE-shaping artifact (`update_lifetime_stats` global counters, `generate_recent_performance`, `_load_recent_eval_details`) while tracking it in `by_source["watch"]` + a visible head_to_head row. Hardened `_group_stats([])` (empty group KeyError'd head_to_head). Verified end-to-end with synthetic evals.
+- **`rsi_bounce_long`** — first WATCH-tier signal (oversold bounce, 4h; gross +0.108R/N20 but net-marginal). Oversold → does not chase spikes.
+- **Ride-the-wave `momentum_continuation_long`** — built + validated → OVERFIT (train +0.66R → test −0.56R), NOT promoted; documented rejected candidate. Reconfirms: no validated price-pattern long catches a spike on this universe.
+- **Cadence 4h→2h** CI (`0 */2` cron; mechanical-only, ~0 extra cost) → doubled coverage + eval velocity.
+- **Git hygiene** — `run_scan.sh` + `~/.zshrc` aliases now `git add logs/` not `git add -A` (was sweeping WIP source into "save logs" commits).
+- Commits: `2a38673` (core, auto-swept) · `4f202ac` · `fca23cc` · `3485057`.
 
 ### 2026-07-22 — Keyless Bybit (removed API key entirely)
 
