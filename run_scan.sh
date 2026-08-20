@@ -16,16 +16,19 @@ cd "$REPO" || exit 1
 
 echo "=== scan run $(date) ==="
 
-# Commit any stray local changes first so the rebase stays clean (matches alias).
-git add -A && git commit -q -m "scan: save logs [skip ci]" 2>/dev/null
+# Commit any stray LOG changes first so the rebase stays clean (matches alias).
+# IMPORTANT: `git add logs/` ONLY — never `git add -A`. A scan must commit its own
+# data outputs (setups/briefs/hot_list/performance), NEVER source-code edits that
+# happen to be in the working tree (that sweeps WIP into a "save logs" commit).
+git add logs/ && git commit -q -m "scan: save logs [skip ci]" 2>/dev/null
 git pull --rebase --quiet
 
 source venv/bin/activate
 python main.py
 scan_status=$?
 
-git add -A && git commit -q -m "scan: update logs [skip ci]" 2>/dev/null
-# Race-safe push: the CI bot also pushes to master every 4h. Rebase onto any
+git add logs/ && git commit -q -m "scan: update logs [skip ci]" 2>/dev/null
+# Race-safe push: the CI bot also pushes to master every 2h. Rebase onto any
 # concurrent commit and retry rather than failing on a non-fast-forward.
 for i in 1 2 3; do
   git pull --rebase --quiet && git push --quiet && break || sleep 5
