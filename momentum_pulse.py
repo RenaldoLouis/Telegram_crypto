@@ -1,7 +1,7 @@
 """
 Momentum Pulse Scanner — lightweight intra-day momentum detection.
 
-Runs every 4 hours on GitHub Actions (free). Zero Claude tokens.
+Runs every 2 hours on GitHub Actions (free). Zero Claude tokens.
 Fetches top 50 tickers, compares against previous snapshot, flags acceleration.
 Sends quick Telegram alerts for flagged coins.
 Results feed into the main scan via logs/momentum/hot_list.json.

@@ -10,6 +10,7 @@ from fetchers.telegram_reader import TelegramReader
 from analyzer.claude_client import ClaudeAnalyzer
 from delivery.telegram_bot import send_brief, format_mechanical_brief
 from mechanical_setups import build_mechanical_setups
+import signal_levels as sl
 
 
 def parse_setups_json(brief_text):
@@ -374,6 +375,107 @@ def _drop_active_duplicates(setups, active_keys, source):
     return kept
 
 
+def _stamp_watch(setup, regime_label, interest_scores):
+    """Minimal stamp for a WATCH candidate (no enforce, no execute gates)."""
+    setup["tier"] = "watch"
+    setup["source"] = "watch"
+    setup["model"] = "watch_v1"
+    setup["regime"] = regime_label
+    if setup.get("interest_score") is None:
+        setup["interest_score"] = interest_scores.get(setup.get("symbol"))
+    setup["rank"] = 1
+    reasoning = setup.get("reasoning") or {}
+    applied = [r for r in reasoning.get("rules_applied", []) if r in config.CANONICAL_RULES]
+    reasoning["rules_applied"] = applied
+    setup["reasoning"] = reasoning
+    return setup
+
+
+def _observation_candidate(technicals, interest_scores, regime_label):
+    """Last-resort WATCH candidate when NO signal fired anywhere: take the single
+    highest-interest coin and build a structural setup in its dominant multi-TF
+    trend direction. Lowest-confidence, explicitly non-signal — its only job is to
+    keep the scan from ever being empty and to feed the eval loop. Returns None if
+    no coin has usable 4h price/ATR.
+    """
+    best = None  # (interest_score, tech)
+    for tech in technicals or []:
+        sym = tech.get("symbol")
+        score = interest_scores.get(sym)
+        tf4 = (tech.get("timeframes", {}) or {}).get("4h") or {}
+        if score is None or tf4.get("current_price") is None or not tf4.get("atr_14"):
+            continue
+        if best is None or score > best[0]:
+            best = (score, tech)
+    if best is None:
+        return None
+
+    tech = best[1]
+    tfs = tech.get("timeframes", {}) or {}
+    tf4 = tfs.get("4h") or {}
+    price, atr = float(tf4["current_price"]), float(tf4["atr_14"])
+    # Dominant direction = majority trend across the 4 TFs (tie → the 4h trend).
+    bull = sum(1 for lbl in ("15m", "1h", "4h", "1D")
+               if (tfs.get(lbl) or {}).get("trend") == "bullish")
+    bear = sum(1 for lbl in ("15m", "1h", "4h", "1D")
+               if (tfs.get(lbl) or {}).get("trend") == "bearish")
+    if bull == bear:
+        direction = "long" if tf4.get("trend") == "bullish" else "short"
+    else:
+        direction = "long" if bull > bear else "short"
+
+    entry_low, entry_high = sl.entry_zone(price, atr)
+    stop = sl.stop_from_atr(price, atr, 1.5, direction)
+    risk = abs(price - stop)
+    if risk <= 0:
+        return None
+    target_2 = sl.target_from_r(price, risk, 1.5, direction)
+    levels = [tf4.get("swing_high"), tf4.get("swing_low"), tf4.get("ema_20"),
+              tf4.get("ema_50"), tf4.get("high_20"), tf4.get("low_20")]
+    target_1, predicted_rr = sl.nearest_structural_target(price, risk, direction, levels)
+
+    return {
+        "symbol": tech.get("symbol"),
+        "direction": direction,
+        "timeframe": "intraday",
+        "setup_type": "other",
+        "entry_low": entry_low, "entry_high": entry_high,
+        "stop_loss": stop, "target_1": target_1, "target_2": target_2,
+        "predicted_rr": predicted_rr,
+        "confidence": "low",
+        "tf_confluence": max(bull, 1),
+        "volume_confirmed": bool((tf4.get("volume_spike_ratio") or 0) > 1.5),
+        "reasoning": {
+            "rules_applied": ["symbol_priority"],
+            "key_factor": f"observation: highest-interest coin, dominant {direction} trend "
+                          f"({max(bull, bear)}/4 TF) — NO validated signal, watch-only",
+        },
+        "signal_name": "observation",
+        "signal_tf": "4h",
+        "signal_expectancy": 0.0,
+    }
+
+
+def build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_label):
+    """Return a one-element list with the best WATCH candidate, or [] if none can be
+    built. Called ONLY when the EXECUTE lane is empty, so the scan is never silent.
+
+    Priority: (1) the highest-expectancy signal that fired but is not in the delivered
+    EXECUTE set — either tier="watch" (e.g. rsi_bounce_long) or an execute-tier signal
+    that the protective gates rejected; (2) an observation candidate from the top coin.
+    WATCH bypasses the EXECUTE gates on purpose: it is paper-tracked, never executed,
+    and is excluded from the edge-proven book in weekly_eval (source="watch").
+    """
+    candidate = raw_mechanical[0] if raw_mechanical else None  # already ranked by expectancy
+    if candidate is None:
+        candidate = _observation_candidate(technicals, interest_scores, regime_label)
+    if candidate is None:
+        return []
+    enrich_with_entry_indicators([candidate], technicals)
+    _stamp_watch(candidate, regime_label, interest_scores)
+    return [candidate]
+
+
 async def run_screener():
     print(f"[{datetime.now()}] Starting screener run...")
     run_ts = datetime.now(timezone.utc)
@@ -391,11 +493,16 @@ async def run_screener():
 
     # 2. PRIMARY: mechanical setups — built FIRST, with ZERO dependency on Claude.
     # This guarantees a scan always produces output even if Claude is down.
+    # Two lanes: EXECUTE (tier!="watch") goes through the full protective gates and is
+    # the real, counted edge book; WATCH-tier signals (net-marginal / gate-rejected) are
+    # held back for the WATCH lane below.
     print("→ Building mechanical setups (primary)...")
+    raw_mechanical = build_mechanical_setups(market)
+    execute_raw = [s for s in raw_mechanical if s.get("tier", "execute") != "watch"]
     mechanical = _prepare_source(
-        build_mechanical_setups(market), regime_label, interest_scores, technicals, "mechanical"
+        execute_raw, regime_label, interest_scores, technicals, "mechanical"
     )
-    print(f"  Mechanical: {len(mechanical)} setups (regime: {regime_label})")
+    print(f"  Mechanical EXECUTE: {len(mechanical)} setups (regime: {regime_label})")
 
     # 3. SHADOW: Claude — wrapped so ANY failure (quota, $ cap, timeout, API/network
     # error) degrades to mechanical-only instead of crashing the scan.
@@ -427,8 +534,23 @@ async def run_screener():
     mechanical = _drop_active_duplicates(mechanical, active, "mechanical")
     claude_setups = _drop_active_duplicates(claude_setups, active, "claude")
 
-    # 4. Persist BOTH sources to one file, each tagged `source` (head-to-head data).
-    all_setups = mechanical + claude_setups
+    # 3c. WATCH lane — the never-silent guarantee. When the EXECUTE lane is empty, surface
+    # the single best available candidate (watch-tier/gate-rejected signal, else an
+    # observation from the top coin) so every scan has an opinion. WATCH is paper-tracked
+    # only (source="watch"), bypasses the execute gates, and is EXCLUDED from the
+    # edge-proven book in weekly_eval — it exists for daily coverage + eval velocity, not
+    # to add executed trades. Respects cross-run dedup like the other lanes.
+    watch = []
+    if not mechanical:
+        watch = build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_label)
+        watch = _drop_active_duplicates(watch, active, "watch")
+        if watch:
+            w = watch[0]
+            print(f"  WATCH: {w.get('symbol','?')} {w.get('direction','?')} "
+                  f"via {w.get('signal_name','?')} (paper-track only, not counted)")
+
+    # 4. Persist ALL lanes to one file, each tagged `source` (head-to-head data).
+    all_setups = mechanical + claude_setups + watch
     if all_setups:
         setups_dir = Path("logs/setups")
         setups_dir.mkdir(parents=True, exist_ok=True)
@@ -439,7 +561,8 @@ async def run_screener():
             "mechanical_model": config.MECHANICAL_MODEL_TAG,
             "primary_source": config.PRIMARY_SOURCE,
             "regime": regime_label,
-            "sources": {"mechanical": len(mechanical), "claude": len(claude_setups)},
+            "sources": {"mechanical": len(mechanical), "claude": len(claude_setups),
+                        "watch": len(watch)},
             "setups": all_setups,
         }
         setup_file = setups_dir / f"setups_{run_tag}.json"
@@ -454,7 +577,7 @@ async def run_screener():
     if deliver_mechanical:
         reason = "PRIMARY_SOURCE=mechanical" if config.PRIMARY_SOURCE == "mechanical" else "Claude unavailable"
         print(f"→ Delivering MECHANICAL brief ({reason})...")
-        clean_brief = format_mechanical_brief(mechanical, regime_label)
+        clean_brief = format_mechanical_brief(mechanical, regime_label, watch=watch)
     else:
         print("→ Delivering CLAUDE brief (shadow mode)...")
         clean_brief = strip_pre_analysis(strip_json_block(brief))

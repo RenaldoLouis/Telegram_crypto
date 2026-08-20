@@ -778,6 +778,16 @@ def update_lifetime_stats(all_evals):
             stats["monthly_trend"][month_key] = {"wins": 0, "losses": 0, "total": 0}
 
         for r in ev["results"]:
+            # WATCH-tier candidates are paper-tracked for coverage + eval velocity, NOT
+            # part of the edge-proven book. Keep them OUT of every global/edge counter
+            # (total, overall expectancy, monthly, confluence, version line) so the
+            # net-of-cost measurement stays uncorrupted — bucket them only under by_source
+            # so head_to_head/summary can still report the WATCH lane separately.
+            if r.get("source") == "watch":
+                if r.get("status") == "evaluated":
+                    _increment_bucket(stats["by_source"], "watch", r)
+                continue
+
             stats["total_setups"] += 1
 
             if r.get("status") == "not_triggered":

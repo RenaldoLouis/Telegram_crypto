@@ -2,8 +2,11 @@ name: Momentum Pulse + Mechanical Scan
 
 on:
   schedule:
-    # Run every 4 hours UTC
-    - cron: '0 */4 * * *'
+    # Run every 2 hours UTC (raised from 4h 2026-08-20). CI is mechanical-only (no
+    # ANTHROPIC_API_KEY), so 2x the runs = ~0 extra Claude cost — just more coverage
+    # + eval velocity. The dedup window (2 days) + hot_list expiry (48h) are time-based,
+    # so they stay correct at the faster cadence.
+    - cron: '0 */2 * * *'
   workflow_dispatch:
     # Allow manual trigger from GitHub Actions tab
 

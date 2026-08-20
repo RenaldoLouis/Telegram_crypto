@@ -159,6 +159,9 @@ class BybitFetcher:
                                     failed breakout of the prior 20-candle high.
           - liquidity_sweep_long: confirmed BOTH 1h + 4h (100% robust each) — a
                                    wick sweeps the prior 20-candle low then reclaims.
+          - rsi_bounce_long     : 4h, tier="watch" (2026-08-20 re-run: gross +0.108R
+                                   / N=20 / 100% robust, but net-marginal after cost —
+                                   surfaced + paper-tracked, NOT executed).
         macd_momentum_long REMOVED (Jul 29) — degraded to overfit on BOTH TFs.
         macd_momentum_short removed earlier — same reason.
         Only called for 1h and 4h.
@@ -316,6 +319,31 @@ class BybitFetcher:
                         "indicators": f"failed breakout of {prior_high:.4f}, RSI {c['rsi']:.1f}",
                         "historical": "+0.12 expect (4h test, N=75, 100% robust)",
                     })
+
+        # --- Signal 5: RSI Bounce Long (WATCH tier, 4h) ---
+        # RSI was deeply oversold (<30) and is now crossing back up (30-45, rising).
+        # A mean-reversion LONG bought into a washed-out dip. Validated GROSS on the
+        # 2026-08-20 re-run (4h test +0.108R, N=20, 100% robust) BUT net-marginal
+        # after ~0.12R round-trip cost — so it ships as tier="watch" (surfaced +
+        # paper-tracked for forward confirmation, NOT an executed edge signal). It is
+        # ALSO the long-side coverage the strict EXECUTE gates reject: fired at a
+        # bottom it has low bullish confluence + no volume spike, so it would never
+        # clear enforce_setups. WATCH is exactly where such a candidate belongs.
+        # Params from the robustness sweep: rsi_extreme=30 / rsi_recover<45 / stop 2.0 ATR.
+        if (tf_label == "4h" and
+                pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
+                p2["rsi"] < 30 and p["rsi"] < 35 and
+                30 < c["rsi"] < 45 and c["rsi"] > p["rsi"]):
+            signals.append({
+                "signal": "rsi_bounce_long",
+                "tf": tf_label,
+                "direction": "long",
+                "target_r": 2.0,
+                "stop_atr": 2.0,
+                "tier": "watch",   # gross-positive but net-marginal — paper-track, don't execute
+                "indicators": f"RSI {c['rsi']:.1f} bouncing (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
+                "historical": "+0.11 expect GROSS (4h test N=20, 100% robust); net-marginal → watch",
+            })
 
         return signals
 

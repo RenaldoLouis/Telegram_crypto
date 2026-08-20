@@ -25,6 +25,7 @@ EXPECTANCY = {
     ("failed_breakout_short", "4h"): 0.12,   # Phase 3, validated 4h-only (N=75)
     ("liquidity_sweep_long", "1h"): 0.08,    # Jul 29: confirmed both TFs, 100% robust
     ("liquidity_sweep_long", "4h"): 0.04,
+    ("rsi_bounce_long", "4h"): 0.11,         # 2026-08-20: WATCH tier — gross +0.108R/N20, net-marginal
 }
 
 # Map a signal name to the canonical setup_type (must be in main.VALID_SETUP_TYPES).
@@ -33,6 +34,7 @@ SETUP_TYPE = {
     "trend_pullback_short": "trend_pullback",
     "failed_breakout_short": "failed_breakout",
     "liquidity_sweep_long": "liquidity_sweep",
+    "rsi_bounce_long": "range_mean_reversion",   # oversold-bounce mean reversion
 }
 
 # Canonical reasoning rule per signal (must be in config.CANONICAL_RULES).
@@ -41,6 +43,7 @@ SETUP_RULE = {
     "trend_pullback_short": "trend_pullback",
     "failed_breakout_short": "liquidity_sweep",  # a failed breakout is a swept level
     "liquidity_sweep_long": "liquidity_sweep",
+    "rsi_bounce_long": "range_reversion",
 }
 
 VOLUME_CONFIRM_RATIO = 1.5
@@ -137,6 +140,10 @@ def _build_one(tech, direction, group, regime, interest_scores):
             "key_factor": f"{signal_name} on {signal_tf}: {anchor.get('indicators', '')}",
         },
         # Mechanical-path instrumentation.
+        # tier: "execute" (default) → real edge, gated + delivered + counted.
+        #       "watch"             → gross-positive/net-marginal (or gate-rejected) signal;
+        #                             surfaced + paper-tracked only, never in the edge book.
+        "tier": anchor.get("tier", "execute"),
         "source": "mechanical",
         "signal_name": signal_name,
         "signal_tf": signal_tf,

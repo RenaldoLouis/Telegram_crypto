@@ -135,13 +135,61 @@ def _t2_rr(setup):
         return None
 
 
-def format_mechanical_brief(setups, regime="neutral"):
+def _format_watch_block(watch):
+    """Render the WATCH candidate section (best-available, paper-track-only)."""
+    w = watch[0]
+    direction = (w.get("direction") or "?").capitalize()
+    lines = ["\n## 👀 Watch Candidate (below execute bar — paper-track only)"]
+    sig = w.get("signal_name", "?")
+    if sig == "observation":
+        lines.append("_No validated signal fired anywhere this scan. This is the "
+                     "highest-interest coin in its dominant trend — an OBSERVATION, "
+                     "not a signal. Track it on paper to feed the eval loop; do NOT "
+                     "size it like an execute setup._")
+    else:
+        exp = w.get("signal_expectancy")
+        exp_str = f" · gross expectancy {exp:+.2f}R" if isinstance(exp, (int, float)) else ""
+        lines.append(f"_Signal `{sig}` fired but is below the validated net-of-cost "
+                     f"execute bar{exp_str}. Surfaced so the scan is never empty and the "
+                     "trade can be paper-tracked. NOT counted in the edge book._")
+    pr = w.get("predicted_rr")
+    t2rr = _t2_rr(w)
+    pr_str = f" (R:R {pr:.2f}:1)" if isinstance(pr, (int, float)) else ""
+    t2_str = f" (R:R {t2rr:.2f}:1)" if t2rr is not None else ""
+    lines.append(f"\n### {w.get('symbol','?')} | {direction} | Watch")
+    lines.append("**Trade Plan:**")
+    lines.append(f"- Entry zone: {_fmt_price(w.get('entry_low'))} — {_fmt_price(w.get('entry_high'))}")
+    lines.append(f"- Stop loss: {_fmt_price(w.get('stop_loss'))}")
+    lines.append(f"- Target 1: {_fmt_price(w.get('target_1'))}{pr_str} — partial profit, take 50%")
+    lines.append(f"- Target 2: {_fmt_price(w.get('target_2'))}{t2_str} — reward leg")
+    lines.append(f"- Confidence: {w.get('confidence','low')} · TF confluence: {w.get('tf_confluence','?')}/4")
+    kf = (w.get("reasoning") or {}).get("key_factor")
+    if kf:
+        lines.append(f"- Key factor: {kf}")
+    return lines
+
+
+def format_mechanical_brief(setups, regime="neutral", watch=None):
     """Render mechanically-constructed setups as a markdown brief in the same style
     as Claude's output, so send_brief() can deliver it unchanged. Pure formatting —
     no analysis. Used when PRIMARY_SOURCE == 'mechanical' or Claude failed.
+
+    `watch` (optional) is a one-element list holding the WATCH candidate surfaced
+    when the EXECUTE lane is empty — the never-silent guarantee.
     """
     lines = ["## 📊 Market Context (mechanical engine)"]
     if not setups:
+        if watch:
+            lines.append(
+                f"Regime: **{regime}**. No signal cleared the validated execute bar this "
+                "scan — 0 execute setups. Surfacing the best available candidate to watch "
+                "(no forced trade)."
+            )
+            lines.extend(_format_watch_block(watch))
+            lines.append("\n## 🧠 One-Line Takeaway")
+            lines.append("Nothing to EXECUTE — one candidate to WATCH and paper-track. "
+                         "You make the call; no forced trade.")
+            return "\n".join(lines)
         lines.append(
             f"Regime: **{regime}**. No backtest-validated signals fired this scan — "
             "0 setups. An empty scan is a valid outcome; no forced trades."
