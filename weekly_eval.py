@@ -579,7 +579,11 @@ def _group_stats(results):
     """WR / expectancy / profit-factor for a list of evaluated result dicts."""
     n = len(results)
     if not n:
-        return {"n": 0, "wr": 0.0, "exp": 0.0, "pf": 0.0, "wins": 0}
+        # Complete zero-dict — every downstream caller indexes net_* / exp / pf, so an
+        # empty group (e.g. an observation-only period with no signal-backed trades)
+        # must not omit any key or generate_head_to_head KeyErrors mid eval-scan.
+        return {"n": 0, "wr": 0.0, "exp": 0.0, "pf": 0.0, "wins": 0,
+                "net_wr": 0.0, "net_exp": 0.0, "net_pf": 0.0}
     rr = [r.get("actual_rr", 0) for r in results]
     wins = sum(1 for r in results if r.get("won"))
     gross_win = sum(x for x in rr if x > 0)
@@ -617,6 +621,10 @@ def generate_head_to_head(all_evals):
     for r in evaluated:
         src = r.get("source", "claude")
         by_source.setdefault(src, []).append(r)
+        # WATCH gets its own by_source row (visible) but is kept OUT of the
+        # backing/direction/signal diagnostics — those measure EXECUTE-book quality.
+        if src == "watch":
+            continue
         key = "signal_backed" if r.get("backtested_signal") else "discretionary"
         by_backed.setdefault(key, []).append(r)
         # Concentration diagnostics (audit 2026-08-02): the aggregate expectancy
@@ -1463,7 +1471,9 @@ def generate_recent_performance(all_evals):
             continue
         model = ev.get("model", "unknown")
         for r in ev["results"]:
-            if r.get("status") == "evaluated":
+            # Exclude WATCH-tier: it's paper-tracked coverage, not the edge book, and
+            # this file is sent to Claude every run to calibrate EXECUTE behavior.
+            if r.get("status") == "evaluated" and r.get("source") != "watch":
                 r["run_tag"] = ev["run_tag"]
                 r["model"] = model
                 recent_results.append(r)
@@ -2157,11 +2167,15 @@ def _save_delta_registry(registry):
 
 
 def _load_recent_eval_details(all_evals, limit=20):
-    """Load recent evaluated trade details for the delta analysis prompt."""
+    """Load recent evaluated trade details for the delta analysis prompt.
+
+    Excludes WATCH-tier trades: WATCH is paper-tracked coverage, not the edge book —
+    it must never shape the delta insights / strategic rules that govern EXECUTE.
+    """
     recent = []
     for ev in sorted(all_evals, key=lambda e: e.get("run_tag", ""), reverse=True):
         for r in reversed(ev.get("results", [])):
-            if r.get("status") == "evaluated":
+            if r.get("status") == "evaluated" and r.get("source") != "watch":
                 recent.append({
                     "symbol": r.get("symbol"),
                     "direction": r.get("direction"),
