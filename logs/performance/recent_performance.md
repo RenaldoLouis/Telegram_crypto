@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_59 trades: 23W / 36L (39% WR, -0.17 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 46% WR, -0.20 avg blended R:R_
+_53 trades: 19W / 34L (36% WR, -0.21 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 43% WR, -0.24 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -58,17 +58,11 @@ _Partial profit model (50% at T1 + BE stop): 46% WR, -0.20 avg blended R:R_
 | 2026-07-25 | GWEIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 1.39R |
 | 2026-07-25 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.76 (W) | 1.19 | target_2 | 1.91R |
 | 2026-07-23 | LABUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.12 (W) | 0.12 | expired | 0.51R |
-| 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.41 (W) | 0.41 | expired | 0.91R |
-| 2026-07-22 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.17R |
-| 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.9 | 0.8 (W) | 0.8 | target_1 | 0.88R |
-| 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.72 (W) | 0.72 | target_1 | 0.93R |
-| 2026-07-22 | 1000BONKUS | S | intra | trend_pullba | med | 3/4 | 0.9 | 0.81 (W) | 0.81 | target_1 | 0.83R |
-| 2026-07-22 | ERAUSDT | S | intra | other | med | 3/4 | 0.9 | -1.0 (L) | -1.0 | stop_loss | 0.3R |
 
-- Recent 'trend_pullback': 21/47 (45% WR)
-- Recent 'other': 0/3 (0% WR)
+- Recent 'trend_pullback': 17/42 (40% WR)
 - Recent 'range_mean_reversion': 1/3 (33% WR)
 - Recent 'failed_breakout': 1/5 (20% WR)
+- Recent 'other': 0/2 (0% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS

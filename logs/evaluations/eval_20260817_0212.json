@@ -1,0 +1,29 @@
+{
+  "run_tag": "20260817_0212",
+  "run_timestamp_utc": "2026-08-17T02:12:52.516956+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-08-20T01:36:00.521739+00:00",
+  "results": [
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.775,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
