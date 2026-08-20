@@ -329,7 +329,7 @@ def _prepare_source(setups, regime_label, interest_scores, technicals, source):
 # Longest eval window is `intraday` = 2 days (weekly_eval.EVAL_WINDOWS). A setup from a
 # scan within that window is still "open" for scoring, so re-emitting the same
 # symbol+direction+source would create a correlated pseudo-replicate trade (matters now
-# that CI scans every 4h = 6x/day). Kept local to avoid importing weekly_eval.
+# that CI scans every 2h = 12x/day). Kept local to avoid importing weekly_eval.
 _DEDUP_LOOKBACK_DAYS = 2
 
 
@@ -526,7 +526,7 @@ async def run_screener():
     except Exception as e:
         print(f"  ⚠ Claude shadow failed ({type(e).__name__}: {e}) — continuing mechanical-only")
 
-    # 3b. Cross-run dedup: with CI scanning every 4h, the same coin re-flagged in
+    # 3b. Cross-run dedup: with CI scanning every 2h, the same coin re-flagged in
     # consecutive windows would log correlated pseudo-replicate trades that pollute the
     # eval / flip-gate counter. Drop any (symbol, direction, source) still active from a
     # recent scan. Per-source so the head-to-head comparison stays fair.

@@ -586,8 +586,72 @@ signal_failed_breakout_short_stacked = make_failed_breakout_stacked("short")
 signal_liquidity_sweep_long_stacked = make_liquidity_sweep_stacked("long")
 
 
+def make_momentum_continuation(direction, bo_lb=8, prox_hi=2.0, rsi_lo=45,
+                               rsi_hi=68, adx_min=18, atr_mult=1.5):
+    """Factory: RIDE-THE-WAVE continuation (2026-08-20 exploration).
+
+    ⚠ VALIDATED OVERFIT 2026-08-20 — NOT promoted to live. Train +0.66R / 56% WR
+    collapsed to test −0.56R / 15% WR (N~41) on 4h/14 symbols. Same failure mode as
+    trend_pullback_long & macd_momentum_long: a price-pattern long that only works
+    in-sample. Kept here as a documented rejected CANDIDATE (re-testable on new data);
+    it is NOT in bybit_data._check_validated_signals, so it never fires live. This is
+    the north-star thesis confirmed again: price-pattern engineering is a dead end on
+    this universe — a real long edge needs a predictive input (liq clusters / CVD).
+
+    NOT chasing the vertical spike (that's volume_breakout_long, which is DEAD).
+    Instead: after price recently BROKE the prior 20-candle high (the wave), enter the
+    FIRST shallow pullback that HOLDS above EMA20 in an intact uptrend. The gate that
+    makes it different from the (overfit) trend_pullback_long is the explicit *recent
+    breakout* evidence + the "pullback stays above EMA20 within prox_hi*ATR" band.
+    Short = the mirror (recent breakdown of the 20-candle low, pullback below EMA20).
+    Long-only in practice, but symmetric so the harness can test both.
+    """
+    def signal(df, i):
+        if not _valid(df, i) or i < bo_lb + 2:
+            return None
+        r = df.iloc[i]
+        prev = df.iloc[i - 1]
+        atr = r["atr_14"]
+        if direction == "long":
+            prior_hi = df.iloc[i - bo_lb - 1]["high_20"]
+            if not pd.notna(prior_hi):
+                return None
+            recent_bo = df["high"].iloc[i - bo_lb:i].max() >= prior_hi   # took prior range high
+            trend = (r["ema_20"] > r["ema_50"] and r["adx_14"] > adx_min and r["close"] > r["ema_20"])
+            shallow = 0 < (r["close"] - r["ema_20"]) < prox_hi * atr     # pullback zone above EMA20
+            cooled = rsi_lo <= r["rsi_14"] <= rsi_hi                     # not still overbought
+            confirm = r["close"] > r["open"] and r["close"] > prev["close"]
+            if recent_bo and trend and shallow and cooled and confirm:
+                entry = r["close"]; stop = entry - atr_mult * atr; risk = entry - stop
+                if risk <= 0:
+                    return None
+                return {"direction": "long", "entry": entry, "stop": stop, "risk": risk}
+        else:
+            prior_lo = df.iloc[i - bo_lb - 1]["low_20"]
+            if not pd.notna(prior_lo):
+                return None
+            recent_bo = df["low"].iloc[i - bo_lb:i].min() <= prior_lo
+            trend = (r["ema_20"] < r["ema_50"] and r["adx_14"] > adx_min and r["close"] < r["ema_20"])
+            shallow = 0 < (r["ema_20"] - r["close"]) < prox_hi * atr
+            cooled = (100 - rsi_hi) <= r["rsi_14"] <= (100 - rsi_lo)     # mirror band
+            confirm = r["close"] < r["open"] and r["close"] < prev["close"]
+            if recent_bo and trend and shallow and cooled and confirm:
+                entry = r["close"]; stop = entry + atr_mult * atr; risk = stop - entry
+                if risk <= 0:
+                    return None
+                return {"direction": "short", "entry": entry, "stop": stop, "risk": risk}
+        return None
+    return signal
+
+
+signal_momentum_continuation_long = make_momentum_continuation("long")
+signal_momentum_continuation_short = make_momentum_continuation("short")
+
+
 # Registry of all signal rules
 ALL_SIGNALS = {
+    "momentum_continuation_long": signal_momentum_continuation_long,
+    "momentum_continuation_short": signal_momentum_continuation_short,
     "trend_pullback_long": signal_trend_pullback_long,
     "trend_pullback_short": signal_trend_pullback_short,
     "range_reversion_long": signal_range_reversion_long,
@@ -1236,6 +1300,31 @@ PARAM_GRIDS = {
             "atr_mult":     [1.5, 2.0, 2.5, 3.0],
         },
         "targets": [0.5, 0.75, 1.0, 1.5, 2.0],
+    },
+    # Ride-the-wave continuation (2026-08-20). Slow factory path — SMALL grid.
+    "momentum_continuation_long": {
+        "factory": lambda **kw: make_momentum_continuation("long", **kw),
+        "params": {
+            "bo_lb":    [6, 8, 10],
+            "prox_hi":  [1.5, 2.0, 2.5],
+            "rsi_lo":   [40, 45],
+            "rsi_hi":   [65, 70],
+            "adx_min":  [15, 18],
+            "atr_mult": [1.5],
+        },
+        "targets": [1.0, 1.5, 2.0],
+    },
+    "momentum_continuation_short": {
+        "factory": lambda **kw: make_momentum_continuation("short", **kw),
+        "params": {
+            "bo_lb":    [6, 8, 10],
+            "prox_hi":  [1.5, 2.0, 2.5],
+            "rsi_lo":   [40, 45],
+            "rsi_hi":   [65, 70],
+            "adx_min":  [15, 18],
+            "atr_mult": [1.5],
+        },
+        "targets": [1.0, 1.5, 2.0],
     },
     "volume_breakout_short": {
         "factory": lambda **kw: make_volume_breakout("short", **kw),
