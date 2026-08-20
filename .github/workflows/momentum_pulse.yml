@@ -24,7 +24,24 @@ jobs:
           # Fetch full history so git push works
           fetch-depth: 0
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        # MUST run BEFORE the VPN: WireGuard is full-tunnel (0.0.0.0/0), so once it's
+        # up pip's traffic to pypi.org routes through the VPN, whose DNS is flaky →
+        # intermittent "Failed to resolve pypi.org" killed ~half of runs (no scan =
+        # no Telegram). pip only needs public internet; install on the clean runner net.
+        # anthropic/telethon only satisfy main.py's top-level imports; with no
+        # ANTHROPIC_API_KEY and no Telethon session the Claude/TG-read paths fail
+        # inside try/except and the scan degrades to mechanical-only.
+        run: pip install pybit requests python-dotenv pandas anthropic telethon
+
       - name: Setup WireGuard VPN
+        # Up only AFTER pip install — the VPN is needed solely for the Bybit +
+        # Telegram calls at runtime (both ISP/region-gated), not for fetching packages.
         run: |
           sudo apt-get install -y -qq wireguard-tools
           echo "${{ secrets.WG_CONF }}" | base64 -d | sudo tee /etc/wireguard/wg0.conf > /dev/null
@@ -32,17 +49,6 @@ jobs:
           sudo wg-quick up wg0
           sleep 2
           echo "VPN connected — exit IP: $(curl -s ifconfig.me)"
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        # anthropic/telethon only satisfy main.py's top-level imports; with no
-        # ANTHROPIC_API_KEY and no Telethon session the Claude/TG-read paths fail
-        # inside try/except and the scan degrades to mechanical-only.
-        run: pip install pybit requests python-dotenv pandas anthropic telethon
 
       - name: Run momentum pulse
         env:
@@ -69,7 +75,7 @@ jobs:
           git add logs/momentum/hot_list.json logs/momentum/last_snapshot.json logs/setups/ logs/briefs/
           # Nothing changed → clean exit.
           git diff --cached --quiet && exit 0
-          git commit -m "scan+pulse: 4h auto-run [skip ci]"
+          git commit -m "scan+pulse: 2h auto-run [skip ci]"
           # Race-safe push: the local nightly run also pushes to master, so rebase
           # onto any concurrent commit and retry rather than failing on non-fast-forward.
           for i in 1 2 3; do
