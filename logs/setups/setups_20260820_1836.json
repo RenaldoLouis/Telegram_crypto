@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-20T18:36:44.525820+00:00",
+  "run_tag": "20260820_1836",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ADAUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.1957129,
+      "entry_high": 0.1968871,
+      "stop_loss": 0.204128,
+      "target_1": 0.190429,
+      "target_2": 0.180644,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 71.8 (was 75.3), ADX 51.6"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "risk_on",
+      "interest_score": 7.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 46.14,
+          "rsi": 79.38,
+          "macd": 0.003887,
+          "macd_hist": 0.002563,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.42,
+          "range_pct": 16.61
+        },
+        "tf_1h": {
+          "adx": 51.61,
+          "rsi": 71.77,
+          "macd": 0.004663,
+          "macd_hist": 0.000686,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.35,
+          "range_pct": 11.11
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
