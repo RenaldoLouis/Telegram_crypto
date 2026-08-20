@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-20T10:28:08.953002+00:00",
+  "run_tag": "20260820_1028",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "1000PEPEUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.0030851,
+      "entry_high": 0.0031109,
+      "stop_loss": 0.00327,
+      "target_1": 0.002969,
+      "target_2": 0.002754,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 71.3 (was 82.9), ADX 58.1"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "risk_on",
+      "interest_score": 9.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 44.2,
+          "rsi": 94.73,
+          "macd": 8.1e-05,
+          "macd_hist": 5.6e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 4.4,
+          "range_pct": 21.85
+        },
+        "tf_1h": {
+          "adx": 58.06,
+          "rsi": 71.32,
+          "macd": 0.000112,
+          "macd_hist": 1.9e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.22,
+          "range_pct": 18.43
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
