@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-21T01:10:38.422739+00:00",
+  "run_tag": "20260821_0110",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "PUMPFUNUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.00376785,
+      "entry_high": 0.00381015,
+      "stop_loss": 0.004071,
+      "target_1": 0.0035775,
+      "target_2": 0.003225,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 70.0 (was 77.3), ADX 58.5"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "risk_on",
+      "interest_score": 10.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 38.56,
+          "rsi": 80.09,
+          "macd": 0.000233,
+          "macd_hist": 8.1e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.45,
+          "range_pct": 31.8
+        },
+        "tf_1h": {
+          "adx": 58.47,
+          "rsi": 69.99,
+          "macd": 0.000164,
+          "macd_hist": 6e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.38,
+          "range_pct": 20.19
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
