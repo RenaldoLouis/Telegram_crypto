@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-08-21T20:23:40.354285+00:00",
+  "run_tag": "20260821_2023",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 1.37114355,
+      "entry_high": 1.38885645,
+      "stop_loss": 1.2914355,
+      "target_1": 1.44642337,
+      "target_2": 1.51284675,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (3/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 68.0,
+          "rsi": 84.27,
+          "macd": 0.096082,
+          "macd_hist": 0.022664,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.71,
+          "range_pct": 31.55
+        },
+        "tf_1h": {
+          "adx": 54.01,
+          "rsi": 63.55,
+          "macd": 0.040479,
+          "macd_hist": -0.007516,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.61,
+          "range_pct": 12.17
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "risk_on",
+      "interest_score": 12.0,
+      "rank": 1
+    }
+  ]
+}
