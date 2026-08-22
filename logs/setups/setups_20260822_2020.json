@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-08-22T20:20:14.189366+00:00",
+  "run_tag": "20260822_2020",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "DOGEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0933699,
+      "entry_high": 0.0948501,
+      "stop_loss": 0.086709,
+      "target_1": 0.10085,
+      "target_2": 0.1052115,
+      "predicted_rr": 0.911,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 57.93,
+          "rsi": 75.14,
+          "macd": 0.005459,
+          "macd_hist": 0.000769,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.79,
+          "range_pct": 30.77
+        },
+        "tf_1h": {
+          "adx": 21.15,
+          "rsi": 56.45,
+          "macd": 0.001458,
+          "macd_hist": -9.9e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.26,
+          "range_pct": 19.79
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "risk_on",
+      "interest_score": 11.0,
+      "rank": 1
+    }
+  ]
+}
