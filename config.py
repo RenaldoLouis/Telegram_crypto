@@ -113,6 +113,15 @@ SHORT_CAP_BY_REGIME = {"risk_off": 5, "cautious": 5, "neutral": 3, "risk_on": 1}
 # Cap same-direction setups per run so correlated drawdown can't compound. None = no cap.
 MAX_SAME_DIRECTION_PER_RUN = 2
 
+# --- WATCH-tier promotion bar (2026-08-22) -----------------------------------------------
+# WATCH candidates are paper-tracked, EXCLUDED from the edge book (see weekly_eval). But a
+# watch SIGNAL that quietly earns net-of-cost expectancy is a promotion candidate into the
+# gated EXECUTE book. generate_head_to_head() surfaces each watch signal's net_exp vs this
+# bar so the "is this watch signal actually executable?" call is one glance. This flags a
+# candidate; promotion is still a manual decision (needs both-direction/robustness sanity).
+WATCH_PROMOTION_NET_EXP = 0.05    # net-of-cost R/trade bar (the north-star +0.05R)
+WATCH_PROMOTION_MIN_TRADES = 30   # min sample for a single watch signal to read as non-noise
+
 # --- Transaction cost model (audit 2026-08-02) -----------------------------------------
 # A +0.04R GROSS expectancy is meaningless until it survives real perp costs. Costs are
 # a % of notional per side; the eval converts them to R per-trade via each trade's own

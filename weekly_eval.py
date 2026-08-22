@@ -617,13 +617,16 @@ def generate_head_to_head(all_evals):
         return "∞" if pf == float("inf") else f"{pf:.2f}"
 
     by_source, by_backed = {}, {}
-    by_src_dir, by_mech_signal = {}, {}
+    by_src_dir, by_mech_signal, by_watch_signal = {}, {}, {}
     for r in evaluated:
         src = r.get("source", "claude")
         by_source.setdefault(src, []).append(r)
         # WATCH gets its own by_source row (visible) but is kept OUT of the
         # backing/direction/signal diagnostics — those measure EXECUTE-book quality.
+        # It DOES get its own per-signal promotion table (below): a watch signal that
+        # earns net-of-cost expectancy is a candidate to promote into the EXECUTE book.
         if src == "watch":
+            by_watch_signal.setdefault(r.get("signal_name", "(unknown)"), []).append(r)
             continue
         key = "signal_backed" if r.get("backtested_signal") else "discretionary"
         by_backed.setdefault(key, []).append(r)
@@ -647,6 +650,32 @@ def generate_head_to_head(all_evals):
         s = _group_stats(by_source[src])
         lines.append(f"| {src} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
                      f"**{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} |")
+
+    # WATCH lane — promotion readout. Watch signals are paper-tracked and OUT of the edge
+    # book, but this is where we check if one has quietly become executable: net-of-cost
+    # expectancy vs the promotion bar, per signal. A ✅ here = manual promotion candidate.
+    bar, min_n = config.WATCH_PROMOTION_NET_EXP, config.WATCH_PROMOTION_MIN_TRADES
+    lines += ["", "## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)", "",
+              f"Bar to promote a watch signal into the gated EXECUTE book: "
+              f"**net-of-cost expectancy ≥ {bar:+.3f}R over ≥ {min_n} trades** "
+              f"(then still needs a manual both-direction/robustness sanity check).", "",
+              "| watch signal | n | win% | gross exp (R) | **net exp (R)** | status |",
+              "|---|---|---|---|---|---|"]
+    if by_watch_signal:
+        for sig in sorted(by_watch_signal, key=lambda k: -_group_stats(by_watch_signal[k])["net_exp"]):
+            s = _group_stats(by_watch_signal[sig])
+            if s["net_exp"] >= bar and s["n"] >= min_n:
+                status = "✅ PROMOTABLE — review for EXECUTE"
+            elif s["net_exp"] >= bar:
+                status = f"↑ clears bar, building sample ({s['n']}/{min_n})"
+            elif s["n"] < min_n:
+                status = f"building ({s['n']}/{min_n})"
+            else:
+                status = "✗ below bar"
+            lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
+                         f"**{s['net_exp']:+.3f}** | {status} |")
+    else:
+        lines.append("| _(no watch trades evaluated yet)_ | 0 | — | — | — | — |")
 
     lines += ["", "## By signal backing (gross → net of cost)", "",
               "| backing | n | win% | gross exp (R) | **net exp (R)** | net PF |",
@@ -730,6 +759,13 @@ def generate_head_to_head(all_evals):
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"Head-to-head → mechanical {m['n']}t {m['exp']:+.3f}R vs "
           f"claude {c['n']}t {c['exp']:+.3f}R  ({out})")
+    # Surface any watch signal that has quietly earned promotion (don't let it stay buried).
+    promotable = [(sig, _group_stats(rs)) for sig, rs in by_watch_signal.items()]
+    promotable = [(sig, s) for sig, s in promotable
+                  if s["net_exp"] >= bar and s["n"] >= min_n]
+    for sig, s in sorted(promotable, key=lambda x: -x[1]["net_exp"]):
+        print(f"  ✅ WATCH PROMOTABLE: {sig} net {s['net_exp']:+.3f}R over {s['n']}t "
+              f"(≥{bar:+.3f}R/{min_n}t) — review for EXECUTE promotion.")
 
 
 def update_lifetime_stats(all_evals):
