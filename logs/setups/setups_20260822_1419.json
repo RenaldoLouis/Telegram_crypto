@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-08-22T14:19:28.494068+00:00",
+  "run_tag": "20260822_1419",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "AGIUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0038907,
+      "entry_high": 0.0040413,
+      "stop_loss": 0.003213,
+      "target_1": 0.00453075,
+      "target_2": 0.0050955,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (3/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 52.38,
+          "rsi": 67.48,
+          "macd": 0.000381,
+          "macd_hist": 0.000157,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.62,
+          "range_pct": 65.48
+        },
+        "tf_1h": {
+          "adx": 46.55,
+          "rsi": 47.18,
+          "macd": 0.000238,
+          "macd_hist": -7.2e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.37,
+          "range_pct": 46.87
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "risk_on",
+      "interest_score": 12.0,
+      "rank": 1
+    }
+  ]
+}
