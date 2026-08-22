@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-08-22T22:20:35.111705+00:00",
+  "run_tag": "20260822_2220",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "PUMPFUNUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0049485,
+      "entry_high": 0.0050595,
+      "stop_loss": 0.004449,
+      "target_1": 0.00542025,
+      "target_2": 0.0058365,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 42.56,
+          "rsi": 86.13,
+          "macd": 0.000465,
+          "macd_hist": 9.2e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.48,
+          "range_pct": 41.59
+        },
+        "tf_1h": {
+          "adx": 18.37,
+          "rsi": 69.59,
+          "macd": 0.000216,
+          "macd_hist": 1.1e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.35,
+          "range_pct": 30.22
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "cautious",
+      "interest_score": 11.0,
+      "rank": 1
+    }
+  ]
+}
