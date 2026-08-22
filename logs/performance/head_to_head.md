@@ -1,6 +1,6 @@
 # Head-to-Head: Mechanical vs Claude
 
-Total evaluated trades: 339
+Total evaluated trades: 341
 Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net = gross − cost.
 
 ## By source (gross → net of cost)
@@ -9,6 +9,15 @@ Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net 
 |---|---|---|---|---|---|
 | claude | 299 | 32.1% | -0.129 | **-0.202** | 0.67 |
 | mechanical | 40 | 50.0% | -0.015 | **-0.079** | 0.81 |
+| watch | 2 | 0.0% | -1.000 | **-1.090** | 0.00 |
+
+## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)
+
+Bar to promote a watch signal into the gated EXECUTE book: **net-of-cost expectancy ≥ +0.050R over ≥ 30 trades** (then still needs a manual both-direction/robustness sanity check).
+
+| watch signal | n | win% | gross exp (R) | **net exp (R)** | status |
+|---|---|---|---|---|---|
+| (unknown) | 2 | 0.0% | -1.000 | **-1.090** | building (2/30) |
 
 ## By signal backing (gross → net of cost)
 
@@ -37,7 +46,7 @@ Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net 
 ⚠️ CONCENTRATION: mechanical book is one-directional (short-only), 38/40 from a single signal — lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE until both directions and >1 signal have live data.
 
 ## Net-of-cost reality check
-- Whole book: gross -0.116R → **net -0.187R** (PF 0.68, n=339)
+- Whole book: gross -0.121R → **net -0.193R** (PF 0.67, n=341)
 - Mechanical: gross -0.015R → **net -0.079R** (n=40)
 - Signal-backed: gross -0.044R → **net -0.103R** (n=67) — the only cut that should be near a real net edge
 - **VERDICT: NO edge survives costs yet** — best source net -0.079R (mechanical). Every source is net-negative or breakeven. The gross edge is a cost illusion; the only path to a real edge is cutting the losing longs and/or raising per-trade R by widening targets or entering closer to stop — NOT more rule-tuning.
