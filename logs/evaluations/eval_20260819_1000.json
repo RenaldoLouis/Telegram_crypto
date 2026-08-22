@@ -1,0 +1,29 @@
+{
+  "run_tag": "20260819_1000",
+  "run_timestamp_utc": "2026-08-19T10:00:07.635530+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-08-22T06:40:10.336784+00:00",
+  "results": [
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "TUTUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 2,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 4.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
