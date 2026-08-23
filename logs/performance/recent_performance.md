@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_52 trades: 18W / 34L (35% WR, -0.21 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 42% WR, -0.24 avg blended R:R_
+_50 trades: 16W / 34L (32% WR, -0.27 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 40% WR, -0.29 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -55,11 +55,9 @@ _Partial profit model (50% at T1 + BE stop): 42% WR, -0.24 avg blended R:R_
 | 2026-07-27 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.32 | be_stop | 0.86R |
 | 2026-07-27 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.3 | be_stop | 0.85R |
 | 2026-07-26 | TSLAUSDT | S | scalp | range_mean_r | hig | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.18R |
-| 2026-07-25 | GWEIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 1.39R |
-| 2026-07-25 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.76 (W) | 1.19 | target_2 | 1.91R |
 
-- Recent 'trend_pullback': 16/41 (39% WR)
 - Recent 'range_mean_reversion': 1/3 (33% WR)
+- Recent 'trend_pullback': 14/39 (36% WR)
 - Recent 'failed_breakout': 1/5 (20% WR)
 - Recent 'other': 0/2 (0% WR)
 

@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260821_2222",
+  "run_timestamp_utc": "2026-08-21T22:22:45.826419+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-08-23T05:41:00.874541+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.002229,
+      "exit_price": 0.002047,
+      "exit_reason": "target_1",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 0.82,
+      "blended_rr": 0.82,
+      "won": true,
+      "max_favorable_rr": 1.84,
+      "candles_to_exit": 96,
+      "risk_pct": 0.099148,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0202,
+      "net_rr": 0.8,
+      "net_blended_rr": 0.8,
+      "won_net": true,
+      "symbol": "GALAUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "setup8_exhaustion"
+      ],
+      "regime": "risk_on",
+      "interest_score": 7.0,
+      "source": "watch",
+      "backtested_signal": "rsi_rejection_short"
+    }
+  ]
+}
