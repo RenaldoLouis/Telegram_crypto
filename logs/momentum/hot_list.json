@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-08-23T16:22:18.162905+00:00",
+  "generated_utc": "2026-08-23T18:26:44.200879+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
       "pct_declining": 28.0,
-      "median_change_pct": 1.77,
-      "btc_change_pct": 0.06,
-      "avg_funding_pct": 0.0036,
+      "median_change_pct": 1.05,
+      "btc_change_pct": 0.03,
+      "avg_funding_pct": 0.0015,
       "large_decline_count": 2
     },
-    "detected_utc": "2026-08-23T16:22:18.162255+00:00",
-    "previous_regime": "risk_on"
+    "detected_utc": "2026-08-23T18:26:44.200243+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
@@ -31,19 +31,19 @@
     },
     {
       "symbol": "ACEUSDT",
-      "flagged_utc": "2026-08-23T16:22:18.161996+00:00",
-      "expires_utc": "2026-08-25T16:22:18.161996+00:00",
+      "flagged_utc": "2026-08-23T18:26:44.200018+00:00",
+      "expires_utc": "2026-08-25T18:26:44.200018+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.2325,
-      "price_change_24h_pct": -4.2894000000000005,
-      "turnover_24h_usd": 20412880.2348,
-      "funding_rate_pct": -0.15115199999999998,
-      "open_interest": 24494465.9,
-      "volume_acceleration": 0.9786359777527379,
-      "price_acceleration_pct": -1.3460999999999999
+      "last_price": 0.22881,
+      "price_change_24h_pct": -8.1969,
+      "turnover_24h_usd": 19005045.9336,
+      "funding_rate_pct": -0.21203200000000003,
+      "open_interest": 24364555.6,
+      "volume_acceleration": 0.9310320599050048,
+      "price_acceleration_pct": 3.907499999999999
     },
     {
       "symbol": "BEATUSDT",
@@ -191,19 +191,19 @@
     },
     {
       "symbol": "ENAUSDT",
-      "flagged_utc": "2026-08-23T16:22:18.161996+00:00",
-      "expires_utc": "2026-08-25T16:22:18.161996+00:00",
+      "flagged_utc": "2026-08-23T18:26:44.200018+00:00",
+      "expires_utc": "2026-08-25T18:26:44.200018+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 0.16587,
-      "price_change_24h_pct": 10.2565,
-      "turnover_24h_usd": 286951323.8518,
+      "last_price": 0.16575,
+      "price_change_24h_pct": 9.7972,
+      "turnover_24h_usd": 291379324.9592,
       "funding_rate_pct": 0.005,
-      "open_interest": 537872481.0,
-      "volume_acceleration": 1.0292767730178092,
-      "price_acceleration_pct": -0.5013999999999985
+      "open_interest": 537761688.0,
+      "volume_acceleration": 1.0154311924683328,
+      "price_acceleration_pct": -0.4593000000000007
     },
     {
       "symbol": "1000PEPEUSDT",
