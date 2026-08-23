@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-08-23T10:21:35.378331+00:00",
+  "run_tag": "20260823_1021",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.1773577,
+      "entry_high": 0.1819423,
+      "stop_loss": 0.156727,
+      "target_1": 0.19684225,
+      "target_2": 0.2140345,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 73.21,
+          "rsi": 75.48,
+          "macd": 0.017762,
+          "macd_hist": 0.00161,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.59,
+          "range_pct": 49.33
+        },
+        "tf_1h": {
+          "adx": 22.41,
+          "rsi": 74.58,
+          "macd": 0.00504,
+          "macd_hist": 0.001893,
+          "trend": "bullish",
+          "ema20_dist_atr": 3.17,
+          "range_pct": 19.38
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "risk_on",
+      "interest_score": 11.0,
+      "rank": 1
+    }
+  ]
+}
