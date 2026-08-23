@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-08-23T12:35:40.617086+00:00",
+  "generated_utc": "2026-08-23T14:20:55.047938+00:00",
   "market_regime": {
-    "regime": "neutral",
+    "regime": "risk_on",
     "metrics": {
-      "pct_declining": 40.0,
-      "median_change_pct": 0.65,
-      "btc_change_pct": -0.17,
-      "avg_funding_pct": -0.0035,
-      "large_decline_count": 3
+      "pct_declining": 10.0,
+      "median_change_pct": 3.54,
+      "btc_change_pct": 0.61,
+      "avg_funding_pct": 0.0005,
+      "large_decline_count": 2
     },
-    "detected_utc": "2026-08-23T12:35:40.616412+00:00",
-    "previous_regime": "risk_on"
+    "detected_utc": "2026-08-23T14:20:55.047250+00:00",
+    "previous_regime": "neutral"
   },
   "coins": [
     {
@@ -31,51 +31,35 @@
     },
     {
       "symbol": "ACEUSDT",
-      "flagged_utc": "2026-08-23T12:35:40.616166+00:00",
-      "expires_utc": "2026-08-25T12:35:40.616166+00:00",
+      "flagged_utc": "2026-08-23T14:20:55.046993+00:00",
+      "expires_utc": "2026-08-25T14:20:55.046993+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.23317,
-      "price_change_24h_pct": -9.4239,
-      "turnover_24h_usd": 23920699.8517,
-      "funding_rate_pct": -0.43977299999999997,
-      "open_interest": 25171198.6,
-      "volume_acceleration": 0.7222359693163154,
-      "price_acceleration_pct": 2.6281999999999996
-    },
-    {
-      "symbol": "SOXLUSDT",
-      "flagged_utc": "2026-08-21T12:41:58.171996+00:00",
-      "expires_utc": "2026-08-23T12:41:58.171996+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 127.95,
-      "price_change_24h_pct": 8.7362,
-      "turnover_24h_usd": 231531600.9229,
-      "funding_rate_pct": 0.0,
-      "open_interest": 234398.58,
-      "volume_acceleration": 0.9473943922255174,
-      "price_acceleration_pct": 7.1088000000000005
+      "last_price": 0.2366,
+      "price_change_24h_pct": -5.6355,
+      "turnover_24h_usd": 20858501.7298,
+      "funding_rate_pct": -0.378687,
+      "open_interest": 25119568.6,
+      "volume_acceleration": 0.8719854293191854,
+      "price_acceleration_pct": -3.7883999999999993
     },
     {
       "symbol": "BEATUSDT",
-      "flagged_utc": "2026-08-23T12:35:40.616166+00:00",
-      "expires_utc": "2026-08-25T12:35:40.616166+00:00",
+      "flagged_utc": "2026-08-23T14:20:55.046993+00:00",
+      "expires_utc": "2026-08-25T14:20:55.046993+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.1377,
-      "price_change_24h_pct": -13.418,
-      "turnover_24h_usd": 27869822.0225,
-      "funding_rate_pct": 0.05516600000000001,
-      "open_interest": 54869046.0,
-      "volume_acceleration": 0.8800683274936407,
-      "price_acceleration_pct": -1.3094000000000001
+      "last_price": 0.13568,
+      "price_change_24h_pct": -9.7512,
+      "turnover_24h_usd": 25707242.4857,
+      "funding_rate_pct": 0.062359000000000005,
+      "open_interest": 56437242.0,
+      "volume_acceleration": 0.9224042573700652,
+      "price_acceleration_pct": -3.6667999999999985
     },
     {
       "symbol": "ETHUSDT",
@@ -143,19 +127,19 @@
     },
     {
       "symbol": "ZECUSDT",
-      "flagged_utc": "2026-08-22T22:20:27.204466+00:00",
-      "expires_utc": "2026-08-24T22:20:27.204466+00:00",
+      "flagged_utc": "2026-08-23T14:20:55.046993+00:00",
+      "expires_utc": "2026-08-25T14:20:55.046993+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 807.42,
-      "price_change_24h_pct": 10.3711,
-      "turnover_24h_usd": 747391569.3937,
-      "funding_rate_pct": 0.010425,
-      "open_interest": 243024.63,
-      "volume_acceleration": 0.9970338580132577,
-      "price_acceleration_pct": -7.3207
+      "last_price": 860.95,
+      "price_change_24h_pct": 8.6619,
+      "turnover_24h_usd": 520306356.2406,
+      "funding_rate_pct": 0.01,
+      "open_interest": 257394.97,
+      "volume_acceleration": 1.1219798908902654,
+      "price_acceleration_pct": 7.039199999999999
     },
     {
       "symbol": "BTCUSDT",
@@ -207,19 +191,19 @@
     },
     {
       "symbol": "ENAUSDT",
-      "flagged_utc": "2026-08-23T12:35:40.616166+00:00",
-      "expires_utc": "2026-08-25T12:35:40.616166+00:00",
+      "flagged_utc": "2026-08-23T14:20:55.046993+00:00",
+      "expires_utc": "2026-08-25T14:20:55.046993+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 0.17628,
-      "price_change_24h_pct": 11.845600000000001,
-      "turnover_24h_usd": 269025519.7815,
+      "last_price": 0.16936,
+      "price_change_24h_pct": 10.7579,
+      "turnover_24h_usd": 278789273.5697,
       "funding_rate_pct": 0.005,
-      "open_interest": 549549788.0,
-      "volume_acceleration": 1.081647809514528,
-      "price_acceleration_pct": -11.9285
+      "open_interest": 549213531.0,
+      "volume_acceleration": 1.0362930393968945,
+      "price_acceleration_pct": -1.0877000000000017
     },
     {
       "symbol": "1000PEPEUSDT",
@@ -303,19 +287,19 @@
     },
     {
       "symbol": "TRUMPUSDT",
-      "flagged_utc": "2026-08-23T06:37:25.341030+00:00",
-      "expires_utc": "2026-08-25T06:37:25.341030+00:00",
+      "flagged_utc": "2026-08-23T14:20:55.046993+00:00",
+      "expires_utc": "2026-08-25T14:20:55.046993+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 2.482,
-      "price_change_24h_pct": -17.5415,
-      "turnover_24h_usd": 471237885.0757,
+      "last_price": 2.826,
+      "price_change_24h_pct": 18.4409,
+      "turnover_24h_usd": 337548640.8229,
       "funding_rate_pct": 0.005,
-      "open_interest": 16454501.3,
-      "volume_acceleration": 0.7223289185261781,
-      "price_acceleration_pct": -7.240100000000002
+      "open_interest": 17169560.3,
+      "volume_acceleration": 0.9542104718122763,
+      "price_acceleration_pct": 17.3887
     },
     {
       "symbol": "PUMPFUNUSDT",

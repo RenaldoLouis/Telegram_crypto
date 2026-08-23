@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-23T14:21:00.986143+00:00",
+  "run_tag": "20260823_1421",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "PUMPFUNUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.0051988,
+      "entry_high": 0.0053332,
+      "stop_loss": 0.00556,
+      "target_1": 0.0050455,
+      "target_2": 0.004678,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0054, RSI 77.1"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "risk_on",
+      "interest_score": 8.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 42.29,
+          "rsi": 77.07,
+          "macd": 0.000514,
+          "macd_hist": 7.1e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.87,
+          "range_pct": 42.16
+        },
+        "tf_1h": {
+          "adx": 23.95,
+          "rsi": 60.94,
+          "macd": 0.000189,
+          "macd_hist": 4e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.92,
+          "range_pct": 15.74
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
