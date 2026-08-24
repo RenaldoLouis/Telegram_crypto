@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-24T16:35:22.333207+00:00",
+  "run_tag": "20260824_1635",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "COTIUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.01312775,
+      "entry_high": 0.01327025,
+      "stop_loss": 0.014149,
+      "target_1": 0.012465,
+      "target_2": 0.011299,
+      "predicted_rr": 0.773,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 71.0 (was 76.4), ADX 39.7"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.02,
+          "rsi": 70.59,
+          "macd": 0.000611,
+          "macd_hist": 0.000109,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.58,
+          "range_pct": 37.94
+        },
+        "tf_1h": {
+          "adx": 39.73,
+          "rsi": 70.98,
+          "macd": 0.000338,
+          "macd_hist": 0.000123,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.35,
+          "range_pct": 18.05
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
