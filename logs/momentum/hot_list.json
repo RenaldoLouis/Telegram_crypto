@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-08-24T10:35:46.937729+00:00",
+  "generated_utc": "2026-08-24T12:44:54.647259+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 32.0,
-      "median_change_pct": 1.17,
-      "btc_change_pct": 1.37,
-      "avg_funding_pct": 0.0058,
-      "large_decline_count": 1
+      "pct_declining": 36.0,
+      "median_change_pct": 0.95,
+      "btc_change_pct": 1.91,
+      "avg_funding_pct": 0.0062,
+      "large_decline_count": 5
     },
-    "detected_utc": "2026-08-24T10:35:46.937145+00:00",
+    "detected_utc": "2026-08-24T12:44:54.646667+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -142,22 +142,6 @@
       "price_acceleration_pct": 4.7599
     },
     {
-      "symbol": "XMRUSDT",
-      "flagged_utc": "2026-08-22T12:34:55.001348+00:00",
-      "expires_utc": "2026-08-24T12:34:55.001348+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 427.94,
-      "price_change_24h_pct": 3.9976,
-      "turnover_24h_usd": 53903116.0056,
-      "funding_rate_pct": 0.050607,
-      "open_interest": 62646.37,
-      "volume_acceleration": 1.01356273900464,
-      "price_acceleration_pct": 3.3934999999999995
-    },
-    {
       "symbol": "TRUMPUSDT",
       "flagged_utc": "2026-08-24T01:09:24.608174+00:00",
       "expires_utc": "2026-08-26T01:09:24.608174+00:00",
@@ -236,6 +220,22 @@
       "open_interest": 18882.557,
       "volume_acceleration": 1.015621002441596,
       "price_acceleration_pct": -0.22339999999999982
+    },
+    {
+      "symbol": "TUTUSDT",
+      "flagged_utc": "2026-08-24T12:44:54.646434+00:00",
+      "expires_utc": "2026-08-26T12:44:54.646434+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.060259,
+      "price_change_24h_pct": -6.2846,
+      "turnover_24h_usd": 50249331.1663,
+      "funding_rate_pct": -0.066601,
+      "open_interest": 99347228.0,
+      "volume_acceleration": 1.0615833163313873,
+      "price_acceleration_pct": -19.278200000000002
     }
   ]
 }
