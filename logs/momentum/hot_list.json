@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-08-23T18:26:44.200879+00:00",
+  "generated_utc": "2026-08-24T01:09:24.609115+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 28.0,
-      "median_change_pct": 1.05,
-      "btc_change_pct": 0.03,
-      "avg_funding_pct": 0.0015,
-      "large_decline_count": 2
+      "pct_declining": 36.0,
+      "median_change_pct": 0.65,
+      "btc_change_pct": 0.23,
+      "avg_funding_pct": -0.0039,
+      "large_decline_count": 0
     },
-    "detected_utc": "2026-08-23T18:26:44.200243+00:00",
+    "detected_utc": "2026-08-24T01:09:24.608421+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -60,22 +60,6 @@
       "open_interest": 56437242.0,
       "volume_acceleration": 0.9224042573700652,
       "price_acceleration_pct": -3.6667999999999985
-    },
-    {
-      "symbol": "ETHUSDT",
-      "flagged_utc": "2026-08-21T22:22:42.481959+00:00",
-      "expires_utc": "2026-08-23T22:22:42.481959+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 2538.19,
-      "price_change_24h_pct": 9.9778,
-      "turnover_24h_usd": 5769441432.6737,
-      "funding_rate_pct": 0.01,
-      "open_interest": 766409.72,
-      "volume_acceleration": 1.1327743237830077,
-      "price_acceleration_pct": 5.3165000000000004
     },
     {
       "symbol": "HYPEUSDT",
@@ -140,22 +124,6 @@
       "open_interest": 257394.97,
       "volume_acceleration": 1.1219798908902654,
       "price_acceleration_pct": 7.039199999999999
-    },
-    {
-      "symbol": "BTCUSDT",
-      "flagged_utc": "2026-08-21T22:22:42.481959+00:00",
-      "expires_utc": "2026-08-23T22:22:42.481959+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 78563.5,
-      "price_change_24h_pct": 8.0625,
-      "turnover_24h_usd": 12187326962.928,
-      "funding_rate_pct": 0.01,
-      "open_interest": 49129.776,
-      "volume_acceleration": 1.0274984200278097,
-      "price_acceleration_pct": 1.6487999999999996
     },
     {
       "symbol": "DOGEUSDT",
@@ -287,19 +255,19 @@
     },
     {
       "symbol": "TRUMPUSDT",
-      "flagged_utc": "2026-08-23T14:20:55.046993+00:00",
-      "expires_utc": "2026-08-25T14:20:55.046993+00:00",
+      "flagged_utc": "2026-08-24T01:09:24.608174+00:00",
+      "expires_utc": "2026-08-26T01:09:24.608174+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 2.826,
-      "price_change_24h_pct": 18.4409,
-      "turnover_24h_usd": 337548640.8229,
+      "last_price": 2.578,
+      "price_change_24h_pct": 8.046899999999999,
+      "turnover_24h_usd": 303415639.5659,
       "funding_rate_pct": 0.005,
-      "open_interest": 17169560.3,
-      "volume_acceleration": 0.9542104718122763,
-      "price_acceleration_pct": 17.3887
+      "open_interest": 16448675.8,
+      "volume_acceleration": 0.8967862812803641,
+      "price_acceleration_pct": 2.2948999999999993
     },
     {
       "symbol": "PUMPFUNUSDT",
