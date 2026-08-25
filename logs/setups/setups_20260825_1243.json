@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-25T12:43:04.716262+00:00",
+  "run_tag": "20260825_1243",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "POPCATUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.0613,
+      "entry_high": 0.0619,
+      "stop_loss": 0.0656,
+      "target_1": 0.0586,
+      "target_2": 0.0536,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 61.2 (was 76.1), ADX 28.9"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "cautious",
+      "interest_score": 3.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 45.02,
+          "rsi": 71.64,
+          "macd": 0.003269,
+          "macd_hist": 0.000249,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.48,
+          "range_pct": 25.05
+        },
+        "tf_1h": {
+          "adx": 28.93,
+          "rsi": 61.2,
+          "macd": 0.001577,
+          "macd_hist": 4e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.22,
+          "range_pct": 16.66
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
