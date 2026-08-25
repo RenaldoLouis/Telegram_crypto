@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-08-24T22:23:51.816596+00:00",
+  "generated_utc": "2026-08-25T01:08:18.189024+00:00",
   "market_regime": {
-    "regime": "risk_off",
+    "regime": "neutral",
     "metrics": {
-      "pct_declining": 76.0,
-      "median_change_pct": -2.18,
-      "btc_change_pct": 1.31,
-      "avg_funding_pct": 0.0127,
-      "large_decline_count": 15
+      "pct_declining": 48.0,
+      "median_change_pct": 0.16,
+      "btc_change_pct": 2.85,
+      "avg_funding_pct": -0.0151,
+      "large_decline_count": 9
     },
-    "detected_utc": "2026-08-24T22:23:51.816021+00:00",
+    "detected_utc": "2026-08-25T01:08:18.188450+00:00",
     "previous_regime": "risk_off"
   },
   "coins": [
@@ -223,19 +223,51 @@
     },
     {
       "symbol": "UAIUSDT",
-      "flagged_utc": "2026-08-24T22:23:51.815741+00:00",
-      "expires_utc": "2026-08-26T22:23:51.815741+00:00",
+      "flagged_utc": "2026-08-25T01:08:18.188212+00:00",
+      "expires_utc": "2026-08-27T01:08:18.188212+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.3561,
-      "price_change_24h_pct": 27.1331,
-      "turnover_24h_usd": 33494339.0868,
-      "funding_rate_pct": 0.087086,
-      "open_interest": 12320388.0,
-      "volume_acceleration": 1.1017758495523868,
-      "price_acceleration_pct": -6.536600000000007
+      "last_price": 0.3502,
+      "price_change_24h_pct": 27.6704,
+      "turnover_24h_usd": 34180699.1539,
+      "funding_rate_pct": 0.092739,
+      "open_interest": 12272553.0,
+      "volume_acceleration": 1.0204918229710789,
+      "price_acceleration_pct": 0.5373000000000019
+    },
+    {
+      "symbol": "SNXXUSDT",
+      "flagged_utc": "2026-08-25T01:08:18.188212+00:00",
+      "expires_utc": "2026-08-27T01:08:18.188212+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 12.69,
+      "price_change_24h_pct": -15.0033,
+      "turnover_24h_usd": 50112646.5918,
+      "funding_rate_pct": 0.274956,
+      "open_interest": 219498.68,
+      "volume_acceleration": 1.0143151763933445,
+      "price_acceleration_pct": -1.0774000000000008
+    },
+    {
+      "symbol": "STORJUSDT",
+      "flagged_utc": "2026-08-25T01:08:18.188212+00:00",
+      "expires_utc": "2026-08-27T01:08:18.188212+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.0522,
+      "price_change_24h_pct": 9.5717,
+      "turnover_24h_usd": 23291958.3803,
+      "funding_rate_pct": -1.426566,
+      "open_interest": 53104046.8,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
     }
   ]
 }
