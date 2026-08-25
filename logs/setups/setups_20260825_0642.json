@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-25T06:42:33.644644+00:00",
+  "run_tag": "20260825_0642",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ONGUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.08511845,
+      "entry_high": 0.08682155,
+      "stop_loss": 0.09447929,
+      "target_1": 0.077633,
+      "target_2": 0.06895142,
+      "predicted_rr": 0.98,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0930, RSI 69.3"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "risk_on",
+      "interest_score": 5.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 39.39,
+          "rsi": 69.28,
+          "macd": 0.002525,
+          "macd_hist": 0.001201,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.47,
+          "range_pct": 31.36
+        },
+        "tf_1h": {
+          "adx": 42.87,
+          "rsi": 69.96,
+          "macd": 0.003781,
+          "macd_hist": 0.00062,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.94,
+          "range_pct": 24.21
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
