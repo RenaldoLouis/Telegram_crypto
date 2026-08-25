@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-25T14:42:58.793756+00:00",
+  "run_tag": "20260825_1442",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "VELVETUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.1385221,
+      "entry_high": 0.1418779,
+      "stop_loss": 0.12590357,
+      "target_1": 0.15092232,
+      "target_2": 0.16879286,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 0.1322 low, RSI 36.9, ADX 30.6"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.08,
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 37.95,
+          "rsi": 4.43,
+          "macd": -0.154244,
+          "macd_hist": -0.042629,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.73,
+          "range_pct": 559.56
+        },
+        "tf_1h": {
+          "adx": 30.63,
+          "rsi": 36.9,
+          "macd": -0.062315,
+          "macd_hist": 0.017657,
+          "trend": "bearish",
+          "ema20_dist_atr": 3.78,
+          "range_pct": 41.16
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
