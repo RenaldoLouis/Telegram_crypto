@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-25T10:31:14.427533+00:00",
+  "run_tag": "20260825_1031",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "claude",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "POLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.11782485,
+      "entry_high": 0.11923515,
+      "stop_loss": 0.12510518,
+      "target_1": 0.11359861,
+      "target_2": 0.10537964,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.1233, RSI 71.8"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 60.32,
+          "rsi": 71.83,
+          "macd": 0.007073,
+          "macd_hist": 0.000177,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.81,
+          "range_pct": 20.91
+        },
+        "tf_1h": {
+          "adx": 27.33,
+          "rsi": 61.79,
+          "macd": 0.002295,
+          "macd_hist": 0.000147,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.48,
+          "range_pct": 10.02
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
