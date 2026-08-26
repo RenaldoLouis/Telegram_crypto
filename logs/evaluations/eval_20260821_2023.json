@@ -1,0 +1,48 @@
+{
+  "run_tag": "20260821_2023",
+  "run_timestamp_utc": "2026-08-21T20:23:40.354285+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-08-26T01:32:14.342948+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 1.371144,
+      "exit_price": 1.512847,
+      "exit_reason": "target_2",
+      "target_1_hit": true,
+      "target_2_hit": true,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 1.78,
+      "blended_rr": 1.36,
+      "won": true,
+      "max_favorable_rr": 1.87,
+      "candles_to_exit": 24,
+      "risk_pct": 0.058133,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0305,
+      "net_rr": 1.75,
+      "net_blended_rr": 1.33,
+      "won_net": true,
+      "symbol": "XRPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "symbol_priority"
+      ],
+      "regime": "risk_on",
+      "interest_score": 12.0,
+      "source": "watch",
+      "backtested_signal": null
+    }
+  ]
+}

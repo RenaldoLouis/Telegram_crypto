@@ -1,0 +1,48 @@
+{
+  "run_tag": "20260822_2220",
+  "run_timestamp_utc": "2026-08-22T22:20:35.111705+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-08-26T01:32:18.891040+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.005034,
+      "exit_price": 0.005034,
+      "exit_reason": "be_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": true,
+      "trail_stop_hit": false,
+      "actual_rr": 0.0,
+      "blended_rr": 0.33,
+      "won": false,
+      "max_favorable_rr": 0.71,
+      "candles_to_exit": 107,
+      "risk_pct": 0.11621,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0175,
+      "net_rr": -0.018,
+      "net_blended_rr": 0.312,
+      "won_net": false,
+      "symbol": "PUMPFUNUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 4,
+      "rank": 1,
+      "rules_applied": [
+        "symbol_priority"
+      ],
+      "regime": "cautious",
+      "interest_score": 11.0,
+      "source": "watch",
+      "backtested_signal": null
+    }
+  ]
+}

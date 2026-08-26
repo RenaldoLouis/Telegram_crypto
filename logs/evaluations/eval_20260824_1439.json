@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260824_1439",
+  "run_timestamp_utc": "2026-08-24T14:39:56.208036+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-08-26T01:32:23.963384+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.02039,
+      "exit_price": 0.01962,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.18,
+      "candles_to_exit": 9,
+      "risk_pct": 0.037755,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0458,
+      "net_rr": -1.046,
+      "net_blended_rr": -1.046,
+      "won_net": false,
+      "symbol": "SPKUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.837,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "source": "watch",
+      "backtested_signal": "liquidity_sweep_long"
+    }
+  ]
+}

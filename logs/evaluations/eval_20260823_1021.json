@@ -1,0 +1,48 @@
+{
+  "run_tag": "20260823_1021",
+  "run_timestamp_utc": "2026-08-23T10:21:35.378331+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-08-26T01:32:21.070656+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.177358,
+      "exit_price": 0.156727,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.32,
+      "candles_to_exit": 99,
+      "risk_pct": 0.116323,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0173,
+      "net_rr": -1.017,
+      "net_blended_rr": -1.017,
+      "won_net": false,
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 4,
+      "rank": 1,
+      "rules_applied": [
+        "symbol_priority"
+      ],
+      "regime": "risk_on",
+      "interest_score": 11.0,
+      "source": "watch",
+      "backtested_signal": null
+    }
+  ]
+}
