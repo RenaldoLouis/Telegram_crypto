@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-08-26T03:03:03.567857+00:00",
+  "generated_utc": "2026-08-26T04:37:54.939243+00:00",
   "market_regime": {
     "regime": "cautious",
     "metrics": {
-      "pct_declining": 62.0,
-      "median_change_pct": -2.97,
-      "btc_change_pct": -1.94,
-      "avg_funding_pct": -0.0329,
+      "pct_declining": 64.0,
+      "median_change_pct": -2.47,
+      "btc_change_pct": -1.69,
+      "avg_funding_pct": -0.0251,
       "large_decline_count": 17
     },
-    "detected_utc": "2026-08-26T03:03:03.567315+00:00",
+    "detected_utc": "2026-08-26T04:37:54.938651+00:00",
     "previous_regime": "cautious"
   },
   "coins": [
@@ -207,35 +207,35 @@
     },
     {
       "symbol": "STXUSDT",
-      "flagged_utc": "2026-08-26T03:03:03.567049+00:00",
-      "expires_utc": "2026-08-28T03:03:03.567049+00:00",
+      "flagged_utc": "2026-08-26T04:37:54.938392+00:00",
+      "expires_utc": "2026-08-28T04:37:54.938392+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.2771,
-      "price_change_24h_pct": 16.9198,
-      "turnover_24h_usd": 54574328.0491,
-      "funding_rate_pct": -0.454848,
-      "open_interest": 39740114.8,
-      "volume_acceleration": 1.1441929987538877,
-      "price_acceleration_pct": 1.9591999999999992
+      "last_price": 0.2776,
+      "price_change_24h_pct": 9.5501,
+      "turnover_24h_usd": 56443833.6404,
+      "funding_rate_pct": -0.321159,
+      "open_interest": 40379071.0,
+      "volume_acceleration": 1.0342561357717135,
+      "price_acceleration_pct": -7.369699999999998
     },
     {
       "symbol": "AGIUSDT",
-      "flagged_utc": "2026-08-26T03:03:03.567049+00:00",
-      "expires_utc": "2026-08-28T03:03:03.567049+00:00",
+      "flagged_utc": "2026-08-26T04:37:54.938392+00:00",
+      "expires_utc": "2026-08-28T04:37:54.938392+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.007324,
-      "price_change_24h_pct": 48.5297,
-      "turnover_24h_usd": 27503743.2572,
-      "funding_rate_pct": -1.538678,
-      "open_interest": 344806660.0,
-      "volume_acceleration": null,
-      "price_acceleration_pct": null
+      "last_price": 0.006798,
+      "price_change_24h_pct": 30.3547,
+      "turnover_24h_usd": 28914455.601,
+      "funding_rate_pct": -1.35967,
+      "open_interest": 316637140.0,
+      "volume_acceleration": 1.0512916489442106,
+      "price_acceleration_pct": -18.174999999999997
     },
     {
       "symbol": "MONUSDT",
