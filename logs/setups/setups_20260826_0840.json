@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-26T08:40:48.433711+00:00",
+  "run_tag": "20260826_0840",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "TRUMPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 2.21155,
+      "entry_high": 2.24845,
+      "stop_loss": 1.984,
+      "target_1": 2.4145,
+      "target_2": 2.722,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 31.0 bouncing (was 20.0), ADX 37.3"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.11,
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 37.29,
+          "rsi": 30.96,
+          "macd": 0.022035,
+          "macd_hist": -0.058441,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.67,
+          "range_pct": 35.56
+        },
+        "tf_1h": {
+          "adx": 42.35,
+          "rsi": 39.55,
+          "macd": -0.040969,
+          "macd_hist": 0.009985,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.61,
+          "range_pct": 9.33
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
