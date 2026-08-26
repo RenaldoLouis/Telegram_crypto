@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-26T06:45:27.144258+00:00",
+  "run_tag": "20260826_0645",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "FARTCOINUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.1977586,
+      "entry_high": 0.2012614,
+      "stop_loss": 0.21191893,
+      "target_1": 0.1902033,
+      "target_2": 0.17469214,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.2061, RSI 63.6"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "risk_off",
+      "interest_score": 4.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.69,
+          "rsi": 63.61,
+          "macd": 0.004953,
+          "macd_hist": 0.001173,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.27,
+          "range_pct": 21.04
+        },
+        "tf_1h": {
+          "adx": 22.55,
+          "rsi": 67.89,
+          "macd": 0.005501,
+          "macd_hist": 0.001696,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.14,
+          "range_pct": 17.46
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
