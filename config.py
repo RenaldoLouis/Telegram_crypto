@@ -16,9 +16,14 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # === Setup Source (mechanical-primary / Claude-shadow) ===
 # "claude"     — deliver Claude's brief; mechanical setups generated + logged in shadow.
-# "mechanical" — deliver mechanical setups; Claude logged in shadow (and skipped if it fails).
+# "mechanical" — deliver mechanical setups; Claude scan call is SKIPPED entirely (zero tokens).
 # A Claude failure ALWAYS falls back to mechanical delivery regardless of this flag.
-PRIMARY_SOURCE = "claude"
+# 2026-08-26: flipped to "mechanical" — v12.0 migration complete. The edge lives in our
+# Python (CORE PRINCIPLE); Claude no longer touches the scan/decision path at all. Claude is
+# retained ONLY for delta analysis in eval-scan (bounded, non-core, optional pattern research).
+# The head-to-head shadow experiment is retired: the real bar is +0.05R net-of-cost, not
+# "beat Claude", so the comparison was vestigial. Reversible: set back to "claude".
+PRIMARY_SOURCE = "mechanical"
 MECHANICAL_MODEL_TAG = "mechanical_v1"   # recorded as `model` on mechanical setups for eval
 
 # === Claude Settings ===

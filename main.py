@@ -504,27 +504,34 @@ async def run_screener():
     )
     print(f"  Mechanical EXECUTE: {len(mechanical)} setups (regime: {regime_label})")
 
-    # 3. SHADOW: Claude — wrapped so ANY failure (quota, $ cap, timeout, API/network
-    # error) degrades to mechanical-only instead of crashing the scan.
+    # 3. SHADOW: Claude — ONLY runs while Claude is the delivered source. Once
+    # PRIMARY_SOURCE=="mechanical" (v12.0 migration complete, 2026-08-26) the scan is
+    # pure Python and Claude is skipped entirely → zero scan tokens on CI *and* local.
+    # This is the CORE PRINCIPLE end-state: Claude never touches the decision path; it is
+    # retained only for delta analysis in eval-scan. Kept wrapped so that if it's ever
+    # re-enabled, ANY failure still degrades to mechanical-only instead of crashing.
     claude_setups, brief, usage = [], None, None
-    try:
-        print("→ Reading Telegram groups...")
-        tg = TelegramReader()
-        messages = await tg.read_groups()
-        print(f"  Got {len(messages)} messages")
+    if config.PRIMARY_SOURCE == "claude":
+        try:
+            print("→ Reading Telegram groups...")
+            tg = TelegramReader()
+            messages = await tg.read_groups()
+            print(f"  Got {len(messages)} messages")
 
-        print("→ Calling Claude (shadow)...")
-        analyzer = ClaudeAnalyzer()
-        brief, usage = analyzer.analyze(market, messages)
-        print(f"  Used {usage['input_tokens']}+{usage['output_tokens']} tokens")
+            print("→ Calling Claude (shadow)...")
+            analyzer = ClaudeAnalyzer()
+            brief, usage = analyzer.analyze(market, messages)
+            print(f"  Used {usage['input_tokens']}+{usage['output_tokens']} tokens")
 
-        parsed = parse_setups_json(brief) or []
-        if parsed:
-            claude_setups = _prepare_source(
-                parsed, regime_label, interest_scores, technicals, "claude"
-            )
-    except Exception as e:
-        print(f"  ⚠ Claude shadow failed ({type(e).__name__}: {e}) — continuing mechanical-only")
+            parsed = parse_setups_json(brief) or []
+            if parsed:
+                claude_setups = _prepare_source(
+                    parsed, regime_label, interest_scores, technicals, "claude"
+                )
+        except Exception as e:
+            print(f"  ⚠ Claude shadow failed ({type(e).__name__}: {e}) — continuing mechanical-only")
+    else:
+        print("→ Claude scan skipped (PRIMARY_SOURCE=mechanical) — zero scan tokens")
 
     # 3b. Cross-run dedup: with CI scanning every 2h, the same coin re-flagged in
     # consecutive windows would log correlated pseudo-replicate trades that pollute the
