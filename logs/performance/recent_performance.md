@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_45 trades: 15W / 30L (33% WR, -0.30 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 38% WR, -0.32 avg blended R:R_
+_44 trades: 15W / 29L (34% WR, -0.30 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 36% WR, -0.34 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -49,9 +49,8 @@ _Partial profit model (50% at T1 + BE stop): 38% WR, -0.32 avg blended R:R_
 | 2026-07-30 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.77 (W) | 0.77 | target_1 | 0.91R |
 | 2026-07-30 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
 | 2026-07-29 | VANRYUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.8 (W) | 0.8 | target_1 | 1.24R |
-| 2026-07-29 | SPCXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.43 | be_stop | 0.91R |
 
-- Recent 'trend_pullback': 14/36 (39% WR)
+- Recent 'trend_pullback': 14/35 (40% WR)
 - Recent 'failed_breakout': 1/5 (20% WR)
 - Recent 'other': 0/2 (0% WR)
 
