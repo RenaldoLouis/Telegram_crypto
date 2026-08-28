@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_44 trades: 15W / 29L (34% WR, -0.30 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 36% WR, -0.34 avg blended R:R_
+_32 trades: 10W / 22L (31% WR, -0.27 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 34% WR, -0.33 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -37,20 +37,8 @@ _Partial profit model (50% at T1 + BE stop): 36% WR, -0.34 avg blended R:R_
 | 2026-08-01 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.43 (L) | -0.43 | expired | 0.32R |
 | 2026-07-31 | MUUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.02 (L) | -0.02 | expired | 0.5R |
 | 2026-07-31 | CFXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.08 (W) | 0.08 | expired | 0.38R |
-| 2026-07-31 | ESPUSDT | S | intra | trend_pullba | med | 3/4 | 0.786 | 0.14 (W) | 0.14 | expired | 0.4R |
-| 2026-07-31 | FARTCOINUS | S | intra | trend_pullba | med | 4/4 | 0.959 | 0.3 (W) | 0.3 | trail_stop | 1.09R |
-| 2026-07-30 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.11R |
-| 2026-07-30 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.09R |
-| 2026-07-30 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.11R |
-| 2026-07-30 | DRAMUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.06R |
-| 2026-07-30 | EWYUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.08R |
-| 2026-07-30 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.08R |
-| 2026-07-30 | DOGEUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | 0.3 (W) | 0.5 | trail_stop | 1.16R |
-| 2026-07-30 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.77 (W) | 0.77 | target_1 | 0.91R |
-| 2026-07-30 | ADAUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
-| 2026-07-29 | VANRYUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.8 (W) | 0.8 | target_1 | 1.24R |
 
-- Recent 'trend_pullback': 14/35 (40% WR)
+- Recent 'trend_pullback': 9/23 (39% WR)
 - Recent 'failed_breakout': 1/5 (20% WR)
 - Recent 'other': 0/2 (0% WR)
 

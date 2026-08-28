@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260826_0200",
+  "run_timestamp_utc": "2026-08-26T02:00:09.688390+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-08-28T12:43:33.723835+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.00464,
+      "exit_price": 0.004998,
+      "exit_reason": "target_1",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 0.63,
+      "blended_rr": 0.63,
+      "won": true,
+      "max_favorable_rr": 0.69,
+      "candles_to_exit": 192,
+      "risk_pct": 0.122798,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0187,
+      "net_rr": 0.611,
+      "net_blended_rr": 0.611,
+      "won_net": true,
+      "symbol": "PUMPFUNUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "cautious",
+      "interest_score": 3.0,
+      "source": "watch",
+      "backtested_signal": "rsi_bounce_long"
+    }
+  ]
+}

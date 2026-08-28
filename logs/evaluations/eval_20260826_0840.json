@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260826_0840",
+  "run_timestamp_utc": "2026-08-26T08:40:48.433711+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-08-28T12:43:35.576030+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 2.228,
+      "exit_price": 2.722,
+      "exit_reason": "target_2",
+      "target_1_hit": true,
+      "target_2_hit": true,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 2.02,
+      "blended_rr": 1.39,
+      "won": true,
+      "max_favorable_rr": 2.13,
+      "candles_to_exit": 126,
+      "risk_pct": 0.109515,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0191,
+      "net_rr": 2.001,
+      "net_blended_rr": 1.371,
+      "won_net": true,
+      "symbol": "TRUMPUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "rsi_bounce_long"
+    }
+  ]
+}
