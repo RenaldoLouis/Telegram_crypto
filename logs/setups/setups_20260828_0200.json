@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-28T02:00:10.447164+00:00",
+  "run_tag": "20260828_0200",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "SOLUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 107.49467855,
+      "entry_high": 108.00532145,
+      "stop_loss": 111.154286,
+      "target_1": 105.1967855,
+      "target_2": 100.941428,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 68.9 (was 79.9), ADX 51.6"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "risk_on",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 40.03,
+          "rsi": 74.56,
+          "macd": 3.659099,
+          "macd_hist": 0.804389,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.26,
+          "range_pct": 14.64
+        },
+        "tf_1h": {
+          "adx": 51.63,
+          "rsi": 68.9,
+          "macd": 2.041688,
+          "macd_hist": -0.248044,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.64,
+          "range_pct": 8.94
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
