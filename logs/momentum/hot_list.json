@@ -1,34 +1,18 @@
 {
-  "generated_utc": "2026-08-28T18:12:38.050460+00:00",
+  "generated_utc": "2026-08-29T02:42:57.520892+00:00",
   "market_regime": {
     "regime": "risk_off",
     "metrics": {
-      "pct_declining": 80.0,
-      "median_change_pct": -3.72,
-      "btc_change_pct": -3.15,
-      "avg_funding_pct": 0.0021,
-      "large_decline_count": 16
+      "pct_declining": 72.0,
+      "median_change_pct": -2.74,
+      "btc_change_pct": -2.93,
+      "avg_funding_pct": 0.0077,
+      "large_decline_count": 10
     },
-    "detected_utc": "2026-08-28T18:12:38.050012+00:00",
-    "previous_regime": "neutral"
+    "detected_utc": "2026-08-29T02:42:57.520489+00:00",
+    "previous_regime": "risk_off"
   },
   "coins": [
-    {
-      "symbol": "SKHYNIXUSDT",
-      "flagged_utc": "2026-08-26T22:43:06.659897+00:00",
-      "expires_utc": "2026-08-28T22:43:06.659897+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 1277.3,
-      "price_change_24h_pct": 4.2591,
-      "turnover_24h_usd": 62669747.5354,
-      "funding_rate_pct": 0.281003,
-      "open_interest": 23385.168,
-      "volume_acceleration": 1.2220013834221195,
-      "price_acceleration_pct": 4.1741
-    },
     {
       "symbol": "CASHCATUSDT",
       "flagged_utc": "2026-08-27T07:19:58.787937+00:00",
@@ -76,22 +60,6 @@
       "open_interest": 102724162.0,
       "volume_acceleration": 1.1410953621833195,
       "price_acceleration_pct": -172.4361
-    },
-    {
-      "symbol": "TACUSDT",
-      "flagged_utc": "2026-08-26T22:43:06.659897+00:00",
-      "expires_utc": "2026-08-28T22:43:06.659897+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.004558,
-      "price_change_24h_pct": 71.8702,
-      "turnover_24h_usd": 28159738.2533,
-      "funding_rate_pct": 0.062587,
-      "open_interest": 992992720.0,
-      "volume_acceleration": 1.068594358091835,
-      "price_acceleration_pct": -8.083500000000015
     },
     {
       "symbol": "BICOUSDT",
@@ -188,6 +156,22 @@
       "open_interest": 2269737.0,
       "volume_acceleration": 1.3258962476557195,
       "price_acceleration_pct": -31.282500000000006
+    },
+    {
+      "symbol": "SOXLUSDT",
+      "flagged_utc": "2026-08-29T02:42:57.520282+00:00",
+      "expires_utc": "2026-08-31T02:42:57.520282+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 112.01,
+      "price_change_24h_pct": -7.8637,
+      "turnover_24h_usd": 165160387.0361,
+      "funding_rate_pct": 0.062537,
+      "open_interest": 294958.36,
+      "volume_acceleration": 0.8459067029417169,
+      "price_acceleration_pct": 1.2785000000000002
     }
   ]
 }
