@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-08-29T10:47:42.402901+00:00",
+  "generated_utc": "2026-08-29T16:13:25.565333+00:00",
   "market_regime": {
-    "regime": "risk_off",
+    "regime": "neutral",
     "metrics": {
-      "pct_declining": 70.0,
-      "median_change_pct": -2.38,
-      "btc_change_pct": -2.1,
-      "avg_funding_pct": -0.0105,
-      "large_decline_count": 8
+      "pct_declining": 46.0,
+      "median_change_pct": 0.13,
+      "btc_change_pct": 0.08,
+      "avg_funding_pct": -0.0098,
+      "large_decline_count": 3
     },
-    "detected_utc": "2026-08-29T10:47:42.402356+00:00",
+    "detected_utc": "2026-08-29T16:13:25.564917+00:00",
     "previous_regime": "risk_off"
   },
   "coins": [
@@ -127,17 +127,49 @@
     },
     {
       "symbol": "HNTUSDT",
-      "flagged_utc": "2026-08-29T10:47:42.402093+00:00",
-      "expires_utc": "2026-08-31T10:47:42.402093+00:00",
+      "flagged_utc": "2026-08-29T16:13:25.564697+00:00",
+      "expires_utc": "2026-08-31T16:13:25.564697+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.4187,
-      "price_change_24h_pct": 87.1703,
-      "turnover_24h_usd": 17179427.2488,
-      "funding_rate_pct": -0.6247400000000001,
-      "open_interest": 7484730.05,
+      "last_price": 0.3368,
+      "price_change_24h_pct": 59.092999999999996,
+      "turnover_24h_usd": 37031861.8841,
+      "funding_rate_pct": -0.44312300000000004,
+      "open_interest": 8756940.76,
+      "volume_acceleration": 2.1555935100622587,
+      "price_acceleration_pct": -28.0773
+    },
+    {
+      "symbol": "TUTUSDT",
+      "flagged_utc": "2026-08-29T16:13:25.564697+00:00",
+      "expires_utc": "2026-08-31T16:13:25.564697+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.034676,
+      "price_change_24h_pct": -7.327999999999999,
+      "turnover_24h_usd": 19808968.5325,
+      "funding_rate_pct": -0.385972,
+      "open_interest": 115615460.0,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
+    },
+    {
+      "symbol": "4USDT",
+      "flagged_utc": "2026-08-29T16:13:25.564697+00:00",
+      "expires_utc": "2026-08-31T16:13:25.564697+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.016362,
+      "price_change_24h_pct": 40.4945,
+      "turnover_24h_usd": 16343156.3201,
+      "funding_rate_pct": 0.063404,
+      "open_interest": 161026307.0,
       "volume_acceleration": null,
       "price_acceleration_pct": null
     }

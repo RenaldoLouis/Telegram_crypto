@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-08-29T16:13:30.897575+00:00",
+  "run_tag": "20260829_1613",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ONDOUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.35367645,
+      "entry_high": 0.35612355,
+      "stop_loss": 0.338586,
+      "target_1": 0.3671355,
+      "target_2": 0.387528,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 33.2 bouncing (was 28.9), ADX 15.4"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.11,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 15.36,
+          "rsi": 33.21,
+          "macd": -0.005167,
+          "macd_hist": -0.001565,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.77,
+          "range_pct": 11.3
+        },
+        "tf_1h": {
+          "adx": 30.13,
+          "rsi": 60.0,
+          "macd": -0.002268,
+          "macd_hist": 0.001277,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.7,
+          "range_pct": 2.99
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
