@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260827_0720",
+  "run_timestamp_utc": "2026-08-27T07:20:02.210715+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-08-30T03:51:36.099422+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.05773,
+      "exit_price": 0.059927,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.1,
+      "candles_to_exit": 48,
+      "risk_pct": 0.038056,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0486,
+      "net_rr": -1.049,
+      "net_blended_rr": -1.049,
+      "won_net": false,
+      "symbol": "WLFIUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 1.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}

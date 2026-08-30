@@ -1,10 +1,11 @@
 # Recent Performance (last 4 weeks)
-_32 trades: 10W / 22L (31% WR, -0.27 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 34% WR, -0.33 avg blended R:R_
+_25 trades: 8W / 17L (32% WR, -0.32 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 36% WR, -0.37 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-08-27 | WLFIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.1R |
 | 2026-08-22 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 0.6R |
 | 2026-08-11 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.58R |
 | 2026-08-11 | BTRUSDT | S | intra | failed_break | med | 3/4 | 0.82 | -1.0 (L) | -1.0 | stop_loss | 0.25R |
@@ -29,17 +30,9 @@ _Partial profit model (50% at T1 + BE stop): 34% WR, -0.33 avg blended R:R_
 | 2026-08-03 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
 | 2026-08-03 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.2R |
 | 2026-08-02 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.14 (W) | 1.49 | target_2 | 2.27R |
-| 2026-08-01 | SKHYNIXUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.12R |
-| 2026-08-01 | TSLAUSDT | S | intra | trend_pullba | med | 4/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.07R |
-| 2026-08-01 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.95 (W) | 1.34 | target_2 | 2.02R |
-| 2026-08-01 | SNDKUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.27 (L) | -0.27 | expired | 0.37R |
-| 2026-08-01 | 1000RATSUS | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.62R |
-| 2026-08-01 | KORUUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.43 (L) | -0.43 | expired | 0.32R |
-| 2026-07-31 | MUUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.02 (L) | -0.02 | expired | 0.5R |
-| 2026-07-31 | CFXUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.08 (W) | 0.08 | expired | 0.38R |
 
-- Recent 'trend_pullback': 9/23 (39% WR)
-- Recent 'failed_breakout': 1/5 (20% WR)
+- Recent 'trend_pullback': 7/17 (41% WR)
+- Recent 'failed_breakout': 1/4 (25% WR)
 - Recent 'other': 0/2 (0% WR)
 
 ## Trader's Recent Actual Trades
