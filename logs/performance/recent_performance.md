@@ -1,10 +1,11 @@
 # Recent Performance (last 4 weeks)
-_25 trades: 8W / 17L (32% WR, -0.32 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 36% WR, -0.37 avg blended R:R_
+_25 trades: 8W / 17L (32% WR, -0.40 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 36% WR, -0.42 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-08-28 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.87 | 0.21 (W) | 0.21 | expired | 0.54R |
 | 2026-08-27 | WLFIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.1R |
 | 2026-08-22 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 0.6R |
 | 2026-08-11 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.58R |
@@ -29,7 +30,6 @@ _Partial profit model (50% at T1 + BE stop): 36% WR, -0.37 avg blended R:R_
 | 2026-08-03 | EULUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.02 (W) | 0.02 | expired | 0.17R |
 | 2026-08-03 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
 | 2026-08-03 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.2R |
-| 2026-08-02 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.14 (W) | 1.49 | target_2 | 2.27R |
 
 - Recent 'trend_pullback': 7/17 (41% WR)
 - Recent 'failed_breakout': 1/4 (25% WR)

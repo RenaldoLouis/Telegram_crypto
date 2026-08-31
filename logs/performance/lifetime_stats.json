@@ -1,19 +1,19 @@
 {
-  "last_updated": "2026-08-30 03:51 UTC",
-  "total_setups": 384,
-  "total_evaluated": 341,
+  "last_updated": "2026-08-31 01:47 UTC",
+  "total_setups": 385,
+  "total_evaluated": 342,
   "total_not_triggered": 18,
   "overall": {
-    "wins": 117,
+    "wins": 118,
     "losses": 224,
-    "rr_sum": -39.70999999999999
+    "rr_sum": -39.499999999999986
   },
   "by_setup_type": {
     "trend_pullback": {
-      "wins": 106,
+      "wins": 107,
       "losses": 182,
-      "total": 288,
-      "rr_sum": -17.649999999999995
+      "total": 289,
+      "rr_sum": -17.439999999999994
     },
     "range_breakout": {
       "wins": 2,
@@ -66,10 +66,10 @@
       "rr_sum": -2.53
     },
     "medium": {
-      "wins": 101,
+      "wins": 102,
       "losses": 186,
-      "total": 287,
-      "rr_sum": -31.860000000000007
+      "total": 288,
+      "rr_sum": -31.650000000000006
     },
     "low": {
       "wins": 13,
@@ -80,10 +80,10 @@
   },
   "by_rank": {
     "1": {
-      "wins": 51,
+      "wins": 52,
       "losses": 88,
-      "total": 139,
-      "rr_sum": -16.260000000000005
+      "total": 140,
+      "rr_sum": -16.050000000000004
     },
     "3": {
       "wins": 17,
@@ -118,10 +118,10 @@
       "rr_sum": -2.46
     },
     "claude-sonnet-4-6": {
-      "wins": 115,
+      "wins": 116,
       "losses": 214,
-      "total": 329,
-      "rr_sum": -35.24999999999999
+      "total": 330,
+      "rr_sum": -35.03999999999999
     },
     "claude-haiku-4-5": {
       "wins": 1,
@@ -138,10 +138,10 @@
       "rr_sum": -2.23
     },
     "intraday": {
-      "wins": 112,
+      "wins": 113,
       "losses": 213,
-      "total": 325,
-      "rr_sum": -41.490000000000016
+      "total": 326,
+      "rr_sum": -41.280000000000015
     },
     "scalp": {
       "wins": 2,
@@ -158,10 +158,10 @@
       "rr_sum": -34.68
     },
     "short": {
-      "wins": 63,
+      "wins": 64,
       "losses": 92,
-      "total": 155,
-      "rr_sum": -5.029999999999998
+      "total": 156,
+      "rr_sum": -4.819999999999998
     }
   },
   "monthly_trend": {
@@ -186,20 +186,20 @@
       "total": 112
     },
     "2026-08": {
-      "wins": 9,
+      "wins": 10,
       "losses": 22,
-      "total": 31
+      "total": 32
     }
   },
   "prediction_gap": {
-    "sum_predicted": 512.9839999999995,
-    "sum_actual": -39.70999999999999,
-    "count": 341
+    "sum_predicted": 513.8539999999995,
+    "sum_actual": -39.499999999999986,
+    "count": 342
   },
   "mfe_stats": {
-    "reached_05r": 210,
-    "total_with_mfe": 341,
-    "mfe_sum": 321.37
+    "reached_05r": 211,
+    "total_with_mfe": 342,
+    "mfe_sum": 321.91
   },
   "stop_timing": {
     "total_stops": 173,
@@ -614,10 +614,10 @@
       "rr_sum": -2.0
     },
     "SNXXUSDT": {
-      "wins": 0,
+      "wins": 1,
       "losses": 2,
-      "total": 2,
-      "rr_sum": -2.0
+      "total": 3,
+      "rr_sum": -1.79
     },
     "SOXLUSDT": {
       "wins": 0,
@@ -706,10 +706,10 @@
   },
   "by_regime": {
     "neutral": {
-      "wins": 75,
+      "wins": 76,
       "losses": 171,
-      "total": 246,
-      "rr_sum": -41.570000000000014
+      "total": 247,
+      "rr_sum": -41.360000000000014
     },
     "risk_off": {
       "wins": 4,
@@ -738,10 +738,10 @@
       "rr_sum": -19.29
     },
     "3": {
-      "wins": 98,
+      "wins": 99,
       "losses": 146,
-      "total": 244,
-      "rr_sum": -5.529999999999999
+      "total": 245,
+      "rr_sum": -5.319999999999999
     },
     "2": {
       "wins": 2,
@@ -854,10 +854,10 @@
       "rr_sum": -1.0
     },
     "validated_signal": {
-      "wins": 36,
+      "wins": 37,
       "losses": 43,
-      "total": 79,
-      "rr_sum": -3.45
+      "total": 80,
+      "rr_sum": -3.24
     },
     "long_structural_confirmed": {
       "wins": 2,
@@ -896,10 +896,10 @@
       "rr_sum": -1.0
     },
     "trend_pullback": {
-      "wins": 21,
+      "wins": 22,
       "losses": 22,
-      "total": 43,
-      "rr_sum": -0.809999999999999
+      "total": 44,
+      "rr_sum": -0.5999999999999991
     },
     "liquidity_sweep": {
       "wins": 0,
@@ -911,11 +911,11 @@
   "simulated_t1": {
     "sim_075r_hits": 130,
     "sim_100r_hits": 99,
-    "sim_total": 261
+    "sim_total": 262
   },
   "partial_profit": {
-    "blended_rr_sum": -32.730000000000004,
-    "blended_wins": 106,
+    "blended_rr_sum": -32.52,
+    "blended_wins": 107,
     "blended_losses": 134,
     "be_stops": 27,
     "trail_stops": 6,
@@ -1138,7 +1138,9 @@
     "20260827_0720",
     "20260827_1500",
     "20260827_1850",
-    "20260828_0200"
+    "20260828_0200",
+    "20260828_1510",
+    "20260828_1812"
   ],
   "by_source": {
     "claude": {
@@ -1148,24 +1150,24 @@
       "rr_sum": -5.92
     },
     "mechanical": {
-      "wins": 21,
+      "wins": 22,
       "losses": 21,
-      "total": 42,
-      "rr_sum": -1.0300000000000007
+      "total": 43,
+      "rr_sum": -0.8200000000000007
     },
     "watch": {
       "wins": 15,
-      "losses": 24,
-      "total": 39,
-      "rr_sum": -1.22
+      "losses": 25,
+      "total": 40,
+      "rr_sum": -1.43
     }
   },
   "by_signal_backed": {
     "signal_backed": {
-      "wins": 32,
+      "wins": 33,
       "losses": 37,
-      "total": 69,
-      "rr_sum": -3.38
+      "total": 70,
+      "rr_sum": -3.17
     },
     "discretionary": {
       "wins": 2,
