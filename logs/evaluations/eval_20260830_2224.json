@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260830_2224",
+  "run_timestamp_utc": "2026-08-30T22:24:02.612239+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-01T01:01:29.190616+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.5598,
+      "exit_price": 0.5598,
+      "exit_reason": "be_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": true,
+      "trail_stop_hit": false,
+      "actual_rr": 0.0,
+      "blended_rr": 0.44,
+      "won": false,
+      "max_favorable_rr": 0.93,
+      "candles_to_exit": 19,
+      "risk_pct": 0.032204,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0546,
+      "net_rr": -0.055,
+      "net_blended_rr": 0.385,
+      "won_net": false,
+      "symbol": "MNTUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.975,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "setup8_exhaustion"
+      ],
+      "regime": "neutral",
+      "interest_score": 3.0,
+      "source": "watch",
+      "backtested_signal": "rsi_rejection_short"
+    }
+  ]
+}

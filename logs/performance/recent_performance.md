@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_25 trades: 8W / 17L (32% WR, -0.40 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 36% WR, -0.42 avg blended R:R_
+_19 trades: 6W / 13L (32% WR, -0.36 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 37% WR, -0.39 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -24,14 +24,8 @@ _Partial profit model (50% at T1 + BE stop): 36% WR, -0.42 avg blended R:R_
 | 2026-08-04 | BANKUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.38R |
 | 2026-08-04 | SPCXUSDT | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 1.75R |
 | 2026-08-04 | ETHUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.24R |
-| 2026-08-03 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.859 | -1.0 (L) | -1.0 | stop_loss | 0.72R |
-| 2026-08-03 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.23 (W) | 0.23 | expired | 0.7R |
-| 2026-08-03 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -0.28 (L) | -0.28 | expired | 0.38R |
-| 2026-08-03 | EULUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.02 (W) | 0.02 | expired | 0.17R |
-| 2026-08-03 | SUIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.47R |
-| 2026-08-03 | WLDUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.2R |
 
-- Recent 'trend_pullback': 7/17 (41% WR)
+- Recent 'trend_pullback': 5/11 (45% WR)
 - Recent 'failed_breakout': 1/4 (25% WR)
 - Recent 'other': 0/2 (0% WR)
 
