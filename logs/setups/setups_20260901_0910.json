@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-01T09:10:41.715790+00:00",
+  "run_tag": "20260901_0910",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "OPUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.09441845,
+      "entry_high": 0.09516155,
+      "stop_loss": 0.099744,
+      "target_1": 0.091008,
+      "target_2": 0.084882,
+      "predicted_rr": 0.763,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "setup8_exhaustion"
+        ],
+        "key_factor": "rsi_rejection_short on 1h: RSI 67.6 (was 75.2), ADX 46.2"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_rejection_short",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.17,
+      "regime": "neutral",
+      "interest_score": 3.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 36.08,
+          "rsi": 66.44,
+          "macd": -0.000201,
+          "macd_hist": 0.001376,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.32,
+          "range_pct": 14.16
+        },
+        "tf_1h": {
+          "adx": 46.21,
+          "rsi": 67.64,
+          "macd": 0.002079,
+          "macd_hist": 0.000189,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.64,
+          "range_pct": 12.72
+        },
+        "backtested_signal": "rsi_rejection_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
