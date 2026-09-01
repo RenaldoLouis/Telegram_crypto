@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-01T22:22:55.518923+00:00",
+  "run_tag": "20260901_2222",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "CHIPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.0440235,
+      "entry_high": 0.0446565,
+      "stop_loss": 0.0464975,
+      "target_1": 0.04272187,
+      "target_2": 0.040025,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0446, RSI 64.0"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "risk_off",
+      "interest_score": 5.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 36.1,
+          "rsi": 64.0,
+          "macd": 0.0012,
+          "macd_hist": 0.000425,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.77,
+          "range_pct": 19.46
+        },
+        "tf_1h": {
+          "adx": 35.25,
+          "rsi": 69.21,
+          "macd": 0.001366,
+          "macd_hist": 0.000385,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.48,
+          "range_pct": 17.97
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}

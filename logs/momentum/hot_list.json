@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-09-01T19:12:31.466770+00:00",
+  "generated_utc": "2026-09-01T22:22:50.918281+00:00",
   "market_regime": {
-    "regime": "cautious",
+    "regime": "risk_off",
     "metrics": {
-      "pct_declining": 68.0,
+      "pct_declining": 74.0,
       "median_change_pct": -2.09,
-      "btc_change_pct": -2.5,
-      "avg_funding_pct": -0.01,
-      "large_decline_count": 9
+      "btc_change_pct": -2.12,
+      "avg_funding_pct": -0.02,
+      "large_decline_count": 8
     },
-    "detected_utc": "2026-09-01T19:12:31.466278+00:00",
-    "previous_regime": "neutral"
+    "detected_utc": "2026-09-01T22:22:50.917728+00:00",
+    "previous_regime": "cautious"
   },
   "coins": [
     {
@@ -239,17 +239,33 @@
     },
     {
       "symbol": "TRXUSDT",
-      "flagged_utc": "2026-09-01T19:12:31.466058+00:00",
-      "expires_utc": "2026-09-03T19:12:31.466058+00:00",
+      "flagged_utc": "2026-09-01T22:22:50.917495+00:00",
+      "expires_utc": "2026-09-03T22:22:50.917495+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.3214,
-      "price_change_24h_pct": -3.657,
-      "turnover_24h_usd": 27221842.5259,
-      "funding_rate_pct": -0.23317,
-      "open_interest": 171427613.0,
+      "last_price": 0.3219,
+      "price_change_24h_pct": -3.1296999999999997,
+      "turnover_24h_usd": 29462790.1929,
+      "funding_rate_pct": -0.16179600000000002,
+      "open_interest": 171154205.0,
+      "volume_acceleration": 1.0823216747678952,
+      "price_acceleration_pct": -0.5273000000000003
+    },
+    {
+      "symbol": "ACEUSDT",
+      "flagged_utc": "2026-09-01T22:22:50.917495+00:00",
+      "expires_utc": "2026-09-03T22:22:50.917495+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.20755,
+      "price_change_24h_pct": 25.248900000000003,
+      "turnover_24h_usd": 23446754.9242,
+      "funding_rate_pct": -1.042769,
+      "open_interest": 20305044.4,
       "volume_acceleration": null,
       "price_acceleration_pct": null
     }
