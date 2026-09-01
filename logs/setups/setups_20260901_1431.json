@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-01T14:31:19.467421+00:00",
+  "run_tag": "20260901_1431",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "CLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 87.44325,
+      "entry_high": 87.75675,
+      "stop_loss": 88.73125,
+      "target_1": 86.69,
+      "target_2": 85.3375,
+      "predicted_rr": 0.804,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 88.0800, RSI 84.7"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 39.47,
+          "rsi": 84.66,
+          "macd": 1.098192,
+          "macd_hist": 0.32308,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.14,
+          "range_pct": 6.44
+        },
+        "tf_1h": {
+          "adx": 37.69,
+          "rsi": 62.44,
+          "macd": 0.644033,
+          "macd_hist": 0.049157,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.89,
+          "range_pct": 3.39
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
