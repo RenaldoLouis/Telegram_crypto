@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-09-01T19:12:38.298721+00:00",
+  "run_tag": "20260901_1912",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ONGUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.1143006,
+      "entry_high": 0.1169394,
+      "stop_loss": 0.102426,
+      "target_1": 0.1255155,
+      "target_2": 0.135411,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.7,
+          "rsi": 52.76,
+          "macd": -0.001648,
+          "macd_hist": 0.001496,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.99,
+          "range_pct": 38.51
+        },
+        "tf_1h": {
+          "adx": 46.77,
+          "rsi": 62.8,
+          "macd": 0.004541,
+          "macd_hist": 0.00045,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.82,
+          "range_pct": 34.95
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "cautious",
+      "interest_score": 10.0,
+      "rank": 1
+    }
+  ]
+}
