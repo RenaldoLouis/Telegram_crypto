@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-01 01:01 UTC",
-  "total_setups": 385,
+  "last_updated": "2026-09-02 00:57 UTC",
+  "total_setups": 386,
   "total_evaluated": 342,
   "total_not_triggered": 18,
   "overall": {
@@ -1146,6 +1146,9 @@
     "20260829_1613",
     "20260829_2025",
     "20260830_0340",
+    "20260830_0944",
+    "20260830_1000",
+    "20260830_1441",
     "20260830_2224"
   ],
   "by_source": {
@@ -1162,10 +1165,10 @@
       "rr_sum": -0.8200000000000007
     },
     "watch": {
-      "wins": 18,
-      "losses": 28,
-      "total": 46,
-      "rr_sum": -1.16
+      "wins": 19,
+      "losses": 29,
+      "total": 48,
+      "rr_sum": -1.5199999999999998
     }
   },
   "by_signal_backed": {

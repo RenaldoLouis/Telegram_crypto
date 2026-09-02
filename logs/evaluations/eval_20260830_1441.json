@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260830_1441",
+  "run_timestamp_utc": "2026-08-30T14:41:20.943982+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-02T00:57:58.101513+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.003663,
+      "exit_price": 0.0037,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.54,
+      "won": true,
+      "max_favorable_rr": 1.16,
+      "candles_to_exit": 20,
+      "risk_pct": 0.033852,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0521,
+      "net_rr": 0.248,
+      "net_blended_rr": 0.488,
+      "won_net": true,
+      "symbol": "1000PEPEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "rsi_bounce_long"
+    }
+  ]
+}

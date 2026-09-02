@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_19 trades: 6W / 13L (32% WR, -0.36 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 37% WR, -0.39 avg blended R:R_
+_15 trades: 6W / 9L (40% WR, -0.19 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 47% WR, -0.23 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -20,13 +20,9 @@ _Partial profit model (50% at T1 + BE stop): 37% WR, -0.39 avg blended R:R_
 | 2026-08-05 | HFTUSDT | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
 | 2026-08-05 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.29 (W) | 0.29 | expired | 0.53R |
 | 2026-08-05 | EULUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.29 (W) | 0.94 | target_2 | 1.34R |
-| 2026-08-04 | SOXLUSDT | S | intra | range_mean_r | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.0R |
-| 2026-08-04 | BANKUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.38R |
-| 2026-08-04 | SPCXUSDT | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 1.75R |
-| 2026-08-04 | ETHUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.24R |
 
-- Recent 'trend_pullback': 5/11 (45% WR)
-- Recent 'failed_breakout': 1/4 (25% WR)
+- Recent 'trend_pullback': 5/9 (56% WR)
+- Recent 'failed_breakout': 1/3 (33% WR)
 - Recent 'other': 0/2 (0% WR)
 
 ## Trader's Recent Actual Trades
