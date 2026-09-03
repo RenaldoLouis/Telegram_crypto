@@ -1,0 +1,119 @@
+{
+  "run_timestamp_utc": "2026-09-03T02:00:06.853254+00:00",
+  "run_tag": "20260903_0200",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 2,
+    "claude": 0,
+    "watch": 0
+  },
+  "setups": [
+    {
+      "symbol": "ACEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.18184085,
+      "entry_high": 0.18677915,
+      "stop_loss": 0.2090015,
+      "target_1": 0.16579137,
+      "target_2": 0.134927,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 59.0, ADX 25.9, near EMA20"
+      },
+      "tier": "execute",
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.9,
+          "rsi": 58.96,
+          "macd": -0.00074,
+          "macd_hist": 0.000737,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.2,
+          "range_pct": 37.07
+        },
+        "tf_1h": {
+          "adx": 22.76,
+          "rsi": 43.6,
+          "macd": -0.003216,
+          "macd_hist": -0.000809,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.56,
+          "range_pct": 18.18
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    },
+    {
+      "symbol": "ONDOUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.3471004,
+      "entry_high": 0.3490996,
+      "stop_loss": 0.358096,
+      "target_1": 0.340603,
+      "target_2": 0.328108,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 53.0, ADX 22.0, near EMA20"
+      },
+      "tier": "execute",
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 22.01,
+          "rsi": 53.01,
+          "macd": -0.00295,
+          "macd_hist": 0.000934,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.23,
+          "range_pct": 6.87
+        },
+        "tf_1h": {
+          "adx": 18.88,
+          "rsi": 67.2,
+          "macd": 0.001224,
+          "macd_hist": 0.000859,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.04,
+          "range_pct": 4.31
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
