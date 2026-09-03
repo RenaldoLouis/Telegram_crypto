@@ -1,10 +1,11 @@
 # Recent Performance (last 4 weeks)
-_15 trades: 6W / 9L (40% WR, -0.19 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 47% WR, -0.23 avg blended R:R_
+_12 trades: 5W / 7L (42% WR, -0.12 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 42% WR, -0.22 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-08-31 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.05 (W) | 1.41 | target_2 | 2.2R |
 | 2026-08-28 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.87 | 0.21 (W) | 0.21 | expired | 0.54R |
 | 2026-08-27 | WLFIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.1R |
 | 2026-08-22 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 0.6R |
@@ -16,13 +17,9 @@ _Partial profit model (50% at T1 + BE stop): 47% WR, -0.23 avg blended R:R_
 | 2026-08-07 | ESPORTSUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.14R |
 | 2026-08-07 | 1000BONKUS | L | intra | liquidity_sw | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.04R |
 | 2026-08-07 | ACEUSDT | S | intra | failed_break | med | 4/4 | 0.87 | 1.93 (W) | 1.4 | target_2 | 2.07R |
-| 2026-08-05 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.36 | be_stop | 0.79R |
-| 2026-08-05 | HFTUSDT | S | intra | failed_break | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.21R |
-| 2026-08-05 | DEXEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.29 (W) | 0.29 | expired | 0.53R |
-| 2026-08-05 | EULUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 1.29 (W) | 0.94 | target_2 | 1.34R |
 
-- Recent 'trend_pullback': 5/9 (56% WR)
-- Recent 'failed_breakout': 1/3 (33% WR)
+- Recent 'trend_pullback': 4/7 (57% WR)
+- Recent 'failed_breakout': 1/2 (50% WR)
 - Recent 'other': 0/2 (0% WR)
 
 ## Trader's Recent Actual Trades

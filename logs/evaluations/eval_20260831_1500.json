@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260831_1500",
+  "run_timestamp_utc": "2026-08-31T15:00:09.463289+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-03T02:38:55.616864+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.359698,
+      "exit_price": 0.362668,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.66,
+      "won": true,
+      "max_favorable_rr": 1.54,
+      "candles_to_exit": 69,
+      "risk_pct": 0.027527,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0696,
+      "net_rr": 0.23,
+      "net_blended_rr": 0.59,
+      "won_net": true,
+      "symbol": "WLDUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "source": "watch",
+      "backtested_signal": "liquidity_sweep_long"
+    }
+  ]
+}

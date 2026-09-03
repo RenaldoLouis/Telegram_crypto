@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260831_1000",
+  "run_timestamp_utc": "2026-08-31T10:00:10.586931+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-03T02:38:55.232778+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.096674,
+      "exit_price": 0.096674,
+      "exit_reason": "be_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": true,
+      "trail_stop_hit": false,
+      "actual_rr": 0.0,
+      "blended_rr": 0.2,
+      "won": false,
+      "max_favorable_rr": 0.55,
+      "candles_to_exit": 9,
+      "risk_pct": 0.222228,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0078,
+      "net_rr": -0.008,
+      "net_blended_rr": 0.192,
+      "won_net": false,
+      "symbol": "BTRUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 6.0,
+      "source": "watch",
+      "backtested_signal": "liquidity_sweep_long"
+    }
+  ]
+}
