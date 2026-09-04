@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 343 evaluated trades — solid sample)
-_Last updated: 2026-09-03 02:38 UTC_
+_Last updated: 2026-09-04 04:35 UTC_
 
 0. **v11.3 NOT VALIDATING — REVIEW NEEDED**: 106 forward trades only reached 44% WR / -0.03R exp vs targets 34% / +0.00R. ACTION: the last change did NOT deliver — re-audit before adding more rules (do not pile on new delta insights, that is how the bad-logic loop returns).
 

@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260901_0336",
+  "run_timestamp_utc": "2026-09-01T03:36:29.765560+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-09-04T04:35:53.626953+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 113.01,
+      "exit_price": 106.408571,
+      "exit_reason": "target_2",
+      "target_1_hit": true,
+      "target_2_hit": true,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 2.26,
+      "blended_rr": 1.58,
+      "won": true,
+      "max_favorable_rr": 2.31,
+      "candles_to_exit": 35,
+      "risk_pct": 0.025889,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0699,
+      "net_rr": 2.19,
+      "net_blended_rr": 1.51,
+      "won_net": true,
+      "symbol": "SOXLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "risk_on",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
