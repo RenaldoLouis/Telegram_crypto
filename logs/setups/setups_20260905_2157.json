@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-09-05T21:57:12.317097+00:00",
+  "run_tag": "20260905_2157",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "4USDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0328505,
+      "entry_high": 0.0338735,
+      "stop_loss": 0.028247,
+      "target_1": 0.03719825,
+      "target_2": 0.0410345,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 40.81,
+          "rsi": 81.67,
+          "macd": 0.004043,
+          "macd_hist": 0.001495,
+          "trend": "bullish",
+          "ema20_dist_atr": 3.21,
+          "range_pct": 63.45
+        },
+        "tf_1h": {
+          "adx": 37.63,
+          "rsi": 63.7,
+          "macd": 0.002976,
+          "macd_hist": 0.000386,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.91,
+          "range_pct": 35.23
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "risk_on",
+      "interest_score": 12.0,
+      "rank": 1
+    }
+  ]
+}
