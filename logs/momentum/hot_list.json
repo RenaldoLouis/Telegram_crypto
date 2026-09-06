@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-09-05T23:37:15.212846+00:00",
+  "generated_utc": "2026-09-06T02:57:59.657606+00:00",
   "market_regime": {
     "regime": "risk_on",
     "metrics": {
-      "pct_declining": 8.0,
-      "median_change_pct": 3.63,
-      "btc_change_pct": 0.13,
-      "avg_funding_pct": 0.0153,
-      "large_decline_count": 1
+      "pct_declining": 14.0,
+      "median_change_pct": 3.53,
+      "btc_change_pct": 0.37,
+      "avg_funding_pct": 0.0103,
+      "large_decline_count": 3
     },
-    "detected_utc": "2026-09-05T23:37:15.212409+00:00",
+    "detected_utc": "2026-09-06T02:57:59.657199+00:00",
     "previous_regime": "risk_on"
   },
   "coins": [
@@ -31,19 +31,19 @@
     },
     {
       "symbol": "MARSCOINUSDT",
-      "flagged_utc": "2026-09-05T23:37:15.212190+00:00",
-      "expires_utc": "2026-09-07T23:37:15.212190+00:00",
+      "flagged_utc": "2026-09-06T02:57:59.656982+00:00",
+      "expires_utc": "2026-09-08T02:57:59.656982+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.25103,
-      "price_change_24h_pct": 25.8674,
-      "turnover_24h_usd": 130233988.1236,
-      "funding_rate_pct": 0.05867100000000001,
-      "open_interest": 53783880.0,
-      "volume_acceleration": 0.9916407624202064,
-      "price_acceleration_pct": 2.696200000000001
+      "last_price": 0.22687,
+      "price_change_24h_pct": 26.7076,
+      "turnover_24h_usd": 127655617.7527,
+      "funding_rate_pct": 0.055698,
+      "open_interest": 51681900.0,
+      "volume_acceleration": 0.9802020163242412,
+      "price_acceleration_pct": 0.8401999999999994
     },
     {
       "symbol": "AKEUSDT",
@@ -94,36 +94,20 @@
       "price_acceleration_pct": -9.996999999999998
     },
     {
-      "symbol": "TEAMUSDT",
-      "flagged_utc": "2026-09-04T02:57:06.503698+00:00",
-      "expires_utc": "2026-09-06T02:57:06.503698+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 194.9,
-      "price_change_24h_pct": 3.3896999999999995,
-      "turnover_24h_usd": 36578808.8619,
-      "funding_rate_pct": 0.110351,
-      "open_interest": 163.84,
-      "volume_acceleration": 1.1069952875817335,
-      "price_acceleration_pct": 0.5569999999999995
-    },
-    {
       "symbol": "PONSUSDT",
-      "flagged_utc": "2026-09-05T19:56:29.349601+00:00",
-      "expires_utc": "2026-09-07T19:56:29.349601+00:00",
-      "trigger": "funding_squeeze",
+      "flagged_utc": "2026-09-06T02:57:59.656982+00:00",
+      "expires_utc": "2026-09-08T02:57:59.656982+00:00",
+      "trigger": "big_move",
       "all_triggers": [
-        "funding_squeeze"
+        "big_move"
       ],
-      "last_price": 0.8911,
-      "price_change_24h_pct": 27.5551,
-      "turnover_24h_usd": 188191269.9387,
-      "funding_rate_pct": 0.072397,
-      "open_interest": 18033747.0,
-      "volume_acceleration": 1.0883017093563705,
-      "price_acceleration_pct": 2.6320999999999977
+      "last_price": 0.8867,
+      "price_change_24h_pct": 28.377000000000002,
+      "turnover_24h_usd": 204055038.0194,
+      "funding_rate_pct": 0.047434000000000004,
+      "open_interest": 18791113.0,
+      "volume_acceleration": 1.0558485208260657,
+      "price_acceleration_pct": 2.1591999999999985
     },
     {
       "symbol": "SOXLUSDT",
@@ -223,19 +207,19 @@
     },
     {
       "symbol": "NIULAIUSDT",
-      "flagged_utc": "2026-09-05T23:37:15.212190+00:00",
-      "expires_utc": "2026-09-07T23:37:15.212190+00:00",
+      "flagged_utc": "2026-09-06T02:57:59.656982+00:00",
+      "expires_utc": "2026-09-08T02:57:59.656982+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.12184,
-      "price_change_24h_pct": 45.306999999999995,
-      "turnover_24h_usd": 43417728.5108,
-      "funding_rate_pct": 0.231224,
-      "open_interest": 40695140.0,
-      "volume_acceleration": 1.0310072024495922,
-      "price_acceleration_pct": 1.5563000000000002
+      "last_price": 0.11009,
+      "price_change_24h_pct": 25.788299999999996,
+      "turnover_24h_usd": 48112156.3726,
+      "funding_rate_pct": 0.05507,
+      "open_interest": 38278190.0,
+      "volume_acceleration": 1.1081223735744785,
+      "price_acceleration_pct": -19.5187
     },
     {
       "symbol": "XMRUSDT",
