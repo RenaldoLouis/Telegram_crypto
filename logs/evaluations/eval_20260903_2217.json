@@ -1,0 +1,29 @@
+{
+  "run_tag": "20260903_2217",
+  "run_timestamp_utc": "2026-09-03T22:17:31.158502+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-09-06T01:27:02.618413+00:00",
+  "results": [
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "1000PEPEUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.994,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "setup8_exhaustion"
+      ],
+      "regime": "risk_on",
+      "interest_score": 6.0,
+      "source": "watch",
+      "backtested_signal": "rsi_rejection_short"
+    }
+  ]
+}
