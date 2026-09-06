@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-06T22:05:02.640684+00:00",
+  "run_tag": "20260906_2205",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "SOXLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 123.97882145,
+      "entry_high": 124.40117855,
+      "stop_loss": 125.31196429,
+      "target_1": 123.34852678,
+      "target_2": 121.94607142,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 124.8800, RSI 80.9"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.57,
+          "rsi": 80.93,
+          "macd": 3.396354,
+          "macd_hist": 0.893234,
+          "trend": "bullish",
+          "ema20_dist_atr": 5.08,
+          "range_pct": 16.31
+        },
+        "tf_1h": {
+          "adx": 56.05,
+          "rsi": 81.92,
+          "macd": 1.888925,
+          "macd_hist": 0.205387,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.4,
+          "range_pct": 6.16
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
