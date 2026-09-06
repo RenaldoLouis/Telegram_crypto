@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-06T08:22:04.048358+00:00",
+  "run_tag": "20260906_0822",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ARBUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.19756555,
+      "entry_high": 0.20085445,
+      "stop_loss": 0.20973071,
+      "target_1": 0.19131947,
+      "target_2": 0.17816858,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.2045, RSI 87.1"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "risk_on",
+      "interest_score": 11.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 49.12,
+          "rsi": 87.07,
+          "macd": 0.019123,
+          "macd_hist": 0.006466,
+          "trend": "bullish",
+          "ema20_dist_atr": 4.34,
+          "range_pct": 40.56
+        },
+        "tf_1h": {
+          "adx": 59.72,
+          "rsi": 84.55,
+          "macd": 0.016602,
+          "macd_hist": 0.002108,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.94,
+          "range_pct": 37.84
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
