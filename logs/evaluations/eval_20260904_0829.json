@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260904_0829",
+  "run_timestamp_utc": "2026-09-04T08:29:36.415194+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-09-07T06:01:12.153008+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.17124,
+      "exit_price": 0.168478,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.48,
+      "won": true,
+      "max_favorable_rr": 1.04,
+      "candles_to_exit": 34,
+      "risk_pct": 0.053758,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0336,
+      "net_rr": 0.266,
+      "net_blended_rr": 0.446,
+      "won_net": true,
+      "symbol": "FARTCOINUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "risk_on",
+      "interest_score": 4.0,
+      "source": "watch",
+      "backtested_signal": "trend_pullback_short"
+    }
+  ]
+}
