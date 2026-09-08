@@ -1,10 +1,11 @@
 # Recent Performance (last 4 weeks)
-_7 trades: 3W / 4L (43% WR, -0.16 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 43% WR, -0.26 avg blended R:R_
+_8 trades: 3W / 5L (38% WR, -0.27 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 38% WR, -0.35 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-09-05 | 1000PEPEUS | S | intra | trend_pullba | med | 3/4 | 0.821 | -1.0 (L) | -1.0 | stop_loss | 0.05R |
 | 2026-08-31 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.05 (W) | 1.41 | target_2 | 2.2R |
 | 2026-08-28 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.87 | 0.21 (W) | 0.21 | expired | 0.54R |
 | 2026-08-27 | WLFIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.1R |
@@ -13,7 +14,7 @@ _Partial profit model (50% at T1 + BE stop): 43% WR, -0.26 avg blended R:R_
 | 2026-08-11 | BTRUSDT | S | intra | failed_break | med | 3/4 | 0.82 | -1.0 (L) | -1.0 | stop_loss | 0.25R |
 | 2026-08-11 | SQDUSDT | S | intra | other | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.13R |
 
-- Recent 'trend_pullback': 3/5 (60% WR)
+- Recent 'trend_pullback': 3/6 (50% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS

@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260906_1324",
+  "run_timestamp_utc": "2026-09-06T13:24:15.761754+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-08T06:45:22.764506+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 1287.387786,
+      "exit_price": 1284.768979,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.65,
+      "won": true,
+      "max_favorable_rr": 1.71,
+      "candles_to_exit": 18,
+      "risk_pct": 0.006781,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.259,
+      "net_rr": 0.041,
+      "net_blended_rr": 0.391,
+      "won_net": true,
+      "symbol": "SKHYNIXUSDT",
+      "direction": "short",
+      "timeframe": "scalp",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.846,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "setup8_exhaustion"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "rsi_rejection_short"
+    }
+  ]
+}
