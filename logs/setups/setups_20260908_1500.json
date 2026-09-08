@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-08T15:00:51.585438+00:00",
+  "run_tag": "20260908_1500",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "NIULAIUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.0857648,
+      "entry_high": 0.0885752,
+      "stop_loss": 0.068434,
+      "target_1": 0.101222,
+      "target_2": 0.124642,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 32.2 bouncing (was 26.8), ADX 23.9"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.11,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 23.88,
+          "rsi": 32.2,
+          "macd": -0.002335,
+          "macd_hist": -0.001187,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.31,
+          "range_pct": 72.67
+        },
+        "tf_1h": {
+          "adx": 20.64,
+          "rsi": 50.83,
+          "macd": -0.000135,
+          "macd_hist": 0.00056,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.25,
+          "range_pct": 20.41
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
