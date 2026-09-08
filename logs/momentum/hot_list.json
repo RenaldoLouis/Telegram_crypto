@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-09-08T08:36:47.547190+00:00",
+  "generated_utc": "2026-09-08T19:15:46.968560+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
       "pct_declining": 50.0,
       "median_change_pct": 0.02,
-      "btc_change_pct": -1.21,
-      "avg_funding_pct": 0.0147,
-      "large_decline_count": 5
+      "btc_change_pct": -0.82,
+      "avg_funding_pct": -0.0036,
+      "large_decline_count": 2
     },
-    "detected_utc": "2026-09-08T08:36:47.546543+00:00",
+    "detected_utc": "2026-09-08T19:15:46.967917+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -108,22 +108,6 @@
       "open_interest": 372322.71,
       "volume_acceleration": 1.384915092507398,
       "price_acceleration_pct": 0.1548999999999996
-    },
-    {
-      "symbol": "NIULAIUSDT",
-      "flagged_utc": "2026-09-06T16:42:25.319583+00:00",
-      "expires_utc": "2026-09-08T16:42:25.319583+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.09497,
-      "price_change_24h_pct": -20.427300000000002,
-      "turnover_24h_usd": 38068321.7745,
-      "funding_rate_pct": 0.097649,
-      "open_interest": 38474690.0,
-      "volume_acceleration": 0.9690116310971668,
-      "price_acceleration_pct": 2.510200000000001
     },
     {
       "symbol": "XMRUSDT",
@@ -255,20 +239,19 @@
     },
     {
       "symbol": "SOPHUSDT",
-      "flagged_utc": "2026-09-08T08:36:47.546279+00:00",
-      "expires_utc": "2026-09-10T08:36:47.546279+00:00",
-      "trigger": "volume_acceleration",
+      "flagged_utc": "2026-09-08T19:15:46.967687+00:00",
+      "expires_utc": "2026-09-10T19:15:46.967687+00:00",
+      "trigger": "big_move",
       "all_triggers": [
-        "volume_acceleration",
-        "funding_squeeze"
+        "big_move"
       ],
-      "last_price": 0.010434,
-      "price_change_24h_pct": 106.04260000000001,
-      "turnover_24h_usd": 103701506.9308,
-      "funding_rate_pct": -0.615966,
-      "open_interest": 825741990.0,
-      "volume_acceleration": 3.181967378523809,
-      "price_acceleration_pct": 29.250500000000017
+      "last_price": 0.005596,
+      "price_change_24h_pct": 12.1667,
+      "turnover_24h_usd": 256137936.6813,
+      "funding_rate_pct": 0.00125,
+      "open_interest": 926361090.0,
+      "volume_acceleration": 2.4699538537296357,
+      "price_acceleration_pct": -93.8759
     },
     {
       "symbol": "CLUSDT",
