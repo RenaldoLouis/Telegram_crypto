@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-09-08T19:15:46.968560+00:00",
+  "generated_utc": "2026-09-08T22:22:19.001671+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 50.0,
-      "median_change_pct": 0.02,
-      "btc_change_pct": -0.82,
-      "avg_funding_pct": -0.0036,
-      "large_decline_count": 2
+      "pct_declining": 60.0,
+      "median_change_pct": -0.35,
+      "btc_change_pct": -0.68,
+      "avg_funding_pct": -0.0064,
+      "large_decline_count": 3
     },
-    "detected_utc": "2026-09-08T19:15:46.967917+00:00",
+    "detected_utc": "2026-09-08T22:22:19.001072+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -31,19 +31,19 @@
     },
     {
       "symbol": "AKEUSDT",
-      "flagged_utc": "2026-09-07T02:55:52.181539+00:00",
-      "expires_utc": "2026-09-09T02:55:52.181539+00:00",
+      "flagged_utc": "2026-09-08T22:22:19.000838+00:00",
+      "expires_utc": "2026-09-10T22:22:19.000838+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.01311,
-      "price_change_24h_pct": -26.87,
-      "turnover_24h_usd": 45579616.4872,
-      "funding_rate_pct": -0.462274,
-      "open_interest": 940123100.0,
-      "volume_acceleration": 1.0511198457852655,
-      "price_acceleration_pct": 1.816200000000002
+      "last_price": 0.015887,
+      "price_change_24h_pct": -7.9388,
+      "turnover_24h_usd": 59449845.4435,
+      "funding_rate_pct": -0.145886,
+      "open_interest": 778246600.0,
+      "volume_acceleration": 0.8304858233732342,
+      "price_acceleration_pct": 6.9105
     },
     {
       "symbol": "ZECUSDT",
@@ -124,22 +124,6 @@
       "open_interest": 87445.49,
       "volume_acceleration": 0.9590552729490618,
       "price_acceleration_pct": 2.2919
-    },
-    {
-      "symbol": "ARBUSDT",
-      "flagged_utc": "2026-09-06T22:04:59.079436+00:00",
-      "expires_utc": "2026-09-08T22:04:59.079436+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 0.18909,
-      "price_change_24h_pct": 9.6936,
-      "turnover_24h_usd": 283829971.0901,
-      "funding_rate_pct": 0.01,
-      "open_interest": 264132031.9,
-      "volume_acceleration": 0.885205741916516,
-      "price_acceleration_pct": -29.643400000000003
     },
     {
       "symbol": "RAYDIUMUSDT",
