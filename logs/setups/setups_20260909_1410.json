@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-09-09T14:10:30.859602+00:00",
+  "run_tag": "20260909_1410",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "AKEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.0152232,
+      "entry_high": 0.0158868,
+      "stop_loss": 0.012237,
+      "target_1": 0.0180435,
+      "target_2": 0.020532,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (2/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 31.11,
+          "rsi": 51.83,
+          "macd": 0.000317,
+          "macd_hist": -0.000327,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.3,
+          "range_pct": 69.44
+        },
+        "tf_1h": {
+          "adx": 16.82,
+          "rsi": 43.39,
+          "macd": -0.000411,
+          "macd_hist": 1.4e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.71,
+          "range_pct": 11.56
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "neutral",
+      "interest_score": 12.0,
+      "rank": 1
+    }
+  ]
+}
