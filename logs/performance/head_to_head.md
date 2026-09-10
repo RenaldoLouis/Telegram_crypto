@@ -1,6 +1,6 @@
 # Head-to-Head: Mechanical vs Claude
 
-Total evaluated trades: 412
+Total evaluated trades: 418
 Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net = gross − cost.
 
 ## By source (gross → net of cost)
@@ -9,7 +9,7 @@ Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net 
 |---|---|---|---|---|---|
 | claude | 299 | 32.1% | -0.129 | **-0.202** | 0.67 |
 | mechanical | 45 | 51.1% | +0.005 | **-0.056** | 0.87 |
-| watch | 68 | 39.7% | -0.057 | **-0.092** | 0.77 |
+| watch | 74 | 40.5% | -0.011 | **-0.048** | 0.88 |
 
 ## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)
 
@@ -17,7 +17,7 @@ Bar to promote a watch signal into the gated EXECUTE book: **net-of-cost expecta
 
 | watch signal | n | win% | gross exp (R) | **net exp (R)** | status |
 |---|---|---|---|---|---|
-| (unknown) | 68 | 39.7% | -0.057 | **-0.092** | ✗ below bar |
+| (unknown) | 74 | 40.5% | -0.011 | **-0.048** | ✗ below bar |
 
 ## By signal backing (gross → net of cost)
 
@@ -46,7 +46,7 @@ Bar to promote a watch signal into the gated EXECUTE book: **net-of-cost expecta
 ⚠️ CONCENTRATION: mechanical book is one-directional (short-only), 43/45 from a single signal — lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE until both directions and >1 signal have live data.
 
 ## Net-of-cost reality check
-- Whole book: gross -0.103R → **net -0.168R** (PF 0.70, n=412)
+- Whole book: gross -0.094R → **net -0.159R** (PF 0.71, n=418)
 - Mechanical: gross +0.005R → **net -0.056R** (n=45)
 - Signal-backed: gross -0.029R → **net -0.087R** (n=72) — the only cut that should be near a real net edge
-- **VERDICT: NO edge survives costs yet** — best source net -0.056R (mechanical). Every source is net-negative or breakeven. The gross edge is a cost illusion; the only path to a real edge is cutting the losing longs and/or raising per-trade R by widening targets or entering closer to stop — NOT more rule-tuning.
+- **VERDICT: NO edge survives costs yet** — best source net -0.048R (watch). Every source is net-negative or breakeven. The gross edge is a cost illusion; the only path to a real edge is cutting the losing longs and/or raising per-trade R by widening targets or entering closer to stop — NOT more rule-tuning.
