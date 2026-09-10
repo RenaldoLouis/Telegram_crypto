@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-10T03:07:28.782335+00:00",
+  "run_tag": "20260910_0307",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ARBUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.14870665,
+      "entry_high": 0.15101335,
+      "stop_loss": 0.14312786,
+      "target_1": 0.1549091,
+      "target_2": 0.16332428,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 4h: swept 0.1480 low, RSI 27.2, ADX 25.6"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.04,
+      "regime": "risk_off",
+      "interest_score": 6.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.61,
+          "rsi": 27.23,
+          "macd": -0.000435,
+          "macd_hist": -0.004098,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.5,
+          "range_pct": 31.32
+        },
+        "tf_1h": {
+          "adx": 38.0,
+          "rsi": 26.78,
+          "macd": -0.004931,
+          "macd_hist": -0.000372,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.16,
+          "range_pct": 18.01
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
