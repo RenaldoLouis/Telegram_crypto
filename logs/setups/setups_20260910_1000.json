@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-10T10:00:09.107595+00:00",
+  "run_tag": "20260910_1000",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.1481296,
+      "entry_high": 0.1497904,
+      "stop_loss": 0.14536929,
+      "target_1": 0.15165303,
+      "target_2": 0.15434607,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "range_reversion_long on 4h: range bottom 0.1470 (20.7% range), RSI 29.2, ADX 17.8"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "range_reversion_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.2,
+      "regime": "risk_off",
+      "interest_score": 6.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 17.81,
+          "rsi": 29.22,
+          "macd": -0.004039,
+          "macd_hist": -0.001626,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.72,
+          "range_pct": 20.7
+        },
+        "tf_1h": {
+          "adx": 43.76,
+          "rsi": 35.8,
+          "macd": -0.002827,
+          "macd_hist": 5e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.42,
+          "range_pct": 10.81
+        },
+        "backtested_signal": "range_reversion_long"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
