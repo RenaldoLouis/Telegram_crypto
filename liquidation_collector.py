@@ -71,20 +71,24 @@ def _handle(msg):
         print(f"[liq] handler error: {type(e).__name__}: {e}", flush=True)
 
 
-def main():
-    print(f"[liq] starting collector for {len(SYMBOLS)} symbols -> {LOG_DIR}", flush=True)
-    try:
-        ws = WebSocket(testnet=False, channel_type="linear")
-    except Exception as e:
-        print(f"[liq] WS connect failed (VPN down?): {type(e).__name__}: {e}", flush=True)
-        sys.exit(1)  # launchd KeepAlive will retry after ThrottleInterval
-
-    # subscribe per symbol (topic: allLiquidation.<symbol>)
+def _connect():
+    """Build the WS and subscribe every symbol (topic: allLiquidation.<symbol>)."""
+    ws = WebSocket(testnet=False, channel_type="linear")
     for sym in SYMBOLS:
         try:
             ws.all_liquidation_stream(symbol=sym, callback=_handle)
         except Exception as e:
             print(f"[liq] subscribe {sym} failed: {type(e).__name__}: {e}", flush=True)
+    return ws
+
+
+def main():
+    print(f"[liq] starting collector for {len(SYMBOLS)} symbols -> {LOG_DIR}", flush=True)
+    try:
+        ws = _connect()
+    except Exception as e:
+        print(f"[liq] WS connect failed (VPN down?): {type(e).__name__}: {e}", flush=True)
+        sys.exit(1)  # launchd KeepAlive will retry after ThrottleInterval
 
     def _bye(*_):
         print(f"[liq] shutting down (collected {_count} events this run)", flush=True)
@@ -101,16 +105,42 @@ def main():
         max_s = 0
     start = time.time()
 
-    # keep the main thread alive; pybit runs the socket on its own thread and
-    # auto-reconnects. Heartbeat every 15 min so logs show liveness.
+    # Watchdog (2026-09-10): the first artifact audit measured only 44% hour
+    # coverage — pybit's auto-reconnect can die QUIETLY (VPN blip -> socket
+    # gone, no exception raised), leaving a zombie process that collects
+    # nothing. Across 20 liquid perps a long silence is near-impossible, so if
+    # no event lands for LIQ_STALL_SECONDS, tear the socket down and rebuild.
+    try:
+        stall_s = int(os.environ.get("LIQ_STALL_SECONDS", "2700") or "0")
+    except ValueError:
+        stall_s = 2700
+
+    # keep the main thread alive; pybit runs the socket on its own thread.
+    # Heartbeat every 15 min so logs show liveness.
     last = 0
+    prev_count, last_progress = _count, time.time()
     while True:
         time.sleep(60)
-        if max_s and time.time() - start >= max_s:
+        now = time.time()
+        if _count != prev_count:
+            prev_count, last_progress = _count, now
+        elif stall_s and now - last_progress >= stall_s:
+            print(f"[liq] no events for {int(now - last_progress)}s — rebuilding WS", flush=True)
+            try:
+                ws.exit()
+            except Exception:
+                pass
+            try:
+                ws = _connect()
+            except Exception as e:
+                print(f"[liq] reconnect failed (VPN down?): {type(e).__name__}: {e}", flush=True)
+                sys.exit(1)  # launchd KeepAlive / next CI cron retries
+            last_progress = now
+        if max_s and now - start >= max_s:
             print(f"[liq] max_seconds={max_s} reached — clean exit "
                   f"({_count} events collected this run)", flush=True)
             sys.exit(0)
-        if time.time() - last >= 900:
+        if now - last >= 900:
             print(f"[liq] alive @ {datetime.now(timezone.utc):%Y-%m-%d %H:%M}Z — "
                   f"{_count} events collected this run", flush=True)
             last = time.time()
