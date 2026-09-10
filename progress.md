@@ -6,10 +6,10 @@ _Last updated: 2026-07-21 (v12.0)_
 
 ## What This Project Does
 
-A personal, automated crypto analyst that runs once a night and delivers the **best trading opportunities** (quality over quantity, typically 2-3 per run) on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It self-evaluates past recommendations against actual price data and feeds results back to Claude.
+A personal, automated crypto analyst that scans every 2h on GitHub Actions (plus 3×/day locally) and delivers the **best mechanical trade setups** (quality over quantity — often 0-1 EXECUTE plus a WATCH candidate) on Bybit USDT perpetuals to your Telegram — with full trade plans (entry, stop, targets, R:R). It self-evaluates past recommendations against actual price data and feeds results into fully algorithmic rules and readouts. **Zero Claude API usage anywhere (policy since 2026-09-10).**
 
 ```
-Momentum Pulse (every 4h, GitHub Actions, free)
+Momentum Pulse (every 2h, GitHub Actions, free)
     → Bybit API: fetch 50 tickers (single call)
     → Compare vs previous snapshot → detect volume/price acceleration
     → Flag coins: big move (>8% + >$200M), vol accel (>3x), funding squeeze
@@ -17,14 +17,14 @@ Momentum Pulse (every 4h, GitHub Actions, free)
     → Save to logs/momentum/hot_list.json (48h expiry + regime)
     → Telegram alert: regime changes + new coin flags
     ↓
-Bybit API (50 tickers, single call)
+Bybit API (100 tickers, single call)
     ↓
 Python pre-filter (knowledge-based scoring, free)
     → Load hot list (dynamic watchlist from pulse) + market regime
     → Disqualify: <$10M turnover or <$50M OI
     → Score by: price action, funding extremes, liquidity, OI+move combos
     → Volume acceleration bonus: hot list coins get +2 (>2x) or +4 (>5x)
-    → Keep top 25 + watchlist (BTC, ETH, SOL) + hot list
+    → Keep top 30 + watchlist (BTC, ETH, SOL) + hot list
     ↓
 Fetch 4 timeframes per coin (15m, 1h, 4h, 1D)
     → RSI(14), EMA 20/50, MACD(12,26,9), volume spike ratio, breakout flags, ADX(14), range_pct per TF
@@ -82,11 +82,11 @@ Quarterly deep analysis (quarterly_analysis.py, manual — still available for d
 
 ## Current Status & Roadmap (READ FIRST when resuming)
 
-_As of 2026-08-26. Single source of truth for where the mechanical-primary migration stands and what to do next. Full plan: `~/.claude/plans/ok-becauase-in-my-refactored-locket.md`._
+_As of 2026-09-10. Single source of truth for where the project stands and what to do next (the original plan file has been retired — this section supersedes it). Zero-Claude policy in effect: the project makes NO Claude API calls._
 
 **Big picture.** The migration from *Claude-as-decision-maker* to a pure-Python **mechanical engine** is DONE — mechanical is the only setup source and Claude no longer touches the scan/decision path. Remaining goal is unchanged and unmet: **prove a net-of-cost edge (≥+0.05R)**. Optimize **net expectancy** — NOT win rate, NOT gross R (the 2026-08-02 audit showed the gross edge was mostly fees).
 
-**CURRENT MODE = MECHANICAL-PRIMARY (flipped 2026-08-26, commit `8488cf7`).** `config.PRIMARY_SOURCE = "mechanical"`. Every `scan` (12 CI + 3 local) builds + delivers the **mechanical** brief. `main.py` gates the Claude shadow call behind `PRIMARY_SOURCE=="claude"`, so `analyzer.analyze()` is **never called on the scan path** anywhere → **zero scan Claude tokens**. Claude's only remaining spend is **delta analysis in eval-scan** (bounded/optional, per CORE PRINCIPLE). **Head-to-head shadow RETIRED** — vestigial because the real bar is +0.05R net, not "beat Claude"; the `claude` lane in `head_to_head.md` just stops accruing new trades (history kept). The **Phase-4 flip gate was bypassed by explicit user decision** (2026-08-26): the flip was philosophical (own the edge / stop paying for a non-decision-maker), NOT a proof mechanical beats Claude. Reversible via `PRIMARY_SOURCE="claude"`. **The edge is still UNPROVEN** — mechanical is net-negative; flipping the source didn't change that, it just stopped the spend and locked in the own-your-logic architecture.
+**CURRENT MODE = MECHANICAL-PRIMARY (flipped 2026-08-26, commit `8488cf7`).** `config.PRIMARY_SOURCE = "mechanical"`. Every `scan` (12 CI + 3 local) builds + delivers the **mechanical** brief. `main.py` gates the Claude shadow call behind `PRIMARY_SOURCE=="claude"`, so `analyzer.analyze()` is **never called on the scan path** anywhere → **zero scan Claude tokens**. **Claude spend is ZERO everywhere as of 2026-09-10** — delta analysis (the last call) is retired under the zero-Claude policy (`config.DELTA_ANALYSIS_ENABLED=False`); the learning loop is fully algorithmic. **Head-to-head shadow RETIRED** — vestigial because the real bar is +0.05R net, not "beat Claude"; the `claude` lane in `head_to_head.md` just stops accruing new trades (history kept). The **Phase-4 flip gate was bypassed by explicit user decision** (2026-08-26): the flip was philosophical (own the edge / stop paying for a non-decision-maker), NOT a proof mechanical beats Claude. Reversible via `PRIMARY_SOURCE="claude"`. **The edge is still UNPROVEN** — mechanical is net-negative; flipping the source didn't change that, it just stopped the spend and locked in the own-your-logic architecture.
 
 **LATEST (2026-08-20) — WATCH tier + "always an opinion" reframe (user-driven).** User wanted "≥1 opportunity every day." Reconciled with the net-of-cost north star by splitting SURFACING from EXECUTING instead of forcing trades (new CLAUDE.md operating-discipline rule #6: _empty EXECUTION valid; empty SURFACING is a bug_). Shipped:
 - **WATCH tier** (`main.py::build_watch_candidate`): when the EXECUTE lane is empty, surface the single best-available candidate (a watch-tier/gate-rejected fired signal, else an `_observation_candidate` = top-interest coin in its dominant trend). `source="watch"`, bypasses the protective gates, paper-tracked only. Rendered under "👀 Watch Candidate" in the brief. **Excluded from the edge book** — `weekly_eval.update_lifetime_stats` skips `source=="watch"` from all global/edge counters (buckets it only under `by_source["watch"]`); `generate_recent_performance` + `_load_recent_eval_details` filter it out so WATCH never shapes EXECUTE rules; head_to_head keeps a visible `watch` row but excludes it from the backing/direction diagnostics. Verified end-to-end with synthetic evals. Also hardened `_group_stats([])` to a complete zero-dict (empty group KeyError'd head_to_head).
@@ -112,7 +112,7 @@ _As of 2026-08-26. Single source of truth for where the mechanical-primary migra
 **Roadmap / what's next.** Items tagged _[WAIT]_ are data-gated (need ~20-30 fresh evals scored AFTER the 2026-08-02 gates — nothing to safely change on those until then); _[NOW]_ items are not blocked and can be done any time.
 
 _[WAIT] Data-gated — let the 4h CI mechanical scans + weekly `eval-scan` accumulate:_
-1. **Ongoing loop.** Mechanical scan runs every 2h on GitHub Actions + 3×/day local launchd (09:00/17:00/22:00) — **all mechanical-only as of 2026-08-26** (`PRIMARY_SOURCE="mechanical"` skips the Claude scan call everywhere; CI also has no ANTHROPIC key). The only Claude call left is `eval-scan`'s delta analysis. Run `eval-scan` (which `git pull --rebase`s CI-pushed setups first) weekly. **Watch the NET-of-cost verdict in `head_to_head.md`** — not gross R, not lifetime WR. NOTE (2026-08-20): a `watch` row now also appears in head_to_head — that's the WATCH-tier promotion signal (is `rsi_bounce_long`/observations net-positive enough to graduate to EXECUTE?); it is NOT part of the edge book. Lever #1's job: move whole-book net from −0.17R toward the short-only −0.03R as losing longs stop entering. Then lever #2 has to push past breakeven.
+1. **Ongoing loop.** Mechanical scan runs every 2h on GitHub Actions + 3×/day local launchd (09:00/17:00/22:00) — **all mechanical-only as of 2026-08-26** (`PRIMARY_SOURCE="mechanical"` skips the Claude scan call everywhere; CI also has no ANTHROPIC key). **Zero Claude calls anywhere as of 2026-09-10** (delta analysis retired — zero-Claude policy). Run `eval-scan` (which `git pull --rebase`s CI-pushed setups first) weekly. **Watch the NET-of-cost verdict in `head_to_head.md`** — not gross R, not lifetime WR. NOTE (2026-08-20): a `watch` row now also appears in head_to_head — that's the WATCH-tier promotion signal (is `rsi_bounce_long`/observations net-positive enough to graduate to EXECUTE?); it is NOT part of the edge book. Lever #1's job: move whole-book net from −0.17R toward the short-only −0.03R as losing longs stop entering. Then lever #2 has to push past breakeven.
 2. **Lever #2 — raise per-trade R to shrink cost-in-R.** Median risk is 3.1% of price, so fixed fees cost ~0.055R/trade — larger than the whole gross edge. Widening targets and/or entering closer to stop lowers the fraction of R the fees eat. This is the real path to +net after lever #1. **MODEL it first** on existing evals via `backtester.py` (what-if, zero tokens) — do NOT ship blind. Revisit once ~20-30 post-lever-1 evals exist.
 3. **Lever #3 — early-invalidation exit (from 2026-08-02 insight grading).** Trades whose MFE stalls ≤0.25R are 56/57 losses at −0.92R (n=57). If we exit those early (~−0.3/−0.4R) instead of riding to a −1.0R full stop, the saved R is large (~+25-28R across history — potentially bigger than lever #1). Only a MANAGEMENT rule (MFE is post-entry, useless for selection). **MODEL first:** time-box the hypothesis ("MFE hasn't reached ~0.25R within first N candles → exit") in `weekly_eval`/`backtester` before shipping — confirm the early-exit beats holding net-of-cost. Highest-value lead from the insight grading.
 4. ~~**Per-signal T1 + direction review**~~ **— REJECTED 2026-08-09.** The net-of-cost slice cut (below) showed T1 tuning only optimizes the *winning half* of a losing book; median MFE is 0.77R and T2@1.5R hits 13%, so the reward leg is the problem, not T1 placement. Low value. Do not revisit as a standalone lever.
@@ -157,23 +157,28 @@ _De-prioritized (honest ROI call, 2026-08-09):_
 
 | File | Lines | Purpose |
 |---|---|---|
-| `main.py` | ~360 | Orchestrator — fetch → **build mechanical setups (primary)** → **Claude in try/except (shadow)** → `enforce_setups` (drops violators) → save BOTH sources tagged `source` → deliver per `config.PRIMARY_SOURCE` (mechanical fallback if Claude fails) |
+| `main.py` | ~360 | Orchestrator — fetch → **build mechanical setups (the only live source)** → `enforce_setups` (drops violators) → WATCH candidate if EXECUTE lane empty → deliver. Claude shadow path exists but is gated OFF behind `PRIMARY_SOURCE=="claude"` |
 | `mechanical_setups.py` | ~150 | **Mechanical setup constructor** — turns fired validated signals into full setups (entry/stop/T1/T2 + deterministic rank/confidence), zero LLM |
 | `signal_levels.py` | ~90 | Shared pure entry/stop/target math (drift-guarded vs backtester by `test_signal_levels.py`) |
 | `config.py` | 79 | Settings: API keys, model, limits, timeframes, watchlist, momentum + regime thresholds, delta analysis |
-| `fetchers/bybit_data.py` | ~475 | Bybit API: 50 tickers → scoring + hot list + regime → top 25 → multi-TF klines (incl. ADX, range_pct, MACD, SMA200) + validated signal detection (4 cross-TF confirmed formulas) |
+| `fetchers/bybit_data.py` | ~475 | Bybit API: 100 tickers → scoring + hot list + regime → top 30 → multi-TF klines (incl. ADX, range_pct, MACD, SMA200) + validated signal detection (4 confirmed formulas) |
 | `fetchers/telegram_reader.py` | — | Telethon: reads signal groups (currently disabled) |
 | `analyzer/prompts.py` | 380 | Professional trader prompt + knowledge + tiered performance feedback + regime/streak/volume/bounce/ADX/range rules + reasoning capture |
 | `analyzer/claude_client.py` | ~280 | Anthropic API wrapper with prompt caching + **extended thinking** + compact JSON + regime enforcement + effective limit computation + losing streak + drought alert + BTC trend injection + **validated signal injection** |
 | `delivery/telegram_bot.py` | 160 | MD→HTML converter, smart section-based chunking, retry with backoff |
-| `momentum_pulse.py` | 397 | Momentum detector + 4-tier market regime detection — runs every 4h on GitHub Actions (zero Claude tokens) |
-| `weekly_eval.py` | 2087 | Evaluation engine + BE stop/partial profit model + tiered knowledge distillation + delta analysis self-learning |
-| `quarterly_analysis.py` | 130 | Claude-powered deep pattern analysis (run every ~3 months) |
+| `momentum_pulse.py` | 397 | Momentum detector + 4-tier market regime detection — runs every 2h on GitHub Actions (zero Claude tokens) |
+| `weekly_eval.py` | 2087 | Evaluation engine + BE stop/partial profit model + algorithmic tiered knowledge distillation (delta analysis RETIRED 2026-09-10 — zero-Claude) |
+| `quarterly_analysis.py` | 130 | RETIRED 2026-09-10 (calls the Claude API — zero-Claude policy) |
+| `liquidation_collector.py` | ~150 | Fork A: Bybit liquidation-WS forward-collector (CI chained + local daemon; stall-watchdog since 2026-09-10) |
+| `cvd_collector.py` | ~185 | Roadmap #4 Phase 2: per-minute Bybit taker-flow collector (CI chained; stall-watchdog since 2026-09-10) |
+| `liq_cluster_backtest.py` | ~240 | Fork A harness: distance-to-liq-cluster vs outcome, chrono train/test (first pass 2026-09-10) |
+| `liq_cluster_deep_dive.py` | ~120 | Fork A robustness slices (per-symbol/direction/month/coverage/alt splits) |
+| `cvd_backtest.py` | ~560 | CVD/order-flow research on free Binance history (found the cvd_slope lead 2026-08-17) |
 | `trade_logger.py` | 195 | CLI trade journal manager — open/close/list trades from recent setups |
 | `backtester.py` | ~350 | **What-if backtester**: loads eval/setup logs, sweeps parameters (T1 distance, filters, regime limits, symbols, combos), reports expectancy/WR/PF. Zero Claude tokens. |
 | `historical_backtester.py` | ~2100 | **Historical strategy backtester**: fetches Bybit klines, 18 mechanical signal rules, parameter sweep optimizer, train/test validation + robustness scoring, **walk-forward validation** (`--walkforward`), generic slow factory path for signals without a vectorized sweep. Caches data locally. Zero Claude tokens. |
 | `knowledge/` (9 files) | — | Full trading knowledge base (01–08 + trading_rules) |
-| `.github/workflows/` | — | GitHub Actions: momentum pulse every 4h (secrets via repo settings) |
+| `.github/workflows/` | — | GitHub Actions: pulse + mechanical scan every 2h; liq + CVD collectors as chained ~5.5h jobs every 6h (secrets via repo settings) |
 | `progress.md` | — | This file — project progress tracker |
 
 ### Directory Structure
@@ -205,22 +210,24 @@ logs/
 
 | Setting | Value |
 |---|---|
-| Model | `claude-sonnet-4-6` (current) — model name tracked per setup for comparison |
+| Model | none live — zero Claude calls since 2026-09-10 (dormant path would use `claude-sonnet-4-6`); mechanical setups carry `model="mechanical_v1"` |
 | Max output tokens | 8000 (text) + 10000 (thinking) |
 | Extended thinking | Enabled — reasoning in separate block, not sent to Telegram |
-| Broad scan pool | 50 tickers (by turnover) |
-| Pre-filter to | 25 coins (by knowledge-based interest score + watchlist + hot list) |
+| Broad scan pool | 100 tickers (by turnover) |
+| Pre-filter to | 30 coins (by knowledge-based interest score + watchlist + hot list; liquidity filter → ~24 real) |
 | Timeframes | 15m (100 candles), 1h (100), 4h (100), 1D (210) |
 | Indicators per TF | RSI(14), EMA 20/50, MACD(12,26,9), volume spike ratio, 20-candle breakout, ADX(14), range_pct |
 | 1D-only indicators | SMA(200) — long-term trend filter |
 | Watchlist (always included) | BTCUSDT, ETHUSDT, SOLUSDT + momentum pulse hot list |
-| Momentum pulse | Every 4h on GitHub Actions (zero Claude tokens) |
-| Schedule | Nightly screener (launchd, 9pm local) + momentum pulse (GitHub Actions, every 4h) |
+| Momentum pulse | Every 2h on GitHub Actions (zero Claude tokens) |
+| Schedule | CI pulse + mechanical scan every 2h; local launchd scan 09:00/17:00/22:00; `eval-scan` weekly (local); liq + CVD collectors chained every 6h |
 | Delivery | Telegram bot (HTML formatted) |
 
 ---
 
 ## Cost Estimation (Monthly)
+
+**As of 2026-09-10: monthly Claude cost = $0.** v12.0 removed the scan call (2026-08-26) and the zero-Claude policy retired delta analysis (2026-09-10) — the project makes no Claude API calls. Everything below is HISTORICAL reference for the dormant Claude path.
 
 ### Per Run (once/night)
 | Component | Tokens | Cost (Sonnet 4.6) | Cost (Haiku 4.5) |
@@ -388,6 +395,14 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-09-10 (later) — ZERO-CLAUDE POLICY + audit fixes + doc truth sweep
+
+- **Zero-Claude policy (user decision): the project makes NO Claude API calls anywhere.** `config.DELTA_ANALYSIS_ENABLED=False` retires delta analysis — it was the last live call, and since v12.0 its ACTION rules fed a prompt nothing loads (open-circuit). `quarterly-scan` retired for the same reason. **The learning loop is now fully algorithmic:** eval-scan → `lifetime_stats.json` → `generate_strategic_rules()` (pure Python, anti-overfit gated) + `head_to_head.md` net-of-cost verdict + version segments + WATCH promotion readout; findings enter the live pipeline ONLY via the validated promotion path (monthly `backtest` OOS validation → signals/config). Phase 5 (owned scikit-learn take/skip meta-filter) remains the planned fully-closed ML loop, data-gated. All Claude tooling stays dormant + reversible. Monthly Claude cost: **$0**.
+- **Version-segment audit was watch-blind — fixed.** `backtester.py::report_version_segments` now excludes `source="watch"` (watch bypasses gates BY DESIGN). Its "gate NOT enforced" alarm was false: all 56 confluence<3 "violations" were watch-tier; the gated book has 0 (one claude-era 4/4-rank1 remains, n=1 historical). Corrected POST segment: **92 gated forward trades, 43.5% WR (+12.2pp vs PRE 31.3%), −0.065R expectancy, PF 0.85**.
+- **v11.3 marker CLOSED** (resolution recorded in `version_markers.json`): WR target VALIDATED (43.5% ≥ 34%), expectancy target NOT met (−0.065R < 0). De-noising worked; profitability needs a predictive input (fork A / CVD / Phase 5), not more gates — consistent with the 2026-08-09 meta-conclusion.
+- **CVD collector got the stall-watchdog** (`CVD_STALL_SECONDS`, default 10 min) — same quiet-WS-death fix as the liq collector. Matters before the on-venue confirm: coverage gaps silently corrupt per-bar CVD reconstruction.
+- **Doc truth sweep** (CLAUDE.md + progress.md living sections): pulse cadence 4h→2h; scan counts 50→100 / 25→30; main.py no longer described as running a live Claude shadow; Claude-path sections tagged DORMANT; cost section marked $0; stopgap liq daemon note → "kept deliberately as gap-filler"; broken `~/.claude/plans/…` pointer removed; architecture tree/table gained the collectors + fork-A/CVD research scripts; kline-cache "REFRESH before harness runs" gotcha documented.
 
 ### 2026-09-10 — Fork A first pass: liq-cluster backtest RUN (inconclusive → one extension) + collector watchdog
 

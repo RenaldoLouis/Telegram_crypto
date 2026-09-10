@@ -2294,7 +2294,14 @@ def maybe_run_delta_analysis(all_evals):
 
     This replaces the quarterly cadence with a faster feedback loop.
     Triggered automatically after every eval — checks if threshold is met.
+    RETIRED 2026-09-10 (config.DELTA_ANALYSIS_ENABLED=False, zero-Claude
+    policy): the learning loop is fully algorithmic now. Code kept intact so
+    flipping the flag restores the old Claude-based behavior.
     """
+    if not config.DELTA_ANALYSIS_ENABLED:
+        print("\nDelta analysis: RETIRED (zero-Claude policy, 2026-09-10) — skipping. "
+              "Learning loop is algorithmic: strategic_rules.md + head_to_head.md + version segments.")
+        return
     if not LIFETIME_STATS_FILE.exists():
         return
 

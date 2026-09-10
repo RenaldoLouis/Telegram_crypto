@@ -682,12 +682,20 @@ def report_version_segments(trades):
         return
 
     m = markers[-1]
+    if m.get("resolution"):
+        print(f"  Resolution: {m['resolution']}\n")
     ver = m.get("version", "latest")
     cutover = m.get("cutover_trade_count", 0)
     tgt = m.get("validation_target", {})
     min_trades = tgt.get("min_trades", 20)
     wr_target = tgt.get("wr_target", 34.0)
     exp_target = tgt.get("expectancy_target", 0.0)
+
+    # WATCH-tier trades bypass the gates BY DESIGN and are excluded from every
+    # edge/expectancy/version aggregation (2026-08-20 reframe) — without this
+    # filter the gate-compliance audit below false-alarms on watch trades
+    # (2026-09-10: all 56 "violations" were source=watch).
+    trades = [t for t in trades if t.get("source") != "watch"]
 
     # Split on the v11.3 structural marker.
     post = [t for t in trades if t.get("interest_score") is not None]

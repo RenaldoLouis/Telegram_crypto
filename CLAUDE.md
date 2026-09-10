@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**crypto-screener** is a personal, scheduled screener for Bybit USDT perpetual futures. It scans 100 coins, pre-filters to 30 using knowledge-based scoring, analyzes them across 4 timeframes via Claude API, delivers the 5 best trade setups to Telegram, and self-evaluates past recommendations against actual price data.
+**crypto-screener** is a personal, scheduled screener for Bybit USDT perpetual futures. It scans 100 coins, pre-filters to 30 using knowledge-based scoring, builds setups across 4 timeframes with a pure-Python **mechanical engine** (zero Claude tokens — the project makes NO Claude API calls as of 2026-09-10), delivers the best validated setups (typically 0–2 EXECUTE per run, plus a WATCH candidate when the EXECUTE lane is empty) to Telegram, and self-evaluates past recommendations against actual price data.
 
 ## 🎯 Project Goal (NORTH STAR — every recommendation must serve this)
 
@@ -14,7 +14,7 @@ _Defined 2026-08-09. This is the single anchor. Before proposing any change, res
 
 **THE ONE SUCCESS METRIC — net-of-cost expectancy (R per trade).** Not win rate, not gross R, not lifetime totals (the 2026-08-02 audit proved those are vanity/cost-illusion). **"Edge proven" = net-of-cost expectancy ≥ +0.05R sustained over ≥100 forward-evaluated trades, with BOTH directions and >1 signal contributing** (so it's a broad edge, not one lucky signal). That threshold is the line that flips the project from *searching* → *found it* + is the precondition to even discuss Phase B. (Note: the v12.0 *source* flip to mechanical-primary already happened 2026-08-26 on a philosophical basis — own the edge, stop paying for a shadow — and is NOT gated on this metric; this metric gates "edge proven", which is still unmet.)
 
-**CURRENT STATE (2026-08-09): still SEARCHING.** Best source is net −0.098R (mechanical); every source is net-negative. Improvement so far came by *subtraction* (cutting losers), which asymptotes at breakeven. 7 experiments (price signals ×4, OI proxy, structure/S-R filters) found no net edge → conclusion: price-pattern engineering is a dead end on this universe. The one live bet is **fork A: liquidation-cluster data** (collector running; backtest in ~2-4 weeks). If it too is empty, the honest end state is a rigorous **analyst tool** — an acceptable, explicit outcome, not a failure to paper over.
+**CURRENT STATE (updated 2026-09-10): still SEARCHING.** Best source is net −0.056R (mechanical, n=45, short-only); every source is net-negative. Improvement so far came by *subtraction* (cutting losers), which asymptotes at breakeven. 7 experiments (price signals ×4, OI proxy, structure/S-R filters) found no net edge → conclusion: price-pattern engineering is a dead end on this universe. The one live bet is **fork A: liquidation-cluster data** — first backtest 2026-09-10: promotion bar NOT met, but the 0.5–1.5-ATR near-ring is the strongest relative lead yet (near-ring longs +0.396R net / 62% WR, n=26, underpowered); one data-quality extension granted → **re-run ~2026-10-08**, and if the bar fails again → fork C, no second extension. If it ends empty, the honest end state is a rigorous **analyst tool** — an acceptable, explicit outcome, not a failure to paper over.
 
 **OPERATING DISCIPLINE (how we pursue the goal — non-negotiable):**
 1. **Optimize NET-of-cost expectancy only.** Never chase win rate or gross R.
@@ -33,11 +33,11 @@ Claude analyzes data and surfaces setups. The human makes every trading decision
 
 ### Setup Source — Mechanical-Primary (v12.0, migration COMPLETE 2026-08-26)
 
-The system runs on a pure-Python **mechanical engine** (`mechanical_setups.py` + `signal_levels.py`) as the ONLY setup source. **`config.PRIMARY_SOURCE = "mechanical"`** (flipped 2026-08-26, commit `8488cf7`). `main.py::run_screener` builds mechanical setups and **gates the Claude shadow call behind `PRIMARY_SOURCE=="claude"`**, so `analyzer.analyze()` is **never invoked on the scan path** (CI or local) → **zero scan Claude tokens everywhere**. Claude no longer touches the decision path at all — it is retained ONLY for **delta analysis in `eval-scan`** (a bounded, non-core, optional pattern-research role permitted by CORE PRINCIPLE). Fully reversible: set `PRIMARY_SOURCE="claude"` to re-enable the shadow.
+The system runs on a pure-Python **mechanical engine** (`mechanical_setups.py` + `signal_levels.py`) as the ONLY setup source. **`config.PRIMARY_SOURCE = "mechanical"`** (flipped 2026-08-26, commit `8488cf7`). `main.py::run_screener` builds mechanical setups and **gates the Claude shadow call behind `PRIMARY_SOURCE=="claude"`**, so `analyzer.analyze()` is **never invoked on the scan path** (CI or local) → **zero scan Claude tokens everywhere**. Claude no longer touches the decision path at all. **As of 2026-09-10 the project makes ZERO Claude API calls anywhere** — delta analysis (the last remaining call) is retired under the zero-Claude policy (`config.DELTA_ANALYSIS_ENABLED=False`); the learning loop is fully algorithmic (see The Evaluation System). All Claude tooling stays in the repo, dormant and reversible: set `PRIMARY_SOURCE="claude"` to re-enable the shadow, flip `DELTA_ANALYSIS_ENABLED=True` to re-enable delta analysis.
 
 **Head-to-head shadow experiment RETIRED.** It was decided vestigial: the real edge bar is **+0.05R net-of-cost**, not "beat Claude", so the mechanical-vs-Claude comparison was never load-bearing. `weekly_eval.py::generate_head_to_head()` still runs but the `claude` lane simply stops accruing new trades (history preserved). The original Phase-4 flip gate ("mechanical ≥ Claude over ≥20 trades each") was **bypassed deliberately by user decision** — the flip was philosophical (own the edge, stop paying for a non-decision-maker), not a proof that mechanical beats Claude. **Note: the edge itself is still UNPROVEN** — mechanical is net-negative and still searching per the north star; flipping the source does not change that.
 
-**→ For live state, the Phase 5 (ML meta-filter) roadmap, and the data-gated forks (liq clusters, CVD), read `progress.md` § "Current Status & Roadmap (READ FIRST when resuming)". The full original plan is `~/.claude/plans/ok-becauase-in-my-refactored-locket.md`.**
+**→ For live state, the Phase 5 (ML meta-filter) roadmap, and the data-gated forks (liq clusters, CVD), read `progress.md` § "Current Status & Roadmap (READ FIRST when resuming)" — it is the single source of truth (the original plan file has been retired).**
 
 ### Non-Goals (Important)
 
@@ -52,7 +52,7 @@ The system runs on a pure-Python **mechanical engine** (`mechanical_setups.py` +
 
 - **We cannot gauge or control Claude's output.** It's a hosted model — Anthropic can change, degrade, or deprecate it at any time, and its responses vary run-to-run. An edge we cannot measure, reproduce, or own is not an edge.
 - **It is costly.** Every core decision routed through Claude is recurring token spend for something our own logic should do for free.
-- **Therefore:** the decision path (selection, direction, price levels, risk) is ALWAYS Python. Claude may assist only in bounded, non-core, fully-optional roles (e.g. a shadow comparison, a veto/sanity layer on top of a mechanical setup, prose summarization, pattern research) — and the pipeline MUST degrade gracefully to mechanical-only if Claude is absent. A Claude failure must never change or block a trade decision. This is why `PRIMARY_SOURCE = "mechanical"` (migration complete 2026-08-26) and the scan Claude call is gated off entirely — Claude's only remaining role is delta analysis in eval-scan. Any new feature that would make Claude the primary generator of a trade decision is out of scope.
+- **Therefore:** the decision path (selection, direction, price levels, risk) is ALWAYS Python. Claude may assist only in bounded, non-core, fully-optional roles (e.g. a shadow comparison, a veto/sanity layer on top of a mechanical setup, prose summarization, pattern research) — and the pipeline MUST degrade gracefully to mechanical-only if Claude is absent. A Claude failure must never change or block a trade decision. This is why `PRIMARY_SOURCE = "mechanical"` (migration complete 2026-08-26) and the scan Claude call is gated off entirely — and as of **2026-09-10 Claude has ZERO live role anywhere** (delta analysis retired under the zero-Claude policy; the bounded helper roles above remain permitted-but-dormant). Any new feature that would make Claude the primary generator of a trade decision is out of scope.
 
 Auto-execution will only be considered after: (a) 60+ days of evaluated Phase A data, (b) a separate hard-coded risk engine (not Claude) for position sizing, (c) model comparison data (Sonnet vs Haiku), and (d) explicit user approval.
 
@@ -74,8 +74,13 @@ main.py  (orchestrator, async)
   │
   ├── fetchers/telegram_reader.py  → TelegramReader: Telethon (currently disabled)
   │
-  ├── analyzer/prompts.py          → SYSTEM_PROMPT + load_knowledge() + performance feedback + regime awareness
-  ├── analyzer/claude_client.py    → ClaudeAnalyzer: Anthropic SDK, prompt caching, extended thinking,
+  ├── mechanical_setups.py         → Mechanical setup constructor (the PRIMARY source): fired validated
+  │                                    signals → full setups (entry/stop/T1/T2, deterministic rank/confidence)
+  ├── signal_levels.py             → Shared pure entry/stop/target math (drift-guarded vs backtester)
+  │
+  ├── analyzer/prompts.py          → (DORMANT — zero-Claude policy 2026-09-10; used only if PRIMARY_SOURCE="claude")
+  │                                    SYSTEM_PROMPT + load_knowledge() + performance feedback + regime awareness
+  ├── analyzer/claude_client.py    → (DORMANT) ClaudeAnalyzer: Anthropic SDK, prompt caching, extended thinking,
   │                                    compact JSON, regime injection + explicit regime limits,
   │                                    effective limit computation, BTC daily trend guard,
   │                                    losing streak detection, recent loss rate injection
@@ -90,13 +95,20 @@ main.py  (orchestrator, async)
   │
   ├── weekly_eval.py               → Evaluation engine: scores past setups, tiered knowledge distillation,
   │                                    simulated T1 backtest, per-symbol tracking, prescriptive rules
-  ├── quarterly_analysis.py        → Claude-powered deep pattern analysis (run every ~3 months)
+  ├── quarterly_analysis.py        → (RETIRED 2026-09-10 — zero-Claude policy; calls the Claude API, do not run)
   ├── trade_logger.py              → CLI tool for managing my_trades.json (open/close/list trades)
   │
   ├── backtester.py                → What-if backtester: sweeps T1/filters/regime limits across eval logs
   ├── historical_backtester.py     → Historical strategy backtester: 18 signal rules, parameter optimizer,
   │                                    train/test validation, robustness scoring. Caches Bybit klines locally.
   │                                    validated formulas integrated into live screener pipeline (re-validated monthly).
+  │
+  ├── liquidation_collector.py     → Fork A: Bybit liquidation-WS forward-collector (CI chained + local daemon;
+  │                                    stall-watchdog rebuilds the socket after 45 min of silence)
+  ├── cvd_collector.py             → Roadmap #4 Phase 2: per-minute Bybit taker-flow collector (CI chained; watchdog)
+  ├── liq_cluster_backtest.py      → Fork A harness: distance-to-liq-cluster vs outcome, chrono train/test
+  ├── liq_cluster_deep_dive.py     → Fork A robustness slices (per-symbol/direction/month/coverage/alt splits)
+  ├── cvd_backtest.py              → CVD/order-flow research on free Binance history (found the cvd_slope lead)
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
@@ -106,35 +118,37 @@ main.py  (orchestrator, async)
         ├── momentum/
         │     ├── hot_list.json    → Active momentum-flagged coins + market regime (dynamic watchlist)
         │     └── last_snapshot.json → Previous pulse data + regime (for delta detection)
+        ├── liquidations/          → Raw liq prints, gitignored (daemon monthly files; ci/ = merged canonical store)
+        ├── cvd/                   → Per-minute taker buckets, gitignored (CI artifacts are the store)
         ├── performance/
         │     ├── lifetime_stats.json    → Layer 1: Incremental running counters (incl. by_symbol, simulated_t1)
-        │     ├── strategic_rules.md     → Layer 2: Prescriptive rules from all history (~600-800 tokens, sent to Claude)
-        │     ├── recent_performance.md  → Layer 3: Rolling 4-week trade details (~800 tokens, sent to Claude)
-        │     ├── summary.md             → Human-readable report (NOT sent to Claude)
+        │     ├── strategic_rules.md     → Layer 2: Algorithmic prescriptive rules (analyst readout — no Claude consumer since v12.0)
+        │     ├── recent_performance.md  → Layer 3: Rolling 4-week trade details (analyst readout)
+        │     ├── summary.md             → Human-readable full report
         │     ├── win_rate_history.json   → Win rate snapshots over time
-        │     ├── rule_registry.json     → Delta analysis registry (insight tracking, effectiveness)
-        │     └── quarterly/             → Deep analysis + delta analysis logs
-        └── backtest_cache/              → Cached Bybit klines for historical backtesting (JSON, no expiry)
+        │     ├── rule_registry.json     → Delta-analysis insight registry (frozen — delta retired 2026-09-10)
+        │     └── quarterly/             → Deep analysis + delta analysis logs (historical)
+        └── backtest_cache/              → Cached Bybit klines (JSON, no expiry — REFRESH before harness runs)
 ```
 
 ### Data Flow
 
-0. Every 4h: `momentum_pulse.py` (GitHub Actions) → fetches 50 tickers, detects acceleration vs previous snapshot → flags coins to `logs/momentum/hot_list.json` + classifies market regime (`risk_off`/`cautious`/`neutral`/`risk_on`) → Telegram alert (regime changes + new flags)
+0. Every 2h: `momentum_pulse.py` (GitHub Actions) → fetches 50 tickers, detects acceleration vs previous snapshot → flags coins to `logs/momentum/hot_list.json` + classifies market regime (`risk_off`/`cautious`/`neutral`/`risk_on`) → Telegram alert (regime changes + new flags)
 1. `BybitFetcher.get_top_movers(100)` → 100 tickers by turnover (single API call)
 2. `_load_hot_list()` → loads momentum pulse hot list (dynamic watchlist, 48h expiry) + market regime
 3. `_ticker_interest_score()` → disqualify illiquid (<$10M vol, <$50M OI), score rest + volume acceleration bonus for hot list coins
 4. Keep top 30 by score + watchlist + hot list → `get_multi_tf_indicators()` for each (4 TFs × 30 = 120 kline calls; liquidity filter usually caps the real set at ~24) + `_check_validated_signals()` on 1h/4h (zero extra API calls)
-5. `ClaudeAnalyzer.analyze(market, messages)` → extended thinking enabled (reasoning in separate thinking block, not in output) → injects regime metrics + explicit regime limits + effective limit computation + losing streak detection + BTC trend guard + **validated signals** into user content → readable brief + `setups_json` block
-6. `main.py` parses JSON block → validates against rules (Python, free) → saves to `logs/setups/` (includes model name, regime, reasoning)
-7. Clean brief (JSON stripped + pre-analysis stripped) → archived to `logs/briefs/` + delivered via Telegram
+5. `mechanical_setups.build_*()` → turns fired validated signals into full setups (entry/stop/T1/T2 + deterministic rank/confidence — pure Python, zero tokens). The Claude path (`ClaudeAnalyzer.analyze` with regime/effective-limit/streak injection + `setups_json` parsing) is DORMANT — gated behind `PRIMARY_SOURCE=="claude"`, off since v12.0
+6. `main.py::enforce_setups()` validates + DROPS violators (Python, free) → saves to `logs/setups/` (includes source, model tag, regime, interest_score); if the EXECUTE lane is empty, `build_watch_candidate()` surfaces one WATCH-tier candidate (`source="watch"`, paper-tracked)
+7. `format_mechanical_brief()` output → archived to `logs/briefs/` + delivered via Telegram
 8. Weekly: `weekly_eval.py` scores past setups (incl. simulated closer-T1 backtest) → updates tiered knowledge:
    - `lifetime_stats.json` — incremental counters incl. by_symbol, by_regime, by_rule_applied, simulated_t1 (O(1) per new eval)
    - `strategic_rules.md` — prescriptive rules with ACTION lines (~600-800 tokens) + delta insights
    - `recent_performance.md` — rolling 4-week trade details (~800 tokens)
    - `summary.md` — full human-readable report (NOT sent to Claude)
-   - **Delta analysis** — auto-triggered every 15 new trades: Claude finds patterns, grades previous insights, generates new ACTION rules → appended to strategic_rules.md
-9. Next run: `build_system_prompt()` loads strategic_rules (incl. delta insights) + recent_performance → Claude self-calibrates
-10. Quarterly: `quarterly_analysis.py` uses Claude for deep patterns → can still be run manually for thorough analysis
+   - ~~Delta analysis~~ — **RETIRED 2026-09-10** (zero-Claude policy, `config.DELTA_ANALYSIS_ENABLED=False`; threshold had been raised 15→25 before retirement)
+9. (dormant Claude path only) `build_system_prompt()` would load strategic_rules + recent_performance — today Layers 2-3 are the analyst readout and stay ready as Phase-5 ML inputs
+10. ~~Quarterly: `quarterly_analysis.py`~~ — **RETIRED 2026-09-10** (calls the Claude API — zero-Claude policy)
 
 ### Pre-Filter Scoring (Python, free)
 
@@ -167,7 +181,7 @@ dynamic watchlist in the next main scan. A Telegram alert is sent immediately fo
 **Market regime detection** (aggregate, from the same 50-ticker data):
 - Classifies overall market as `risk_off`, `cautious`, `neutral`, or `risk_on`
 - Metrics: % of coins declining, median 24h change, BTC 24h change, avg funding rate, large decline count
-- Regime metrics are ALWAYS injected into Claude's user content (not just when non-neutral)
+- Regime metrics are saved with every pulse + stamped on scans; the DORMANT Claude path would inject them into user content
 - Classification thresholds (tunable in config):
   - `risk_off`: (≥70% declining AND median ≤ -2%) OR (BTC ≤ -4%) OR (≥60% declining AND BTC ≤ -3%)
   - `cautious`: (≥55% declining AND median ≤ -0.5%) OR (BTC ≤ -2%) OR (≥50% declining AND BTC ≤ -1.5%)
@@ -175,17 +189,18 @@ dynamic watchlist in the next main scan. A Telegram alert is sent immediately fo
   - `neutral`: everything else
 - Regime saved in `hot_list.json` (read by main scan) and `last_snapshot.json` (for transition detection)
 - Telegram alert sent on regime transitions (e.g., neutral → cautious → risk_off)
+- The three `During …` bullets below are DORMANT Claude-path prompt rules; the LIVE mechanical path enforces regime intent via `LONG_CAP_BY_REGIME` / `SHORT_CAP_BY_REGIME` / `MAX_SAME_DIRECTION_PER_RUN` in `enforce_setups`
 - During `risk_off`: Claude max 2 setups, at least 1 short, longs only with 4/4 TF + volume + structural support
 - During `cautious`: Claude max 3 setups, longs require volume OR 4/4 TF, must include 1 short if bearish structure exists
 - During `risk_on`: Claude favors trend-following longs, shorts only with clear distribution, max 5 setups
 
-**Effective limit computation** (in `claude_client.py`):
+**Effective limit computation** (in `claude_client.py` — DORMANT, Claude path only):
 - Resolves regime limit, losing streak limit, and loss rate limit into a single number
 - Claude sees ONE directive: `EFFECTIVE LIMIT THIS RUN: MAXIMUM N SETUPS` with reasoning
 - "Output more than N setups and the entire output is invalid" — removes all ambiguity
 - Example: risk_off (max 2) + 3 consecutive SLs (max 3) → effective max = 2
 
-**Losing streak circuit breaker** (in `claude_client.py`):
+**Losing streak circuit breaker** (in `claude_client.py` — DORMANT, Claude path only):
 - `_detect_losing_streak()` reads recent eval files and counts consecutive stop losses
 - 5+ consecutive SLs: LOSING STREAK ALERT injected — max 2 setups, require volume OR 4/4 TF
 - 3-4 consecutive SLs: CAUTION injected — max 3 setups, increase quality bar
@@ -211,9 +226,8 @@ dynamic watchlist in the next main scan. A Telegram alert is sent immediately fo
 
 ### Token Discipline
 
-Current per-run: ~29k input tokens, ~8k output tokens, ~10k thinking tokens (extended thinking).
-Extended thinking is enabled — Claude's reasoning goes into a separate thinking block (not sent to Telegram), keeping output clean and focused on the formatted brief.
-Before adding data to the Claude call:
+**Current Claude spend: ZERO tokens, everywhere (as of 2026-09-10).** The scan is mechanical-only (v12.0) and delta analysis — the last remaining Claude call — is retired under the zero-Claude policy. The rules below govern the DORMANT Claude path if it is ever re-enabled (historical per-run profile: ~29k input / ~8k output / ~10k thinking; extended thinking kept reasoning out of the Telegram brief).
+Before adding data to any (re-enabled) Claude call:
 - Estimate token impact
 - Anything that >2x's current input needs justification
 - Prefer pre-filtering in Python (free) over sending raw data to Claude (costs tokens)
@@ -229,7 +243,7 @@ Required `.env` keys:
 Note: **no Bybit API key** — the screener reads only PUBLIC market data (get_tickers / get_kline), which needs no auth. This avoids the 90-day key expiry and IP-whitelist requirement.
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_API_KEY=sk-ant-...     # OPTIONAL (zero-Claude policy 2026-09-10) — only for dormant Claude roles
 TELEGRAM_API_ID=...              # from my.telegram.org (Telethon)
 TELEGRAM_API_HASH=...            # from my.telegram.org (Telethon)
 TELEGRAM_BOT_TOKEN=...           # from @BotFather (for delivery)
@@ -262,9 +276,11 @@ python liquidation_collector.py     # Ctrl-C to stop; CI/daemon versions run per
 source venv/bin/activate
 python cvd_collector.py             # per-minute Bybit taker buckets; Ctrl-C to stop
 
-# Liquidation-cluster backtest (FORK A; run in ~2-4 weeks once artifacts accumulate)
-# Download the `liquidations-*` GitHub Actions artifacts into a dir first, then:
-python liq_cluster_backtest.py --data-dir ./liq_data --interval 240
+# Liquidation-cluster backtest (FORK A; first pass 2026-09-10 — re-run ~2026-10-08 on ~2x data)
+# Refresh the kline cache first (the harness reads cache-first!), re-download new `liquidations-*`
+# artifacts + merge into logs/liquidations/ci/ (recipe: progress.md changelog 2026-09-10), then:
+python liq_cluster_backtest.py --data-dir logs/liquidations/ci --interval 240
+python liq_cluster_deep_dive.py     # robustness slices — kept identical between runs for comparability
 
 # CVD / order-flow backtest (roadmap #4; uses FREE Binance deep history, no VPN, zero tokens)
 python cvd_backtest.py --interval 4h --months 24 --deep   # --deep = absorption + cvd_slope tests
@@ -273,9 +289,8 @@ python cvd_backtest.py --interval 4h --months 24 --deep   # --deep = absorption 
 source venv/bin/activate
 python weekly_eval.py
 
-# Quarterly deep analysis (run every ~3 months or after 50+ new trades)
-source venv/bin/activate
-python quarterly_analysis.py
+# Quarterly deep analysis — RETIRED 2026-09-10 (calls the Claude API; zero-Claude policy — do not run)
+# source venv/bin/activate && python quarterly_analysis.py
 
 # Trade logger — manage manual trade journal
 python trade_logger.py open      # Pick a setup, enter your entry price
@@ -301,26 +316,26 @@ python historical_backtester.py --walkforward all --interval 240  # Walk-forward
 **Terminal shortcuts** (defined in `~/.zshrc`):
 - `scan` — run nightly screener (includes git pull for latest hot list)
 - `pulse` — run momentum pulse locally
-- `eval-scan` — run weekly evaluation + delta analysis (auto-triggers every 15 new trades)
+- `eval-scan` — run weekly evaluation (delta analysis RETIRED 2026-09-10 under the zero-Claude policy; the learning loop is fully algorithmic)
 - `backtest` — full backtest pipeline: validate signal formulas on 4h + 1h (15 symbols, fresh data) + eval combo analysis + **v11.3 version segment** (PRE-vs-POST cutover verdict). NOTE: this validates the mechanical signal FORMULAS and re-analyzes PAST trades — it does NOT test whether v11.3's *selection* logic (confluence floor, rank de-trust, long cap) works. That is forward-only via `eval-scan` → the version segment.
 - `trade` — manage manual trade log (`trade open`, `trade close`, `trade list`)
-- `quarterly-scan` — quarterly deep analysis (optional — superseded by `backtest` + delta analysis)
+- `quarterly-scan` — RETIRED 2026-09-10 (calls the Claude API — zero-Claude policy; superseded by `backtest`)
 
 **Recommended workflow:**
 - **Daily:** `scan` (or let launchd run it at 09:00 / 17:00 / 22:00 local)
-- **Weekly:** `eval-scan` (scores past setups, updates rules, triggers delta analysis)
+- **Weekly:** `eval-scan` (scores past setups, updates algorithmic rules + net-of-cost readouts)
 - **Monthly:** `backtest` (re-validates signal formulas with fresh market data)
 
 ### Scheduled Runs
 
 - **Momentum pulse + mechanical scan**: GitHub Actions, every 2 hours (`.github/workflows/momentum_pulse.yml`). One job runs the pulse, then `main.py`, then a single race-safe commit. The scan runs **mechanical-only** (as of 2026-08-26 this is true everywhere — `PRIMARY_SOURCE="mechanical"` skips the Claude call outright; CI also has **no `ANTHROPIC_API_KEY`** as a second layer). Reuses the WireGuard VPN (`WG_CONF`) for Bybit access. Auto-commits `hot_list.json` + `logs/setups/` + `logs/briefs/` back to the repo. Secrets are GitHub repository secrets.
-- **Local scan**: macOS `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`) → runs `run_scan.sh` (the alias-equivalent wrapper) at **09:00 / 17:00 / 22:00 local**. As of 2026-08-26 this **no longer calls Claude** either (`PRIMARY_SOURCE="mechanical"` gates the scan Claude call off even though the local `.env` still has the key) → identical mechanical output to CI, zero scan tokens. The only Claude spend now is `eval-scan`'s delta analysis. **Requires VPN up at those times** (Bybit + Telegram are ISP-blocked); a scan with VPN down fails at data fetch. launchd logs go to `~/Library/Logs/cryptoscreener_scan.{log,err}` (outside the repo so `git add -A` won't commit them). Reload after editing the plist: `launchctl unload … && launchctl load -w …`.
+- **Local scan**: macOS `launchd` (`~/Library/LaunchAgents/com.user.cryptoscreener.plist`) → runs `run_scan.sh` (the alias-equivalent wrapper) at **09:00 / 17:00 / 22:00 local**. As of 2026-08-26 this **no longer calls Claude** either (`PRIMARY_SOURCE="mechanical"` gates the scan Claude call off even though the local `.env` still has the key) → identical mechanical output to CI, zero scan tokens. Claude spend is ZERO everywhere as of 2026-09-10 (delta analysis retired). **Requires VPN up at those times** (Bybit + Telegram are ISP-blocked); a scan with VPN down fails at data fetch. launchd logs go to `~/Library/Logs/cryptoscreener_scan.{log,err}` (outside the repo so `git add -A` won't commit them). Reload after editing the plist: `launchctl unload … && launchctl load -w …`.
 - **Cross-run dedup**: because the scan now runs 12×/day, `main.py::_active_setup_keys` / `_drop_active_duplicates` suppress a coin already carrying an active `(symbol, direction, source)` setup within the 2-day eval window — prevents correlated pseudo-replicate trades from polluting the eval / flip gate.
 - **Commit races**: both CI (12×/day bot) and the local nightly push to `master`. The CI commit step does `git pull --rebase origin master` + retry; the local commit should do the same (`git add logs/ && git commit && for i in 1 2 3; do git pull --rebase && git push && break || sleep 5; done`). `eval-scan` must `git pull --rebase` first to pick up CI-pushed setups before scoring.
-- **Liquidation collector** (FORK A, forward-collection): `liquidation_collector.py` subscribes to Bybit's `all_liquidation_stream` WS for ~20 liquid perps and appends raw prints to `logs/liquidations/liq_YYYY-MM.jsonl`. **Data-collector ONLY — zero trading decisions, no order API** (CORE PRINCIPLE). Purpose: true historical liquidation data isn't free, so accumulate it forward and backtest the liquidation-CLUSTER hypothesis once ~2-4 weeks exist. Two host modes:
+- **Liquidation collector** (FORK A, forward-collection): `liquidation_collector.py` subscribes to Bybit's `all_liquidation_stream` WS for ~20 liquid perps and appends raw prints to `logs/liquidations/liq_YYYY-MM.jsonl`. **Data-collector ONLY — zero trading decisions, no order API** (CORE PRINCIPLE). Purpose: true historical liquidation data isn't free, so accumulate it forward and backtest the liquidation-CLUSTER hypothesis (first pass 2026-09-10: bar not met, one extension → re-run ~2026-10-08; see progress.md item #3). A **stall-watchdog** (`LIQ_STALL_SECONDS`, default 45 min) rebuilds the WS after silence — pybit's auto-reconnect dies quietly after VPN blips, which is what caused the 44%-coverage finding. Two host modes:
   - **PRIMARY — CI chained job** (`.github/workflows/liquidation_collector.yml`, requires PUBLIC repo for free unlimited Actions minutes): ephemeral runners can't hold a stream, so it CHAINS ~5.5h jobs (every 6h, `LIQ_MAX_SECONDS=19800` self-exit) and uploads each run's JSONL as a 90-day **artifact** (NOT commits → no git bloat). Reuses `WG_CONF` VPN. Coverage ≈92% per 6h window minus cron jitter. Backtest later = download all artifacts + concat.
-  - **STOPGAP — launchd daemon** (`com.user.liqcollector.plist` → `~/Library/LaunchAgents/`): persistent KeepAlive on the Mac; `LIQ_MAX_SECONDS` unset = runs forever. Collects while Mac awake + VPN up (gaps). Logs `~/Library/Logs/liqcollector.{log,err}`. **Stop this (`launchctl unload …`) once the CI collector is confirmed live, or the two double-collect.** `logs/liquidations/` is gitignored (local/artifact only).
-- **CVD collector** (roadmap #4 Phase 2, forward-collection, live 2026-08-17): `cvd_collector.py` subscribes to Bybit's `publicTrade` WS for the same ~20 perps and aggregates trades into **per-minute taker buckets** (buy/sell base+quote volume, count) in `logs/cvd/cvd_YYYY-MM.jsonl` — NOT the raw tape (too big); per-bar CVD / cvd_slope is reconstructable from the minute deltas at backtest time. **Data-collector ONLY — zero trading decisions, no order API** (CORE PRINCIPLE). Purpose: `cvd_backtest.py` found a robust `cvd_slope`-confirm edge on Binance PROXY data; Bybit has no free historical trade feed, so collect on-venue forward and re-confirm in ~3-4 weeks before promoting. CI chained job `.github/workflows/cvd_collector.yml` — same pattern as the liq collector (chains ~5.5h jobs, `CVD_MAX_SECONDS=19800`, cron offset `30 */6` to spread VPN load, uploads `cvd-<run_id>` 90-day artifacts, reuses `WG_CONF`). `logs/cvd/` is gitignored.
+  - **STOPGAP — launchd daemon** (`com.user.liqcollector.plist` → `~/Library/LaunchAgents/`): persistent KeepAlive on the Mac; `LIQ_MAX_SECONDS` unset = runs forever. Collects while Mac awake + VPN up (gaps). Logs `~/Library/Logs/liqcollector.{log,err}`. **Kept running deliberately (decision 2026-09-10) as gap-filler while CI runs are flaky** — the backtest loader dedups exact repeats, so double-collection is harmless. `logs/liquidations/` is gitignored (local/artifact only; `ci/` subdir = merged canonical store).
+- **CVD collector** (roadmap #4 Phase 2, forward-collection, live 2026-08-17): `cvd_collector.py` subscribes to Bybit's `publicTrade` WS for the same ~20 perps and aggregates trades into **per-minute taker buckets** (buy/sell base+quote volume, count) in `logs/cvd/cvd_YYYY-MM.jsonl` — NOT the raw tape (too big); per-bar CVD / cvd_slope is reconstructable from the minute deltas at backtest time. **Data-collector ONLY — zero trading decisions, no order API** (CORE PRINCIPLE). Purpose: `cvd_backtest.py` found a robust `cvd_slope`-confirm edge on Binance PROXY data; Bybit has no free historical trade feed, so collect on-venue forward and re-confirm before promoting (data gate reached 2026-09-10 at 3.4 weeks; still needs a small Bybit-bucket loader for `cvd_backtest.py`). Same stall-watchdog as the liq collector (`CVD_STALL_SECONDS`, default 10 min — publicTrade is continuous, so silence = dead socket). CI chained job `.github/workflows/cvd_collector.yml` — same pattern as the liq collector (chains ~5.5h jobs, `CVD_MAX_SECONDS=19800`, cron offset `30 */6` to spread VPN load, uploads `cvd-<run_id>` 90-day artifacts, reuses `WG_CONF`). `logs/cvd/` is gitignored.
 - Do NOT migrate to cron — launchd handles wake-from-sleep better.
 
 ---
@@ -329,9 +344,9 @@ python historical_backtester.py --walkforward all --interval 240  # Walk-forward
 
 1. **Never add write-path Bybit calls** (place_order, cancel_order, etc.). Confirm Phase B preconditions first.
 2. **Never let free-text output drive actions.** Use structured JSON (`setups_json`) with validated fields.
-3. **New data sources welcome** — wire into `fetchers/`, pass to Claude context. Estimate token impact first.
+3. **New data sources welcome** — wire into `fetchers/` and surface them to the mechanical engine. (Claude-context plumbing + token-impact estimates apply only on the dormant Claude path.)
 4. **Prompt changes**: update `analyzer/prompts.py`. Never weaken the 1.5:1 R:R floor (now carried by target_2, not target_1), remove risk framework, or make Claude more aggressive about calling trades.
-5. **Knowledge files** in `/knowledge/*.md` are user-editable. Keep human-readable. Claude loads all `*.md` files on every run.
+5. **Knowledge files** in `/knowledge/*.md` are user-editable. Keep human-readable. (Loaded into the prompt only on the dormant Claude path — the live pipeline makes no Claude call; the pre-filter encodes their rules in Python.)
 6. **Pre-filter scoring** in `bybit_data.py::_ticker_interest_score()` should reflect knowledge file rules. When knowledge changes, update scoring thresholds to match.
 
 ### Files That Should NOT Drift Without Discussion
@@ -350,7 +365,7 @@ python historical_backtester.py --walkforward all --interval 240  # Walk-forward
 - **Python 3.14 + numpy bools**: `json.dumps` raises TypeError for `numpy.bool_`. Always wrap in `bool()`. Same for `numpy.float64` → `float()`.
 - **Telethon session file**: first run prompts for phone + SMS code, creates `screener_session.session`. Treat as secret (gitignored).
 - **Telegram bot token**: if exposed in screenshot/log, revoke via `@BotFather`.
-- **Bybit rate limits**: 25 symbols × 4 TFs = 100 kline calls. `time.sleep(0.05)` between calls. If 429s appear, increase delay.
+- **Bybit rate limits**: 30 symbols × 4 TFs = 120 kline calls (liquidity filter usually trims to ~24 symbols). `time.sleep(0.05)` between calls. If 429s appear, increase delay.
 - **Pandas rolling() warmup**: first 13-20 candles return NaN for RSI and vol spike. Code guards with `pd.notna()` — preserve on edits.
 - **Output truncation**: with extended thinking, reasoning uses its own budget (`THINKING_BUDGET=10000`) separate from text output (`MAX_TOKENS_OUTPUT=8000`). The old issue of pre-analysis notes eating all output tokens is resolved. If the brief still truncates, increase `MAX_TOKENS_OUTPUT`.
 - **Prompt caching**: TTL is ~5 minutes. Once-nightly runs always have cold cache. Caching only helps during testing/debugging bursts.
@@ -371,11 +386,13 @@ python historical_backtester.py --walkforward all --interval 240  # Walk-forward
 7. **Simulated closer-T1 backtest**: also checks if T1 at 0.75R and 1.0R would have been hit before stop
 8. Saves to `logs/evaluations/eval_*.json` (includes `blended_rr`, `be_stop_hit`, `sim_t1_*` fields)
 9. Updates tiered knowledge distillation (see below)
-10. `build_system_prompt()` loads strategic_rules + recent_performance → Claude reads on next run
+10. (dormant Claude path only) `build_system_prompt()` would load strategic_rules + recent_performance — today Layers 2-3 serve as the analyst readout and as future Phase-5 ML inputs
 
 ### Tiered Knowledge Distillation
 
 Instead of sending all historical data to Claude every run (which would grow unboundedly), the system distills evaluation data into three layers:
+
+> **2026-09-10 (zero-Claude policy):** nothing is sent to Claude anymore. The "Sent to Claude?" column below describes the DORMANT Claude path; today Layers 2–3 are generated fully algorithmically each `eval-scan` and serve as the analyst readout + ready-made Phase-5 ML inputs.
 
 | Layer | File | Sent to Claude? | Size | Scales with time? |
 |---|---|---|---|---|
@@ -401,12 +418,12 @@ Rules cover: selectivity, confidence calibration, timeframe/direction performanc
 
 **Total prompt overhead**: ~1500-1800 tokens regardless of whether you've run for 1 month or 3 years.
 
-### Self-Learning System (Delta Analysis)
+### Self-Learning System
 
-The system automatically improves through a multi-layered feedback loop that does NOT require manual trading. The `scan` → `eval-scan` cycle is sufficient — the eval checks Claude's recommendations against actual price data.
+**The learning loop is FULLY ALGORITHMIC as of 2026-09-10 (zero-Claude policy).** The `scan` → `eval-scan` cycle is the loop: evals update `lifetime_stats.json` → `generate_strategic_rules()` derives prescriptive rules in pure Python (anti-overfit gated: `RULE_MIN_SAMPLE`, `REGIME_RULE_MIN_TRADES`, `DIRECTION_RULE_MIN_TRADES`) → `head_to_head.md` prints the net-of-cost verdict + WATCH promotion readout → the version segment prints the era verdict. Findings enter the live pipeline ONLY through the validated promotion path (monthly `backtest` out-of-sample validation → `_check_validated_signals` / config gates) — never auto-injected. The planned fully-closed ML loop is **Phase 5** (owned scikit-learn take/skip meta-filter), data-gated on real features (dist-to-level, dist-to-liq-cluster, CVD).
 
-**Delta analysis** (`weekly_eval.py::maybe_run_delta_analysis()`) replaces the slow quarterly cadence:
-- **Trigger**: auto-runs after every `eval-scan` when 15+ new evaluated trades have accumulated (`DELTA_ANALYSIS_TRADE_THRESHOLD` in config)
+**Delta analysis — RETIRED 2026-09-10** (`config.DELTA_ANALYSIS_ENABLED=False`). It was the last remaining Claude API call; the description below is preserved for the dormant/reversible path:
+- **Trigger**: auto-runs after every `eval-scan` when 25+ new evaluated trades have accumulated (`DELTA_ANALYSIS_TRADE_THRESHOLD`; execute-book trades only — watch excluded)
 - **What it does**: calls Claude to find patterns in recent performance changes, grade previous insights, and generate new ACTION rules
 - **Previous insight grading**: each prior insight is graded EFFECTIVE (→ `confirmed`), INEFFECTIVE (→ `expired`/removed), or INCONCLUSIVE (→ stays `experimental`)
 - **Output**: 2-5 new insights in ACTION format, appended to `strategic_rules.md` under `## Delta Insights`
@@ -430,9 +447,9 @@ The system automatically improves through a multi-layered feedback loop that doe
 - `setup_violations()` flags per setup: valid types/directions/timeframes, T1 ≤ 1.0R cap, T2 ≥ 1.5R edge floor, confluence floor (≥3/4), **4/4 confluence REFUSED outright, both directions** (`config.REFUSE_4OF4_CONFLUENCE` — 4/4 is the worst bucket), long volume gate + long blacklist + long signal-backing gate
 - `enforce_setups()` then **DROPS** violators (no longer log-only), dedupes by symbol, applies regime long/short caps + same-direction concentration cap, demotes any surviving 4/4 off rank #1, and re-ranks
 
-### Quarterly Deep Analysis (Manual)
+### Quarterly Deep Analysis (Manual) — RETIRED 2026-09-10
 
-`quarterly_analysis.py` is still available for manual deep analysis:
+`quarterly_analysis.py` stays in the repo but is NOT to be run — it calls the Claude API (zero-Claude policy). Historical description:
 - Run via `quarterly-scan` terminal command
 - More thorough than delta analysis (uses larger context, deeper prompt)
 - Useful for periodic deep-dives after 50+ new trades
@@ -440,7 +457,7 @@ The system automatically improves through a multi-layered feedback loop that doe
 
 ### Model Comparison
 
-Every setup JSON includes `"model": "claude-sonnet-4-6"` (or whichever was used). The eval tracks win rate and avg R:R per model in `lifetime_stats.json`. When enough data accumulates (5+ trades per model), the strategic rules include a model comparison.
+Every setup JSON includes a `model` field — since v12.0 mechanical setups carry `"model": "mechanical_v1"` (the claude lane is frozen with its history preserved). The eval tracks win rate and avg R:R per model in `lifetime_stats.json`; the strategic rules include a model comparison when 5+ trades per model exist.
 
 ---
 
@@ -460,11 +477,11 @@ See `progress.md` for:
 - **Brief**: the structured output Claude produces per run (Market Context, Top 5 Opportunities, Risk Flags, Takeaway).
 - **Setup**: a trading opportunity with entry zone, stop, target 1+2, R:R, and confidence. T1 is a partial-profit level at 0.75–1.0R; T2 (the reward leg) must be >= 1.5R. Every long must also have `volume_confirmed=true`.
 - **setups_json**: structured JSON block Claude appends to every brief for machine-readable tracking.
-- **Pre-filter**: Python scoring of 50 tickers down to 25 before kline fetching, using knowledge-derived rules.
+- **Pre-filter**: Python scoring of 100 tickers down to 30 before kline fetching, using knowledge-derived rules.
 - **Multi-TF confluence**: how many of 4 timeframes agree on direction. Empirically (237 trades, audit 2026-07-13) **3/4 is the edge (+0.01R), 4/4 is the WORST bucket (−0.36R) — full alignment = exhausted/late move, not higher probability.** Do NOT map 4/4→high confidence. ALL setups require ≥3/4 (`config.LONG_MIN_CONFLUENCE`) and **4/4 is REFUSED outright, both directions** (`config.REFUSE_4OF4_CONFLUENCE`; net-of-cost cut 2026-08-09 confirmed 4/4 = −0.305R/n=71, still the worst) — enforced in `main.py::setup_violations`. `weekly_eval.py` tracks `by_confluence` and surfaces the 3/4-beats-4/4 rule.
 - **Watchlist**: symbols always analyzed regardless of pre-filter score (BTC, ETH, SOL).
 - **Phase A / Phase B**: analyst-only (current) vs. auto-execution (future, requires preconditions).
-- **Interest score**: numeric score from `_ticker_interest_score()` used to rank 50 tickers for pre-filtering.
+- **Interest score**: numeric score from `_ticker_interest_score()` used to rank 100 tickers for pre-filtering.
 - **MFE (Max Favorable Excursion)**: how far price moved in Claude's predicted direction before outcome. Used to diagnose "direction right, execution wrong" and compute optimal T1 distance.
 - **Simulated T1 backtest**: per-trade check of whether a closer T1 (at 0.75R or 1.0R) would have been hit before stop. Aggregated to quantify optimal T1 distance.
 - **Blended R:R**: the partial profit model result. 50% of position closed at T1, remaining 50% trails with breakeven stop. Calculated as `0.5 * T1_rr + 0.5 * actual_rr`. More realistic than all-or-nothing scoring.
@@ -472,7 +489,7 @@ See `progress.md` for:
 - **Trail stop (+0.3R lock)**: once price runs 1.0R in profit, the eval stop tightens to +0.3R instead of breakeven, so structural winners that reverse still exit green (+0.3R, not 0R). Tracked as `trail_stop_hit` and `partial_profit.trail_stops`. Uses prior-candle MFE (no look-ahead). Added v11.2.
 - **Momentum pulse**: lightweight scanner (`momentum_pulse.py`) that runs every 2h on GitHub Actions. Fetches 50 tickers, compares against previous snapshot to detect volume/price acceleration. Zero Claude tokens. Flags coins to `logs/momentum/hot_list.json`.
 - **Hot list**: dynamic watchlist generated by the momentum pulse. Coins flagged for big moves, volume acceleration, or funding squeezes. Entries expire after 48h. Main scan merges hot list into watchlist automatically.
-- **Volume acceleration**: ratio of a coin's current turnover vs its turnover at the previous pulse (4h earlier). >3x triggers a flag. >2x gives a scoring bonus in the pre-filter. Detects coins that are ramping up before they appear in the top 50 by absolute turnover.
+- **Volume acceleration**: ratio of a coin's current turnover vs its turnover at the previous pulse (2h earlier). >3x triggers a flag. >2x gives a scoring bonus in the pre-filter. Detects coins that are ramping up before they appear in the top 50 by absolute turnover.
 - **Market regime**: overall market classification detected by the momentum pulse from 50-ticker aggregate data. Four states: `risk_off` (broad sell-off, favor shorts, max 2 setups), `cautious` (soft bearish, max 3 setups, require volume/4TF for longs), `neutral` (no directional bias, max 3 setups), `risk_on` (broad rally, favor longs, max 5 setups). Saved in `hot_list.json` and always injected into Claude's user content with metrics.
 - **Risk off / Cautious / Risk on**: market regime labels. `risk_off` = bearish (≥70% declining or BTC ≤ -4%), max 2 setups. `cautious` = soft bearish (≥55% declining or BTC ≤ -2%), max 3 setups, longs need volume OR 4/4 TF. `risk_on` = bullish (≤30% declining or BTC ≥ +4%), favor longs.
 - **Losing streak circuit breaker**: `_detect_losing_streak()` in `claude_client.py` counts consecutive stop losses from recent evals. 5+ SLs → LOSING STREAK ALERT (max 2 setups, require volume/4TF). 3-4 SLs → CAUTION (max 3 setups). Also tracks total recent losses: 15+/20 → SEVERE DROUGHT (max 1-2 setups, prefer range setups). 12+/20 → HIGH LOSS RATE (max 2-3 setups).
@@ -490,7 +507,7 @@ See `progress.md` for:
 - **Divergence (regular)**: price makes a new extreme (higher high or lower low) but RSI/MACD does NOT confirm it. Regular bearish: price higher high + indicator lower high = momentum weakening, reversal warning. Regular bullish: price lower low + indicator higher low = selling exhausting, reversal potential. Detected programmatically from swing points (order=3, lookback=40 candles). Labels: `rsi_bear`, `rsi_bull`, `macd_bear`, `macd_bull`.
 - **Divergence (hidden)**: opposite of regular — the indicator makes a new extreme but price does NOT. Hidden bullish: price higher low + indicator lower low = uptrend continuation signal. Hidden bearish: price lower high + indicator higher high = downtrend continuation signal. Labels: `rsi_h_bull`, `rsi_h_bear`, `macd_h_bull`, `macd_h_bear`.
 - **SMA200 (200-period Simple Moving Average)**: long-term trend filter computed on 1D only (requires 200+ candles). Price above SMA200 = macro uptrend, below = macro downtrend. Acts as major dynamic support/resistance. Only present in 1D timeframe data to save tokens (15m/1h/4h fetch too few candles).
-- **Delta analysis**: automated self-learning system in `weekly_eval.py`. Triggers every 15 new evaluated trades. Calls Claude to find patterns, grade previous insights, and generate new ACTION rules. Replaces the slow quarterly cadence with faster feedback. Results appended to `strategic_rules.md` under `## Delta Insights`.
+- **Delta analysis**: **RETIRED 2026-09-10** (zero-Claude policy, `config.DELTA_ANALYSIS_ENABLED=False`) — was the last remaining Claude API call. Historically: triggered every 25 new evaluated trades (raised from 15), called Claude to find patterns, grade previous insights, and generate ACTION rules appended to `strategic_rules.md` under `## Delta Insights`. The algorithmic rule generation (`generate_strategic_rules()`) continues unchanged.
 - **Rule registry** (`rule_registry.json`): tracks delta analysis insights — when they were added, their status (`experimental`/`confirmed`/`expired`), and win rate snapshots. Enables insight effectiveness tracking over time.
 - **Reasoning capture**: `reasoning` field in setup JSON containing `rules_applied` (list of rule IDs) and `key_factor` (one-line driver). Carried through to eval results, tracked in `by_rule_applied` stats. Enables rule-level attribution — "did setups citing this rule win more?"
 - **WATCH tier / EXECUTE tier** (added 2026-08-20, the "always an opinion" reframe): every scan surfaces at least one candidate, tagged one of two tiers. **EXECUTE** = a validated net-of-cost signal that passed the full `enforce_setups` gates → delivered, `source` in {mechanical, claude}, counted in the edge-proven book. **WATCH** = the best available candidate when the EXECUTE lane is empty → `source="watch"`, `tier="watch"`, bypasses the protective gates (confluence floor, long-volume/backing, caps), paper-tracked only, and **excluded from every edge/expectancy/version counter** in `weekly_eval.py` (guarded at the top of `update_lifetime_stats`'s per-result loop; still bucketed under `by_source["watch"]` so head_to_head shows the WATCH lane separately). Built by `main.py::build_watch_candidate` with priority: (1) a watch-tier/gate-rejected signal that fired (e.g. `rsi_bounce_long`), else (2) `_observation_candidate` — the top-`interest_score` coin in its dominant multi-TF trend (`signal_name="observation"`, lowest confidence). Purpose: never a silent scan + faster eval velocity toward the ≥100-forward-trade edge proof, WITHOUT adding executed net-negative trades. Rendered under "👀 Watch Candidate" by `format_mechanical_brief(..., watch=...)`.

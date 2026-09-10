@@ -90,6 +90,16 @@ REGIME_BULLISH_COMBO_BTC = 3.0
 DIRECTION_RULE_MIN_TRADES = 15
 
 # === Self-Learning (Delta Analysis) Settings ===
+# RETIRED 2026-09-10 (zero-Claude policy): the project no longer makes ANY Claude
+# API call — delta analysis was the last one. The learning loop is now fully
+# algorithmic: eval-scan → lifetime_stats → generate_strategic_rules() (pure
+# Python, anti-overfit gated) + head_to_head net-of-cost verdict + version
+# segments + WATCH promotion readout → findings promoted ONLY through the
+# validated pipeline (monthly `backtest` out-of-sample validation → config/signal
+# changes), never auto-injected. Phase 5 (owned scikit-learn meta-filter) is the
+# planned fully-closed ML loop, data-gated. Flip to True to re-enable the old
+# Claude-based delta analysis (requires ANTHROPIC_API_KEY).
+DELTA_ANALYSIS_ENABLED = False
 DELTA_ANALYSIS_TRADE_THRESHOLD = 25  # Trigger delta analysis after N new evaluated trades (raised 15→25 to cut overfit)
 DELTA_ANALYSIS_MIN_TRADES = 20       # Minimum total trades before first delta analysis
 

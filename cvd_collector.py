@@ -105,22 +105,27 @@ def _flush(final=False):
     return len(lines)
 
 
-def main():
-    print(f"[cvd] starting collector for {len(SYMBOLS)} symbols -> {LOG_DIR}",
-          flush=True)
-    try:
-        ws = WebSocket(testnet=False, channel_type="linear")
-    except Exception as e:
-        print(f"[cvd] WS connect failed (VPN down?): {type(e).__name__}: {e}",
-              flush=True)
-        sys.exit(1)  # launchd/CI will retry
-
+def _connect():
+    """Build the WS and subscribe every symbol's publicTrade stream."""
+    ws = WebSocket(testnet=False, channel_type="linear")
     for sym in SYMBOLS:
         try:
             ws.trade_stream(symbol=sym, callback=_handle)
         except Exception as e:
             print(f"[cvd] subscribe {sym} failed: {type(e).__name__}: {e}",
                   flush=True)
+    return ws
+
+
+def main():
+    print(f"[cvd] starting collector for {len(SYMBOLS)} symbols -> {LOG_DIR}",
+          flush=True)
+    try:
+        ws = _connect()
+    except Exception as e:
+        print(f"[cvd] WS connect failed (VPN down?): {type(e).__name__}: {e}",
+              flush=True)
+        sys.exit(1)  # launchd/CI will retry
 
     def _bye(*_):
         n = _flush(final=True)
@@ -137,11 +142,40 @@ def main():
     start = time.time()
     last_hb = 0
 
-    # pybit runs the socket on its own thread + auto-reconnects. This thread
-    # flushes completed minutes every 30s and heartbeats every 15min.
+    # Watchdog (2026-09-10, ported from liquidation_collector): pybit's
+    # auto-reconnect can die QUIETLY after a VPN blip (socket gone, no
+    # exception raised), leaving a zombie that collects nothing — the liq
+    # artifact audit measured only 44% hour coverage from exactly this mode.
+    # publicTrade on 20 liquid perps flushes minute-buckets continuously, so
+    # if nothing is written for CVD_STALL_SECONDS the socket is dead: rebuild.
+    try:
+        stall_s = int(os.environ.get("CVD_STALL_SECONDS", "600") or "0")
+    except ValueError:
+        stall_s = 600
+    prev_written, last_progress = _written, time.time()
+
+    # pybit runs the socket on its own thread. This thread flushes completed
+    # minutes every 30s and heartbeats every 15min.
     while True:
         time.sleep(30)
         _flush()
+        now = time.time()
+        if _written != prev_written:
+            prev_written, last_progress = _written, now
+        elif stall_s and now - last_progress >= stall_s:
+            print(f"[cvd] no buckets written for {int(now - last_progress)}s — rebuilding WS",
+                  flush=True)
+            try:
+                ws.exit()
+            except Exception:
+                pass
+            try:
+                ws = _connect()
+            except Exception as e:
+                print(f"[cvd] reconnect failed (VPN down?): {type(e).__name__}: {e}",
+                      flush=True)
+                sys.exit(1)  # launchd/CI-cron retries
+            last_progress = now
         if max_s and time.time() - start >= max_s:
             n = _flush(final=True)
             print(f"[cvd] max_seconds={max_s} reached — clean exit "
