@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260908_0836",
+  "run_timestamp_utc": "2026-09-08T08:36:50.764358+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-10T09:32:27.122051+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 94.02,
+      "exit_price": 93.022143,
+      "exit_reason": "target_2",
+      "target_1_hit": true,
+      "target_2_hit": true,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 1.83,
+      "blended_rr": 1.24,
+      "won": true,
+      "max_favorable_rr": 3.44,
+      "candles_to_exit": 7,
+      "risk_pct": 0.005785,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.2976,
+      "net_rr": 1.532,
+      "net_blended_rr": 0.942,
+      "won_net": true,
+      "symbol": "CLUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "failed_breakout_short",
+      "signal_name": "failed_breakout_short"
+    }
+  ]
+}

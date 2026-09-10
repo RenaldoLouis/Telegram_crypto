@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260908_0306",
+  "run_timestamp_utc": "2026-09-08T03:06:20.026081+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-10T09:32:26.809671+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.008648,
+      "exit_price": 0.006955,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.68,
+      "candles_to_exit": 169,
+      "risk_pct": 0.195768,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0114,
+      "net_rr": -1.011,
+      "net_blended_rr": -1.011,
+      "won_net": false,
+      "symbol": "HEMIUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "neutral",
+      "interest_score": 12.0,
+      "source": "watch",
+      "backtested_signal": "rsi_bounce_long",
+      "signal_name": "rsi_bounce_long"
+    }
+  ]
+}
