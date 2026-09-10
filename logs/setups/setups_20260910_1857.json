@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-10T18:57:14.335968+00:00",
+  "run_tag": "20260910_1857",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "BZUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 103.6165,
+      "entry_high": 104.0635,
+      "stop_loss": 105.6125,
+      "target_1": 102.510625,
+      "target_2": 100.295,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 104.5000, RSI 72.0"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "risk_off",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.23,
+          "rsi": 72.01,
+          "macd": 1.582764,
+          "macd_hist": 0.443575,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.84,
+          "range_pct": 8.79
+        },
+        "tf_1h": {
+          "adx": 28.34,
+          "rsi": 73.44,
+          "macd": 1.297955,
+          "macd_hist": 0.40725,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.99,
+          "range_pct": 6.73
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
