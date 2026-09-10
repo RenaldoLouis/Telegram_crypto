@@ -455,6 +455,11 @@ def run_evaluation():
                 # Claude-only records have no source → default "claude". audit 2026-07-21
                 result["source"] = setup.get("source", "claude")
                 result["backtested_signal"] = setup.get("entry_indicators", {}).get("backtested_signal")
+                # Which mechanical signal produced the setup — the WATCH-lane
+                # promotion readout keys on this (observation candidates carry
+                # "observation"; Claude-lane setups have none). Fixed 2026-09-10:
+                # this was never copied, so the watch table showed one "(unknown)" row.
+                result["signal_name"] = setup.get("signal_name")
                 eval_results.append(result)
 
                 status = result["status"]
@@ -626,7 +631,9 @@ def generate_head_to_head(all_evals):
         # It DOES get its own per-signal promotion table (below): a watch signal that
         # earns net-of-cost expectancy is a candidate to promote into the EXECUTE book.
         if src == "watch":
-            by_watch_signal.setdefault(r.get("signal_name", "(unknown)"), []).append(r)
+            by_watch_signal.setdefault(
+                r.get("signal_name") or r.get("backtested_signal") or "(unknown)", []
+            ).append(r)
             continue
         key = "signal_backed" if r.get("backtested_signal") else "discretionary"
         by_backed.setdefault(key, []).append(r)

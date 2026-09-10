@@ -151,19 +151,28 @@ class BybitFetcher:
     def _check_validated_signals(candles, tf_label):
         """Check validated signal formulas against candle data.
 
-        Passed out-of-sample train/test validation on 15 symbols (Jul 29 2026 re-run):
-          - rsi_rejection_short : 1h ONLY (★ STRONG, test +0.17). 4h DROPPED —
-                                   degraded to overfit on the Jul 29 re-run.
-          - trend_pullback_short: 4h ONLY (1h rejected as overfit)
-          - failed_breakout_short: 4h ONLY (Phase 3; 1h only marginal) — trades a
-                                    failed breakout of the prior 20-candle high.
-          - liquidity_sweep_long: confirmed BOTH 1h + 4h (100% robust each) — a
-                                   wick sweeps the prior 20-candle low then reclaims.
-          - rsi_bounce_long     : 4h, tier="watch" (2026-08-20 re-run: gross +0.108R
-                                   / N=20 / 100% robust, but net-marginal after cost —
-                                   surfaced + paper-tracked, NOT executed).
-        macd_momentum_long REMOVED (Jul 29) — degraded to overfit on BOTH TFs.
-        macd_momentum_short removed earlier — same reason.
+        Passed out-of-sample train/test validation on 15 symbols (monthly re-check;
+        last re-validation 2026-09-10):
+          EXECUTE tier:
+          - trend_pullback_short: 4h ONLY (1h rejected as overfit; Sep 10: holds,
+                                   top combo test +0.037 gross / 100% robust — thin)
+          - failed_breakout_short: 4h ONLY (Sep 10: holds, test +0.096 / 67% robust)
+          - liquidity_sweep_long: confirmed BOTH 1h + 4h again on Sep 10 (1h clean
+                                   +0.098 / 100% robust) — the only long signal.
+          WATCH tier (surfaced + paper-tracked, NEVER executed/counted):
+          - rsi_bounce_long       : 4h (2026-08-20: gross-positive, net-marginal)
+          - range_reversion_short : 4h (Sep 10: ★ +0.250 gross / N=30 / 100% robust —
+                                     reject→strong flip needs a 2nd consecutive pass)
+          - range_reversion_long  : 4h (Sep 10: ★ +0.196 gross / N=23 / 100% robust —
+                                     same 2nd-pass gate; long-side coverage candidate)
+        REMOVED:
+          - rsi_rejection_short 1h — REMOVED 2026-09-10: failed the monthly re-val
+            (all top combos test-negative on fresh 1h data). Its 4h variant flipped
+            to ★ STRONG (+0.283/N=82/100%) after being dropped Jul 29 — a flip-flop,
+            so it is a promotion candidate ONLY after a 2nd consecutive monthly pass
+            (also pairs with the CVD slope-confirm fork).
+          - macd_momentum_long/short — removed Jul 29 and earlier; passed again
+            Sep 10 on one TF each but stay out (repeat flip-floppers).
         Only called for 1h and 4h.
 
         Returns list of signal dicts (empty if none fire).
@@ -221,23 +230,13 @@ class BybitFetcher:
         if c["atr"] <= 0:
             return []
 
-        # --- Signal 1: RSI Rejection Short (1h ONLY) ---
-        # RSI was >75 (overbought), now crossing back down. Exhaustion reversal.
-        # Validated (Jul 29 2026 re-run): 1h ★ STRONG (test +0.17, 100% robust).
-        # 4h DROPPED — the 4h variant degraded to overfit/marginal on this re-run.
-        if (tf_label == "1h" and
-            pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
-            p2["rsi"] > 75 and p["rsi"] > 70 and
-            c["rsi"] < 72 and c["rsi"] > 50 and c["rsi"] < p["rsi"]):
-            signals.append({
-                "signal": "rsi_rejection_short",
-                "tf": tf_label,
-                "direction": "short",
-                "target_r": 2.0,
-                "stop_atr": 2.0,
-                "indicators": f"RSI {c['rsi']:.1f} (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
-                "historical": "+0.17 expect (1h test, 100% robust)",
-            })
+        # --- Signal 1: RSI Rejection Short — REMOVED 2026-09-10 ---
+        # Was live on 1h (Jul 29: ★ STRONG). The Sep 10 monthly re-validation
+        # FAILED it on fresh 1h data (every top combo test-negative, best -0.08)
+        # while the 4h variant flipped back to ★ STRONG — a TF flip-flop. Per the
+        # drift rule the 1h gate is removed; the 4h variant is a promotion
+        # candidate only after a 2nd consecutive monthly pass (it also pairs with
+        # the CVD slope-confirm fork, which was validated on the 4h variant).
 
         # --- Signal 2: Liquidity Sweep Long (1h + 4h) ---
         # A lower wick pierces the prior 20-candle low by >=0.15 ATR (a stop-hunt),
@@ -344,6 +343,60 @@ class BybitFetcher:
                 "indicators": f"RSI {c['rsi']:.1f} bouncing (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
                 "historical": "+0.11 expect GROSS (4h test N=20, 100% robust); net-marginal → watch",
             })
+
+        # --- Signals 6+7: Range Reversion Short / Long (WATCH tier, 4h) ---
+        # Ranging market (low ADX) + RSI extreme at the edge of the 20-candle
+        # range → fade back toward the middle. Both were REJECTED in earlier
+        # re-runs and came back ★ STRONG on the 2026-09-10 monthly re-validation
+        # (short: test +0.250 GROSS / N=30 / 100% robust; long: +0.196 / N=23 /
+        # 100% robust — 1h overfit, so 4h only). A reject→strong flip needs a
+        # SECOND consecutive monthly pass before EXECUTE promotion, so both ship
+        # tier="watch" (surfaced + paper-tracked, excluded from the edge book).
+        # The long doubles as long-side coverage (liquidity_sweep_long rarely fires).
+        # high_20/low_20/range_pct mirror the backtester: rolling 20 INCLUDING the
+        # current candle; range_pct = (high_20 - low_20) / close * 100.
+        if tf_label == "4h":
+            high_20 = float(df["high"].iloc[-20:].max())
+            low_20 = float(df["low"].iloc[-20:].min())
+            close = float(c["close"])
+            atr = float(c["atr"])
+            range_pct = (high_20 - low_20) / close * 100 if close > 0 else 0.0
+            # short @ range top — validated params: rsi>70, adx<25, range>=5.0%,
+            # close within 1.0% of high_20, stop high_20 + 0.7 ATR, target 1.5R
+            if (c["adx"] < 25 and c["rsi"] > 70 and range_pct >= 5.0 and
+                    close >= high_20 * 0.99):
+                stop_price = high_20 + 0.7 * atr
+                risk = stop_price - close
+                if risk > 0:
+                    signals.append({
+                        "signal": "range_reversion_short",
+                        "tf": tf_label,
+                        "direction": "short",
+                        "target_r": 1.5,
+                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
+                        "stop_price": round(stop_price, 8),  # structural stop above range top
+                        "tier": "watch",  # reject→strong flip: needs a 2nd consecutive monthly pass
+                        "indicators": f"range top {high_20:.4f} ({range_pct:.1f}% range), RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
+                        "historical": "+0.25 expect GROSS (4h test N=30, 100% robust, Sep 10) — watch pending 2nd pass",
+                    })
+            # long @ range bottom — validated params: rsi<30, adx<18, range>=4.0%,
+            # close within 1.5% of low_20, stop low_20 - 0.3 ATR, target 1.5R
+            if (c["adx"] < 18 and c["rsi"] < 30 and range_pct >= 4.0 and
+                    close <= low_20 * 1.015):
+                stop_price = low_20 - 0.3 * atr
+                risk = close - stop_price
+                if risk > 0:
+                    signals.append({
+                        "signal": "range_reversion_long",
+                        "tf": tf_label,
+                        "direction": "long",
+                        "target_r": 1.5,
+                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
+                        "stop_price": round(stop_price, 8),  # structural stop below range bottom
+                        "tier": "watch",  # reject→strong flip: needs a 2nd consecutive monthly pass
+                        "indicators": f"range bottom {low_20:.4f} ({range_pct:.1f}% range), RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
+                        "historical": "+0.20 expect GROSS (4h test N=23, 100% robust, Sep 10) — watch pending 2nd pass",
+                    })
 
         return signals
 

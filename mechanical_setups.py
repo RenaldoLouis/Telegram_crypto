@@ -16,16 +16,19 @@ out-of-sample expectancy (not a model's opinion).
 
 import signal_levels as sl
 
-# Validated out-of-sample expectancy (R) per (signal, timeframe), from the Jul 2026
-# re-validation baked into bybit_data.py::_check_validated_signals docstrings/labels.
-# Keep in sync when signals are re-validated monthly via `backtest`.
+# Validated out-of-sample expectancy (R, GROSS) per (signal, timeframe), from the
+# monthly re-validations baked into bybit_data.py::_check_validated_signals
+# docstrings/labels. Keep in sync when signals are re-validated monthly via `backtest`.
 EXPECTANCY = {
-    ("rsi_rejection_short", "1h"): 0.17,    # Jul 29 re-run: 1h-only (4h dropped)
+    # rsi_rejection_short 1h REMOVED 2026-09-10 — failed the monthly re-val (its 4h
+    # variant went ★ STRONG; promotion candidate pending a 2nd consecutive pass).
     ("trend_pullback_short", "4h"): 0.28,
     ("failed_breakout_short", "4h"): 0.12,   # Phase 3, validated 4h-only (N=75)
-    ("liquidity_sweep_long", "1h"): 0.08,    # Jul 29: confirmed both TFs, 100% robust
+    ("liquidity_sweep_long", "1h"): 0.08,    # confirmed both TFs again 2026-09-10
     ("liquidity_sweep_long", "4h"): 0.04,
-    ("rsi_bounce_long", "4h"): 0.11,         # 2026-08-20: WATCH tier — gross +0.108R/N20, net-marginal
+    ("rsi_bounce_long", "4h"): 0.11,          # 2026-08-20: WATCH — gross +0.108R/N20, net-marginal
+    ("range_reversion_short", "4h"): 0.25,    # 2026-09-10: ★ STRONG N=30 — WATCH pending 2nd pass
+    ("range_reversion_long", "4h"): 0.20,     # 2026-09-10: ★ STRONG N=23 — WATCH pending 2nd pass
 }
 
 # Map a signal name to the canonical setup_type (must be in main.VALID_SETUP_TYPES).
@@ -35,6 +38,8 @@ SETUP_TYPE = {
     "failed_breakout_short": "failed_breakout",
     "liquidity_sweep_long": "liquidity_sweep",
     "rsi_bounce_long": "range_mean_reversion",   # oversold-bounce mean reversion
+    "range_reversion_short": "range_mean_reversion",
+    "range_reversion_long": "range_mean_reversion",
 }
 
 # Canonical reasoning rule per signal (must be in config.CANONICAL_RULES).
@@ -44,6 +49,8 @@ SETUP_RULE = {
     "failed_breakout_short": "liquidity_sweep",  # a failed breakout is a swept level
     "liquidity_sweep_long": "liquidity_sweep",
     "rsi_bounce_long": "range_reversion",
+    "range_reversion_short": "range_reversion",
+    "range_reversion_long": "range_reversion",
 }
 
 VOLUME_CONFIRM_RATIO = 1.5
@@ -83,8 +90,15 @@ def _build_one(tech, direction, group, regime, interest_scores):
     price/ATR (can't place a stop).
     """
     symbol = tech.get("symbol")
-    # Anchor = highest validated expectancy.
-    anchor = max(group, key=lambda s: _expectancy(s.get("signal"), s.get("tf")))
+    # Anchor = highest validated expectancy — but EXECUTE signals always outrank
+    # WATCH signals for anchoring: a watch co-fire with higher gross expectancy
+    # must never demote an execute-worthy setup into the watch lane (e.g.
+    # range_reversion_long can co-fire with liquidity_sweep_long at a swept range
+    # bottom; the setup inherits the anchor's tier). Watch anchors only when the
+    # whole group is watch-tier. Guard added 2026-09-10.
+    exec_sigs = [s for s in group if s.get("tier", "execute") != "watch"]
+    anchor_pool = exec_sigs or group
+    anchor = max(anchor_pool, key=lambda s: _expectancy(s.get("signal"), s.get("tf")))
     signal_name = anchor.get("signal")
     signal_tf = anchor.get("tf")
     expectancy = _expectancy(signal_name, signal_tf)
