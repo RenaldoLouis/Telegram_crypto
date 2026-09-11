@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-11T22:15:57.144870+00:00",
+  "run_tag": "20260911_2215",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "CASHCATUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.1758898,
+      "entry_high": 0.1817302,
+      "stop_loss": 0.208012,
+      "target_1": 0.15584,
+      "target_2": 0.120406,
+      "predicted_rr": 0.787,
+      "confidence": "medium",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 50.8, ADX 24.7, near EMA20"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 3.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 24.66,
+          "rsi": 50.78,
+          "macd": -0.008425,
+          "macd_hist": 0.003683,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.05,
+          "range_pct": 35.85
+        },
+        "tf_1h": {
+          "adx": 14.82,
+          "rsi": 54.84,
+          "macd": 0.003521,
+          "macd_hist": 0.000391,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.26,
+          "range_pct": 21.69
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
