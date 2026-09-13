@@ -1,0 +1,30 @@
+{
+  "run_tag": "20260908_1915",
+  "run_timestamp_utc": "2026-09-08T19:15:50.557576+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-13T17:59:26.396143+00:00",
+  "results": [
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "AKEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 1.0,
+      "source": "watch",
+      "backtested_signal": "failed_breakout_short",
+      "signal_name": "failed_breakout_short"
+    }
+  ]
+}

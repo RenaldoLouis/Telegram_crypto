@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260910_0307",
+  "run_timestamp_utc": "2026-09-10T03:07:28.782335+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-09-13T17:59:35.622618+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.15049,
+      "exit_price": 0.143128,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.44,
+      "candles_to_exit": 78,
+      "risk_pct": 0.048921,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0397,
+      "net_rr": -1.04,
+      "net_blended_rr": -1.04,
+      "won_net": false,
+      "symbol": "ARBUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "risk_off",
+      "interest_score": 6.0,
+      "source": "watch",
+      "backtested_signal": "liquidity_sweep_long",
+      "signal_name": "liquidity_sweep_long"
+    }
+  ]
+}

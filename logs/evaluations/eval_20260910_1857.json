@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260910_1857",
+  "run_timestamp_utc": "2026-09-10T18:57:14.335968+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-09-13T17:59:36.174436+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 104.0635,
+      "exit_price": 105.6125,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.05,
+      "candles_to_exit": 8,
+      "risk_pct": 0.014885,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.1159,
+      "net_rr": -1.116,
+      "net_blended_rr": -1.116,
+      "won_net": false,
+      "symbol": "BZUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "risk_off",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "failed_breakout_short",
+      "signal_name": "failed_breakout_short"
+    }
+  ]
+}

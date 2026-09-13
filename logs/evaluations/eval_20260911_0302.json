@@ -1,0 +1,49 @@
+{
+  "run_tag": "20260911_0302",
+  "run_timestamp_utc": "2026-09-11T03:02:26.638532+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-09-13T17:59:36.464784+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.000922,
+      "exit_price": 0.000836,
+      "exit_reason": "expired",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -0.2,
+      "blended_rr": -0.2,
+      "won": false,
+      "max_favorable_rr": 0.33,
+      "candles_to_exit": 192,
+      "risk_pct": 0.466226,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0049,
+      "net_rr": -0.205,
+      "net_blended_rr": -0.205,
+      "won_net": false,
+      "symbol": "IOSTUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "symbol_priority"
+      ],
+      "regime": "risk_off",
+      "interest_score": 11.0,
+      "source": "watch",
+      "backtested_signal": null,
+      "signal_name": "observation"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260909_1000",
+  "run_timestamp_utc": "2026-09-09T10:00:39.148816+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-13T17:59:34.593797+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.00814,
+      "exit_price": 0.007581,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.11,
+      "candles_to_exit": 48,
+      "risk_pct": 0.068673,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0269,
+      "net_rr": -1.027,
+      "net_blended_rr": -1.027,
+      "won_net": false,
+      "symbol": "PENGUUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.848,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "source": "watch",
+      "backtested_signal": "rsi_bounce_long",
+      "signal_name": "rsi_bounce_long"
+    }
+  ]
+}

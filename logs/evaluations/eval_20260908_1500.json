@@ -1,0 +1,30 @@
+{
+  "run_tag": "20260908_1500",
+  "run_timestamp_utc": "2026-09-08T15:00:51.585438+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-13T17:59:26.231247+00:00",
+  "results": [
+    {
+      "status": "no_data",
+      "reason": "Could not fetch klines",
+      "symbol": "NIULAIUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "watch",
+      "backtested_signal": "rsi_bounce_long",
+      "signal_name": "rsi_bounce_long"
+    }
+  ]
+}
