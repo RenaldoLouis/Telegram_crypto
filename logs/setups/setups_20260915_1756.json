@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-15T17:56:00.295887+00:00",
+  "run_tag": "20260915_1756",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 1,
+    "claude": 0,
+    "watch": 0
+  },
+  "setups": [
+    {
+      "symbol": "BTCUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 76764.83642855,
+      "entry_high": 77046.16357145,
+      "stop_loss": 78312.1357145,
+      "target_1": 75559.4,
+      "target_2": 74092.228571,
+      "predicted_rr": 0.957,
+      "confidence": "medium",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 51.3, ADX 17.5, near EMA20"
+      },
+      "tier": "execute",
+      "source": "mechanical",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "risk_off",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 17.49,
+          "rsi": 51.26,
+          "macd": -162.088499,
+          "macd_hist": -73.349217,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.52,
+          "range_pct": 5.22
+        },
+        "tf_1h": {
+          "adx": 32.19,
+          "rsi": 39.11,
+          "macd": -384.058206,
+          "macd_hist": -71.903713,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.34,
+          "range_pct": 4.24
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "mechanical_v1"
+    }
+  ]
+}
