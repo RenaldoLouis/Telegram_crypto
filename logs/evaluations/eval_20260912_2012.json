@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260912_2012",
+  "run_timestamp_utc": "2026-09-12T20:12:01.007231+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-09-15T01:11:29.857201+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.16844,
+      "exit_price": 0.161399,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.53,
+      "won": true,
+      "max_favorable_rr": 1.04,
+      "candles_to_exit": 177,
+      "risk_pct": 0.139337,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0162,
+      "net_rr": 0.284,
+      "net_blended_rr": 0.514,
+      "won_net": true,
+      "symbol": "CASHCATUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 2,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "cautious",
+      "interest_score": 3.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    }
+  ]
+}

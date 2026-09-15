@@ -1,17 +1,22 @@
 # Recent Performance (last 4 weeks)
-_5 trades: 3W / 2L (60% WR, 0.17 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 60% WR, 0.04 avg blended R:R_
+_10 trades: 7W / 3L (70% WR, 0.25 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 80% WR, 0.29 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-09-12 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.53 | trail_stop | 1.46R |
+| 2026-09-12 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.36 | be_stop | 0.88R |
+| 2026-09-12 | CASHCATUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.53 | trail_stop | 1.04R |
+| 2026-09-12 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.49 | trail_stop | 1.04R |
+| 2026-09-12 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.74 (W) | 0.74 | target_1 | 0.96R |
 | 2026-09-05 | 1000PEPEUS | S | intra | trend_pullba | med | 3/4 | 0.821 | -1.0 (L) | -1.0 | stop_loss | 0.05R |
 | 2026-08-31 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.05 (W) | 1.41 | target_2 | 2.2R |
 | 2026-08-28 | SNXXUSDT | S | intra | trend_pullba | med | 3/4 | 0.87 | 0.21 (W) | 0.21 | expired | 0.54R |
 | 2026-08-27 | WLFIUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | -1.0 (L) | -1.0 | stop_loss | 0.1R |
 | 2026-08-22 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.59 (W) | 0.59 | target_1 | 0.6R |
 
-- Recent 'trend_pullback': 3/5 (60% WR)
+- Recent 'trend_pullback': 7/10 (70% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS

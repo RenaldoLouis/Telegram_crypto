@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260912_0822",
+  "run_timestamp_utc": "2026-09-12T08:22:23.308664+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-15T01:11:29.015636+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.09129,
+      "exit_price": 0.082094,
+      "exit_reason": "target_1",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": 0.74,
+      "blended_rr": 0.74,
+      "won": true,
+      "max_favorable_rr": 0.96,
+      "candles_to_exit": 192,
+      "risk_pct": 0.135595,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.017,
+      "net_rr": 0.723,
+      "net_blended_rr": 0.723,
+      "won_net": true,
+      "symbol": "BEATUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 5.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    }
+  ]
+}
