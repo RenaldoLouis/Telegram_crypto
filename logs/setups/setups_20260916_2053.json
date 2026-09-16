@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-16T20:53:01.384698+00:00",
+  "run_tag": "20260916_2053",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "SKHYNIXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1260.59807145,
+      "entry_high": 1267.44192855,
+      "stop_loss": 1298.2392855,
+      "target_1": 1238.35553587,
+      "target_2": 1195.581429,
+      "predicted_rr": 0.75,
+      "confidence": "medium",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 54.2, ADX 26.1, near EMA20"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.28,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.09,
+          "rsi": 54.15,
+          "macd": -12.875072,
+          "macd_hist": 4.841333,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.45,
+          "range_pct": 6.92
+        },
+        "tf_1h": {
+          "adx": 25.87,
+          "rsi": 34.39,
+          "macd": 2.116049,
+          "macd_hist": -3.233588,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.56,
+          "range_pct": 3.62
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
