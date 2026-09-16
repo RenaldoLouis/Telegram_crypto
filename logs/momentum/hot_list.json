@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-09-16T04:12:07.302499+00:00",
+  "generated_utc": "2026-09-16T10:51:42.817247+00:00",
   "market_regime": {
-    "regime": "risk_off",
+    "regime": "cautious",
     "metrics": {
-      "pct_declining": 76.0,
-      "median_change_pct": -2.94,
-      "btc_change_pct": -2.28,
-      "avg_funding_pct": -0.0029,
-      "large_decline_count": 11
+      "pct_declining": 60.0,
+      "median_change_pct": -2.2,
+      "btc_change_pct": -1.58,
+      "avg_funding_pct": -0.0027,
+      "large_decline_count": 12
     },
-    "detected_utc": "2026-09-16T04:12:07.301781+00:00",
+    "detected_utc": "2026-09-16T10:51:42.816673+00:00",
     "previous_regime": "risk_off"
   },
   "coins": [
@@ -60,22 +60,6 @@
       "open_interest": 8870617.7,
       "volume_acceleration": 1.0004291040492743,
       "price_acceleration_pct": -11.721900000000002
-    },
-    {
-      "symbol": "STEEMUSDT",
-      "flagged_utc": "2026-09-14T09:34:06.668232+00:00",
-      "expires_utc": "2026-09-16T09:34:06.668232+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.06307,
-      "price_change_24h_pct": -16.7502,
-      "turnover_24h_usd": 27497992.8222,
-      "funding_rate_pct": -1.661717,
-      "open_interest": 36370266.0,
-      "volume_acceleration": 0.5934631431310545,
-      "price_acceleration_pct": 12.3568
     },
     {
       "symbol": "ARKUSDT",
@@ -191,19 +175,19 @@
     },
     {
       "symbol": "XRPUSDT",
-      "flagged_utc": "2026-09-15T20:54:06.499376+00:00",
-      "expires_utc": "2026-09-17T20:54:06.499376+00:00",
+      "flagged_utc": "2026-09-16T10:51:42.816442+00:00",
+      "expires_utc": "2026-09-18T10:51:42.816442+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 1.2894,
-      "price_change_24h_pct": -12.1901,
-      "turnover_24h_usd": 1084577421.7885,
-      "funding_rate_pct": 0.0069960000000000005,
-      "open_interest": 206700993.1,
-      "volume_acceleration": 1.2197471450777082,
-      "price_acceleration_pct": 9.983899999999998
+      "last_price": 1.2884,
+      "price_change_24h_pct": -8.187800000000001,
+      "turnover_24h_usd": 1022434437.8332,
+      "funding_rate_pct": 0.0062959999999999995,
+      "open_interest": 196787873.8,
+      "volume_acceleration": 0.9601299302720449,
+      "price_acceleration_pct": 0.4640000000000013
     },
     {
       "symbol": "AKEUSDT",
