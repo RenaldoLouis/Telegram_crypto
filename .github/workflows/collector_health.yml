@@ -1,0 +1,52 @@
+name: Collector Health Alert
+
+# Watchdog for the watchers. The Sep 10-17 2026 incident showed a week of
+# collector failures can pass silently (no Telegram = no signal, and the
+# outage itself killed the Telegram path). This job needs NO VPN — it only
+# talks to the GitHub API and to Telegram (both reachable from US runners) —
+# so it stays alive precisely when the VPN-dependent jobs are dying.
+# Alerts only when something is wrong; healthy days are silent.
+
+on:
+  schedule:
+    - cron: '45 6 * * *'   # daily 06:45 UTC ≈ 13:45 WIB
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+
+    steps:
+      - name: Check last 24h of collector + scan runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          report=""
+          for wf in liquidation_collector.yml cvd_collector.yml momentum_pulse.yml; do
+            json=$(gh api -X GET "repos/${{ github.repository }}/actions/workflows/$wf/runs" \
+                     -f "created=>=$since" -f per_page=50)
+            total=$(echo "$json" | jq '[.workflow_runs[] | select(.status=="completed")] | length')
+            ok=$(echo "$json" | jq '[.workflow_runs[] | select(.conclusion=="success")] | length')
+            echo "$wf: $ok/$total succeeded in last 24h"
+            # Alert when fewer than half the completed runs succeeded.
+            if [ "$total" -gt 0 ] && [ $((ok * 2)) -lt "$total" ]; then
+              report="$report
+          ⚠️ $wf: only $ok/$total runs succeeded"
+            fi
+          done
+          if [ -n "$report" ]; then
+            msg="🚨 crypto-screener CI health (last 24h):$report
+          Every failed collector window is lost fork-A/CVD data — check the VPN endpoint."
+            curl -s -m 20 "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
+              --data-urlencode "chat_id=$TG_CHAT" --data-urlencode "text=$msg" > /dev/null \
+              && echo "alert sent to Telegram" \
+              || echo "::warning::Telegram send failed"
+          else
+            echo "all workflows healthy — no alert"
+          fi

@@ -1,0 +1,63 @@
+name: 'Bybit split-tunnel VPN'
+description: >
+  Bring up WireGuard routing ONLY Bybit's CDN IPs through the tunnel, then
+  health-gate on Bybit actually answering through it.
+
+  Why split-tunnel: the old full-tunnel (AllowedIPs = 0.0.0.0/0) routed the
+  runner's OWN connection to GitHub through the VPN, so whenever the VPN
+  endpoint degraded (Sep 15-17 2026 outage) the runner went dark and GitHub
+  canceled the job mid-run — that's what the uniform ~8-min "The operation
+  was canceled" runs were. Only Bybit is geo-blocked from GitHub's US
+  runners; GitHub/pip/Telegram traffic is fine on the clean runner network.
+
+  Bybit's hostnames are resolved on the clean network BEFORE the tunnel is
+  up and pinned in /etc/hosts, so every later (re)connect — including pybit
+  watchdog socket rebuilds hours in — reuses exactly the IPs that are routed.
+inputs:
+  wg_conf:
+    description: base64-encoded WireGuard config (pass secrets.WG_CONF)
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Split-tunnel WireGuard up + Bybit health gate
+      shell: bash
+      run: |
+        sudo apt-get install -y -qq wireguard-tools
+        echo "${{ inputs.wg_conf }}" | base64 -d | sudo tee /etc/wireguard/wg0.conf > /dev/null
+        sudo chmod 600 /etc/wireguard/wg0.conf
+
+        # Resolve Bybit's CDN IPs on the clean runner network and pin them.
+        ALLOWED=""
+        for h in stream.bybit.com api.bybit.com; do
+          for ip in $(getent ahostsv4 "$h" | awk '{print $1}' | sort -u); do
+            ALLOWED="${ALLOWED:+$ALLOWED, }$ip/32"
+            echo "$ip $h" | sudo tee -a /etc/hosts > /dev/null
+          done
+        done
+        if [ -z "$ALLOWED" ]; then
+          echo "::error::could not resolve any Bybit IPs on the runner network"
+          exit 1
+        fi
+        echo "routing through VPN: $ALLOWED"
+
+        # Replace the config's routes with just the pinned Bybit IPs; drop the
+        # VPN DNS (resolution already happened, /etc/hosts covers reconnects).
+        sudo sed -i '/^[[:space:]]*AllowedIPs/d; /^[[:space:]]*DNS/d' /etc/wireguard/wg0.conf
+        sudo sed -i "/^\[Peer\]/a AllowedIPs = $ALLOWED" /etc/wireguard/wg0.conf
+
+        # Health gate: Bybit must ANSWER through the tunnel, not just handshake.
+        # The endpoint has been observed flaky (tunnel up, traffic dead), so
+        # rebuild and retry a few times before declaring the run dead.
+        for i in 1 2 3 4 5; do
+          if sudo wg-quick up wg0 2>&1 && \
+             curl -s -m 10 https://api.bybit.com/v5/market/time | grep -q '"retCode":0'; then
+            echo "VPN healthy (attempt $i) — Bybit answering through tunnel"
+            exit 0
+          fi
+          echo "Bybit not answering through tunnel (attempt $i/5) — rebuilding"
+          sudo wg-quick down wg0 2>/dev/null || true
+          sleep 15
+        done
+        echo "::error::VPN unhealthy after 5 attempts — Bybit unreachable through tunnel"
+        exit 1

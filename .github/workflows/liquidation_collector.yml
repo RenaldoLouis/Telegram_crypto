@@ -31,15 +31,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup WireGuard VPN
-        run: |
-          sudo apt-get install -y -qq wireguard-tools
-          echo "${{ secrets.WG_CONF }}" | base64 -d | sudo tee /etc/wireguard/wg0.conf > /dev/null
-          sudo chmod 600 /etc/wireguard/wg0.conf
-          sudo wg-quick up wg0
-          sleep 2
-          echo "VPN connected — exit IP: $(curl -s ifconfig.me)"
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -48,10 +39,39 @@ jobs:
       - name: Install dependencies
         run: pip install pybit
 
-      - name: Collect liquidations (~5.5h then clean exit)
-        env:
-          LIQ_MAX_SECONDS: '19800'   # 5h30m — leaves margin under the 355-min job cap
-        run: python liquidation_collector.py
+      - name: Setup WireGuard VPN (split-tunnel, health-gated)
+        uses: ./.github/actions/bybit-vpn
+        with:
+          wg_conf: ${{ secrets.WG_CONF }}
+
+      - name: Collect liquidations (retry across the ~5.5h window)
+        # The collector exits 1 when pybit gives up on the WS (flaky VPN endpoint).
+        # Previously that forfeited the entire 6h window after ~2 min. Now: rebuild
+        # the tunnel and relaunch with the REMAINING budget until the window is
+        # spent — the endpoint has been observed to flap, so later attempts often
+        # recover. Exit 0 only if the last attempt ended cleanly (self-exit).
+        run: |
+          BUDGET=19800   # 5h30m total across all attempts — margin under the 355-min job cap
+          START=$SECONDS
+          ATTEMPT=0
+          while :; do
+            REMAIN=$(( BUDGET - (SECONDS - START) ))
+            if [ $REMAIN -lt 300 ]; then
+              echo "::error::window budget spent without a clean collector exit"
+              exit 1
+            fi
+            ATTEMPT=$((ATTEMPT+1))
+            echo "collector attempt $ATTEMPT — ${REMAIN}s of window remaining"
+            if LIQ_MAX_SECONDS=$REMAIN python liquidation_collector.py; then
+              echo "clean self-exit after attempt $ATTEMPT"
+              exit 0
+            fi
+            echo "collector died — rebuilding VPN, retrying in 30s"
+            sudo wg-quick down wg0 2>/dev/null || true
+            sleep 30
+            sudo wg-quick up wg0 || true
+            sleep 5
+          done
 
       - name: Disconnect VPN
         if: always()
