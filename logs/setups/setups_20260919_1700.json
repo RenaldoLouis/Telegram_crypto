@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-19T17:00:37.226342+00:00",
+  "run_tag": "20260919_1700",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ZAMAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.08238255,
+      "entry_high": 0.08411745,
+      "stop_loss": 0.08944571,
+      "target_1": 0.07860322,
+      "target_2": 0.07085858,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0865, RSI 93.7"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "neutral",
+      "interest_score": 5.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 52.53,
+          "rsi": 93.7,
+          "macd": 0.007538,
+          "macd_hist": 0.003298,
+          "trend": "bullish",
+          "ema20_dist_atr": 3.83,
+          "range_pct": 50.88
+        },
+        "tf_1h": {
+          "adx": 65.98,
+          "rsi": 75.14,
+          "macd": 0.006876,
+          "macd_hist": 0.001034,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.6,
+          "range_pct": 35.45
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
