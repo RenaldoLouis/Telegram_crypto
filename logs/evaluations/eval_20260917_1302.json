@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260917_1302",
+  "run_timestamp_utc": "2026-09-17T13:02:51.309761+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-20T01:09:25.406709+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.00081,
+      "exit_price": 0.000875,
+      "exit_reason": "expired",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -0.76,
+      "blended_rr": -0.76,
+      "won": false,
+      "max_favorable_rr": 0.4,
+      "candles_to_exit": 192,
+      "risk_pct": 0.104763,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.022,
+      "net_rr": -0.782,
+      "net_blended_rr": -0.782,
+      "won_net": false,
+      "symbol": "IOSTUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 10.0,
+      "source": "watch",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    }
+  ]
+}
