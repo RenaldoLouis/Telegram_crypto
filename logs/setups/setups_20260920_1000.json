@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-09-20T10:00:08.698166+00:00",
+  "run_tag": "20260920_1000",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "ZILUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.00379715,
+      "entry_high": 0.00386285,
+      "stop_loss": 0.0035015,
+      "target_1": 0.00407638,
+      "target_2": 0.00432275,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 54.89,
+          "rsi": 78.72,
+          "macd": 0.000244,
+          "macd_hist": 9.7e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.21,
+          "range_pct": 41.8
+        },
+        "tf_1h": {
+          "adx": 67.61,
+          "rsi": 61.12,
+          "macd": 0.000174,
+          "macd_hist": 7e-06,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.62,
+          "range_pct": 29.69
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "neutral",
+      "interest_score": 12.0,
+      "rank": 1
+    }
+  ]
+}
