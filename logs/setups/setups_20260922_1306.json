@@ -1,0 +1,66 @@
+{
+  "run_timestamp_utc": "2026-09-22T13:06:23.232522+00:00",
+  "run_tag": "20260922_1306",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "MUBARAKUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "other",
+      "entry_low": 0.06787655,
+      "entry_high": 0.06942545,
+      "stop_loss": 0.0609065,
+      "target_1": 0.07445938,
+      "target_2": 0.08026775,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 4,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "symbol_priority"
+        ],
+        "key_factor": "observation: highest-interest coin, dominant long trend (4/4 TF) \u2014 NO validated signal, watch-only"
+      },
+      "signal_name": "observation",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.0,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 57.58,
+          "rsi": 92.83,
+          "macd": 0.007532,
+          "macd_hist": 0.003366,
+          "trend": "bullish",
+          "ema20_dist_atr": 4.71,
+          "range_pct": 61.57
+        },
+        "tf_1h": {
+          "adx": 65.48,
+          "rsi": 86.16,
+          "macd": 0.007116,
+          "macd_hist": 0.001519,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.6,
+          "range_pct": 45.6
+        },
+        "backtested_signal": null
+      },
+      "tier": "watch",
+      "source": "watch",
+      "model": "watch_v1",
+      "regime": "neutral",
+      "interest_score": 11.0,
+      "rank": 1
+    }
+  ]
+}
