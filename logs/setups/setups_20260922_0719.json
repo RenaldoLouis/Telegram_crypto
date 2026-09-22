@@ -1,0 +1,67 @@
+{
+  "run_timestamp_utc": "2026-09-22T07:19:09.520672+00:00",
+  "run_tag": "20260922_0719",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v1",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 1
+  },
+  "setups": [
+    {
+      "symbol": "DOGEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.0983069,
+      "entry_high": 0.0993131,
+      "stop_loss": 0.10677857,
+      "target_1": 0.09198,
+      "target_2": 0.08287286,
+      "predicted_rr": 0.857,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.1023, RSI 74.0"
+      },
+      "tier": "watch",
+      "source": "watch",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.12,
+      "regime": "neutral",
+      "interest_score": 11.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 41.97,
+          "rsi": 74.03,
+          "macd": 0.003871,
+          "macd_hist": 0.001257,
+          "trend": "bullish",
+          "ema20_dist_atr": 2.04,
+          "range_pct": 21.92
+        },
+        "tf_1h": {
+          "adx": 58.76,
+          "rsi": 54.7,
+          "macd": 0.002274,
+          "macd_hist": -0.000361,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.33,
+          "range_pct": 13.91
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "watch_v1"
+    }
+  ]
+}
