@@ -399,6 +399,16 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-09-23 (later) — Research items 2/3/4 tested on the unified engine: funding squeeze, OI divergence, session gating → NO EDGE
+
+**Built.** `derivs_data.py` (Bybit public funding-rate history + open-interest history, paginated + cached, look-ahead-safe `DerivIndex`, `attach_to_df` adds funding_rate / funding_mean24h / funding_z / oi_chg_24h_pct / price_chg_24h_pct / settlement_close per bar); two candidate rules in `signal_rules.py` — `funding_squeeze_short/long` (crowded funding + OI building + price flat, at settlement; `detect_at(params=...)` hook for sweeps; inert without positioning columns, so live is unaffected); harness: positioning + calendar per-trade features, 7 new filters (funding bucket/side/z, oi_divergence, oi_chg_24h, settlement_bar, session), `funding_sweep` grid (32 combos × 2 rules), `--no-derivs`. Test added.
+
+**Result (30 symbols, 180 d, 1,988 trades, 368 filter cuts).** Pooled across all signals on TEST: fading the funding crowd 54.4% vs with-crowd 49.6% (within noise, both net-negative); funding z-score buckets none positive; OI divergence classes 49–58%, all net-negative; settlement bars 52% vs 53%; session 21–23 UTC (the BTC drift window) was the WORST bucket on test (41%, −0.45R) — the BTC seasonality does not transfer to 2-day alt setups; hour 16–24 UTC weakest. Funding-squeeze sweep: best TRAIN combos 60–68% / net + collapse on TEST to 40–54% / net − for BOTH directions across the whole grid → overfit, not a signal. Verdicts: all NO except `failed_breakout_short` in the 03–04 UTC session (n=21, 62%, one of 368 cuts → noise-level).
+
+**Still standing.** `range_reversion_short` + `vol_spike≥1.5`: this run all-period n=57 80.7% / +0.30R, test n=23 78% / +0.18R, positive net in 5 of 6 months (Sep −0.27R); the earlier single-signal run gave n=101 75% / test n=41 66% / −0.04R (sample changes with dedup competition). Consistently the best rule, still under n=30 on test → CANDIDATE, kept WATCH.
+
+**Conclusion.** Positioning data (funding, OI) and calendar effects do not rescue 1h/4h indicator entries with a 2-day hold. Remaining research item = #1 forced-flow fade on the collector's liquidation data (Aug–Sep window only), then cost reduction (maker fills) — both via the harness. If #1 also fails, the honest end state is a low-frequency range-reversion-short-only stream plus an expectancy-positive weekly system, not a 70% multi-signal screener.
+
 ### 2026-09-23 — v13.0: whole-system audit → unified trade model, hit-rate metric, WATCH gated, first unified backtest
 
 **Trigger.** User: last eval-scan was "all stop loss" — is our win rate wrong, where did we go wrong? Unbiased audit (data + two code audits) instead of another tuning pass.

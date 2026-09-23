@@ -83,6 +83,34 @@ def test_every_rule_can_fire_and_has_sane_levels():
     assert {"failed_breakout_short", "liquidity_sweep_long"} <= seen, missing
 
 
+def test_funding_rules_inert_without_columns_and_fire_with_them():
+    """Funding-squeeze rules must stay silent when the df has no positioning columns, and
+    fire on a settlement bar once funding/OI/price columns say 'crowded + building + flat'."""
+    import pandas as pd
+    rows = _synthetic_candles(n=200)
+    df = sr.compute_indicators(rows)
+    i = len(df) - 1
+    only = {"funding_squeeze_short", "funding_squeeze_long"}
+    assert sr.detect_at(df, i, "4h", enabled=only) == []
+    df["funding_rate"] = 0.0005
+    df["funding_mean24h"] = 0.0005
+    df["funding_z"] = 2.5
+    df["oi_chg_24h_pct"] = 6.0
+    df["price_chg_24h_pct"] = 1.0
+    df["settlement_close"] = True
+    fired = [s["signal"] for s in sr.detect_at(df, i, "4h", enabled=only)]
+    assert fired == ["funding_squeeze_short"], fired
+    df["funding_rate"] = -0.0005
+    fired = [s["signal"] for s in sr.detect_at(df, i, "4h", enabled=only)]
+    assert fired == ["funding_squeeze_long"], fired
+    # params override: a stricter funding threshold silences it
+    assert sr.detect_at(df, i, "4h", enabled=only, params={"fs_funding_min": 0.001}) == []
+    # not a settlement bar → silent unless settlement_only is off
+    df["settlement_close"] = False
+    assert sr.detect_at(df, i, "4h", enabled=only) == []
+    assert len(sr.detect_at(df, i, "4h", enabled=only, params={"fs_settlement_only": False})) == 1
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_") and callable(fn):

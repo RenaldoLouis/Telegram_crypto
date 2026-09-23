@@ -41,6 +41,7 @@ from pybit.unified_trading import HTTP
 
 import config
 import signal_rules as sr
+import derivs_data as dd
 import trade_sim as ts
 
 BASE_DIR = Path(__file__).parent
@@ -193,19 +194,33 @@ def _safe(x, nd=4):
 
 # ─── Signal + simulation loop ────────────────────────────────────────────────
 
-def build_trades(symbol, data, btc_h4, enabled, tfs):
-    """Walk every closed 4h/1h bar, fire signals, simulate on 15m. Returns trades."""
+_PREP_CACHE = {}
+
+
+def _prepare(symbol, data, deriv):
+    """Indicator dfs (+ positioning columns) and 15m arrays for one symbol, cached."""
+    if symbol in _PREP_CACHE:
+        return _PREP_CACHE[symbol]
     m15 = data["15"]
-    if not m15:
-        return []
     m15_ts = [int(r[0]) for r in m15]
     m15_c = [{"open": float(r[1]), "high": float(r[2]), "low": float(r[3]),
               "close": float(r[4])} for r in m15]
-
     dfs = {}
     for iv in ("240", "60", "D"):
         rows = data.get(iv) or []
         dfs[iv] = sr.compute_indicators(rows) if len(rows) >= 60 else None
+        if dfs[iv] is not None and iv in ("240", "60"):
+            # positioning columns as of each bar's close (funding, OI, 24h price change)
+            dd.attach_to_df(dfs[iv], deriv, INTERVAL_MS[iv], 6 if iv == "240" else 24)
+    _PREP_CACHE[symbol] = (m15_ts, m15_c, dfs)
+    return _PREP_CACHE[symbol]
+
+
+def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None):
+    """Walk every closed 4h/1h bar, fire signals, simulate on 15m. Returns trades."""
+    if not data["15"]:
+        return []
+    m15_ts, m15_c, dfs = _prepare(symbol, data, deriv)
     trend_d = TrendIndex(dfs["D"], "D")
     trend_h1 = TrendIndex(dfs["60"], "60")
     trend_h4 = TrendIndex(dfs["240"], "240")
@@ -218,7 +233,7 @@ def build_trades(symbol, data, btc_h4, enabled, tfs):
         df = dfs[iv]
         # pull arrays for fast feature extraction
         for i in range(60, len(df)):
-            sigs = sr.detect_at(df, i, lbl, enabled=enabled)
+            sigs = sr.detect_at(df, i, lbl, enabled=enabled, params=fs_params)
             if not sigs:
                 continue
             close_t = int(df["timestamp"].iat[i]) + INTERVAL_MS[iv]
@@ -255,7 +270,27 @@ def build_trades(symbol, data, btc_h4, enabled, tfs):
         conf = sum(1 for t in (t_d, t_1, t_4) if t == want)
         btc_t = btc_h4.trend_at(close_t) if btc_h4 else None
         close = float(row["close"])
+        fr = _safe(row.get("funding_rate"), 6)
+        oi24 = _safe(row.get("oi_chg_24h_pct"), 2)
+        px24 = _safe(row.get("price_chg_24h_pct"), 2)
+        oi4 = _safe(deriv.oi_change_pct(close_t, 4), 2) if deriv else None
+        # "fading" = trading AGAINST the side that pays funding (shorting when longs pay)
+        if fr is None or abs(fr) < 0.00005:
+            f_side = "neutral"
+        elif (fr > 0 and direction == "short") or (fr < 0 and direction == "long"):
+            f_side = "fading_crowd"
+        else:
+            f_side = "with_crowd"
+        h = dt.hour
+        session = "21-23" if 21 <= h <= 23 else ("03-04" if 3 <= h <= 4 else
+                  ("08-16" if 8 <= h < 16 else "other"))
         trades.append({
+            "funding_rate": fr, "funding_mean24h": _safe(row.get("funding_mean24h"), 6),
+            "funding_z": _safe(row.get("funding_z"), 2), "funding_side": f_side,
+            "oi_chg_24h_pct": oi24, "oi_chg_4h_pct": oi4, "price_chg_24h_pct": px24,
+            "oi_divergence": dd.oi_divergence(px24, oi24),
+            "settlement_close": bool(row.get("settlement_close", False)),
+            "hours_to_settlement": dd.hours_to_settlement(close_t), "session": session,
             "symbol": symbol, "signal": sig["signal"], "tf": lbl, "direction": direction,
             "tier": sig.get("tier", "execute"),
             "signal_time": dt.isoformat(), "signal_ms": close_t,
@@ -351,6 +386,15 @@ FILTERS = {
     "ema50_dist_atr": lambda t: _band(t["ema50_dist_atr"], [-2, -0.5, 0.5, 2],
                                       ["<-2", "-2..-0.5", "-0.5..0.5", "0.5..2", ">2"]),
     "symbol_group": lambda t: "major" if t["is_major"] else "other",
+    # positioning / calendar (added 2026-09-23)
+    "funding": lambda t: _band(t["funding_rate"] * 100 if t.get("funding_rate") is not None else None,
+                               [-0.01, 0.005, 0.02, 0.05], ["<-0.01%", "-0.01..0.005%", "0.005..0.02%", "0.02..0.05%", ">0.05%"]),
+    "funding_side": lambda t: t.get("funding_side", "na"),
+    "funding_z": lambda t: _band(t.get("funding_z"), [-1, 1, 2], ["<-1", "-1..1", "1..2", ">2"]),
+    "oi_divergence": lambda t: t.get("oi_divergence", "na"),
+    "oi_chg_24h": lambda t: _band(t.get("oi_chg_24h_pct"), [-5, 0, 5], ["<-5%", "-5..0%", "0..5%", ">5%"]),
+    "settlement_bar": lambda t: "settlement" if t.get("settlement_close") else "other",
+    "session": lambda t: t.get("session", "na"),
 }
 
 
@@ -412,6 +456,32 @@ def month_table(trades):
     return "\n".join(lines)
 
 
+FS_GRID = list(product([0.0001, 0.0002, 0.0003, 0.0005], [0.0, 3.0], [3.0, 5.0], [True, False]))
+
+
+def funding_sweep(data, derivs, btc_h4, sig):
+    """Rebuild funding-squeeze trades for each parameter combo. Returns rows sorted by
+    (train qualifies, train profitable%, train net); each row has train/test/all stats."""
+    rows = []
+    for fmin, oimin, flat, settle in FS_GRID:
+        prm = {"fs_funding_min": fmin, "fs_oi_min_pct": oimin, "fs_price_flat_pct": flat,
+               "fs_settlement_only": settle}
+        trades = []
+        for sym, d in data.items():
+            trades.extend(build_trades(sym, d, btc_h4, {sig}, {"4h"}, deriv=derivs.get(sym), fs_params=prm))
+        for t in trades:
+            t["_res"] = sim_trade(t)
+        trades = [t for t in trades if t["_res"]]
+        if not trades:
+            continue
+        train, test = split_train_test(trades)
+        s_tr, s_te, s_all = stats([t["_res"] for t in train]), stats([t["_res"] for t in test]), stats([t["_res"] for t in trades])
+        ok = s_tr["n"] >= 30 and (s_tr["net_exp"] or 0) > 0
+        rows.append({"params": prm, "train": s_tr, "test": s_te, "all": s_all, "qualifies": ok})
+    rows.sort(key=lambda r: (r["qualifies"], r["train"]["profitable_pct"] or 0, r["train"]["net_exp"] or 0), reverse=True)
+    return rows
+
+
 def run(args):
     t0 = time.time()
     enabled = set(args.signals.split(",")) if args.signals else None
@@ -426,6 +496,7 @@ def run(args):
 
     client = HTTP(testnet=False, timeout=20)
     data = {}
+    derivs = {}
     skipped = []
     for n, sym in enumerate(symbols, 1):
         d = {}
@@ -437,8 +508,14 @@ def run(args):
             skipped.append(f"{sym} ({span_days:.0f}d 4h, {len(d['15'])} 15m bars)")
             continue
         data[sym] = d
+        if not args.no_derivs:
+            fnd = dd.fetch_funding(client, sym, args.days, skip_fetch=args.skip_fetch)
+            oi = dd.fetch_open_interest(client, sym, args.days, "1h", skip_fetch=args.skip_fetch)
+            derivs[sym] = dd.DerivIndex(fnd, oi, "1h")
+        dv = derivs.get(sym)
         print(f"  [{n}/{len(symbols)}] {sym}: 4h={len(d['240'])} 1h={len(d['60'])} "
-              f"D={len(d['D'])} 15m={len(d['15'])} ({span_days:.0f}d)")
+              f"D={len(d['D'])} 15m={len(d['15'])} ({span_days:.0f}d)"
+              + (f" funding={len(dv.f_ts)} oi={len(dv.o_ts)}" if dv else ""))
     if skipped:
         print(f"  Skipped (insufficient history): {', '.join(skipped)}")
     fetch_s = time.time() - t0
@@ -449,7 +526,7 @@ def run(args):
 
     trades = []
     for sym, d in data.items():
-        tr = build_trades(sym, d, btc_h4, enabled, tfs)
+        tr = build_trades(sym, d, btc_h4, enabled, tfs, deriv=derivs.get(sym))
         trades.extend(tr)
         print(f"  signals {sym}: {len(tr)}")
     print(f"Total trades: {len(trades)}  (fetch {fetch_s:.0f}s, total {time.time() - t0:.0f}s)")
@@ -542,6 +619,25 @@ def run(args):
     L.append(f"\nTotal filter cuts tested across signals: {total_cuts}.")
     L.extend(per_sig_detail)
 
+    # (e) funding-squeeze parameter sweep (positioning candidates)
+    fs_names = {"funding_squeeze_short", "funding_squeeze_long"}
+    if derivs and (enabled is None or (enabled & fs_names)) and "4h" in tfs:
+        L.append("\n## (e) Funding-squeeze parameter sweep (chosen on TRAIN, reported on TEST)\n")
+        L.append("Grid: funding_min × oi_min × price_flat × settlement_only. Selection = max profitable% "
+                 "s.t. net>0 and n≥30 on TRAIN; every combo's TEST is listed so the landscape is visible "
+                 "(the top row is a selected result — treat it as optimistic).\n")
+        for sig in sorted(fs_names):
+            rows = funding_sweep(data, derivs, btc_h4, sig)
+            L.append(f"\n### {sig}\n")
+            L.append("| funding_min | oi_min% | flat% | settle | TRAIN | TEST | ALL |")
+            L.append("|---|---|---|---|---|---|---|")
+            for r in rows[:12]:
+                p = r["params"]
+                L.append(f"| {p['fs_funding_min']*100:.2f}% | {p['fs_oi_min_pct']} | {p['fs_price_flat_pct']} | "
+                         f"{'y' if p['fs_settlement_only'] else 'n'} | {fmt(r['train'])} | {fmt(r['test'])} | {fmt(r['all'])} |")
+            if not rows:
+                L.append("| (no combo produced ≥30 train trades) | | | | | | |")
+
     L.append("\n## (d) What would ship (TEST numbers; filter + management selected on TRAIN)\n")
     L.append("| signal | tf | default TEST | mgmt-only TEST | best filter+mgmt | best TEST | verdict |")
     L.append("|---|---|---|---|---|---|---|")
@@ -576,6 +672,7 @@ def main():
     ap.add_argument("--tfs", default="4h,1h")
     ap.add_argument("--skip-fetch", action="store_true")
     ap.add_argument("--quick", action="store_true")
+    ap.add_argument("--no-derivs", action="store_true", help="skip funding/OI fetch + positioning features")
     args = ap.parse_args()
     run(args)
 

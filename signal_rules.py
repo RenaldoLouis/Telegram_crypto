@@ -32,6 +32,11 @@ SIGNAL_TIER = {
     "liquidity_sweep_long": "watch",    # 1h test n=341 51% / -0.25R (4h 44% -> disabled)
     "rsi_bounce_long": "watch",         # test n=96 51% / -0.09R
     "rsi_rejection_short": "watch",     # test n=85 39% / -0.23R -> DISABLED (no TF)
+    # Positioning candidates (added 2026-09-23, item 2 of the research plan): fade a crowded
+    # side at funding settlement when open interest has been building and price has stalled.
+    # Need funding/OI columns on the df (derivs_data.attach_to_df); silently inert without them.
+    "funding_squeeze_short": "watch",
+    "funding_squeeze_long": "watch",
 }
 
 # Timeframes each rule is allowed to fire on (empty tuple = disabled, kept for the harness).
@@ -43,6 +48,19 @@ SIGNAL_TFS = {
     "range_reversion_short": ("4h",),
     "range_reversion_long": ("4h",),
     "rsi_rejection_short": (),          # disabled 2026-09-23 (39% test)
+    "funding_squeeze_short": ("4h",),   # settlement bars are 4h closes (00/08/16 UTC)
+    "funding_squeeze_long": ("4h",),
+}
+
+# Defaults for the funding-squeeze rules (overridable per call via detect_at(params=...),
+# which is how unified_backtest.py sweeps them; live uses config/getattr values).
+FS_DEFAULTS = {
+    "fs_funding_min": getattr(config, "FS_FUNDING_MIN", 0.0003),     # 0.03% per 8h = crowded
+    "fs_oi_min_pct": getattr(config, "FS_OI_MIN_PCT", 3.0),          # OI up >= 3% over 24h
+    "fs_price_flat_pct": getattr(config, "FS_PRICE_FLAT_PCT", 3.0),  # |24h price change| <= 3%
+    "fs_settlement_only": getattr(config, "FS_SETTLEMENT_ONLY", True),
+    "fs_stop_atr": getattr(config, "FS_STOP_ATR", 1.5),
+    "fs_target_r": getattr(config, "FS_TARGET_R", 1.5),
 }
 
 ALL_SIGNALS = tuple(SIGNAL_TIER)
@@ -105,12 +123,16 @@ def _ok(c):
         and c["atr"] > 0
 
 
-def detect_at(df, i, tf_label, enabled=None):
+def detect_at(df, i, tf_label, enabled=None, params=None):
     """Evaluate all rules on bar `i` (0-based, must be a CLOSED bar) of an
     indicator-enriched df. Returns a list of signal dicts:
       signal, tf, direction, target_r, stop_atr, [stop_price], tier, indicators.
-    `enabled` optionally restricts which signal names may fire.
+    `enabled` optionally restricts which signal names may fire. `params` overrides
+    FS_DEFAULTS for the funding-squeeze rules (harness sweeps).
     """
+    prm = dict(FS_DEFAULTS)
+    if params:
+        prm.update(params)
     if i < 21 or i >= len(df):
         return []
     c = df.iloc[i]
@@ -228,6 +250,25 @@ def detect_at(df, i, tf_label, enabled=None):
             "target_r": 2.0, "stop_atr": 2.0, "tier": SIGNAL_TIER["rsi_rejection_short"],
             "indicators": f"RSI {c['rsi']:.1f} rolling over (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
         })
+
+    # --- Funding Squeeze Short / Long (4h, watch; positioning fade) ---
+    # Crowded side pays extreme funding + OI has been building + price stalled → the
+    # crowd is trapped; fade it at settlement. Columns come from derivs_data.attach_to_df.
+    if (allowed("funding_squeeze_short") or allowed("funding_squeeze_long")) and "funding_rate" in df.columns:
+        fr = c["funding_rate"]
+        oi_chg = c["oi_chg_24h_pct"]
+        p_chg = c["price_chg_24h_pct"]
+        settle_ok = (not prm["fs_settlement_only"]) or bool(c.get("settlement_close", False))
+        if (pd.notna(fr) and pd.notna(oi_chg) and pd.notna(p_chg) and settle_ok
+                and oi_chg >= prm["fs_oi_min_pct"] and abs(p_chg) <= prm["fs_price_flat_pct"]):
+            base = {"tf": tf_label, "target_r": prm["fs_target_r"], "stop_atr": prm["fs_stop_atr"],
+                    "indicators": f"funding {fr*100:+.3f}%/8h, OI {oi_chg:+.1f}%/24h, px {p_chg:+.1f}%/24h"}
+            if allowed("funding_squeeze_short") and fr >= prm["fs_funding_min"]:
+                out.append(dict(base, signal="funding_squeeze_short", direction="short",
+                                tier=SIGNAL_TIER["funding_squeeze_short"]))
+            if allowed("funding_squeeze_long") and fr <= -prm["fs_funding_min"]:
+                out.append(dict(base, signal="funding_squeeze_long", direction="long",
+                                tier=SIGNAL_TIER["funding_squeeze_long"]))
 
     return out
 

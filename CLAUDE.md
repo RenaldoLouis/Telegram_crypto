@@ -85,6 +85,8 @@ main.py  (orchestrator, async)
   ├── unified_backtest.py          → v13.0: validation harness — closed 4h/1h signals → 15m forward sim via
   │                                    trade_sim; chrono train/test + monthly walk-forward; filter study;
   │                                    management sweep; hit-rate objective. Reports → logs/backtest_reports/
+  ├── derivs_data.py               → v13.0: Bybit public funding + open-interest history (cached, look-ahead-safe)
+  │                                    → positioning features for the harness; live-inert until a rule is promoted
   ├── signal_levels.py             → Shared pure entry/stop/target math (drift-guarded vs backtester)
   │
   ├── analyzer/prompts.py          → (DORMANT — zero-Claude policy 2026-09-10; used only if PRIMARY_SOURCE="claude")
@@ -317,6 +319,9 @@ python backtester.py --version          # v11.3 PRE-vs-POST cutover segment + VA
 python unified_backtest.py --max-symbols 30 --days 180        # live universe (from logs/setups) + majors
 python unified_backtest.py --quick                             # 10 symbols, fast iteration
 python unified_backtest.py --signals trend_pullback_short --tfs 4h
+python unified_backtest.py --no-derivs                        # skip funding/OI fetch + positioning features
+# 2026-09-23 result: funding squeeze / OI divergence / session gating add NO edge (progress.md changelog);
+# only range_reversion_short + vol_spike>=1.5 survives (CANDIDATE, n<30 on test).
 # → logs/backtest_reports/unified_YYYYMMDD.md (+ _trades.json). Verdict per signal: SHIP (≥70% profitable,
 #   net>0, n≥30 on TEST) / CANDIDATE (≥60%) / NO. Filters and management params are chosen on TRAIN and
 #   reported on TEST; the report prints how many cuts were tried (multiple-testing caveat).
