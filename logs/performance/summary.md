@@ -1,20 +1,22 @@
 # Performance Summary
-_Last updated: 2026-09-23 07:08 UTC_
-_Total runs evaluated: 314_
+_Last updated: 2026-09-23 10:00 UTC_
+_Total runs evaluated: 316_
 
 ## Overall Stats
-- Total setups: 532
-- Triggered: 473 (89%)
+- Total setups: 399
+- Triggered: 353 (88%)
 - Not triggered: 18
-- **Win rate: 34.9%** (165W / 308L)  (**↓ -0.8%** from previous eval: 35.7%) ⚠️ REGRESSION
-- Avg actual R:R: -0.12
-- Avg winning R:R: 1.10
-- Avg losing R:R: -0.78
+- **Win rate: 35.4%** (125W / 228L)  (**↑ +0.5%** from previous eval: 34.9%)
+- **Profitable (net, partial model): 43.1%** (152/353; target ≥70%)
+- Avg actual R:R: -0.11
+- Avg winning R:R: 1.18
+- Avg losing R:R: -0.81
+- _(EXECUTE book only — WATCH lane: 122 paper trades, 47.5% profitable, net -0.213R; excluded from every number above)_
 
 ### Partial Profit Model (50% at T1 + BE stop)
-- **Blended win rate: 46.5%** (173W / 199L)
+- **Blended win rate: 45.6%** (115W / 137L)
 - Avg blended R:R: -0.12
-- BE stops (T1 hit then reversed to entry): 46
+- BE stops (T1 hit then reversed to entry): 28
 
 ## Win Rate Trend (per eval run)
 This tracks whether recommendations are IMPROVING over time. If not trending up, something needs to change.
@@ -166,165 +168,45 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | 2026-08-09 | 1 | 0 | 1 | 0% | 34.5% |
 | 2026-08-11 | 2 | 0 | 2 | 0% | 34.3% |
 | 2026-08-11 | 1 | 0 | 1 | 0% | 34.2% |
-| 2026-08-20 | 1 | 0 | 1 | 0% | 34.1% |
-| 2026-08-20 | 1 | 0 | 1 | 0% | 34.0% |
-| 2026-08-21 | 1 | 0 | 1 | 0% | 33.9% |
-| 2026-08-21 | 1 | 0 | 1 | 0% | 33.8% |
-| 2026-08-21 | 1 | 1 | 0 | 100% | 34.0% |
-| 2026-08-21 | 1 | 1 | 0 | 100% | 34.2% |
-| 2026-08-21 | 1 | 1 | 0 | 100% | 34.4% |
-| 2026-08-22 | 1 | 0 | 1 | 0% | 34.3% |
-| 2026-08-22 | 1 | 1 | 0 | 100% | 34.5% |
-| 2026-08-22 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-22 | 1 | 0 | 1 | 0% | 34.3% |
-| 2026-08-22 | 1 | 0 | 1 | 0% | 34.2% |
-| 2026-08-23 | 1 | 1 | 0 | 100% | 34.4% |
-| 2026-08-23 | 1 | 0 | 1 | 0% | 34.3% |
-| 2026-08-23 | 1 | 1 | 0 | 100% | 34.5% |
-| 2026-08-24 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-24 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-08-24 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-08-24 | 1 | 1 | 0 | 100% | 34.9% |
-| 2026-08-24 | 1 | 0 | 1 | 0% | 34.8% |
-| 2026-08-24 | 1 | 1 | 0 | 100% | 35.0% |
-| 2026-08-24 | 1 | 0 | 1 | 0% | 34.9% |
-| 2026-08-24 | 1 | 0 | 1 | 0% | 34.8% |
-| 2026-08-25 | 1 | 0 | 1 | 0% | 34.7% |
-| 2026-08-25 | 1 | 0 | 1 | 0% | 34.6% |
-| 2026-08-25 | 1 | 0 | 1 | 0% | 34.5% |
-| 2026-08-25 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-25 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-08-25 | 1 | 0 | 1 | 0% | 34.5% |
-| 2026-08-25 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-26 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-08-26 | 1 | 0 | 1 | 0% | 34.5% |
-| 2026-08-26 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-26 | 1 | 0 | 1 | 0% | 34.3% |
-| 2026-08-26 | 1 | 1 | 0 | 100% | 34.5% |
-| 2026-08-26 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-27 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-08-27 | 1 | 0 | 1 | 0% | 34.5% |
-| 2026-08-27 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-08-27 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-08-28 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-08-28 | 1 | 1 | 0 | 100% | 34.9% |
-| 2026-08-28 | 1 | 0 | 1 | 0% | 34.8% |
-| 2026-08-29 | 1 | 1 | 0 | 100% | 35.0% |
-| 2026-08-29 | 1 | 1 | 0 | 100% | 35.2% |
-| 2026-08-29 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-08-29 | 1 | 1 | 0 | 100% | 35.2% |
-| 2026-08-30 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-08-30 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-08-30 | 1 | 1 | 0 | 100% | 35.2% |
-| 2026-08-30 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-08-31 | 1 | 1 | 0 | 100% | 35.3% |
-| 2026-08-31 | 1 | 0 | 1 | 0% | 35.2% |
-| 2026-08-31 | 1 | 1 | 0 | 100% | 35.4% |
-| 2026-08-31 | 1 | 1 | 0 | 100% | 35.5% |
-| 2026-09-01 | 1 | 1 | 0 | 100% | 35.7% |
-| 2026-09-01 | 1 | 0 | 1 | 0% | 35.6% |
-| 2026-09-01 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-01 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-01 | 1 | 0 | 1 | 0% | 35.3% |
-| 2026-09-01 | 1 | 0 | 1 | 0% | 35.2% |
-| 2026-09-02 | 1 | 1 | 0 | 100% | 35.4% |
-| 2026-09-02 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-04 | 1 | 1 | 0 | 100% | 35.7% |
-| 2026-09-04 | 1 | 0 | 1 | 0% | 35.6% |
-| 2026-09-05 | 1 | 0 | 1 | 0% | 35.6% |
-| 2026-09-05 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-05 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-05 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-05 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-06 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-06 | 1 | 0 | 1 | 0% | 35.3% |
-| 2026-09-06 | 1 | 1 | 0 | 100% | 35.4% |
-| 2026-09-06 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-06 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-07 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-07 | 1 | 0 | 1 | 0% | 35.3% |
-| 2026-09-07 | 1 | 1 | 0 | 100% | 35.5% |
-| 2026-09-08 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-08 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-08 | 1 | 1 | 0 | 100% | 35.7% |
-| 2026-09-09 | 1 | 0 | 1 | 0% | 35.6% |
-| 2026-09-09 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-09 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-10 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-10 | 1 | 0 | 1 | 0% | 35.3% |
-| 2026-09-10 | 1 | 0 | 1 | 0% | 35.2% |
-| 2026-09-10 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-09-11 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-11 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-11 | 1 | 0 | 1 | 0% | 34.9% |
-| 2026-09-11 | 1 | 1 | 0 | 100% | 35.0% |
-| 2026-09-12 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 35.1% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 35.3% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 35.4% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-12 | 2 | 1 | 1 | 50% | 35.6% |
-| 2026-09-13 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-13 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-13 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-14 | 1 | 0 | 1 | 0% | 35.3% |
-| 2026-09-14 | 1 | 1 | 0 | 100% | 35.4% |
-| 2026-09-14 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-14 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-14 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-14 | 1 | 1 | 0 | 100% | 35.6% |
-| 2026-09-15 | 1 | 1 | 0 | 100% | 35.7% |
-| 2026-09-15 | 1 | 1 | 0 | 100% | 35.9% |
-| 2026-09-16 | 1 | 0 | 1 | 0% | 35.8% |
-| 2026-09-16 | 1 | 1 | 0 | 100% | 35.9% |
-| 2026-09-16 | 1 | 1 | 0 | 100% | 36.1% |
-| 2026-09-16 | 1 | 0 | 1 | 0% | 36.0% |
-| 2026-09-17 | 1 | 0 | 1 | 0% | 35.9% |
-| 2026-09-17 | 1 | 0 | 1 | 0% | 35.8% |
-| 2026-09-17 | 1 | 0 | 1 | 0% | 35.7% |
-| 2026-09-18 | 1 | 0 | 1 | 0% | 35.7% |
-| 2026-09-18 | 1 | 0 | 1 | 0% | 35.6% |
-| 2026-09-18 | 1 | 0 | 1 | 0% | 35.5% |
-| 2026-09-18 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.3% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.2% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-19 | 1 | 1 | 0 | 100% | 35.1% |
-| 2026-09-19 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-20 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-20 | 1 | 1 | 0 | 100% | 35.1% |
-| 2026-09-20 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-21 | 1 | 0 | 1 | 0% | 35.0% |
-| 2026-09-21 | 1 | 0 | 1 | 0% | 34.9% |
+| 2026-08-22 | 1 | 1 | 0 | 100% | 34.4% |
+| 2026-08-27 | 1 | 0 | 1 | 0% | 34.3% |
+| 2026-08-28 | 1 | 1 | 0 | 100% | 34.5% |
+| 2026-08-31 | 1 | 1 | 0 | 100% | 34.7% |
+| 2026-09-05 | 1 | 0 | 1 | 0% | 34.6% |
+| 2026-09-12 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-09-12 | 1 | 1 | 0 | 100% | 35.0% |
+| 2026-09-12 | 1 | 1 | 0 | 100% | 35.2% |
+| 2026-09-12 | 2 | 1 | 1 | 50% | 35.2% |
+| 2026-09-13 | 1 | 0 | 1 | 0% | 35.1% |
+| 2026-09-14 | 1 | 1 | 0 | 100% | 35.3% |
+| 2026-09-15 | 1 | 1 | 0 | 100% | 35.5% |
+| 2026-09-16 | 1 | 0 | 1 | 0% | 35.4% |
 
-**⚠️ ALERT: Last 3 runs have 0% win rate. The current approach is NOT working. Major changes needed: tighter setup criteria, wider stops, closer targets, or fewer setups per run.**
+**⚠️ Win rate is NOT improving across recent runs. Review what changed and whether the feedback loop is being followed.**
 
 ## By Setup Type
 | Setup Type | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
-| trend_pullback | 320 | 124 | 196 | 39% | -0.05 |
-| range_mean_reversion | 51 | 17 | 34 | 33% | -0.17 |
-| other | 38 | 12 | 26 | 32% | -0.20 |
-| failed_breakout | 37 | 7 | 30 | 19% | -0.41 |
-| liquidity_sweep | 12 | 2 | 10 | 17% | -0.49 |
+| trend_pullback | 300 | 114 | 186 | 38% | -0.05 |
+| other | 19 | 5 | 14 | 26% | -0.37 |
+| failed_breakout | 12 | 1 | 11 | 8% | -0.76 |
 | funding_squeeze | 8 | 1 | 7 | 12% | -0.48 |
 | post_liquidation | 4 | 0 | 4 | 0% | -0.75 |
+| range_mean_reversion | 4 | 1 | 3 | 25% | -0.53 |
 | range_breakout | 3 | 2 | 1 | 67% | 0.73 |
+| liquidity_sweep | 3 | 1 | 2 | 33% | 0.27 |
 
 ## By Confidence Level
 | Confidence | Trades | Wins | Losses | Win Rate |
 |---|---|---|---|---|
 | high | 11 | 3 | 8 | 27% |
-| medium | 327 | 119 | 208 | 36% |
-| low | 135 | 43 | 92 | 32% |
+| medium | 299 | 109 | 190 | 36% |
+| low | 43 | 13 | 30 | 30% |
 
 ## By Rank Position
 | Rank | Trades | Win Rate |
 |---|---|---|
-| #1 | 269 | 36% |
+| #1 | 149 | 39% |
 | #2 | 109 | 33% |
 | #3 | 51 | 33% |
 | #4 | 25 | 32% |
@@ -334,7 +216,7 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Model | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
 | claude-haiku-4-5 | 8 | 1 | 7 | 12% | -0.25 |
-| claude-sonnet-4-6 | 461 | 163 | 298 | 35% | -0.11 |
+| claude-sonnet-4-6 | 341 | 123 | 218 | 36% | -0.10 |
 | unknown | 4 | 1 | 3 | 25% | -0.61 |
 
 ## Your Predictions vs Reality (LEARN FROM EACH ONE)
@@ -342,29 +224,29 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 
 | Date | Symbol | Dir | TF | Conf | TF-Conf | Pred R:R | Actual R:R | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|
-| 2026-09-21 | ONDOUSDT | S | intra | low | 1/4 | 0.75 | -1.0 | stop_loss | 0.5R |
-| 2026-09-21 | USELESSU | L | intra | low | 2/4 | 0.75 | 0.0 | be_stop | 0.47R |
-| 2026-09-20 | SAGAUSDT | S | intra | low | 1/4 | 0.75 | 0.0 | be_stop | 0.99R |
-| 2026-09-20 | ALGOUSDT | S | intra | low | 1/4 | 0.75 | 0.3 | trail_stop | 1.35R |
-| 2026-09-20 | ZILUSDT | L | intra | low | 4/4 | 0.75 | -1.0 | stop_loss | 0.12R |
-| 2026-09-19 | ENAUSDT | S | intra | low | 1/4 | 0.75 | -1.0 | stop_loss | 0.17R |
-| 2026-09-19 | AKEUSDT | L | intra | low | 4/4 | 0.75 | 1.7 | target_2 | 2.25R |
-| 2026-09-19 | ZAMAUSDT | S | intra | low | 1/4 | 0.75 | -1.0 | stop_loss | 0.46R |
-| 2026-09-19 | STRKUSDT | S | intra | low | 1/4 | 0.75 | -1.0 | stop_loss | 0.5R |
-| 2026-09-19 | FUSDT | L | intra | low | 3/4 | 0.75 | -0.72 | expired | 0.07R |
-| 2026-09-19 | MARSCOIN | L | scalp | low | 2/4 | 0.812 | -1.0 | stop_loss | 0.62R |
-| 2026-09-19 | XLMUSDT | S | intra | med | 1/4 | 0.75 | 0.0 | be_stop | 0.82R |
-| 2026-09-19 | HBARUSDT | S | intra | med | 1/4 | 0.75 | -1.0 | stop_loss | 0.62R |
-| 2026-09-18 | ETHUSDT | S | intra | med | 1/4 | 0.75 | -1.0 | stop_loss | 0.58R |
-| 2026-09-18 | DOGEUSDT | S | intra | med | 1/4 | 0.75 | -1.0 | stop_loss | 0.0R |
-| 2026-09-18 | FARTCOIN | S | intra | med | 2/4 | 0.75 | -1.0 | stop_loss | 0.65R |
-| 2026-09-18 | FARTCOIN | S | intra | med | 2/4 | 0.751 | -1.0 | stop_loss | 0.59R |
-| 2026-09-17 | ADAUSDT | S | intra | med | 1/4 | 0.75 | -1.0 | stop_loss | 0.28R |
-| 2026-09-17 | ADAUSDT | S | intra | med | 1/4 | 0.75 | -1.0 | stop_loss | 0.48R |
-| 2026-09-17 | IOSTUSDT | S | intra | med | 2/4 | 0.75 | -0.76 | expired | 0.4R |
+| 2026-09-16 | 1000PEPE | S | intra | med | 3/4 | 0.943 | -1.0 | stop_loss | 0.82R |
+| 2026-09-15 | BTCUSDT | S | intra | med | 3/4 | 0.957 | 0.3 | trail_stop | 1.3R |
+| 2026-09-14 | PUMPFUNU | S | intra | med | 3/4 | 0.844 | 0.68 | target_1 | 0.92R |
+| 2026-09-13 | SOLUSDT | S | intra | med | 3/4 | 0.977 | -1.0 | stop_loss | 0.67R |
+| 2026-09-12 | DOGEUSDT | S | intra | med | 3/4 | 0.75 | 0.3 | trail_stop | 1.46R |
+| 2026-09-12 | XRPUSDT | S | intra | med | 3/4 | 0.75 | 0.0 | be_stop | 0.88R |
+| 2026-09-12 | CASHCATU | S | intra | med | 3/4 | 0.75 | 0.3 | trail_stop | 1.04R |
+| 2026-09-12 | FARTCOIN | S | intra | med | 3/4 | 0.75 | 0.3 | trail_stop | 1.04R |
+| 2026-09-12 | BEATUSDT | S | intra | med | 3/4 | 0.75 | 0.74 | target_1 | 0.96R |
+| 2026-09-05 | 1000PEPE | S | intra | med | 3/4 | 0.821 | -1.0 | stop_loss | 0.05R |
+| 2026-08-31 | SOXLUSDT | S | intra | med | 3/4 | 0.75 | 2.05 | target_2 | 2.2R |
+| 2026-08-28 | SNXXUSDT | S | intra | med | 3/4 | 0.87 | 0.21 | expired | 0.54R |
+| 2026-08-27 | WLFIUSDT | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.1R |
+| 2026-08-22 | BEATUSDT | S | intra | med | 3/4 | 0.75 | 0.59 | target_1 | 0.6R |
+| 2026-08-11 | XRPUSDT | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.58R |
+| 2026-08-11 | BTRUSDT | S | intra | med | 3/4 | 0.82 | -1.0 | stop_loss | 0.25R |
+| 2026-08-11 | SQDUSDT | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.13R |
+| 2026-08-09 | BMTUSDT | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.41R |
+| 2026-08-09 | XRPUSDT | S | intra | med | 3/4 | 0.75 | 0.78 | target_1 | 1.85R |
+| 2026-08-07 | ESPORTSU | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.14R |
 
-**Prediction gap: avg predicted R:R = 1.3, avg actual = -0.12 (gap of 1.4R)**
-**Direction accuracy: 291/473 (62%) reached 0.5R+ favorable. Avg MFE: 0.90R**
+**Prediction gap: avg predicted R:R = 1.5, avg actual = -0.11 (gap of 1.6R)**
+**Direction accuracy: 221/353 (63%) reached 0.5R+ favorable. Avg MFE: 0.94R**
 
 ## Trader's Actual Trades (Manual Log)
 - Closed trades: 4 (1W / 3L)
@@ -410,6 +292,6 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 - Best setup type: **range_breakout** (2/3 wins)
 - Worst setup type: **post_liquidation** (0/4 wins, 0%) — deprioritize unless 4/4 TF confluence
 - CALIBRATION ISSUE: 'High' confidence setups don't outperform 'Medium'. Recalibrate confidence scoring.
-- Best performing model: **claude-sonnet-4-6** (35% win rate, -0.11 avg R:R)
-- claude-sonnet-4-6: 35% win rate, -0.11 avg R:R over 461 trades
+- Best performing model: **claude-sonnet-4-6** (36% win rate, -0.10 avg R:R)
+- claude-sonnet-4-6: 36% win rate, -0.10 avg R:R over 341 trades
 - claude-haiku-4-5: 12% win rate, -0.25 avg R:R over 8 trades

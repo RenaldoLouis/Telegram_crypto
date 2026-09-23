@@ -1,7 +1,7 @@
 # Strategic Rules (derived from 353 evaluated trades — solid sample)
-_Last updated: 2026-09-23 07:08 UTC_
+_Last updated: 2026-09-23 10:00 UTC_
 
-0. **v11.3 NOT VALIDATING — REVIEW NEEDED**: 116 forward trades only reached 46% WR / -0.03R exp vs targets 34% / +0.00R. ACTION: the last change did NOT deliver — re-audit before adding more rules (do not pile on new delta insights, that is how the bad-logic loop returns).
+0. **v13.0 UNPROVEN (MONITOR)**: deployed 2026-09-23; 0 v2-engine forward trades yet. Target ≥70% profitable (net, partial model) and net exp > +0.00R over 30 trades; baseline (pre-fix, not comparable) 43.1% profitable / -0.178R net. ACTION: nothing is proven until the forward book says so.
 
 1. **MODERATE SELECTIVITY**: Win rate is 35%. ACTION: Output 2-4 setups per run. Prefer fewer, higher-conviction setups over padding to 5.
 2. **CONFIDENCE MISCALIBRATED**: 'High' confidence is 3/11 (27% WR) but 'Medium' is 109/299 (36% WR). ACTION: Reserve 'high confidence' for setups with 3/4 TF confluence + volume confirmed + clean structure. Do NOT equate 4/4 confluence with high confidence (see confluence rule below). If unsure, label 'medium' — it actually performs better.
