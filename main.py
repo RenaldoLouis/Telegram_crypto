@@ -534,8 +534,22 @@ async def run_screener():
 
     # 1. Fetch market data (required for BOTH the mechanical and Claude paths).
     print("→ Fetching Bybit data...")
-    bybit = BybitFetcher()
-    market = bybit.get_full_market_snapshot()
+    # Retry the whole snapshot (3 attempts, last one via the alternate api.bytick.com host):
+    # on CI a transient VPN hiccup used to abort the run outright, which — under the 90-min
+    # signal-freshness window — silently dropped that 4h close from the forward sample.
+    market = None
+    for attempt, domain in enumerate(("bybit", "bybit", "bytick"), 1):
+        try:
+            bybit = BybitFetcher(domain=domain)
+            market = bybit.get_full_market_snapshot()
+            break
+        except Exception as e:
+            print(f"  ⚠ snapshot attempt {attempt}/3 via api.{domain}.com failed: "
+                  f"{type(e).__name__}: {e}")
+            if attempt < 3:
+                await asyncio.sleep(20)
+    if market is None:
+        raise SystemExit("Bybit data fetch failed after 3 attempts — aborting scan (no brief).")
     print(f"  Got {len(market['top_movers'])} movers (from 50), {len(market['technicals'])} with multi-TF data")
     regime_info = market.get("market_regime") or {}
     regime_label = regime_info.get("regime", "neutral")

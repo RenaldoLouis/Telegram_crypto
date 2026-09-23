@@ -12,11 +12,16 @@ BAR_MS = {"1": 60_000, "5": 300_000, "15": 900_000, "60": 3_600_000, "240": 14_4
 
 
 class BybitFetcher:
-    def __init__(self):
+    def __init__(self, domain="bybit"):
         # Screener reads only public market data (get_tickers / get_kline),
         # which need no auth. Keyless avoids the 90-day API-key expiry and any
         # IP-whitelist requirement. Matches momentum_pulse.py.
-        self.client = HTTP(testnet=False)
+        # 2026-09-23: timeout 10s→30s + 5 forced retries. A single ReadTimeout on the
+        # first ticker call through the CI VPN killed a whole scan (= a missed 4h close).
+        # `domain="bytick"` selects Bybit's alternate API host (api.bytick.com), used by
+        # the pulse and by main.py's last-resort fallback.
+        self.client = HTTP(testnet=False, domain=domain, timeout=30,
+                           max_retries=5, retry_delay=5, force_retry=True)
 
     def get_top_movers(self, limit=50):
         """Returns top N USDT perpetuals by 24h turnover + price change."""
