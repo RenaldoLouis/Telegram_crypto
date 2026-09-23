@@ -5,6 +5,10 @@ import pandas as pd
 import json
 import time
 import config
+import signal_rules
+
+# Bar length per Bybit interval code (ms). "D" is 24h.
+BAR_MS = {"1": 60_000, "5": 300_000, "15": 900_000, "60": 3_600_000, "240": 14_400_000, "D": 86_400_000}
 
 
 class BybitFetcher:
@@ -149,256 +153,35 @@ class BybitFetcher:
 
     @staticmethod
     def _check_validated_signals(candles, tf_label):
-        """Check validated signal formulas against candle data.
+        """Run the shared signal rules on the LAST CLOSED bar of `candles`.
 
-        Passed out-of-sample train/test validation on 15 symbols (monthly re-check;
-        last re-validation 2026-09-10):
-          EXECUTE tier:
-          - trend_pullback_short: 4h ONLY (1h rejected as overfit; Sep 10: holds,
-                                   top combo test +0.037 gross / 100% robust — thin)
-          - failed_breakout_short: 4h ONLY (Sep 10: holds, test +0.096 / 67% robust)
-          - liquidity_sweep_long: confirmed BOTH 1h + 4h again on Sep 10 (1h clean
-                                   +0.098 / 100% robust) — the only long signal.
-          WATCH tier (surfaced + paper-tracked, NEVER executed/counted):
-          - rsi_bounce_long       : 4h (2026-08-20: gross-positive, net-marginal)
-          - range_reversion_short : 4h (Sep 10: ★ +0.250 gross / N=30 / 100% robust —
-                                     reject→strong flip needs a 2nd consecutive pass)
-          - range_reversion_long  : 4h (Sep 10: ★ +0.196 gross / N=23 / 100% robust —
-                                     same 2nd-pass gate; long-side coverage candidate)
-        REMOVED:
-          - rsi_rejection_short 1h — REMOVED 2026-09-10: failed the monthly re-val
-            (all top combos test-negative on fresh 1h data). Its 4h variant flipped
-            to ★ STRONG (+0.283/N=82/100%) after being dropped Jul 29 — a flip-flop,
-            so it is a promotion candidate ONLY after a 2nd consecutive monthly pass
-            (also pairs with the CVD slope-confirm fork).
-          - macd_momentum_long/short — removed Jul 29 and earlier; passed again
-            Sep 10 on one TF each but stay out (repeat flip-floppers).
-        Only called for 1h and 4h.
-
-        Returns list of signal dicts (empty if none fire).
+        v13.0 (2026-09-23): the rules themselves live in `signal_rules.detect_at`, the
+        same function the unified backtester walks bar-by-bar, so the live signal
+        population is by construction the backtested population. `candles` MUST
+        already exclude the still-open bar (see `_split_closed`) — the pre-v13 detector
+        evaluated the open bar, which the backtester never saw (audit 2026-09-23).
+        Tier ("execute"/"watch") comes from `signal_rules.SIGNAL_TIER`.
+        Only called for 1h and 4h. Returns a list of signal dicts (empty if none fire).
         """
         if len(candles) < 55:
             return []
+        df = signal_rules.compute_indicators(candles)
+        return signal_rules.detect_at(df, len(df) - 1, tf_label)
 
-        df = pd.DataFrame(
-            candles,
-            columns=["timestamp", "open", "high", "low", "close", "volume", "turnover"]
-        )
-        df[["open", "high", "low", "close", "volume"]] = df[
-            ["open", "high", "low", "close", "volume"]
-        ].astype(float)
-
-        # Compute needed indicators
-        delta = df["close"].diff()
-        gain = delta.where(delta > 0, 0).rolling(14).mean()
-        loss = -delta.where(delta < 0, 0).rolling(14).mean()
-        rs = gain / loss
-        df["rsi"] = 100 - (100 / (1 + rs))
-        df["ema20"] = df["close"].ewm(span=20, adjust=False).mean()
-        df["ema50"] = df["close"].ewm(span=50, adjust=False).mean()
-        tr = pd.concat([
-            df["high"] - df["low"],
-            (df["high"] - df["close"].shift()).abs(),
-            (df["low"] - df["close"].shift()).abs(),
-        ], axis=1).max(axis=1)
-        df["atr"] = tr.rolling(14).mean()
-        ema12 = df["close"].ewm(span=12, adjust=False).mean()
-        ema26 = df["close"].ewm(span=26, adjust=False).mean()
-        df["macd"] = ema12 - ema26
-        df["macd_sig"] = df["macd"].ewm(span=9, adjust=False).mean()
-        df["macd_hist"] = df["macd"] - df["macd_sig"]
-        plus_dm = df["high"].diff()
-        minus_dm = -df["low"].diff()
-        plus_dm = plus_dm.where((plus_dm > minus_dm) & (plus_dm > 0), 0.0)
-        minus_dm = minus_dm.where((minus_dm > plus_dm) & (minus_dm > 0), 0.0)
-        atr_w = tr.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
-        plus_di = 100 * plus_dm.ewm(alpha=1/14, min_periods=14, adjust=False).mean() / atr_w
-        minus_di = 100 * minus_dm.ewm(alpha=1/14, min_periods=14, adjust=False).mean() / atr_w
-        di_sum = (plus_di + minus_di).replace(0, float('nan'))
-        dx = 100 * (plus_di - minus_di).abs() / di_sum
-        df["adx"] = dx.ewm(alpha=1/14, min_periods=14, adjust=False).mean()
-
-        c = df.iloc[-1]  # current
-        p = df.iloc[-2]  # previous
-        p2 = df.iloc[-3] # 2 candles ago
-
-        signals = []
-
-        # Guard: need valid indicators
-        if not all(pd.notna(c[col]) for col in ["rsi", "ema20", "ema50", "atr", "adx", "macd_hist"]):
-            return []
-        if c["atr"] <= 0:
-            return []
-
-        # --- Signal 1: RSI Rejection Short — REMOVED 2026-09-10 ---
-        # Was live on 1h (Jul 29: ★ STRONG). The Sep 10 monthly re-validation
-        # FAILED it on fresh 1h data (every top combo test-negative, best -0.08)
-        # while the 4h variant flipped back to ★ STRONG — a TF flip-flop. Per the
-        # drift rule the 1h gate is removed; the 4h variant is a promotion
-        # candidate only after a 2nd consecutive monthly pass (it also pairs with
-        # the CVD slope-confirm fork, which was validated on the 4h variant).
-
-        # --- Signal 2: Liquidity Sweep Long (1h + 4h) ---
-        # A lower wick pierces the prior 20-candle low by >=0.15 ATR (a stop-hunt),
-        # the piercing wick is >= 50% of the candle range, and price closes back
-        # ABOVE the swept low with RSI < 50. Structural stop at the swept low - 0.25
-        # ATR (carry an explicit stop_price, like failed_breakout_short).
-        # Validated (Jul 29 2026 re-run): confirmed BOTH TFs — 4h test +0.044
-        # (N=94, 100% robust), 1h test +0.084 (N=83, 100% robust). This is the
-        # ONLY long signal after macd_momentum_long was dropped.
-        if len(df) >= 22:
-            prior_low = float(df["low"].iloc[-21:-1].min())
-            atr = float(c["atr"])
-            rng = float(c["high"]) - float(c["low"])
-            pierce = prior_low - float(c["low"])
-            lower_wick = min(float(c["open"]), float(c["close"])) - float(c["low"])
-            if (rng > 0 and atr > 0 and
-                    pierce >= 0.15 * atr and
-                    float(c["close"]) > prior_low and
-                    lower_wick >= 0.5 * rng and
-                    c["rsi"] < 50):
-                stop_price = float(c["low"]) - 0.25 * atr
-                risk = float(c["close"]) - stop_price
-                if risk > 0:
-                    signals.append({
-                        "signal": "liquidity_sweep_long",
-                        "tf": tf_label,
-                        "direction": "long",
-                        "target_r": 2.0,
-                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
-                        "stop_price": round(stop_price, 8),  # exact structural stop
-                        "indicators": f"swept {prior_low:.4f} low, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
-                        "historical": "+0.04 expect (4h test N=94), +0.08 (1h test N=83)",
-                    })
-
-        # --- Signal 3: Trend Pullback Short (4h ONLY) ---
-        # Downtrend + price pulled back to EMA20 + MACD confirms.
-        # Validated (Jul 2026 re-run): 4h test +0.280, N=111, 100% robust.
-        # 1h REJECTED as overfit (all variants negative test exp) — gated to 4h only.
-        if (tf_label == "4h" and
-            c["ema20"] < c["ema50"] and
-            c["adx"] > 15 and
-            50 <= c["rsi"] <= 70 and
-            float(c["close"]) < float(c["ema50"]) and
-            abs(float(c["close"]) - float(c["ema20"])) < 0.7 * float(c["atr"]) and
-            c["macd"] < 0):
-            signals.append({
-                "signal": "trend_pullback_short",
-                "tf": tf_label,
-                "direction": "short",
-                "target_r": 2.0,
-                "stop_atr": 1.5,
-                "indicators": f"EMA20<EMA50, RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}, near EMA20",
-                "historical": "+0.28 expect (4h test, N=111, 100% robust)",
-            })
-
-        # --- Signal 4: Failed Breakout Short (4h ONLY) ---
-        # Price pokes above the prior 20-candle high intrabar then closes back
-        # below it (bull trap / upthrust). STRUCTURAL stop at the fired candle's
-        # high + 0.25 ATR, so we carry an explicit stop_price (not a flat stop_atr).
-        # Validated (Jul 2026, Phase 3): 4h test +0.120, N=75, 100% robust,
-        # params buffer_atr=0.25 / rsi_gate=45. 1h only ~MARGINAL → gated to 4h.
-        if (tf_label == "4h" and len(df) >= 22):
-            prior_high = float(df["high"].iloc[-21:-1].max())
-            atr = float(c["atr"])
-            if (float(c["high"]) > prior_high and
-                    float(c["close"]) < prior_high and
-                    float(c["close"]) < float(c["open"]) and
-                    c["rsi"] > 45 and atr > 0):
-                stop_price = float(c["high"]) + 0.25 * atr
-                risk = stop_price - float(c["close"])
-                if risk > 0:
-                    signals.append({
-                        "signal": "failed_breakout_short",
-                        "tf": tf_label,
-                        "direction": "short",
-                        "target_r": 2.0,
-                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
-                        "stop_price": round(stop_price, 8),  # exact structural stop
-                        "indicators": f"failed breakout of {prior_high:.4f}, RSI {c['rsi']:.1f}",
-                        "historical": "+0.12 expect (4h test, N=75, 100% robust)",
-                    })
-
-        # --- Signal 5: RSI Bounce Long (WATCH tier, 4h) ---
-        # RSI was deeply oversold (<30) and is now crossing back up (30-45, rising).
-        # A mean-reversion LONG bought into a washed-out dip. Validated GROSS on the
-        # 2026-08-20 re-run (4h test +0.108R, N=20, 100% robust) BUT net-marginal
-        # after ~0.12R round-trip cost — so it ships as tier="watch" (surfaced +
-        # paper-tracked for forward confirmation, NOT an executed edge signal). It is
-        # ALSO the long-side coverage the strict EXECUTE gates reject: fired at a
-        # bottom it has low bullish confluence + no volume spike, so it would never
-        # clear enforce_setups. WATCH is exactly where such a candidate belongs.
-        # Params from the robustness sweep: rsi_extreme=30 / rsi_recover<45 / stop 2.0 ATR.
-        if (tf_label == "4h" and
-                pd.notna(p["rsi"]) and pd.notna(p2["rsi"]) and
-                p2["rsi"] < 30 and p["rsi"] < 35 and
-                30 < c["rsi"] < 45 and c["rsi"] > p["rsi"]):
-            signals.append({
-                "signal": "rsi_bounce_long",
-                "tf": tf_label,
-                "direction": "long",
-                "target_r": 2.0,
-                "stop_atr": 2.0,
-                "tier": "watch",   # gross-positive but net-marginal — paper-track, don't execute
-                "indicators": f"RSI {c['rsi']:.1f} bouncing (was {p2['rsi']:.1f}), ADX {c['adx']:.1f}",
-                "historical": "+0.11 expect GROSS (4h test N=20, 100% robust); net-marginal → watch",
-            })
-
-        # --- Signals 6+7: Range Reversion Short / Long (WATCH tier, 4h) ---
-        # Ranging market (low ADX) + RSI extreme at the edge of the 20-candle
-        # range → fade back toward the middle. Both were REJECTED in earlier
-        # re-runs and came back ★ STRONG on the 2026-09-10 monthly re-validation
-        # (short: test +0.250 GROSS / N=30 / 100% robust; long: +0.196 / N=23 /
-        # 100% robust — 1h overfit, so 4h only). A reject→strong flip needs a
-        # SECOND consecutive monthly pass before EXECUTE promotion, so both ship
-        # tier="watch" (surfaced + paper-tracked, excluded from the edge book).
-        # The long doubles as long-side coverage (liquidity_sweep_long rarely fires).
-        # high_20/low_20/range_pct mirror the backtester: rolling 20 INCLUDING the
-        # current candle; range_pct = (high_20 - low_20) / close * 100.
-        if tf_label == "4h":
-            high_20 = float(df["high"].iloc[-20:].max())
-            low_20 = float(df["low"].iloc[-20:].min())
-            close = float(c["close"])
-            atr = float(c["atr"])
-            range_pct = (high_20 - low_20) / close * 100 if close > 0 else 0.0
-            # short @ range top — validated params: rsi>70, adx<25, range>=5.0%,
-            # close within 1.0% of high_20, stop high_20 + 0.7 ATR, target 1.5R
-            if (c["adx"] < 25 and c["rsi"] > 70 and range_pct >= 5.0 and
-                    close >= high_20 * 0.99):
-                stop_price = high_20 + 0.7 * atr
-                risk = stop_price - close
-                if risk > 0:
-                    signals.append({
-                        "signal": "range_reversion_short",
-                        "tf": tf_label,
-                        "direction": "short",
-                        "target_r": 1.5,
-                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
-                        "stop_price": round(stop_price, 8),  # structural stop above range top
-                        "tier": "watch",  # reject→strong flip: needs a 2nd consecutive monthly pass
-                        "indicators": f"range top {high_20:.4f} ({range_pct:.1f}% range), RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
-                        "historical": "+0.25 expect GROSS (4h test N=30, 100% robust, Sep 10) — watch pending 2nd pass",
-                    })
-            # long @ range bottom — validated params: rsi<30, adx<18, range>=4.0%,
-            # close within 1.5% of low_20, stop low_20 - 0.3 ATR, target 1.5R
-            if (c["adx"] < 18 and c["rsi"] < 30 and range_pct >= 4.0 and
-                    close <= low_20 * 1.015):
-                stop_price = low_20 - 0.3 * atr
-                risk = close - stop_price
-                if risk > 0:
-                    signals.append({
-                        "signal": "range_reversion_long",
-                        "tf": tf_label,
-                        "direction": "long",
-                        "target_r": 1.5,
-                        "stop_atr": round(risk / atr, 2),   # ATR-equivalent, for display
-                        "stop_price": round(stop_price, 8),  # structural stop below range bottom
-                        "tier": "watch",  # reject→strong flip: needs a 2nd consecutive monthly pass
-                        "indicators": f"range bottom {low_20:.4f} ({range_pct:.1f}% range), RSI {c['rsi']:.1f}, ADX {c['adx']:.1f}",
-                        "historical": "+0.20 expect GROSS (4h test N=23, 100% robust, Sep 10) — watch pending 2nd pass",
-                    })
-
-        return signals
+    @staticmethod
+    def _split_closed(candles, interval, now_ms=None):
+        """Split oldest-first Bybit kline rows into (closed_rows, open_row_or_None).
+        Bybit's newest row is the bar in progress; its start + interval is in the future."""
+        if not candles:
+            return [], None
+        now_ms = now_ms or int(time.time() * 1000)
+        ms = BAR_MS.get(str(interval))
+        if ms is None:
+            return list(candles), None
+        last = candles[-1]
+        if int(last[0]) + ms > now_ms:
+            return list(candles[:-1]), last
+        return list(candles), None
 
     @staticmethod
     def _detect_divergences(df, lookback=40, order=3):
@@ -532,15 +315,30 @@ class BybitFetcher:
                 candles = res["result"]["list"]
                 candles.reverse()
 
-                indicators = self._compute_indicators(candles)
+                # v13.0: indicators + signals on CLOSED bars only. The open bar supplies
+                # the live price (entry reference) but never a signal — an open bar can
+                # fire and un-fire, and the backtester only ever sees the final shape.
+                closed, open_bar = BybitFetcher._split_closed(candles, interval)
+                if len(closed) < 30:
+                    raise ValueError(f"only {len(closed)} closed candles")
+                indicators = self._compute_indicators(closed)
                 label = tf_labels.get(interval, interval)
+                bar_ms = BAR_MS.get(str(interval), 0)
+                last_close_ts = int(closed[-1][0]) + bar_ms
+                indicators["last_closed_price"] = indicators["current_price"]
+                indicators["bar_age_min"] = round((time.time() * 1000 - last_close_ts) / 60000.0, 1)
+                if open_bar is not None:
+                    indicators["current_price"] = float(open_bar[4])   # live price
                 result["timeframes"][label] = indicators
 
-                # Check validated signals on 1h and 4h only
+                # Check validated signals on 1h and 4h only (closed bars)
                 if label in ("1h", "4h"):
-                    sigs = BybitFetcher._check_validated_signals(candles, label)
+                    sigs = BybitFetcher._check_validated_signals(closed, label)
                     for sig in sigs:
                         sig["symbol"] = symbol
+                        sig["bar_close_ts"] = last_close_ts
+                        sig["age_min"] = indicators["bar_age_min"]
+                        sig["bar_close"] = float(closed[-1][4])
                     validated_signals.extend(sigs)
             except Exception as e:
                 print(f"  Warning: {symbol} {interval} kline failed: {e}")

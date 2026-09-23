@@ -21,6 +21,7 @@ from pathlib import Path
 import anthropic
 from pybit.unified_trading import HTTP
 import config
+import trade_sim
 
 
 # How many days to look forward for each timeframe
@@ -30,6 +31,13 @@ EVAL_WINDOWS = {
     "scalp": 1,
     "intraday": 2,
 }
+
+# Stamped on every result scored by the shared simulator (market-at-open entry). Records
+# without it were scored by the pre-2026-09-23 entry-zone engine and are NOT comparable.
+EVAL_ENGINE = "v2_market_open"
+# A no_data result is only made permanent once the run is this old; younger ones are
+# skipped and retried next eval-scan (previously 41/532 rows were lost forever).
+NO_DATA_GIVE_UP_DAYS = 14
 
 SETUPS_DIR = Path("logs/setups")
 EVALS_DIR = Path("logs/evaluations")
@@ -83,9 +91,11 @@ def fetch_klines_after(client, symbol, start_time_utc, days):
                 if ts >= cursor_start:
                     all_candles.append({
                         "timestamp": ts,
+                        "open": float(c[1]),
                         "high": float(c[2]),
                         "low": float(c[3]),
                         "close": float(c[4]),
+                        "volume": float(c[5]),
                     })
 
             # Move cursor past last candle
@@ -153,200 +163,85 @@ def evaluate_setup(client, setup, run_timestamp_utc):
     if not candles:
         return {"status": "no_data", "reason": "Could not fetch klines"}
 
-    # Phase 1: Did price enter the entry zone?
-    entry_triggered = False
-    entry_candle_idx = None
-    entry_price = (entry_low + entry_high) / 2  # assume mid-zone fill
+    # ---- Eval engine v2 (2026-09-23): market-at-open entry via the shared simulator ----
+    # The old "entry zone" trigger was a market order in disguise: the zone was centred
+    # on the live price, so 97% of setups "triggered" on the first candle, were filled at
+    # that candle's CLOSE, and could be stopped by the same candle's pre-fill range. The
+    # scan now fires on a CLOSED signal bar and the trader enters at market, so the
+    # honest model is a fill at the OPEN of the first 15m candle after the run. Every
+    # exit rule (wick stops, stop-before-target tie-break, T1 partial + BE, +0.3R trail,
+    # expiry mark-to-market, costs) lives in trade_sim.simulate — the SAME code the
+    # unified backtester validates signals with.
+    first_open = float(candles[0]["open"])
+    if direction == "long":
+        gap_stop = first_open <= stop_loss
+        gap_t1 = first_open >= target_1
+    else:
+        gap_stop = first_open >= stop_loss
+        gap_t1 = first_open <= target_1
+    if gap_stop:
+        return {"status": "gap_skipped",
+                "reason": f"first open {first_open} already beyond stop {stop_loss}"}
+    if gap_t1:
+        return {"status": "gap_skipped",
+                "reason": f"first open {first_open} already beyond target_1 {target_1}"}
 
-    for i, c in enumerate(candles):
-        if direction == "long":
-            # Price dipped into or through the entry zone
-            if c["low"] <= entry_high:
-                entry_triggered = True
-                entry_candle_idx = i
-                entry_price = min(max(c["close"], entry_low), entry_high)
-                break
-        else:  # short
-            if c["high"] >= entry_low:
-                entry_triggered = True
-                entry_candle_idx = i
-                entry_price = max(min(c["close"], entry_high), entry_low)
-                break
+    max_candles = days * 96  # 15m candles per eval window
+    sim = trade_sim.simulate(candles, direction, stop_loss, target_1, target_2,
+                             entry_price=None, max_candles=max_candles, candle_minutes=15)
+    if sim is None:
+        return {"status": "invalid_levels",
+                "reason": f"degenerate/inverted levels (entry {first_open}, stop {stop_loss}, "
+                          f"t1 {target_1}, t2 {target_2})"}
 
-    if not entry_triggered:
-        return {"status": "not_triggered", "reason": "Price never reached entry zone"}
-
-    # Phase 2: After entry, did stop or target hit first?
-    # Models realistic position management (v10 — +0.3R trail):
-    #   - Before T1 and before 1R MFE: original stop applies.
-    #   - Once price runs 1.0R in favor: stop tightens to +0.3R (lock a partial
-    #     gain) so structural winners aren't given back to zero. This replaces
-    #     the old "return all the way to breakeven" behavior — backtest showed
-    #     many trades reached 1.0-2.2R MFE then reversed to a 0R exit.
-    #   - Once T1 is hit but MFE < 1R: stop moves to breakeven.
-    #   - Partial profit: 50% closed at T1, remaining 50% trails with this stop.
-    # The trail decision uses MFE as of PRIOR candles only (no intracandle
-    # look-ahead — a candle cannot both reach 1R and honor the +0.3R stop).
-    LOCK_TRIGGER_RR = 1.0   # once MFE reaches this...
-    LOCK_STOP_RR = 0.3      # ...move the stop to +this many R
-    stop_hit = False
-    t1_hit = False
-    t2_hit = False
-    be_stop_hit = False     # breakeven stop hit after T1 (MFE stayed < 1R)
-    trail_stop_hit = False  # +0.3R trail stop hit after 1R MFE
-    exit_price = None
-    exit_reason = None
+    entry_price = sim["entry_price"]
     risk = abs(entry_price - stop_loss)
-    max_favorable_rr = 0.0  # best R:R reached before exit
-    candles_to_exit = 0
 
-    for c in candles[entry_candle_idx:]:
-        candles_to_exit += 1
-        mfe_prior = max_favorable_rr  # MFE known entering this candle
-
-        # Track MFE with this candle
-        if risk > 0:
-            if direction == "long":
-                favorable = (c["high"] - entry_price) / risk
-            else:
-                favorable = (entry_price - c["low"]) / risk
-            max_favorable_rr = max(max_favorable_rr, favorable)
-
-        # Effective protective stop for this candle, most-protective first.
-        if mfe_prior >= LOCK_TRIGGER_RR:
-            protect_reason = "trail_stop"
-            protect = (entry_price + LOCK_STOP_RR * risk) if direction == "long" \
-                else (entry_price - LOCK_STOP_RR * risk)
-        elif t1_hit:
-            protect_reason = "be_stop"
-            protect = entry_price
-        else:
-            protect_reason = "stop_loss"
-            protect = stop_loss
-
-        if direction == "long":
-            if c["low"] <= protect:
-                exit_price = protect
-                exit_reason = protect_reason
-                stop_hit = protect_reason == "stop_loss"
-                be_stop_hit = protect_reason == "be_stop"
-                trail_stop_hit = protect_reason == "trail_stop"
-                break
-            if not t1_hit and c["high"] >= target_1:
-                t1_hit = True
-            if target_2 and c["high"] >= target_2:
-                t2_hit = True
-                exit_price = target_2
-                exit_reason = "target_2"
-                break
-        else:  # short
-            if c["high"] >= protect:
-                exit_price = protect
-                exit_reason = protect_reason
-                stop_hit = protect_reason == "stop_loss"
-                be_stop_hit = protect_reason == "be_stop"
-                trail_stop_hit = protect_reason == "trail_stop"
-                break
-            if not t1_hit and c["low"] <= target_1:
-                t1_hit = True
-            if target_2 and c["low"] <= target_2:
-                t2_hit = True
-                exit_price = target_2
-                exit_reason = "target_2"
-                break
-
-    # If no definitive exit, determine outcome
-    if not stop_hit and not be_stop_hit and not trail_stop_hit and not t2_hit:
-        if t1_hit:
-            exit_price = target_1
-            exit_reason = "target_1"
-        else:
-            # Use last candle close as "still open" or expired
-            exit_price = candles[-1]["close"]
-            exit_reason = "expired"
-
-    # Calculate actual R:R (raw, without partial profit model)
-    if risk == 0:
-        actual_rr = 0
-    else:
-        if direction == "long":
-            actual_rr = round((exit_price - entry_price) / risk, 2)
-        else:
-            actual_rr = round((entry_price - exit_price) / risk, 2)
-
-    won = actual_rr > 0
-
-    # Partial profit model (blended R:R):
-    # 50% of position closed at T1 if hit, remaining 50% trails with BE stop.
-    # This models realistic trading where you take partial at T1 and let rest run.
+    # Simulated closer-T1 backtest: would a T1 at 0.75R / 1.0R have been hit before the
+    # ORIGINAL stop? Run the same simulator with a static stop (no trail/BE), no T2.
+    sim_t1_075r = sim_t1_100r = False
     if risk > 0:
-        t1_rr = 0.0
-        if direction == "long":
-            t1_rr = (target_1 - entry_price) / risk
-        else:
-            t1_rr = (entry_price - target_1) / risk
-
-        if t1_hit:
-            # 50% closed at T1 + 50% at final exit
-            blended_rr = round(0.5 * t1_rr + 0.5 * actual_rr, 2)
-        else:
-            # T1 never hit — full position exits at actual price
-            blended_rr = actual_rr
-    else:
-        blended_rr = 0
-
-    # Simulated closer-T1 backtest: would tighter targets have won?
-    # Check if T1 at 0.75R and 1.0R from entry would have been hit before stop.
-    sim_t1_075r = False
-    sim_t1_100r = False
-    if risk > 0 and entry_candle_idx is not None:
-        t1_at_075r = entry_price + (0.75 * risk) if direction == "long" else entry_price - (0.75 * risk)
-        t1_at_100r = entry_price + (1.0 * risk) if direction == "long" else entry_price - (1.0 * risk)
-        for c in candles[entry_candle_idx:]:
-            if direction == "long":
-                if c["low"] <= stop_loss:
-                    break  # stop hit first
-                if c["high"] >= t1_at_075r:
-                    sim_t1_075r = True
-                if c["high"] >= t1_at_100r:
-                    sim_t1_100r = True
-                    break  # both checked
+        for mult, key in ((0.75, "075"), (1.0, "100")):
+            t1_at = entry_price + mult * risk if direction == "long" else entry_price - mult * risk
+            s = trade_sim.simulate(candles, direction, stop_loss, t1_at, None,
+                                   entry_price=entry_price, max_candles=max_candles,
+                                   candle_minutes=15, trail=False)
+            hit = bool(s and s["target_1_hit"])
+            if key == "075":
+                sim_t1_075r = hit
             else:
-                if c["high"] >= stop_loss:
-                    break
-                if c["low"] <= t1_at_075r:
-                    sim_t1_075r = True
-                if c["low"] <= t1_at_100r:
-                    sim_t1_100r = True
-                    break
+                sim_t1_100r = hit
 
     result = {
         "status": "evaluated",
         "entry_triggered": True,
         "entry_price": round(entry_price, 6),
-        "exit_price": round(exit_price, 6),
-        "exit_reason": exit_reason,
-        "target_1_hit": t1_hit,
-        "target_2_hit": t2_hit,
-        "stop_hit": stop_hit,
-        "be_stop_hit": be_stop_hit,
-        "trail_stop_hit": trail_stop_hit,
-        "actual_rr": actual_rr,
-        "blended_rr": blended_rr,
-        "won": won,
-        "max_favorable_rr": round(max_favorable_rr, 2),
-        "candles_to_exit": candles_to_exit,
-        "risk_pct": round(risk / entry_price, 6) if entry_price else None,
+        "exit_price": round(sim["exit_price"], 6),
+        "exit_reason": sim["exit_reason"],
+        "target_1_hit": sim["target_1_hit"],
+        "target_2_hit": sim["target_2_hit"],
+        "stop_hit": sim["stop_hit"],
+        "be_stop_hit": sim["be_stop_hit"],
+        "trail_stop_hit": sim["trail_stop_hit"],
+        "actual_rr": round(sim["actual_rr"], 2),
+        "blended_rr": round(sim["blended_rr"], 2),
+        "won": sim["won"],
+        "max_favorable_rr": round(sim["max_favorable_rr"], 2),
+        "max_adverse_rr": round(sim["max_adverse_rr"], 2),
+        "candles_to_exit": sim["candles_to_exit"],
+        "hold_minutes": sim["hold_minutes"],
+        "risk_pct": sim["risk_pct"],
         "sim_t1_075r_hit": sim_t1_075r,
         "sim_t1_100r_hit": sim_t1_100r,
+        # Net-of-cost fields come straight from the simulator (single cost charge).
+        "cost_rr": sim["cost_rr"],
+        "net_rr": sim["net_rr"],
+        "net_blended_rr": sim["net_blended_rr"],
+        "won_net": sim["won_net"],
+        # The 2026-09-23 hit-rate metric: managed trade closed green NET of cost.
+        "profitable": sim["profitable"],
+        "eval_engine": EVAL_ENGINE,
     }
-    # Net-of-cost R (audit 2026-08-02): the honest number. gross expectancy here is thin
-    # enough that fees+slippage can flip it negative — so score every trade net too.
-    cost_rr = trade_cost_rr(result)
-    result["cost_rr"] = cost_rr
-    result["net_rr"] = round(actual_rr - cost_rr, 3)
-    result["net_blended_rr"] = round(blended_rr - cost_rr, 3)
-    result["won_net"] = result["net_rr"] > 0
     return result
 
 
@@ -434,6 +329,16 @@ def run_evaluation():
                 if result is None:
                     print("too early to evaluate")
                     continue  # skip this setup, evaluate others
+                if result.get("status") == "no_data":
+                    # Transient fetch failures used to be persisted forever (never retried).
+                    # Only give up once the run is old enough that the klines are clearly
+                    # never coming (delisted / never-listed symbol); otherwise leave the file
+                    # partial so the next eval-scan retries this setup.
+                    run_age_days = (datetime.now(timezone.utc)
+                                    - datetime.fromisoformat(run_ts)).days
+                    if run_age_days < NO_DATA_GIVE_UP_DAYS:
+                        print(f"— no data yet (retry next eval-scan; run is {run_age_days}d old)")
+                        continue
 
                 result["symbol"] = symbol
                 result["direction"] = setup["direction"]
@@ -580,6 +485,40 @@ def _increment_bucket(bucket, key, result):
         bucket[key]["losses"] += 1
 
 
+def _profitable(r):
+    """The 2026-09-23 hit-rate metric: managed trade (partial at T1 + trail) closed
+    green NET of cost. Stored as `profitable` by the v2 engine; derived from
+    net_blended_rr for older records."""
+    if r.get("profitable") is not None:
+        return bool(r["profitable"])
+    nb = r.get("net_blended_rr")
+    if nb is None:
+        nb = (r.get("blended_rr") if r.get("blended_rr") is not None
+              else r.get("actual_rr", 0)) - trade_cost_rr(r)
+    return nb > 0
+
+
+def _wilson(k, n, z=1.96):
+    """Wilson 95% interval for a proportion, as (lo%, hi%). None if n == 0."""
+    if not n:
+        return None
+    p = k / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / denom
+    return (round(max(0.0, centre - half) * 100, 1), round(min(1.0, centre + half) * 100, 1))
+
+
+def _fmt_prof(s):
+    """'71.4% [55–84]' style cell for profitable% with its Wilson CI (n>=5)."""
+    if not s["n"]:
+        return "—"
+    cell = f"{s['prof_pct']:.1f}%"
+    if s["n"] >= 5 and s.get("prof_ci"):
+        cell += f" [{s['prof_ci'][0]:.0f}–{s['prof_ci'][1]:.0f}]"
+    return cell
+
+
 def _group_stats(results):
     """WR / expectancy / profit-factor for a list of evaluated result dicts."""
     n = len(results)
@@ -588,7 +527,8 @@ def _group_stats(results):
         # empty group (e.g. an observation-only period with no signal-backed trades)
         # must not omit any key or generate_head_to_head KeyErrors mid eval-scan.
         return {"n": 0, "wr": 0.0, "exp": 0.0, "pf": 0.0, "wins": 0,
-                "net_wr": 0.0, "net_exp": 0.0, "net_pf": 0.0}
+                "net_wr": 0.0, "net_exp": 0.0, "net_pf": 0.0,
+                "prof": 0, "prof_pct": 0.0, "prof_ci": None}
     rr = [r.get("actual_rr", 0) for r in results]
     wins = sum(1 for r in results if r.get("won"))
     gross_win = sum(x for x in rr if x > 0)
@@ -601,8 +541,10 @@ def _group_stats(results):
     ngw = sum(x for x in nrr if x > 0)
     ngl = abs(sum(x for x in nrr if x < 0))
     npf = ngw / ngl if ngl > 0 else (float("inf") if ngw > 0 else 0.0)
+    prof = sum(1 for r in results if _profitable(r))
     return {"n": n, "wr": wins / n * 100, "exp": sum(rr) / n, "pf": pf, "wins": wins,
-            "net_wr": nwins / n * 100, "net_exp": sum(nrr) / n, "net_pf": npf}
+            "net_wr": nwins / n * 100, "net_exp": sum(nrr) / n, "net_pf": npf,
+            "prof": prof, "prof_pct": prof / n * 100, "prof_ci": _wilson(prof, n)}
 
 
 def generate_head_to_head(all_evals):
@@ -646,50 +588,60 @@ def generate_head_to_head(all_evals):
             by_mech_signal.setdefault(r.get("backtested_signal") or "(none)", []).append(r)
 
     rt_pct = 2 * (config.TAKER_FEE_PCT + config.SLIPPAGE_PCT)
+    hit_target = float(getattr(config, "HIT_RATE_TARGET_PCT", 70))
+    hit_min_n = int(getattr(config, "HIT_RATE_MIN_TRADES", 30))
     lines = ["# Head-to-Head: Mechanical vs Claude", "",
              f"Total evaluated trades: {len(evaluated)}",
              f"Cost model: {rt_pct*100:.3f}% round-trip (fee {config.TAKER_FEE_PCT*100:.3f}%"
              f" + slippage {config.SLIPPAGE_PCT*100:.3f}% ×2) + funding; net = gross − cost.", "",
+             f"Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose "
+             f"managed trade (50% at T1 + BE/+0.3R trail) closed green NET of cost; "
+             f"target ≥{hit_target:.0f}% over ≥{hit_min_n} trades with net exp > 0. "
+             f"[lo–hi] = Wilson 95% CI.", "",
              "## By source (gross → net of cost)", "",
-             "| source | n | win% | gross exp (R) | **net exp (R)** | net PF |",
-             "|---|---|---|---|---|---|"]
+             "| source | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | net PF |",
+             "|---|---|---|---|---|---|---|"]
     for src in sorted(by_source):
         s = _group_stats(by_source[src])
-        lines.append(f"| {src} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
+        lines.append(f"| {src} | {s['n']} | {s['wr']:.1f}% | **{_fmt_prof(s)}** | {s['exp']:+.3f} | "
                      f"**{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} |")
 
     # WATCH lane — promotion readout. Watch signals are paper-tracked and OUT of the edge
     # book, but this is where we check if one has quietly become executable: net-of-cost
     # expectancy vs the promotion bar, per signal. A ✅ here = manual promotion candidate.
-    bar, min_n = config.WATCH_PROMOTION_NET_EXP, config.WATCH_PROMOTION_MIN_TRADES
+    # Promotion bar (2026-09-23): the hit-rate target, not a bare expectancy bar.
+    bar, min_n = hit_target, hit_min_n
+
+    def _promo_status(s):
+        clears = s["prof_pct"] >= bar and s["net_exp"] > 0
+        if clears and s["n"] >= min_n:
+            return "✅ PROMOTABLE — review for EXECUTE"
+        if clears:
+            return f"↑ clears bar, building sample ({s['n']}/{min_n})"
+        if s["n"] < min_n:
+            return f"building ({s['n']}/{min_n})"
+        return "✗ below bar"
+
     lines += ["", "## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)", "",
               f"Bar to promote a watch signal into the gated EXECUTE book: "
-              f"**net-of-cost expectancy ≥ {bar:+.3f}R over ≥ {min_n} trades** "
+              f"**profitable% ≥ {bar:.0f}% AND net-of-cost expectancy > 0 over ≥ {min_n} trades** "
               f"(then still needs a manual both-direction/robustness sanity check).", "",
-              "| watch signal | n | win% | gross exp (R) | **net exp (R)** | status |",
-              "|---|---|---|---|---|---|"]
+              "| watch signal | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | status |",
+              "|---|---|---|---|---|---|---|"]
     if by_watch_signal:
-        for sig in sorted(by_watch_signal, key=lambda k: -_group_stats(by_watch_signal[k])["net_exp"]):
+        for sig in sorted(by_watch_signal, key=lambda k: -_group_stats(by_watch_signal[k])["prof_pct"]):
             s = _group_stats(by_watch_signal[sig])
-            if s["net_exp"] >= bar and s["n"] >= min_n:
-                status = "✅ PROMOTABLE — review for EXECUTE"
-            elif s["net_exp"] >= bar:
-                status = f"↑ clears bar, building sample ({s['n']}/{min_n})"
-            elif s["n"] < min_n:
-                status = f"building ({s['n']}/{min_n})"
-            else:
-                status = "✗ below bar"
-            lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
-                         f"**{s['net_exp']:+.3f}** | {status} |")
+            lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | **{_fmt_prof(s)}** | {s['exp']:+.3f} | "
+                         f"**{s['net_exp']:+.3f}** | {_promo_status(s)} |")
     else:
-        lines.append("| _(no watch trades evaluated yet)_ | 0 | — | — | — | — |")
+        lines.append("| _(no watch trades evaluated yet)_ | 0 | — | — | — | — | — |")
 
     lines += ["", "## By signal backing (gross → net of cost)", "",
-              "| backing | n | win% | gross exp (R) | **net exp (R)** | net PF |",
-              "|---|---|---|---|---|---|"]
+              "| backing | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | net PF |",
+              "|---|---|---|---|---|---|---|"]
     for key in sorted(by_backed):
         s = _group_stats(by_backed[key])
-        lines.append(f"| {key} | {s['n']} | {s['wr']:.1f}% | {s['exp']:+.3f} | "
+        lines.append(f"| {key} | {s['n']} | {s['wr']:.1f}% | **{_fmt_prof(s)}** | {s['exp']:+.3f} | "
                      f"**{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} |")
 
     lines += ["", "## By source × direction", "",
@@ -701,16 +653,45 @@ def generate_head_to_head(all_evals):
                      f"{s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
 
     lines += ["", "## Mechanical by signal", "",
-              "| signal | n | win% | expectancy (R) | profit factor |",
-              "|---|---|---|---|---|"]
+              "| signal | n | win% | **profitable%** | expectancy (R) | **net exp (R)** | profit factor |",
+              "|---|---|---|---|---|---|---|"]
     if by_mech_signal:
         for sig in sorted(by_mech_signal, key=lambda k: -sum(x.get("actual_rr", 0)
                                                               for x in by_mech_signal[k])):
             s = _group_stats(by_mech_signal[sig])
-            lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | "
-                         f"{s['exp']:+.3f} | {fmt_pf(s['pf'])} |")
+            lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | **{_fmt_prof(s)}** | "
+                         f"{s['exp']:+.3f} | **{s['net_exp']:+.3f}** | {fmt_pf(s['pf'])} |")
     else:
-        lines.append("| _(no mechanical trades yet)_ | 0 | — | — | — |")
+        lines.append("| _(no mechanical trades yet)_ | 0 | — | — | — | — | — |")
+
+    # ---- Eval engine v2 era (post-2026-09-23 fix) -------------------------------------
+    # Only records scored by the shared simulator (market-at-open entry, closed-bar
+    # signals). Pre-fix records were scored by the entry-zone engine on open-bar signals
+    # and are NOT comparable — this section is the book the 70% target is judged on.
+    v2 = [r for r in evaluated if r.get("eval_engine") == EVAL_ENGINE]
+    lines += ["", "## Eval engine v2 era (post-fix book — the one the 70% target is judged on)", ""]
+    if not v2:
+        lines.append(f"_No trades scored by the v2 engine yet (n=0). Pre-fix records above are "
+                     f"NOT comparable: they were scored with entry-zone fills on open-bar signals._")
+    else:
+        v2_src, v2_sig = {}, {}
+        for r in v2:
+            v2_src.setdefault(r.get("source", "claude"), []).append(r)
+            v2_sig.setdefault((r.get("source", "claude"),
+                               r.get("signal_name") or r.get("backtested_signal") or "(none)"), []).append(r)
+        lines += [f"n={len(v2)} v2-scored trades. Pre-fix records are not comparable.", "",
+                  "| source | n | **profitable%** | net exp (R) | net PF | status vs target |",
+                  "|---|---|---|---|---|---|"]
+        for src in sorted(v2_src):
+            s = _group_stats(v2_src[src])
+            lines.append(f"| {src} | {s['n']} | **{_fmt_prof(s)}** | {s['net_exp']:+.3f} | "
+                         f"{fmt_pf(s['net_pf'])} | {_promo_status(s)} |")
+        lines += ["", "| source | signal | n | **profitable%** | net exp (R) | status vs target |",
+                  "|---|---|---|---|---|---|"]
+        for (src, sig) in sorted(v2_sig, key=lambda k: (-len(v2_sig[k]), k)):
+            s = _group_stats(v2_sig[(src, sig)])
+            lines.append(f"| {src} | {sig} | {s['n']} | **{_fmt_prof(s)}** | {s['net_exp']:+.3f} | "
+                         f"{_promo_status(s)} |")
 
     m, c = _group_stats(by_source.get("mechanical", [])), _group_stats(by_source.get("claude", []))
     lines += ["", "## Verdict"]
@@ -769,10 +750,10 @@ def generate_head_to_head(all_evals):
     # Surface any watch signal that has quietly earned promotion (don't let it stay buried).
     promotable = [(sig, _group_stats(rs)) for sig, rs in by_watch_signal.items()]
     promotable = [(sig, s) for sig, s in promotable
-                  if s["net_exp"] >= bar and s["n"] >= min_n]
-    for sig, s in sorted(promotable, key=lambda x: -x[1]["net_exp"]):
-        print(f"  ✅ WATCH PROMOTABLE: {sig} net {s['net_exp']:+.3f}R over {s['n']}t "
-              f"(≥{bar:+.3f}R/{min_n}t) — review for EXECUTE promotion.")
+                  if s["prof_pct"] >= bar and s["net_exp"] > 0 and s["n"] >= min_n]
+    for sig, s in sorted(promotable, key=lambda x: -x[1]["prof_pct"]):
+        print(f"  ✅ WATCH PROMOTABLE: {sig} {s['prof_pct']:.0f}% profitable / net "
+              f"{s['net_exp']:+.3f}R over {s['n']}t (≥{bar:.0f}%/{min_n}t) — review for EXECUTE.")
 
 
 def update_lifetime_stats(all_evals):
@@ -990,6 +971,42 @@ def _version_validation_line(total, overall):
     ver = m.get("version", "latest")
     tgt = m.get("validation_target", {})
     min_trades = tgt.get("min_trades", 20)
+
+    # v13+ markers are judged on the hit-rate metric over v2-engine records only
+    # (era marker = eval_engine, not a cumulative trade count). Re-read the eval files:
+    # cheap, and the lifetime counters don't carry the profitable/eval_engine split.
+    if "profitable_pct_target" in tgt:
+        v2 = []
+        for ef in EVALS_DIR.glob("eval_*.json"):
+            try:
+                for r in json.loads(ef.read_text(encoding="utf-8")).get("results", []):
+                    if (r.get("status") == "evaluated" and r.get("eval_engine") == EVAL_ENGINE
+                            and r.get("source", "claude") != "watch"):
+                        v2.append(r)
+            except Exception:
+                continue
+        prof_tgt = tgt.get("profitable_pct_target", 70.0)
+        exp_tgt = tgt.get("expectancy_target", 0.0)
+        base = (f"baseline (pre-fix, not comparable) {m.get('baseline_profitable_pct')}% profitable / "
+                f"{m.get('baseline_net_expectancy')}R net")
+        if not v2:
+            return (f"0. **{ver} UNPROVEN (MONITOR)**: deployed {m.get('date')}; 0 v2-engine forward "
+                    f"trades yet. Target ≥{prof_tgt:.0f}% profitable (net, partial model) and net exp "
+                    f"> {exp_tgt:+.2f}R over {min_trades} trades; {base}. ACTION: nothing is proven "
+                    f"until the forward book says so.")
+        s = _group_stats(v2)
+        ci = f" [{s['prof_ci'][0]:.0f}–{s['prof_ci'][1]:.0f}]" if s["n"] >= 5 else ""
+        if s["n"] < min_trades:
+            return (f"0. **{ver} VALIDATING ({s['n']}/{min_trades} v2 forward trades)**: so far "
+                    f"{s['prof_pct']:.0f}% profitable{ci} / {s['net_exp']:+.2f}R net vs target "
+                    f"≥{prof_tgt:.0f}% / >{exp_tgt:+.2f}R. ACTION: too early — keep monitoring.")
+        if s["prof_pct"] >= prof_tgt and s["net_exp"] > exp_tgt:
+            return (f"0. **{ver} VALIDATED**: {s['n']} v2 forward trades at {s['prof_pct']:.0f}% "
+                    f"profitable{ci} / {s['net_exp']:+.2f}R net (targets ≥{prof_tgt:.0f}% / "
+                    f">{exp_tgt:+.2f}R). Maintain; keep the sample growing.")
+        return (f"0. **{ver} NOT VALIDATING — REVIEW NEEDED**: {s['n']} v2 forward trades at "
+                f"{s['prof_pct']:.0f}% profitable{ci} / {s['net_exp']:+.2f}R net vs targets "
+                f"≥{prof_tgt:.0f}% / >{exp_tgt:+.2f}R. ACTION: re-audit before adding rules.")
 
     if fwd_n <= 0:
         return (f"0. **{ver} UNPROVEN (MONITOR)**: {ver} just deployed at {cutover} trades; "
@@ -1650,9 +1667,15 @@ def generate_summary(all_evals):
             r["model"] = ev.get("model", "unknown")
             all_results.append(r)
 
-    evaluated = [r for r in all_results if r["status"] == "evaluated"]
+    # Headline numbers are the EXECUTE book only. WATCH rows (source="watch") bypass the
+    # gates by design and were previously mixed into these totals while
+    # update_lifetime_stats excluded them — the two readouts disagreed (audit 2026-09-23).
+    watch_evaluated = [r for r in all_results
+                       if r["status"] == "evaluated" and r.get("source") == "watch"]
+    evaluated = [r for r in all_results
+                 if r["status"] == "evaluated" and r.get("source") != "watch"]
     not_triggered = [r for r in all_results if r["status"] == "not_triggered"]
-    total = len(all_results)
+    total = len([r for r in all_results if r.get("source") != "watch"])
 
     if not evaluated:
         summary = "# Performance Summary\n\nNo evaluated setups yet. Need more data.\n"
@@ -1758,6 +1781,8 @@ def generate_summary(all_evals):
     blended_avg = sum(blended_rrs) / len(blended_rrs) if blended_rrs else 0
     blended_wr = blended_wins_count / len(blended_rrs) * 100 if blended_rrs else 0
     be_stops = sum(1 for r in evaluated if r.get("be_stop_hit"))
+    exec_stats = _group_stats(evaluated)
+    watch_stats = _group_stats(watch_evaluated)
 
     lines = [
         "# Performance Summary",
@@ -1769,9 +1794,14 @@ def generate_summary(all_evals):
         f"- Triggered: {len(evaluated)} ({len(evaluated)/total*100:.0f}%)" if total else "",
         f"- Not triggered: {len(not_triggered)}",
         f"- **Win rate: {win_rate:.1f}%** ({len(wins)}W / {len(losses)}L){prev_wr_str}",
+        f"- **Profitable (net, partial model): {exec_stats['prof_pct']:.1f}%** "
+        f"({exec_stats['prof']}/{exec_stats['n']}; target ≥{getattr(config, 'HIT_RATE_TARGET_PCT', 70):.0f}%)",
         f"- Avg actual R:R: {avg_rr:.2f}",
         f"- Avg winning R:R: {avg_win_rr:.2f}",
         f"- Avg losing R:R: {avg_loss_rr:.2f}",
+        f"- _(EXECUTE book only — WATCH lane: {watch_stats['n']} paper trades, "
+        f"{watch_stats['prof_pct']:.1f}% profitable, net {watch_stats['net_exp']:+.3f}R; "
+        f"excluded from every number above)_",
     ]
     if blended_rrs:
         lines += [

@@ -148,17 +148,18 @@ def _format_watch_block(watch):
                      "size it like an execute setup._")
     else:
         exp = w.get("signal_expectancy")
-        exp_str = f" · gross expectancy {exp:+.2f}R" if isinstance(exp, (int, float)) else ""
-        lines.append(f"_Signal `{sig}` fired but is below the validated net-of-cost "
-                     f"execute bar{exp_str}. Surfaced so the scan is never empty and the "
-                     "trade can be paper-tracked. NOT counted in the edge book._")
+        exp_str = f" · backtest hit rate {exp*100:.0f}% (net of cost)" if isinstance(exp, (int, float)) else ""
+        lines.append(f"_Signal `{sig}` passed the structural gates but has not yet proven the "
+                     f"70% forward bar{exp_str}. Paper-track it; eval-scan scores it under the "
+                     "unified trade model._")
     pr = w.get("predicted_rr")
     t2rr = _t2_rr(w)
     pr_str = f" (R:R {pr:.2f}:1)" if isinstance(pr, (int, float)) else ""
     t2_str = f" (R:R {t2rr:.2f}:1)" if t2rr is not None else ""
     lines.append(f"\n### {w.get('symbol','?')} | {direction} | Watch")
     lines.append("**Trade Plan:**")
-    lines.append(f"- Entry zone: {_fmt_price(w.get('entry_low'))} — {_fmt_price(w.get('entry_high'))}")
+    lines.append(f"- Entry: at market now (signal bar closed; reference "
+                 f"{_fmt_price(w.get('entry_low'))} — {_fmt_price(w.get('entry_high'))})")
     lines.append(f"- Stop loss: {_fmt_price(w.get('stop_loss'))}")
     lines.append(f"- Target 1: {_fmt_price(w.get('target_1'))}{pr_str} — partial profit, take 50%")
     lines.append(f"- Target 2: {_fmt_price(w.get('target_2'))}{t2_str} — reward leg")
@@ -209,12 +210,13 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
         tf = (s.get("timeframe") or "?").capitalize()
         lines.append(f"\n### #{s.get('rank','?')} — {s.get('symbol','?')} | {direction} | {tf}")
         exp = s.get("signal_expectancy")
-        exp_str = f" · validated expectancy {exp:+.2f}R" if isinstance(exp, (int, float)) else ""
+        exp_str = f" · backtest hit rate {exp*100:.0f}% (net of cost)" if isinstance(exp, (int, float)) else ""
         lines.append(f"**Signal:** `{s.get('signal_name','?')}` ({s.get('signal_tf','?')}){exp_str}")
         t2rr = _t2_rr(s)
         pr = s.get("predicted_rr")
         lines.append("**Trade Plan:**")
-        lines.append(f"- Entry zone: {_fmt_price(s.get('entry_low'))} — {_fmt_price(s.get('entry_high'))}")
+        lines.append(f"- Entry: at market now (signal bar closed; reference "
+                     f"{_fmt_price(s.get('entry_low'))} — {_fmt_price(s.get('entry_high'))})")
         lines.append(f"- Stop loss: {_fmt_price(s.get('stop_loss'))}")
         pr_str = f" (R:R {pr:.2f}:1)" if isinstance(pr, (int, float)) else ""
         lines.append(f"- Target 1: {_fmt_price(s.get('target_1'))}{pr_str} — partial profit, take 50%")

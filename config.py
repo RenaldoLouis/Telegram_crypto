@@ -24,7 +24,39 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 # The head-to-head shadow experiment is retired: the real bar is +0.05R net-of-cost, not
 # "beat Claude", so the comparison was vestigial. Reversible: set back to "claude".
 PRIMARY_SOURCE = "mechanical"
-MECHANICAL_MODEL_TAG = "mechanical_v1"   # recorded as `model` on mechanical setups for eval
+MECHANICAL_MODEL_TAG = "mechanical_v2"   # v13.0 (2026-09-23): closed-bar signals, unified trade sim
+
+# === Unified trade model (v13.0, 2026-09-23 audit) ==========================================
+# The audit found the backtester, the live builder and the evaluator each simulated a
+# DIFFERENT trade (open-bar signals vs closed, 8-day vs 2-day horizon, zone-trigger fiction,
+# no costs in the backtest). v13.0 makes them one trade: signals are detected on CLOSED bars
+# only (signal_rules.detect_at), the evaluator and unified_backtest.py both run trade_sim.py
+# (market entry at next 15m open, wick stops, T1 partial + BE + trail, costs), and WATCH
+# candidates must pass the same structural gates as EXECUTE ones.
+# A closed-bar signal is only actionable while it is FRESH — the scan may run up to ~2h after a
+# 4h close, and entering 2h late is not the trade that was validated (entry = next open).
+SIGNAL_MAX_AGE_MIN = {"1h": 45, "4h": 90}
+# Success metric (user decision 2026-09-23): share of surfaced suggestions that close
+# profitable NET of cost under the partial-profit model, sustained; net expectancy must stay > 0
+# so the hit rate is not bought with a bad payoff. Also the WATCH→EXECUTE promotion bar.
+HIT_RATE_TARGET_PCT = 70
+HIT_RATE_MIN_TRADES = 30
+# WATCH candidates must clear the structural gates (confluence floor, 4/4 refusal, long
+# gates, caps). No "observation" fallback: 90% of pre-v13 WATCH rows were gate-rejected setups
+# (net -0.20R) and they were what the user saw most days. An empty brief is a valid brief.
+WATCH_REQUIRES_GATES = True
+# range_reversion_short volume gate (2026-09-23 unified backtest: the one filter of 188 with a
+# large effect and train/test agreement. As the live rule (gate inside the rule): all-period n=101
+# 75% / +0.19R, test n=41 65.9% / -0.04R — a CANDIDATE, not proven). None disables the gate.
+RANGE_REVERSION_SHORT_MIN_VOL_SPIKE = 1.5
+# unified_backtest.py knobs (read via getattr; shown here for discoverability)
+UB_DEDUP_DAYS = 2               # mimic live dedup: one open trade per (symbol, direction)
+UB_MIN_HISTORY_DAYS = 60        # skip symbols with less closed history than this
+UB_DEFAULT_T1_R = 0.75          # default partial-profit level (R)
+UB_SHIP_PROFITABLE_PCT = 70     # SHIP verdict bar on TEST (with net>0 and n>=UB_SHIP_MIN_N)
+UB_CANDIDATE_PROFITABLE_PCT = 60
+UB_MIN_TEST_N = 20
+UB_SHIP_MIN_N = 30
 
 # === Claude Settings ===
 CLAUDE_MODEL = "claude-sonnet-4-6"   # use sonnet when tuning
@@ -37,8 +69,8 @@ BYBIT_CATEGORY = "linear"            # USDT perpetuals
 TOP_MOVERS_LIMIT = 30                # Screen top 30 by volume (liquidity filter caps real set ~24)
 KLINE_INTERVALS = {                  # Multi-timeframe candle config
     "15": 100,                       # 15m — scalp (last ~25h)
-    "60": 100,                       # 1h  — intraday (last ~4 days)
-    "240": 100,                      # 4h  — higher TF structure (last ~16 days)
+    "60": 300,                       # 1h  — intraday (~12 days; 300 for EMA50/ADX warm-up parity with the backtester)
+    "240": 300,                      # 4h  — higher TF structure (~50 days; same warm-up reason)
     "D": 210,                        # 1D  — trend context (last ~7 months, enough for SMA200)
 }
 # Legacy single-TF settings (kept for backward compat)

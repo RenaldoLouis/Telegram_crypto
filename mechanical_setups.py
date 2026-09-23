@@ -14,21 +14,22 @@ Ranking/confidence are deterministic — driven by each signal's validated
 out-of-sample expectancy (not a model's opinion).
 """
 
+import config
 import signal_levels as sl
 
-# Validated out-of-sample expectancy (R, GROSS) per (signal, timeframe), from the
-# monthly re-validations baked into bybit_data.py::_check_validated_signals
-# docstrings/labels. Keep in sync when signals are re-validated monthly via `backtest`.
+# Ranking score per (signal, timeframe): the out-of-sample (TEST) profitable% from the
+# 2026-09-23 unified backtest (`unified_backtest.py`, exact live trade model, net of cost),
+# expressed as a fraction. Replaces the pre-v13 GROSS expectancy table, which came from a
+# backtester that simulated a different trade (8-day hold, no costs, static target).
+# Kept under the key name `signal_expectancy` for schema compatibility — it is a HIT RATE.
+# Re-derive from logs/backtest_reports/unified_*.md after each harness run.
 EXPECTANCY = {
-    # rsi_rejection_short 1h REMOVED 2026-09-10 — failed the monthly re-val (its 4h
-    # variant went ★ STRONG; promotion candidate pending a 2nd consecutive pass).
-    ("trend_pullback_short", "4h"): 0.28,
-    ("failed_breakout_short", "4h"): 0.12,   # Phase 3, validated 4h-only (N=75)
-    ("liquidity_sweep_long", "1h"): 0.08,    # confirmed both TFs again 2026-09-10
-    ("liquidity_sweep_long", "4h"): 0.04,
-    ("rsi_bounce_long", "4h"): 0.11,          # 2026-08-20: WATCH — gross +0.108R/N20, net-marginal
-    ("range_reversion_short", "4h"): 0.25,    # 2026-09-10: ★ STRONG N=30 — WATCH pending 2nd pass
-    ("range_reversion_long", "4h"): 0.20,     # 2026-09-10: ★ STRONG N=23 — WATCH pending 2nd pass
+    ("range_reversion_short", "4h"): 0.66,   # vol_spike>=1.5 gate baked in: test n=41 65.9% / -0.04R (all-period 75% / +0.19R)
+    ("range_reversion_long", "4h"): 0.73,    # n=11 test — thin
+    ("failed_breakout_short", "4h"): 0.545,  # n=112 test
+    ("trend_pullback_short", "4h"): 0.526,   # n=152 test
+    ("liquidity_sweep_long", "1h"): 0.51,    # n=341 test
+    ("rsi_bounce_long", "4h"): 0.51,         # n=96 test
 }
 
 # Map a signal name to the canonical setup_type (must be in main.VALID_SETUP_TYPES).
@@ -74,10 +75,12 @@ def _tf_confluence(tech, direction):
     return max(1, min(4, count))
 
 
-def _confidence(expectancy, confluence):
-    if expectancy >= 0.5 and confluence >= 3:
+def _confidence(hit_rate, confluence):
+    """Confidence from the signal's TEST hit rate (fraction) + confluence.
+    high = at/above the 70% user bar with 3/4 confluence; medium = >=60%; else low."""
+    if hit_rate >= 0.70 and confluence >= 3:
         return "high"
-    if expectancy >= 0.25:
+    if hit_rate >= 0.60:
         return "medium"
     return "low"
 
@@ -177,8 +180,22 @@ def build_mechanical_setups(market):
     interest_scores = market.get("interest_scores") or {}
 
     setups = []
+    max_age = getattr(config, "SIGNAL_MAX_AGE_MIN", {}) or {}
+    stale = []
     for tech in market.get("technicals", []) or []:
         sigs = tech.get("validated_signals") or []
+        # v13.0 freshness gate: a closed-bar signal is the validated trade only if we
+        # enter at (about) the next bar's open. A scan that runs 2h after a 4h close is
+        # not that trade — skip it; the scan that ran right after the close took it.
+        fresh = []
+        for s in sigs:
+            limit = max_age.get(s.get("tf"))
+            age = s.get("age_min")
+            if limit is not None and age is not None and age > limit:
+                stale.append(f"{tech.get('symbol')}:{s.get('signal')}@{age:.0f}m")
+            else:
+                fresh.append(s)
+        sigs = fresh
         if not sigs:
             continue
         by_dir = {}
@@ -190,6 +207,10 @@ def build_mechanical_setups(market):
             setup = _build_one(tech, direction, group, regime, interest_scores)
             if setup:
                 setups.append(setup)
+
+    if stale:
+        print(f"  [mechanical] skipped {len(stale)} stale signal(s) past SIGNAL_MAX_AGE_MIN: "
+              f"{', '.join(stale[:6])}{' …' if len(stale) > 6 else ''}")
 
     # Deterministic rank: highest validated expectancy first, then confluence.
     setups.sort(key=lambda s: (s.get("signal_expectancy", 0.0), s.get("tf_confluence", 0)),

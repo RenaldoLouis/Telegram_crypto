@@ -466,12 +466,29 @@ def build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_la
     WATCH bypasses the EXECUTE gates on purpose: it is paper-tracked, never executed,
     and is excluded from the edge-proven book in weekly_eval (source="watch").
     """
-    candidate = raw_mechanical[0] if raw_mechanical else None  # already ranked by expectancy
-    if candidate is None:
-        candidate = _observation_candidate(technicals, interest_scores, regime_label)
-    if candidate is None:
-        return []
-    enrich_with_entry_indicators([candidate], technicals)
+    if getattr(config, "WATCH_REQUIRES_GATES", True):
+        # v13.0 (audit 2026-09-23): a WATCH suggestion must clear the SAME structural
+        # gates as an EXECUTE one. Pre-v13 the watch lane republished the top pre-gate
+        # setup — 90% of watch rows were confluence-1/2 setups the gates had refused,
+        # they ran -0.20R net, and they were what the user saw most days. Only genuine
+        # watch-TIER signals (paper-tracked candidates) may surface here; gate-rejected
+        # execute signals and the non-signal "observation" fallback are gone. An empty
+        # brief is a valid brief.
+        watch_raw = [s for s in raw_mechanical if s.get("tier") == "watch"]
+        if not watch_raw:
+            return []
+        enrich_with_entry_indicators(watch_raw, technicals)
+        kept = enforce_setups(watch_raw, regime_label)
+        if not kept:
+            return []
+        candidate = kept[0]
+    else:
+        candidate = raw_mechanical[0] if raw_mechanical else None  # already ranked by expectancy
+        if candidate is None:
+            candidate = _observation_candidate(technicals, interest_scores, regime_label)
+        if candidate is None:
+            return []
+        enrich_with_entry_indicators([candidate], technicals)
     _stamp_watch(candidate, regime_label, interest_scores)
     return [candidate]
 

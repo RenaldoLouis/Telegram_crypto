@@ -10,8 +10,30 @@
       "baseline_expectancy": -0.144,
       "baseline_pf": 0.75,
       "hypothesis": "De-noise + de-invert (canonical taxonomy, expectancy gates, 3/4>4/4, long conf>=3, no 4/4 rank#1, regime plumbing) lifts WR toward mid-30s and expectancy toward >=0 within ~20 forward trades.",
-      "validation_target": {"min_trades": 20, "wr_target": 34.0, "expectancy_target": 0.0},
+      "validation_target": {
+        "min_trades": 20,
+        "wr_target": 34.0,
+        "expectancy_target": 0.0
+      },
       "resolution": "CLOSED 2026-09-10 — WR target VALIDATED (43.5% over 92 gated forward trades, +12.2pp vs PRE 31.3%); expectancy target NOT met (-0.065R < 0, though +0.064R better than PRE). Verdict: selection de-noising worked, but subtraction cannot reach profit — the missing piece is a predictive input (fork A liq clusters / CVD / Phase 5 ML), not more gates. Segment report excludes source=watch since 2026-09-10 (watch bypasses gates by design; earlier 'gate violation' alarms were watch-tier false positives — gated book has 0, plus one claude-era 4/4-rank1 n=1 historical)."
+    },
+    {
+      "version": "v13.0",
+      "date": "2026-09-23",
+      "cutover_trade_count": 353,
+      "baseline_wins": 125,
+      "baseline_wr": 35.4,
+      "baseline_profitable": 152,
+      "baseline_profitable_pct": 43.1,
+      "baseline_net_expectancy": -0.178,
+      "hypothesis": "Unified trade simulation: closed-bar signal detection, market-at-open entry, same horizon/costs/exits in backtest and eval; WATCH lane gated. Target: ≥70% of surfaced suggestions profitable net of cost (partial model) over ≥30 forward trades, with net expectancy > 0.",
+      "validation_target": {
+        "min_trades": 30,
+        "profitable_pct_target": 70.0,
+        "expectancy_target": 0.0
+      },
+      "era_marker": "eval_engine == v2_market_open",
+      "note": "Baseline = pre-fix EXECUTE book (source mechanical/claude, watch excluded), scored by the entry-zone engine — NOT directly comparable to v2-scored trades; the v13 verdict uses ONLY eval_engine==v2_market_open records."
     }
   ]
 }

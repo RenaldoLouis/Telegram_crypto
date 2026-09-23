@@ -1,6 +1,6 @@
 # Crypto Screener — Progress Tracker
 
-_Last updated: 2026-07-21 (v12.0)_
+_Last updated: 2026-09-23 (v13.0 — unified trade model)_
 
 ---
 
@@ -81,6 +81,9 @@ Quarterly deep analysis (quarterly_analysis.py, manual — still available for d
 ---
 
 ## Current Status & Roadmap (READ FIRST when resuming)
+
+> **2026-09-23 — READ THIS FIRST (v13.0).** A whole-system audit found the backtester, the live builder and the evaluator each simulated a DIFFERENT trade, so six months of "no edge" numbers are non-comparable (neither proof nor disproof). v13.0 rebuilt the chain: `signal_rules.py` (closed-bar detection, shared), `trade_sim.py` (one simulator: market@next-15m-open, wick stops, T1 partial + BE + +0.3R trail, costs, `profitable`), `unified_backtest.py` (the ONLY validation path), evaluator on the same simulator (`eval_engine="v2_market_open"`), WATCH gated (`WATCH_REQUIRES_GATES`), signal freshness gate (`SIGNAL_MAX_AGE_MIN`), version marker v13.0. **Success metric is now the user's: ≥70% of surfaced suggestions profitable net of cost (partial model) over ≥30 forward trades, with net expectancy > 0.** First unified backtest: NOTHING ships; everything runs as WATCH; one candidate (`range_reversion_short` + volume gate). Full changelog entry below; everything under this banner that predates 2026-09-23 describes the pre-v13 state.
+
 
 _As of 2026-09-10. Single source of truth for where the project stands and what to do next (the original plan file has been retired — this section supersedes it). Zero-Claude policy in effect: the project makes NO Claude API calls._
 
@@ -395,6 +398,29 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-09-23 — v13.0: whole-system audit → unified trade model, hit-rate metric, WATCH gated, first unified backtest
+
+**Trigger.** User: last eval-scan was "all stop loss" — is our win rate wrong, where did we go wrong? Unbiased audit (data + two code audits) instead of another tuning pass.
+
+**Audit findings (all verified in code).** (1) `_check_validated_signals` ran on `df.iloc[-1]` = the still-OPEN 4h bar (Bybit's newest row); the backtester only saw closed bars → different signal population. (2) The evaluator's "entry zone" triggered a short on `high >= entry_low` — a market order filled at the candle CLOSE; 97% of setups "triggered" on candle 1 and could be stopped by that candle's pre-fill range. (3) Backtester: 48×4h = 8-day hold, zero costs, static target, signal bar excluded; evaluator: 2-day hold, costs, T1/BE/trail, entry bar included. (4) `build_watch_candidate` took the PRE-gate top setup → 108/133 watch rows were confluence 1–2, net −0.20R, and they were most of what reached Telegram (the "all SL" batch was 17 watch trades, 0 execute). (5) Power: EXECUTE ≈ 0.6 trades/day, sd ≈ 0.9R → the ±0.05R bar needed ~1,500 trades; 30% of rows were same-symbol re-entries within 48h. (6) Monthly re-validation reused ~82% of the same data across ~52k parameter fits keeping max-of-5 OOS → the reject→strong flip-flops were noise. Also: summary.md mixed watch into headline WR while lifetime_stats excluded it; funding always charged as cost; 41 `no_data` rows never retried; one corrupt DOGE setup (stop at 1/10 of entry) was scored.
+
+**User decision.** Metric = hit rate: ≥70% of surfaced suggestions profitable in eval-scan, consistently, before any real trade. Open to new data/perspectives (chart patterns, tradebook). Implemented with a net-expectancy>0 guard so the rate can't be bought with tiny targets.
+
+**Shipped.**
+- `trade_sim.py` — single simulator (market at next 15m open; wick stops; stop-before-target tie; T1 50% partial → BE; +0.3R lock after 1R prior-candle MFE; expiry MTM; costs via risk_pct; `profitable`, `net_blended_rr`, `max_adverse_rr`). 9 tests.
+- `signal_rules.py` — `compute_indicators` + `detect_at(df, i, tf)`; the 7 rules ported verbatim; `SIGNAL_TIER`/`SIGNAL_TFS`. `bybit_data._check_validated_signals` is now a wrapper on the last CLOSED bar; `_split_closed` drops the open bar (live price kept for entry reference); kline limits 1h/4h 100→300 for warm-up parity. 4 tests.
+- `mechanical_setups.py` — freshness gate `SIGNAL_MAX_AGE_MIN` {1h:45, 4h:90} min (CI at even UTC hours catches every 4h close; in-between runs skip 4h as stale — logged); ranking table now = unified-backtest TEST hit rate; confidence from hit rate.
+- `main.py` — WATCH lane requires the structural gates (`WATCH_REQUIRES_GATES`); no observation fallback; "never silent" retired — an empty brief is valid. Brief says "Entry: at market now".
+- `weekly_eval.py` — scores via `trade_sim` (market-at-open), `gap_skipped`/`invalid_levels` statuses, `no_data` retried for 14 days, `eval_engine="v2_market_open"`, profitable% + Wilson CI in head_to_head (by source / watch promotion / signal), promotion bar = ≥70% & net>0 & n≥30, "Eval engine v2 era" section, summary headline excludes watch, v13.0 version line. Marker v13.0 added (baseline execute book: 353 t, 43.1% profitable, −0.178R net).
+- `unified_backtest.py` — closed 4h/1h signals → 15m forward sim through `trade_sim`; live-universe symbols (from logs/setups) + majors; live dedup mimic; per-trade features (BTC alignment, 1h/4h/1D confluence proxy, risk band, hour, weekday, ADX, vol spike, EMA distance); chrono 60/40 + monthly walk-forward; 188-cut filter study; management sweep (T1/stop/T2/trail, hit-rate objective s.t. net>0); SHIP/CANDIDATE/NO table. Reports → `logs/backtest_reports/`.
+
+**First unified backtest (30 symbols, 180 d, 2,167 trades).** Default config TEST profitable% / net: liquidity_sweep_long 1h 51.3% / −0.25; trend_pullback_short 4h 52.6% / −0.18; failed_breakout_short 4h 54.5% / −0.12; rsi_bounce_long 51% / −0.09; rsi_rejection_short 38.8% / −0.23; range_reversion_short 62.5% / −0.07; liquidity_sweep_long 4h 44% / −0.38; range_reversion_long 72.7% / −0.04 (n=11). **Every former EXECUTE signal is net-negative out of sample under the real trade.** Costs remove 0.07–0.17R/trade (worst on 1h tight stops). Management sweep: hit rate can be pushed to ~60–67% but net stays negative — the two objectives diverge. Filter study: one real lead, `range_reversion_short` with `vol_spike≥1.5` (bucket: test 81%/+0.23R n=21). Re-run with the gate inside the rule (what runs live): all-period n=101 75% / +0.19R, test n=41 65.9% / −0.04R → CANDIDATE.
+**Live set now:** all 6 remaining rules WATCH (gated), `rsi_rejection_short` + `liquidity_sweep_long` 4h disabled, volume gate on `range_reversion_short` (`RANGE_REVERSION_SHORT_MIN_VOL_SPIKE=1.5`). EXECUTE lane empty by design until a rule clears the forward bar.
+
+**Withdrawn.** "Price-pattern engineering is a dead end" (2026-08-09) — drawn from the broken chain, unestablished either way. Fork A / CVD continue but must be validated on the unified engine before promotion.
+
+**Next.** (1) Let eval-scan accumulate v2-era trades; watch the "Eval engine v2 era" table. (2) New predictive inputs via the harness: liq-cluster distance and CVD slope as per-trade features in `unified_backtest.py` (the loaders exist in `liq_cluster_backtest.py` / `cvd_backtest.py`); funding-rate and OI history (public Bybit endpoints) as features; simple chart-structure features (BOS/CHoCH, distance to prior swing) before any pattern library. (3) Consider maker (limit) entries to cut the fee side, since cost is 0.07–0.17R of the gap — needs a fill model in `trade_sim` first.
 
 ### 2026-09-17 — CI collector outage (Sep 15–17) root-caused + fixed: split-tunnel VPN, retry-across-window, health alert
 
