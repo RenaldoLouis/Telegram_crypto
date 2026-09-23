@@ -1,4 +1,5 @@
 from pybit.unified_trading import HTTP
+from pybit.exceptions import FailedRequestError
 from datetime import datetime, timezone
 from pathlib import Path
 import pandas as pd
@@ -33,6 +34,7 @@ class BybitFetcher:
         self.domain = domain
         self._clients = {}
         self._failovers = 0
+        self._dead = set()
         self.client = self._client_for(domain)
 
     def _client_for(self, domain):
@@ -42,23 +44,38 @@ class BybitFetcher:
         return self._clients[domain]
 
     def _api(self, method, **kwargs):
-        """Call a public endpoint on the current host; on a failure flip to the other host
-        and retry once. Every flip counts against MAX_FAILOVERS for the whole run."""
+        """Call a public endpoint on the current host. Circuit breaker:
+        - a NETWORK failure flips to the other live host and retries; `_failovers` counts
+          CONSECUTIVE failures (reset on any success) and BybitHostsDown fires after
+          MAX_FAILOVERS so a dead network aborts the snapshot in ~2 min (main.py retries);
+        - an API REJECTION (FailedRequestError, e.g. bytick's 403 "ip is from the usa" on
+          US-located runners) marks that host dead for the rest of the run — no ping-pong.
+        """
         last = None
-        for _ in range(2):
+        while True:   # terminates: each pass either trips the breaker or kills a host
             try:
-                return getattr(self.client, method)(**kwargs)
+                out = getattr(self.client, method)(**kwargs)
+                self._failovers = 0
+                return out
+            except FailedRequestError as e:
+                last = e
+                self._dead.add(self.domain)
+                print(f"  ⚠ api.{self.domain}.com rejected {method} ({str(e)[:80]}) — host disabled for this run")
             except Exception as e:
                 last = e
-                if self._failovers >= self.MAX_FAILOVERS:
-                    raise BybitHostsDown(f"{method} failed on both hosts repeatedly: {e}") from e
-                other = next(h for h in self.HOSTS if h != self.domain)
                 self._failovers += 1
-                print(f"  ⚠ api.{self.domain}.com {method} failed ({type(e).__name__}) — "
-                      f"failing over to api.{other}.com (flip {self._failovers}/{self.MAX_FAILOVERS})")
+                if self._failovers >= self.MAX_FAILOVERS:
+                    raise BybitHostsDown(f"{method}: {self._failovers} consecutive failures: {e}") from e
+                print(f"  ⚠ api.{self.domain}.com {method} failed ({type(e).__name__}) "
+                      f"(consecutive {self._failovers}/{self.MAX_FAILOVERS})")
+            live = [h for h in self.HOSTS if h not in self._dead]
+            if not live:
+                raise BybitHostsDown(f"{method}: every Bybit host rejected this runner: {last}") from last
+            other = next((h for h in live if h != self.domain), live[0])
+            if other != self.domain:
+                print(f"  → switching to api.{other}.com")
                 self.domain = other
                 self.client = self._client_for(other)
-        raise last
 
     def get_top_movers(self, limit=50):
         """Returns top N USDT perpetuals by 24h turnover + price change."""
@@ -591,6 +608,8 @@ class BybitFetcher:
             try:
                 print(f"  [{i+1}/{total}] Fetching {sym}...")
                 technicals.append(self.get_multi_tf_indicators(sym))
+            except BybitHostsDown:
+                raise   # network dead — abort the whole snapshot so main.py can retry it
             except Exception as e:
                 print(f"  Error fetching {sym}: {e}")
 

@@ -31,8 +31,18 @@ SNAPSHOT_FILE = Path(config.MOMENTUM_SNAPSHOT_PATH)
 def fetch_tickers():
     """Fetch top 50 USDT perps by 24h turnover. Single API call."""
     try:
-        client = HTTP(testnet=False, domain="bytick")
-        res = client.get_tickers(category=config.BYBIT_CATEGORY)
+        # bytick direct first (no VPN needed), then api.bybit.com (VPN-pinned on CI):
+        # GitHub runner IPs are sometimes US-located and bytick answers 403 there.
+        res = None
+        for domain in ("bytick", "bybit"):
+            try:
+                client = HTTP(testnet=False, domain=domain, timeout=20, max_retries=2)
+                res = client.get_tickers(category=config.BYBIT_CATEGORY)
+                break
+            except Exception as e:
+                print(f"  tickers via api.{domain}.com failed: {str(e)[:100]}")
+        if res is None:
+            raise RuntimeError("tickers unavailable on both Bybit hosts")
         tickers = res["result"]["list"]
 
         usdt_perps = [t for t in tickers if t["symbol"].endswith("USDT")]
