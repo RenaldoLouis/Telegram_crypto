@@ -399,6 +399,16 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-09-23 (later still) — Research item 1 (liquidation forced-flow fade) → NO EDGE on available data; surfacing gate + shadow lane shipped
+
+**Item 1.** `liq_fade_backtest.py`: collector prints (43,765, 19 symbols, 45 days, 45% hourly coverage; bars eligible only when the collector was alive ±1h; side="Sell" = long liquidated → fade LONG), closed-15m signal bars, entry next open, 1-day window, `trade_sim`, 72-combo grid × {fade, continuation} × stop pad × T2. Result: 36 combos with ≥15 trades; median profitable% fade 47.7 / continuation 44.7; **0 combos net-positive on both chrono halves**; max n=57 (54%, test half 39%). The few "good" rows are n≤19. Verdict: no evidence for a liquidation-fade edge, and the sample is too small to prove absence — re-run only after ≥4 months of ≥80%-coverage data (collector health now alerts daily). Report: `logs/backtest_reports/liq_fade_20260923.md`.
+
+**Research program summary (items 1–4, all on the unified engine, all negative):** funding squeeze, OI divergence, session gating, liquidation fade. The only rule that repeatedly survives is `range_reversion_short` + `vol_spike≥1.5` (test 66–78%, n 23–41, CANDIDATE).
+
+**Shipped — surfacing gate + shadow lane.** `config.SURFACE_MIN_HIT_RATE=0.60`: of the gated WATCH candidates, only the first with a unified-backtest TEST hit rate ≥60% is shown in the brief; the rest are persisted as `source="shadow"` / `tier="shadow"` (`main.split_surfaced_shadow`), evaluated by eval-scan like any setup, and excluded from the hit-rate/expectancy book exactly like watch (weekly_eval + backtester treat `("watch","shadow")` together; `by_source["shadow"]` bucket). Net effect for the user: the brief shows range_reversion_short/long only (the ≥60% rules) or nothing; the 50–55% rules keep accumulating forward v2 data silently. Dry-run verified.
+
+**Honest state.** A 70% multi-signal screener is not available from price/positioning/liquidation data at 1h–4h horizons with a 2-day hold at taker cost. Remaining untested levers: maker-fee fill model in `trade_sim` (+~0.03R to every rule), weekly cross-sectional momentum (expectancy route, ~55% hit rate), and re-running item 1 when the liquidation store is 4× deeper.
+
 ### 2026-09-23 (later) — Research items 2/3/4 tested on the unified engine: funding squeeze, OI divergence, session gating → NO EDGE
 
 **Built.** `derivs_data.py` (Bybit public funding-rate history + open-interest history, paginated + cached, look-ahead-safe `DerivIndex`, `attach_to_df` adds funding_rate / funding_mean24h / funding_z / oi_chg_24h_pct / price_chg_24h_pct / settlement_close per bar); two candidate rules in `signal_rules.py` — `funding_squeeze_short/long` (crowded funding + OI building + price flat, at settlement; `detect_at(params=...)` hook for sweeps; inert without positioning columns, so live is unaffected); harness: positioning + calendar per-trade features, 7 new filters (funding bucket/side/z, oi_divergence, oi_chg_24h, settlement_bar, session), `funding_sweep` grid (32 combos × 2 rules), `--no-derivs`. Test added.

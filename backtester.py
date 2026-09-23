@@ -695,7 +695,7 @@ def report_version_segments(trades):
     # edge/expectancy/version aggregation (2026-08-20 reframe) — without this
     # filter the gate-compliance audit below false-alarms on watch trades
     # (2026-09-10: all 56 "violations" were source=watch).
-    trades = [t for t in trades if t.get("source") != "watch"]
+    trades = [t for t in trades if t.get("source") not in ("watch", "shadow")]
 
     # Split on the v11.3 structural marker.
     post = [t for t in trades if t.get("interest_score") is not None]

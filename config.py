@@ -45,6 +45,11 @@ HIT_RATE_MIN_TRADES = 30
 # gates, caps). No "observation" fallback: 90% of pre-v13 WATCH rows were gate-rejected setups
 # (net -0.20R) and they were what the user saw most days. An empty brief is a valid brief.
 WATCH_REQUIRES_GATES = True
+# Surfacing gate (2026-09-23, after the research items 1-4 all came back negative): only a rule
+# whose unified-backtest TEST hit rate is >= this fraction may be shown in the brief. Gated
+# candidates below it are still LOGGED as source="shadow" (evaluated by eval-scan, excluded from
+# the hit-rate book and from the brief) so forward data keeps accumulating on them.
+SURFACE_MIN_HIT_RATE = 0.60
 # range_reversion_short volume gate (2026-09-23 unified backtest: the one filter of 188 with a
 # large effect and train/test agreement. As the live rule (gate inside the rule): all-period n=101
 # 75% / +0.19R, test n=41 65.9% / -0.04R — a CANDIDATE, not proven). None disables the gate.

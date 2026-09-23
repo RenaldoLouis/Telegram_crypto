@@ -456,32 +456,24 @@ def _observation_candidate(technicals, interest_scores, regime_label):
     }
 
 
-def build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_label):
-    """Return a one-element list with the best WATCH candidate, or [] if none can be
-    built. Called ONLY when the EXECUTE lane is empty, so the scan is never silent.
+def build_watch_candidates(raw_mechanical, technicals, interest_scores, regime_label):
+    """Return the ranked list of gated WATCH candidates (may be empty). Called ONLY when
+    the EXECUTE lane is empty.
 
-    Priority: (1) the highest-expectancy signal that fired but is not in the delivered
-    EXECUTE set — either tier="watch" (e.g. rsi_bounce_long) or an execute-tier signal
-    that the protective gates rejected; (2) an observation candidate from the top coin.
-    WATCH bypasses the EXECUTE gates on purpose: it is paper-tracked, never executed,
-    and is excluded from the edge-proven book in weekly_eval (source="watch").
+    v13.0 (audit 2026-09-23): a WATCH suggestion must clear the SAME structural gates as
+    an EXECUTE one (`WATCH_REQUIRES_GATES`). Pre-v13 the watch lane republished the top
+    pre-gate setup — 90% of watch rows were confluence-1/2 setups the gates had refused,
+    they ran -0.20R net, and they were what the user saw most days. Only genuine
+    watch-TIER signals may appear here; the non-signal "observation" fallback is gone.
+    The caller splits the result into the one SURFACED candidate (test hit rate >=
+    `SURFACE_MIN_HIT_RATE`) and logged-only `shadow` rows. An empty brief is valid.
     """
     if getattr(config, "WATCH_REQUIRES_GATES", True):
-        # v13.0 (audit 2026-09-23): a WATCH suggestion must clear the SAME structural
-        # gates as an EXECUTE one. Pre-v13 the watch lane republished the top pre-gate
-        # setup — 90% of watch rows were confluence-1/2 setups the gates had refused,
-        # they ran -0.20R net, and they were what the user saw most days. Only genuine
-        # watch-TIER signals (paper-tracked candidates) may surface here; gate-rejected
-        # execute signals and the non-signal "observation" fallback are gone. An empty
-        # brief is a valid brief.
         watch_raw = [s for s in raw_mechanical if s.get("tier") == "watch"]
         if not watch_raw:
             return []
         enrich_with_entry_indicators(watch_raw, technicals)
         kept = enforce_setups(watch_raw, regime_label)
-        if not kept:
-            return []
-        candidate = kept[0]
     else:
         candidate = raw_mechanical[0] if raw_mechanical else None  # already ranked by expectancy
         if candidate is None:
@@ -489,8 +481,34 @@ def build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_la
         if candidate is None:
             return []
         enrich_with_entry_indicators([candidate], technicals)
-    _stamp_watch(candidate, regime_label, interest_scores)
-    return [candidate]
+        kept = [candidate]
+    for c in kept:
+        _stamp_watch(c, regime_label, interest_scores)
+    return kept
+
+
+def build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_label):
+    """Backward-compatible wrapper: the single best gated WATCH candidate as a list."""
+    return build_watch_candidates(raw_mechanical, technicals, interest_scores, regime_label)[:1]
+
+
+def split_surfaced_shadow(candidates):
+    """First candidate at/above SURFACE_MIN_HIT_RATE is surfaced as WATCH; every other
+    gated candidate is logged as source="shadow" (evaluated, never shown, never counted)."""
+    bar = getattr(config, "SURFACE_MIN_HIT_RATE", 0.0)
+    surfaced, shadow = [], []
+    for c in candidates:
+        if not surfaced and (c.get("signal_expectancy") or 0.0) >= bar:
+            surfaced.append(c)
+        else:
+            c = dict(c)
+            c["source"] = "shadow"
+            c["tier"] = "shadow"
+            c["model"] = "shadow_v1"
+            shadow.append(c)
+    for i, c in enumerate(shadow, 1):
+        c["rank"] = i
+    return surfaced, shadow
 
 
 async def run_screener():
@@ -564,17 +582,22 @@ async def run_screener():
     # only (source="watch"), bypasses the execute gates, and is EXCLUDED from the
     # edge-proven book in weekly_eval — it exists for daily coverage + eval velocity, not
     # to add executed trades. Respects cross-run dedup like the other lanes.
-    watch = []
+    watch, shadow = [], []
     if not mechanical:
-        watch = build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_label)
+        candidates = build_watch_candidates(raw_mechanical, technicals, interest_scores, regime_label)
+        watch, shadow = split_surfaced_shadow(candidates)
         watch = _drop_active_duplicates(watch, active, "watch")
+        shadow = _drop_active_duplicates(shadow, active, "shadow")
         if watch:
             w = watch[0]
             print(f"  WATCH: {w.get('symbol','?')} {w.get('direction','?')} "
                   f"via {w.get('signal_name','?')} (paper-track only, not counted)")
+        if shadow:
+            print(f"  SHADOW (logged, not shown): "
+                  + ", ".join(f"{s.get('symbol','?')} {s.get('signal_name','?')}" for s in shadow))
 
     # 4. Persist ALL lanes to one file, each tagged `source` (head-to-head data).
-    all_setups = mechanical + claude_setups + watch
+    all_setups = mechanical + claude_setups + watch + shadow
     if all_setups:
         setups_dir = Path("logs/setups")
         setups_dir.mkdir(parents=True, exist_ok=True)
@@ -586,7 +609,7 @@ async def run_screener():
             "primary_source": config.PRIMARY_SOURCE,
             "regime": regime_label,
             "sources": {"mechanical": len(mechanical), "claude": len(claude_setups),
-                        "watch": len(watch)},
+                        "watch": len(watch), "shadow": len(shadow)},
             "setups": all_setups,
         }
         setup_file = setups_dir / f"setups_{run_tag}.json"

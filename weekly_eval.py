@@ -572,7 +572,7 @@ def generate_head_to_head(all_evals):
         # backing/direction/signal diagnostics — those measure EXECUTE-book quality.
         # It DOES get its own per-signal promotion table (below): a watch signal that
         # earns net-of-cost expectancy is a candidate to promote into the EXECUTE book.
-        if src == "watch":
+        if src in ("watch", "shadow"):
             by_watch_signal.setdefault(
                 r.get("signal_name") or r.get("backtested_signal") or "(unknown)", []
             ).append(r)
@@ -815,9 +815,9 @@ def update_lifetime_stats(all_evals):
             # (total, overall expectancy, monthly, confluence, version line) so the
             # net-of-cost measurement stays uncorrupted — bucket them only under by_source
             # so head_to_head/summary can still report the WATCH lane separately.
-            if r.get("source") == "watch":
+            if r.get("source") in ("watch", "shadow"):
                 if r.get("status") == "evaluated":
-                    _increment_bucket(stats["by_source"], "watch", r)
+                    _increment_bucket(stats["by_source"], r.get("source"), r)
                 continue
 
             stats["total_setups"] += 1
@@ -981,7 +981,7 @@ def _version_validation_line(total, overall):
             try:
                 for r in json.loads(ef.read_text(encoding="utf-8")).get("results", []):
                     if (r.get("status") == "evaluated" and r.get("eval_engine") == EVAL_ENGINE
-                            and r.get("source", "claude") != "watch"):
+                            and r.get("source", "claude") not in ("watch", "shadow")):
                         v2.append(r)
             except Exception:
                 continue
@@ -1533,7 +1533,7 @@ def generate_recent_performance(all_evals):
         for r in ev["results"]:
             # Exclude WATCH-tier: it's paper-tracked coverage, not the edge book, and
             # this file is sent to Claude every run to calibrate EXECUTE behavior.
-            if r.get("status") == "evaluated" and r.get("source") != "watch":
+            if r.get("status") == "evaluated" and r.get("source") not in ("watch", "shadow"):
                 r["run_tag"] = ev["run_tag"]
                 r["model"] = model
                 recent_results.append(r)
@@ -1671,11 +1671,11 @@ def generate_summary(all_evals):
     # gates by design and were previously mixed into these totals while
     # update_lifetime_stats excluded them — the two readouts disagreed (audit 2026-09-23).
     watch_evaluated = [r for r in all_results
-                       if r["status"] == "evaluated" and r.get("source") == "watch"]
+                       if r["status"] == "evaluated" and r.get("source") in ("watch", "shadow")]
     evaluated = [r for r in all_results
-                 if r["status"] == "evaluated" and r.get("source") != "watch"]
+                 if r["status"] == "evaluated" and r.get("source") not in ("watch", "shadow")]
     not_triggered = [r for r in all_results if r["status"] == "not_triggered"]
-    total = len([r for r in all_results if r.get("source") != "watch"])
+    total = len([r for r in all_results if r.get("source") not in ("watch", "shadow")])
 
     if not evaluated:
         summary = "# Performance Summary\n\nNo evaluated setups yet. Need more data.\n"
@@ -2248,7 +2248,7 @@ def _load_recent_eval_details(all_evals, limit=20):
     recent = []
     for ev in sorted(all_evals, key=lambda e: e.get("run_tag", ""), reverse=True):
         for r in reversed(ev.get("results", [])):
-            if r.get("status") == "evaluated" and r.get("source") != "watch":
+            if r.get("status") == "evaluated" and r.get("source") not in ("watch", "shadow"):
                 recent.append({
                     "symbol": r.get("symbol"),
                     "direction": r.get("direction"),
