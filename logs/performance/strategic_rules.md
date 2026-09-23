@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 353 evaluated trades — solid sample)
-_Last updated: 2026-09-23 10:00 UTC_
+_Last updated: 2026-09-23 10:04 UTC_
 
 0. **v13.0 UNPROVEN (MONITOR)**: deployed 2026-09-23; 0 v2-engine forward trades yet. Target ≥70% profitable (net, partial model) and net exp > +0.00R over 30 trades; baseline (pre-fix, not comparable) 43.1% profitable / -0.178R net. ACTION: nothing is proven until the forward book says so.
 

@@ -84,6 +84,16 @@ Quarterly deep analysis (quarterly_analysis.py, manual — still available for d
 
 > **2026-09-23 — READ THIS FIRST (v13.0).** A whole-system audit found the backtester, the live builder and the evaluator each simulated a DIFFERENT trade, so six months of "no edge" numbers are non-comparable (neither proof nor disproof). v13.0 rebuilt the chain: `signal_rules.py` (closed-bar detection, shared), `trade_sim.py` (one simulator: market@next-15m-open, wick stops, T1 partial + BE + +0.3R trail, costs, `profitable`), `unified_backtest.py` (the ONLY validation path), evaluator on the same simulator (`eval_engine="v2_market_open"`), WATCH gated (`WATCH_REQUIRES_GATES`), signal freshness gate (`SIGNAL_MAX_AGE_MIN`), version marker v13.0. **Success metric is now the user's: ≥70% of surfaced suggestions profitable net of cost (partial model) over ≥30 forward trades, with net expectancy > 0.** First unified backtest: NOTHING ships; everything runs as WATCH; one candidate (`range_reversion_short` + volume gate). Full changelog entry below; everything under this banner that predates 2026-09-23 describes the pre-v13 state.
 
+> **PRE-REGISTERED FORWARD TEST (written 2026-09-23, BEFORE any v2-scored result exists — the bar below must not be edited after the fact).**
+> **Subject:** `range_reversion_short` 4h with the `vol_spike ≥ 1.5` gate (the only unified-backtest candidate), surfaced as WATCH under `ENTRY_MODEL="limit_open"`, scored by eval engine v2 (`head_to_head.md` § "Eval engine v2 era"). The clock starts at the first v2-scored trade of this rule.
+> **Frozen for the duration:** the rule's detection (`signal_rules.py`), its gate (`RANGE_REVERSION_SHORT_MIN_VOL_SPIKE`), the entry model and the management rules (`trade_sim.py`). Any change to these resets the clock. **Allowed in parallel:** widening the symbol universe (same rule, more independent draws — only after it passes chrono train/test on the wider set), shadow-lane paper variants (ungated version, liq-cluster- or CVD-confirmed variants), risk-engine code wired to nothing.
+> **Decision at n = 30 v2-scored surfaced trades of this rule:**
+> - profitable ≥ 70% AND net expectancy > 0 → promote to EXECUTE (`signal_rules.SIGNAL_TIER` → "execute"); the user trades it at SMALL size; the readout at n = 60 decides real size.
+> - 60–70% profitable, or ≥ 70% with net ≤ 0 → extend to n = 50 under the same bar, no changes.
+> - < 60% → the rule is retired and the 4h mean-reversion family is closed. Next product would be the weekly cross-sectional momentum system, with its own success metric agreed first.
+> **Expected pace:** ~2.5 signals/week in the 30-symbol backtest universe (58 in 165 days); live ~1.5–2.5/week after the liquidity filter and dedup → n = 30 in ~3–5 months. n = 30 gives a Wilson 95% interval of roughly ±16 pp around 75%, which is why promotion at 30 means small size only.
+> **Surfacing rules in force (2026-09-23):** every gated WATCH candidate whose rule has TEST hit rate ≥ `SURFACE_MIN_HIT_RATE` (0.60) on ≥ `SURFACE_MIN_TEST_N` (30) test trades is surfaced — no longer only the first — so the forward sample accrues at the rule's natural rate; `range_reversion_long` (73% on n = 11) therefore stays in the shadow lane.
+
 
 _As of 2026-09-10. Single source of truth for where the project stands and what to do next (the original plan file has been retired — this section supersedes it). Zero-Claude policy in effect: the project makes NO Claude API calls._
 
@@ -398,6 +408,17 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-09-23 (late night) — Forward test locked: pre-registration, surfacing fixes, CI cadence bug found + fixed
+
+**Why:** the plan is now "run the forward test on `range_reversion_short`+volume gate and leave it alone", so the chain that produces that sample was checked end to end before the clock starts.
+- **Verified OK:** dry scan (real data, Telegram stubbed) runs clean post-v13 and correctly skips stale 4h signals; synthetic evaluator check confirms a filled trade is stamped `eval_engine=v2_market_open` + `profitable`, and an unfilled limit is `not_filled` (not a loss); `weekly_eval.py` end to end clean; existing tests green.
+- **Pre-registered the decision rule** (banner at the top of this file): rule frozen; at n=30 → ≥70%+net>0 promote (small size) / 60–70% extend to 50 / <60% retire the 4h mean-reversion family.
+- **Surfacing fix #1 — every candidate clearing the bars is surfaced, not just the first** (`main.split_surfaced_shadow`). Two same-run `range_reversion_short` fires used to push the second into the uncounted shadow lane; concentration is already capped by `enforce_setups`. Brief renders N watch candidates (`telegram_bot._format_watch_block`).
+- **Surfacing fix #2 — `SURFACE_MIN_TEST_N=30`** (`config`, `mechanical_setups.TEST_N`, stamped as `signal_test_n`): a rule's hit rate must rest on ≥30 TEST trades to be shown. `range_reversion_long` (73% on n=11) therefore stays in shadow instead of diluting the surfaced book. Tests: `test_surfacing.py`.
+- **CI cadence BUG (the real bottleneck):** `gh run list` showed the `0 */2` cron actually ran ~6×/day at random offsets (GitHub delays/drops top-of-hour schedules) → roughly HALF of 4h closes were never scanned within `SIGNAL_MAX_AGE_MIN` → half the forward sample silently lost, which would have doubled the months to n=30. **Fix:** main cron moved to `7 */2`; scan-only retries at `37 0,4,8,12,16,20` and `5 1,5,9,13,17,21` (+37/+65 min, inside the window; pulse step skipped on retries; new `SCAN_QUIET_IF_EMPTY=1` env → a retry that surfaces nothing archives nothing and sends nothing). Local launchd moved from 09/17/22 to 5 min after every 4h close (07:05/11:05/15:05/19:05/23:05/03:05 WIB) as a second backup.
+- **Eval readout:** `head_to_head.md` v2 section now prints forward-sample velocity (surfaced v2 trades/week → weeks to n=30).
+- **Next:** point 2 — validate the same rule on a wider universe (top-50) and 1h in the unified harness; if TEST holds, widen the live universe for more independent draws.
 
 ### 2026-09-23 (night) — Maker-fee fill model tested → adopted as the trade model (`ENTRY_MODEL="limit_open"`)
 

@@ -41,6 +41,11 @@ SIGNAL_MAX_AGE_MIN = {"1h": 45, "4h": 90}
 # so the hit rate is not bought with a bad payoff. Also the WATCH→EXECUTE promotion bar.
 HIT_RATE_TARGET_PCT = 70
 HIT_RATE_MIN_TRADES = 30
+# Start of the v2 forward book (2026-09-23): setups produced BEFORE this instant came from the
+# pre-v13 detector (open-bar signals, ungated WATCH) — even if the v2 engine scored them they
+# are a different population and are excluded from the v2-era tables. v13.0 was pushed at
+# 07:42 UTC; the first CI scan on that code ran after this.
+V2_ERA_START_UTC = "2026-09-23T07:45:00+00:00"
 # WATCH candidates must clear the structural gates (confluence floor, 4/4 refusal, long
 # gates, caps). No "observation" fallback: 90% of pre-v13 WATCH rows were gate-rejected setups
 # (net -0.20R) and they were what the user saw most days. An empty brief is a valid brief.
@@ -50,6 +55,10 @@ WATCH_REQUIRES_GATES = True
 # candidates below it are still LOGGED as source="shadow" (evaluated by eval-scan, excluded from
 # the hit-rate book and from the brief) so forward data keeps accumulating on them.
 SURFACE_MIN_HIT_RATE = 0.60
+# ...and that hit rate must rest on at least this many out-of-sample TEST trades. A 73% on
+# n=11 is not evidence (Wilson 95% CI ≈ [43–90]); such a rule stays in the shadow lane until
+# the harness has n >= 30 behind it. 0 disables the check.
+SURFACE_MIN_TEST_N = 30
 # range_reversion_short volume gate (2026-09-23 unified backtest: the one filter of 188 with a
 # large effect and train/test agreement. As the live rule (gate inside the rule): all-period n=101
 # 75% / +0.19R, test n=41 65.9% / -0.04R — a CANDIDATE, not proven). None disables the gate.

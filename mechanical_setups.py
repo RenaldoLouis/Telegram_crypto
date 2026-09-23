@@ -32,6 +32,18 @@ EXPECTANCY = {
     ("rsi_bounce_long", "4h"): 0.51,         # n=96 test
 }
 
+# Out-of-sample TEST sample size behind each EXPECTANCY entry (same harness run). Stamped
+# on setups as `signal_test_n`; `main.split_surfaced_shadow` requires
+# config.SURFACE_MIN_TEST_N behind a rule before it may be SHOWN. Keep in sync with EXPECTANCY.
+TEST_N = {
+    ("range_reversion_short", "4h"): 41,
+    ("range_reversion_long", "4h"): 11,
+    ("failed_breakout_short", "4h"): 112,
+    ("trend_pullback_short", "4h"): 152,
+    ("liquidity_sweep_long", "1h"): 341,
+    ("rsi_bounce_long", "4h"): 96,
+}
+
 # Map a signal name to the canonical setup_type (must be in main.VALID_SETUP_TYPES).
 SETUP_TYPE = {
     "rsi_rejection_short": "range_mean_reversion",  # fading an RSI exhaustion extreme
@@ -165,6 +177,7 @@ def _build_one(tech, direction, group, regime, interest_scores):
         "signal_name": signal_name,
         "signal_tf": signal_tf,
         "signal_expectancy": expectancy,
+        "signal_test_n": TEST_N.get((signal_name, signal_tf)),
         "regime": regime,
         "interest_score": (interest_scores or {}).get(symbol),
     }

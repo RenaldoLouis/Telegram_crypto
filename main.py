@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -453,6 +454,7 @@ def _observation_candidate(technicals, interest_scores, regime_label):
         "signal_name": "observation",
         "signal_tf": "4h",
         "signal_expectancy": 0.0,
+        "signal_test_n": 0,
     }
 
 
@@ -493,12 +495,24 @@ def build_watch_candidate(raw_mechanical, technicals, interest_scores, regime_la
 
 
 def split_surfaced_shadow(candidates):
-    """First candidate at/above SURFACE_MIN_HIT_RATE is surfaced as WATCH; every other
-    gated candidate is logged as source="shadow" (evaluated, never shown, never counted)."""
+    """Split gated WATCH candidates into the SURFACED list (shown in the brief, scored as
+    surfaced suggestions) and logged-only `shadow` rows (evaluated, never shown, never counted).
+
+    A candidate is surfaced when its rule's out-of-sample TEST hit rate is at/above
+    `SURFACE_MIN_HIT_RATE` AND that hit rate rests on >= `SURFACE_MIN_TEST_N` test trades
+    (a 73% on n=11 is not evidence). EVERY candidate clearing both bars is surfaced — not
+    only the first (changed 2026-09-23) — so the forward sample accrues at the rule's natural
+    rate; concentration is already bounded upstream by `enforce_setups` (regime caps +
+    `MAX_SAME_DIRECTION_PER_RUN`). Unknown test-n counts as failing the n bar.
+    """
     bar = getattr(config, "SURFACE_MIN_HIT_RATE", 0.0)
+    min_n = int(getattr(config, "SURFACE_MIN_TEST_N", 0) or 0)
     surfaced, shadow = [], []
     for c in candidates:
-        if not surfaced and (c.get("signal_expectancy") or 0.0) >= bar:
+        hit = c.get("signal_expectancy") or 0.0
+        n = c.get("signal_test_n")
+        n_ok = (min_n <= 0) or (n is not None and n >= min_n)
+        if hit >= bar and n_ok:
             surfaced.append(c)
         else:
             c = dict(c)
@@ -506,6 +520,8 @@ def split_surfaced_shadow(candidates):
             c["tier"] = "shadow"
             c["model"] = "shadow_v1"
             shadow.append(c)
+    for i, c in enumerate(surfaced, 1):
+        c["rank"] = i
     for i, c in enumerate(shadow, 1):
         c["rank"] = i
     return surfaced, shadow
@@ -588,10 +604,9 @@ async def run_screener():
         watch, shadow = split_surfaced_shadow(candidates)
         watch = _drop_active_duplicates(watch, active, "watch")
         shadow = _drop_active_duplicates(shadow, active, "shadow")
-        if watch:
-            w = watch[0]
+        for w in watch:
             print(f"  WATCH: {w.get('symbol','?')} {w.get('direction','?')} "
-                  f"via {w.get('signal_name','?')} (paper-track only, not counted)")
+                  f"via {w.get('signal_name','?')} (surfaced; paper-tracked, scored by eval v2)")
         if shadow:
             print(f"  SHADOW (logged, not shown): "
                   + ", ".join(f"{s.get('symbol','?')} {s.get('signal_name','?')}" for s in shadow))
@@ -629,7 +644,15 @@ async def run_screener():
         print("→ Delivering CLAUDE brief (shadow mode)...")
         clean_brief = strip_pre_analysis(strip_json_block(brief))
 
-    # 6. Archive + deliver.
+    # 6. Archive + deliver. SCAN_QUIET_IF_EMPTY=1 (set only on the CI 4h-close RETRY
+    # runs, 2026-09-23): when nothing was surfaced, skip the archive + Telegram send so the
+    # extra runs that exist purely to catch a 4h close inside the freshness window do not
+    # produce ~18 empty briefs a day. A run that surfaces something behaves normally.
+    if os.environ.get("SCAN_QUIET_IF_EMPTY") == "1" and not mechanical and not watch:
+        print("  Quiet run (SCAN_QUIET_IF_EMPTY=1): nothing surfaced — no archive, no Telegram.")
+        print(f"[{datetime.now()}] Done.\n")
+        return
+
     archive_path = Path("logs/briefs")
     archive_path.mkdir(parents=True, exist_ok=True)
     fname = archive_path / f"brief_{run_tag}.md"

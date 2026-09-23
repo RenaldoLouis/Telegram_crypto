@@ -2,7 +2,8 @@
 # launchd wrapper for the local Claude scan (main.py). Mirrors the `scan` shell
 # alias but runs WITHOUT an interactive shell (launchd sets almost no env, and
 # shell aliases don't exist here). Loaded by com.user.cryptoscreener.plist,
-# scheduled at 09:00 / 17:00 / 22:00 local.
+# scheduled 5 min after every 4h bar close: 07:05 / 11:05 / 15:05 / 19:05 / 23:05 / 03:05
+# local (UTC+7) — a backup for the CI scan inside the 90-min signal-freshness window.
 #
 # REQUIRES at run time:
 #   - VPN UP — Bybit + Telegram are geo-blocked by the local ISP, so a scan with

@@ -53,16 +53,7 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 
 ## Eval engine v2 era (post-fix book — the one the 70% target is judged on)
 
-n=2 v2-scored trades. Pre-fix records are not comparable.
-
-| source | n | **profitable%** | net exp (R) | net PF | status vs target |
-|---|---|---|---|---|---|
-| watch | 2 | **0.0%** | -0.784 | 0.00 | building (2/30) |
-
-| source | signal | n | **profitable%** | net exp (R) | status vs target |
-|---|---|---|---|---|---|
-| watch | failed_breakout_short | 1 | **0.0%** | -1.030 | building (1/30) |
-| watch | rsi_bounce_long | 1 | **0.0%** | -0.538 | building (1/30) |
+_No v2-era trades yet (n=0): scored by the v2 engine AND produced by a scan at/after 2026-09-23T07:45:00+00:00 (v13 detector). Pre-fix records above are NOT comparable._
 
 ## Verdict
 **Mechanical LEADS on expectancy** (mechanical +0.016R vs claude -0.129R; n=54/299).

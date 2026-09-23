@@ -2,11 +2,20 @@ name: Momentum Pulse + Mechanical Scan
 
 on:
   schedule:
-    # Run every 2 hours UTC (raised from 4h 2026-08-20). CI is mechanical-only (no
-    # ANTHROPIC_API_KEY), so 2x the runs = ~0 extra Claude cost — just more coverage
-    # + eval velocity. The dedup window (2 days) + hot_list expiry (48h) are time-based,
-    # so they stay correct at the faster cadence.
-    - cron: '0 */2 * * *'
+    # 2026-09-23 schedule fix. The old single '0 */2' cron was being DELAYED and DROPPED by
+    # GitHub (top-of-hour is its most congested slot): the run log showed ~6 runs/day at
+    # random offsets, so about half of the 4h bar closes were never scanned inside the
+    # 90-min signal-freshness window (SIGNAL_MAX_AGE_MIN) — i.e. half of the forward
+    # sample was silently lost. Now:
+    #   - '7 */2'  : the main pulse+scan run, off the top of the hour (every 2h UTC).
+    #   - '37 0,4,…' and '5 1,5,…' : scan-ONLY retries at +37 and +65 min after each 4h
+    #     close, still inside the freshness window; a signal already taken by an earlier
+    #     run is dropped by the cross-run dedup; SCAN_QUIET_IF_EMPTY suppresses the
+    #     empty-brief archive + Telegram on these so they add no noise.
+    # CI is mechanical-only (no ANTHROPIC_API_KEY) → extra runs cost zero tokens.
+    - cron: '7 */2 * * *'
+    - cron: '37 0,4,8,12,16,20 * * *'
+    - cron: '5 1,5,9,13,17,21 * * *'
   workflow_dispatch:
     # Allow manual trigger from GitHub Actions tab
 
@@ -45,6 +54,10 @@ jobs:
           wg_conf: ${{ secrets.WG_CONF }}
 
       - name: Run momentum pulse
+        # Only on the main 2h schedule (and manual runs): the pulse's volume-acceleration
+        # test compares against the PREVIOUS pulse ~2h earlier, so the +37/+65 min retry
+        # runs must not overwrite that snapshot.
+        if: github.event_name != 'schedule' || github.event.schedule == '7 */2 * * *'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -56,6 +69,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Retry runs stay silent unless they actually surface something.
+          SCAN_QUIET_IF_EMPTY: ${{ (github.event_name == 'schedule' && github.event.schedule != '7 */2 * * *') && '1' || '0' }}
         run: python main.py
 
       - name: Disconnect VPN

@@ -136,10 +136,18 @@ def _t2_rr(setup):
 
 
 def _format_watch_block(watch):
-    """Render the WATCH candidate section (best-available, paper-track-only)."""
-    w = watch[0]
+    """Render the WATCH section — every surfaced candidate (paper-track-only)."""
+    plural = "s" if len(watch) > 1 else ""
+    lines = [f"\n## 👀 Watch Candidate{plural} (below execute bar — paper-track only)"]
+    for w in watch:
+        lines.extend(_format_watch_one(w))
+    return lines
+
+
+def _format_watch_one(w):
+    """One WATCH candidate's explanation + trade plan."""
     direction = (w.get("direction") or "?").capitalize()
-    lines = ["\n## 👀 Watch Candidate (below execute bar — paper-track only)"]
+    lines = []
     sig = w.get("signal_name", "?")
     if sig == "observation":
         lines.append("_No validated signal fired anywhere this scan. This is the "
@@ -188,8 +196,8 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
     as Claude's output, so send_brief() can deliver it unchanged. Pure formatting —
     no analysis. Used when PRIMARY_SOURCE == 'mechanical' or Claude failed.
 
-    `watch` (optional) is a one-element list holding the WATCH candidate surfaced
-    when the EXECUTE lane is empty — the never-silent guarantee.
+    `watch` (optional) is the list of surfaced WATCH candidates (every gated candidate
+    whose rule clears the surfacing bars; may be empty — an empty brief is valid).
     """
     lines = ["## 📊 Market Context (mechanical engine)"]
     if not setups:
@@ -201,8 +209,9 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
             )
             lines.extend(_format_watch_block(watch))
             lines.append("\n## 🧠 One-Line Takeaway")
-            lines.append("Nothing to EXECUTE — one candidate to WATCH and paper-track. "
-                         "You make the call; no forced trade.")
+            n_w = len(watch)
+            lines.append(f"Nothing to EXECUTE — {n_w} candidate{'s' if n_w != 1 else ''} to WATCH "
+                         "and paper-track. You make the call; no forced trade.")
             return "\n".join(lines)
         lines.append(
             f"Regime: **{regime}**. No backtest-validated signals fired this scan — "

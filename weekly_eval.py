@@ -517,6 +517,50 @@ def _profitable(r):
     return nb > 0
 
 
+def _v2_era(r, run_ts=None):
+    """True if `r` belongs to the v2 forward book: scored by the v2 engine AND produced by
+    a scan at/after config.V2_ERA_START_UTC (the v13 detector). Pre-v13 setups scored by
+    the v2 engine are a different population (open-bar signals, ungated WATCH)."""
+    if r.get("eval_engine") != EVAL_ENGINE:
+        return False
+    start = getattr(config, "V2_ERA_START_UTC", None)
+    if not start:
+        return True
+    ts = run_ts or r.get("_run_ts")
+    if not ts:
+        return False
+    try:
+        t = datetime.fromisoformat(ts)
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        return t >= datetime.fromisoformat(start)
+    except (ValueError, TypeError):
+        return False
+
+
+def _forward_eta_line(records, min_n):
+    """One line: how fast the v2 SURFACED book is filling toward `min_n` trades, from the
+    span between the first v2 record's run timestamp and now. None if no records."""
+    n = len(records)
+    if n == 0:
+        return None
+    try:
+        first = min(datetime.fromisoformat(r["_run_ts"]) for r in records)
+        if first.tzinfo is None:
+            first = first.replace(tzinfo=timezone.utc)
+    except (KeyError, ValueError, TypeError):
+        return None
+    days = max((datetime.now(timezone.utc) - first).total_seconds() / 86400.0, 1.0)
+    per_week = n / days * 7.0
+    remaining = max(min_n - n, 0)
+    if remaining == 0:
+        return (f"_Forward-sample velocity: {n} surfaced v2 trades in {days:.0f} days "
+                f"({per_week:.1f}/week) — the {min_n}-trade bar is reached._")
+    weeks = remaining / per_week if per_week > 0 else float("inf")
+    return (f"_Forward-sample velocity: {n} surfaced v2 trades in {days:.0f} days "
+            f"({per_week:.1f}/week) → ~{weeks:.0f} more weeks to n={min_n} at this rate._")
+
+
 def _wilson(k, n, z=1.96):
     """Wilson 95% interval for a proportion, as (lo%, hi%). None if n == 0."""
     if not n:
@@ -573,8 +617,13 @@ def generate_head_to_head(all_evals):
     payoff of the shadow architecture: it answers 'does our mechanical logic beat
     Claude?' with our own evaluated trade data.
     """
-    evaluated = [r for ev in all_evals for r in ev.get("results", [])
-                 if r.get("status") == "evaluated"]
+    evaluated = []
+    for ev in all_evals:
+        for r in ev.get("results", []):
+            if r.get("status") == "evaluated":
+                r = dict(r)
+                r["_run_ts"] = ev.get("run_timestamp_utc")  # in-memory only (era + velocity)
+                evaluated.append(r)
     if not evaluated:
         print("Head-to-head: no evaluated trades yet.")
         return
@@ -687,11 +736,12 @@ def generate_head_to_head(all_evals):
     # Only records scored by the shared simulator (market-at-open entry, closed-bar
     # signals). Pre-fix records were scored by the entry-zone engine on open-bar signals
     # and are NOT comparable — this section is the book the 70% target is judged on.
-    v2 = [r for r in evaluated if r.get("eval_engine") == EVAL_ENGINE]
+    v2 = [r for r in evaluated if _v2_era(r)]
     lines += ["", "## Eval engine v2 era (post-fix book — the one the 70% target is judged on)", ""]
     if not v2:
-        lines.append(f"_No trades scored by the v2 engine yet (n=0). Pre-fix records above are "
-                     f"NOT comparable: they were scored with entry-zone fills on open-bar signals._")
+        lines.append(f"_No v2-era trades yet (n=0): scored by the v2 engine AND produced by a scan "
+                     f"at/after {getattr(config, 'V2_ERA_START_UTC', '?')} (v13 detector). Pre-fix "
+                     f"records above are NOT comparable._")
     else:
         v2_src, v2_sig = {}, {}
         for r in v2:
@@ -705,6 +755,10 @@ def generate_head_to_head(all_evals):
             s = _group_stats(v2_src[src])
             lines.append(f"| {src} | {s['n']} | **{_fmt_prof(s)}** | {s['net_exp']:+.3f} | "
                          f"{fmt_pf(s['net_pf'])} | {_promo_status(s)} |")
+        eta = _forward_eta_line([r for r in v2 if r.get("source") in ("mechanical", "watch")],
+                                hit_min_n)
+        if eta:
+            lines += ["", eta]
         lines += ["", "| source | signal | n | **profitable%** | net exp (R) | status vs target |",
                   "|---|---|---|---|---|---|"]
         for (src, sig) in sorted(v2_sig, key=lambda k: (-len(v2_sig[k]), k)):
@@ -998,8 +1052,9 @@ def _version_validation_line(total, overall):
         v2 = []
         for ef in EVALS_DIR.glob("eval_*.json"):
             try:
-                for r in json.loads(ef.read_text(encoding="utf-8")).get("results", []):
-                    if (r.get("status") == "evaluated" and r.get("eval_engine") == EVAL_ENGINE
+                ev = json.loads(ef.read_text(encoding="utf-8"))
+                for r in ev.get("results", []):
+                    if (r.get("status") == "evaluated" and _v2_era(r, ev.get("run_timestamp_utc"))
                             and r.get("source", "claude") not in ("watch", "shadow")):
                         v2.append(r)
             except Exception:
