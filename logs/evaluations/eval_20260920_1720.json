@@ -1,0 +1,50 @@
+{
+  "run_tag": "20260920_1720",
+  "run_timestamp_utc": "2026-09-20T17:20:39.613054+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-23T07:08:07.075537+00:00",
+  "results": [
+    {
+      "status": "evaluated",
+      "entry_triggered": true,
+      "entry_price": 0.112017,
+      "exit_price": 0.110941,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.68,
+      "won": true,
+      "max_favorable_rr": 1.35,
+      "candles_to_exit": 39,
+      "risk_pct": 0.032033,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0569,
+      "net_rr": 0.243,
+      "net_blended_rr": 0.623,
+      "won_net": true,
+      "symbol": "ALGOUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 4.0,
+      "source": "watch",
+      "backtested_signal": "failed_breakout_short",
+      "signal_name": "failed_breakout_short"
+    }
+  ]
+}
