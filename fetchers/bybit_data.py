@@ -11,21 +11,58 @@ import signal_rules
 BAR_MS = {"1": 60_000, "5": 300_000, "15": 900_000, "60": 3_600_000, "240": 14_400_000, "D": 86_400_000}
 
 
+class BybitHostsDown(RuntimeError):
+    """Both Bybit API hosts kept failing — abort the run fast instead of timing out
+    call-by-call for an hour (main.py retries the whole snapshot)."""
+
+
 class BybitFetcher:
+    HOSTS = ("bybit", "bytick")   # api.bybit.com (VPN-pinned on CI) / api.bytick.com (direct)
+    MAX_FAILOVERS = 4
+
     def __init__(self, domain="bybit"):
         # Screener reads only public market data (get_tickers / get_kline),
         # which need no auth. Keyless avoids the 90-day API-key expiry and any
         # IP-whitelist requirement. Matches momentum_pulse.py.
-        # 2026-09-23: timeout 10s→30s + 5 forced retries. A single ReadTimeout on the
-        # first ticker call through the CI VPN killed a whole scan (= a missed 4h close).
-        # `domain="bytick"` selects Bybit's alternate API host (api.bytick.com), used by
-        # the pulse and by main.py's last-resort fallback.
-        self.client = HTTP(testnet=False, domain=domain, timeout=30,
-                           max_retries=5, retry_delay=5, force_retry=True)
+        # 2026-09-23 host failover: the CI VPN route to api.bybit.com degrades
+        # intermittently (kline calls time out while api.bytick.com answers direct — the
+        # pulse uses bytick and kept succeeding). Every call goes through `_api`, which
+        # fails over to the other host for the rest of the run on a network error, and
+        # raises BybitHostsDown after MAX_FAILOVERS flips so a dead network aborts in
+        # minutes, not at the 20-min job timeout.
+        self.domain = domain
+        self._clients = {}
+        self._failovers = 0
+        self.client = self._client_for(domain)
+
+    def _client_for(self, domain):
+        if domain not in self._clients:
+            self._clients[domain] = HTTP(testnet=False, domain=domain, timeout=15,
+                                         max_retries=1, retry_delay=2, force_retry=True)
+        return self._clients[domain]
+
+    def _api(self, method, **kwargs):
+        """Call a public endpoint on the current host; on a failure flip to the other host
+        and retry once. Every flip counts against MAX_FAILOVERS for the whole run."""
+        last = None
+        for _ in range(2):
+            try:
+                return getattr(self.client, method)(**kwargs)
+            except Exception as e:
+                last = e
+                if self._failovers >= self.MAX_FAILOVERS:
+                    raise BybitHostsDown(f"{method} failed on both hosts repeatedly: {e}") from e
+                other = next(h for h in self.HOSTS if h != self.domain)
+                self._failovers += 1
+                print(f"  ⚠ api.{self.domain}.com {method} failed ({type(e).__name__}) — "
+                      f"failing over to api.{other}.com (flip {self._failovers}/{self.MAX_FAILOVERS})")
+                self.domain = other
+                self.client = self._client_for(other)
+        raise last
 
     def get_top_movers(self, limit=50):
         """Returns top N USDT perpetuals by 24h turnover + price change."""
-        res = self.client.get_tickers(category=config.BYBIT_CATEGORY)
+        res = self._api("get_tickers", category=config.BYBIT_CATEGORY)
         tickers = res["result"]["list"]
 
         # Filter to USDT perps only
@@ -289,7 +326,7 @@ class BybitFetcher:
 
     def get_klines_with_indicators(self, symbol):
         """Fetches 1h candles and calculates basic indicators (legacy single-TF)."""
-        res = self.client.get_kline(
+        res = self._api("get_kline",
             category=config.BYBIT_CATEGORY,
             symbol=symbol,
             interval=config.KLINE_INTERVAL,
@@ -311,7 +348,7 @@ class BybitFetcher:
 
         for interval, limit in config.KLINE_INTERVALS.items():
             try:
-                res = self.client.get_kline(
+                res = self._api("get_kline",
                     category=config.BYBIT_CATEGORY,
                     symbol=symbol,
                     interval=interval,
@@ -345,6 +382,8 @@ class BybitFetcher:
                         sig["age_min"] = indicators["bar_age_min"]
                         sig["bar_close"] = float(closed[-1][4])
                     validated_signals.extend(sigs)
+            except BybitHostsDown:
+                raise   # both hosts dead — abort the snapshot, main.py retries it
             except Exception as e:
                 print(f"  Warning: {symbol} {interval} kline failed: {e}")
 

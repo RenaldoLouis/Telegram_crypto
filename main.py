@@ -534,11 +534,12 @@ async def run_screener():
 
     # 1. Fetch market data (required for BOTH the mechanical and Claude paths).
     print("→ Fetching Bybit data...")
-    # Retry the whole snapshot (3 attempts, last one via the alternate api.bytick.com host):
+    # Retry the whole snapshot (3 attempts, alternating start host; the fetcher itself also
+    # fails over per call — see BybitFetcher._api):
     # on CI a transient VPN hiccup used to abort the run outright, which — under the 90-min
     # signal-freshness window — silently dropped that 4h close from the forward sample.
     market = None
-    for attempt, domain in enumerate(("bybit", "bybit", "bytick"), 1):
+    for attempt, domain in enumerate(("bybit", "bytick", "bybit"), 1):
         try:
             bybit = BybitFetcher(domain=domain)
             market = bybit.get_full_market_snapshot()
