@@ -158,8 +158,7 @@ def _format_watch_block(watch):
     t2_str = f" (R:R {t2rr:.2f}:1)" if t2rr is not None else ""
     lines.append(f"\n### {w.get('symbol','?')} | {direction} | Watch")
     lines.append("**Trade Plan:**")
-    lines.append(f"- Entry: at market now (signal bar closed; reference "
-                 f"{_fmt_price(w.get('entry_low'))} — {_fmt_price(w.get('entry_high'))})")
+    lines.append(_entry_line(w))
     lines.append(f"- Stop loss: {_fmt_price(w.get('stop_loss'))}")
     lines.append(f"- Target 1: {_fmt_price(w.get('target_1'))}{pr_str} — partial profit, take 50%")
     lines.append(f"- Target 2: {_fmt_price(w.get('target_2'))}{t2_str} — reward leg")
@@ -168,6 +167,20 @@ def _format_watch_block(watch):
     if kf:
         lines.append(f"- Key factor: {kf}")
     return lines
+
+
+def _entry_line(s):
+    """Entry instruction consistent with config.ENTRY_MODEL (what the evaluator scores)."""
+    lo, hi = s.get("entry_low"), s.get("entry_high")
+    try:
+        mid = (float(lo) + float(hi)) / 2
+    except (TypeError, ValueError):
+        mid = None
+    if getattr(config, "ENTRY_MODEL", "market") == "limit_open":
+        wait_min = int(getattr(config, "LIMIT_WAIT_BARS", 2)) * 15
+        return (f"- Entry: post-only LIMIT at ~{_fmt_price(mid)} (current price; maker fee), "
+                f"cancel if not filled within {wait_min} min — do NOT chase")
+    return f"- Entry: at market now (signal bar closed; reference {_fmt_price(lo)} — {_fmt_price(hi)})"
 
 
 def format_mechanical_brief(setups, regime="neutral", watch=None):
@@ -215,8 +228,7 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
         t2rr = _t2_rr(s)
         pr = s.get("predicted_rr")
         lines.append("**Trade Plan:**")
-        lines.append(f"- Entry: at market now (signal bar closed; reference "
-                     f"{_fmt_price(s.get('entry_low'))} — {_fmt_price(s.get('entry_high'))})")
+        lines.append(_entry_line(s))
         lines.append(f"- Stop loss: {_fmt_price(s.get('stop_loss'))}")
         pr_str = f" (R:R {pr:.2f}:1)" if isinstance(pr, (int, float)) else ""
         lines.append(f"- Target 1: {_fmt_price(s.get('target_1'))}{pr_str} — partial profit, take 50%")

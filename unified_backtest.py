@@ -295,7 +295,7 @@ def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None)
             "tier": sig.get("tier", "execute"),
             "signal_time": dt.isoformat(), "signal_ms": close_t,
             "hour_utc": dt.hour, "weekday": dt.weekday(), "is_weekend": dt.weekday() >= 5,
-            "entry": entry, "stop": stop, "target_r": float(sig.get("target_r", 2.0)),
+            "entry": entry, "stop": stop, "target_r": float(sig.get("target_r", 2.0)), "atr": atr,
             "atr_pct": _safe(atr / close * 100 if close else None, 3),
             "adx": _safe(row["adx"], 2), "rsi": _safe(row["rsi"], 2),
             "vol_spike": _safe(row["vol_spike"], 2),
@@ -313,7 +313,12 @@ def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None)
     return trades
 
 
-def sim_trade(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
+ENTRY_MODEL = getattr(config, "ENTRY_MODEL", "market")   # overridable via --entry
+LIMIT_WAIT_BARS = getattr(config, "LIMIT_WAIT_BARS", 2)
+LIMIT_OFFSET_ATR = getattr(config, "LIMIT_OFFSET_ATR", 0.0)
+
+
+def sim_trade_market(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
     entry, direction = t["entry"], t["direction"]
     d = abs(entry - t["stop"]) * stop_scale
     stop = entry - d if direction == "long" else entry + d
@@ -322,6 +327,62 @@ def sim_trade(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
     t2 = entry + t2r * d if direction == "long" else entry - t2r * d
     return ts.simulate(t["_fwd"], direction, stop, t1, t2, entry_price=entry,
                        candle_minutes=15, trail=trail)
+
+
+def sim_trade(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
+    """Default simulation = the configured ENTRY_MODEL (what the brief instructs and the
+    evaluator scores). Unfilled limit → None (the trade is dropped, counted as unfilled)."""
+    if ENTRY_MODEL == "limit_open":
+        r = sim_trade_limit(t, LIMIT_OFFSET_ATR, LIMIT_WAIT_BARS, t1_r, t2_r, trail, stop_scale)
+        return r if (r and r.get("filled")) else None
+    return sim_trade_market(t, t1_r, stop_scale, t2_r, trail)
+
+
+def sim_trade_limit(t, offset_atr, wait_bars, t1_r=DEFAULT_T1_R, t2_r=None, trail=True, stop_scale=1.0):
+    """Passive-entry variant of sim_trade: limit at next open ∓ offset×ATR, filled only if
+    traded through within wait_bars; maker fees on entry + take-profits."""
+    entry, direction = t["entry"], t["direction"]
+    t2r = t["target_r"] if t2_r is None else t2_r
+    # levels are defined from the LIMIT price so R stays comparable
+    off = offset_atr * t["atr"]
+    lim = entry - off if direction == "long" else entry + off
+    d = abs(lim - t["stop"]) * stop_scale
+    stop = lim - d if direction == "long" else lim + d
+    risk = abs(lim - stop)
+    if risk <= 0 or (direction == "long" and stop >= lim) or (direction == "short" and stop <= lim):
+        return {"filled": False, "reason": "limit beyond stop"}
+    t1 = lim + t1_r * risk if direction == "long" else lim - t1_r * risk
+    t2 = lim + t2r * risk if direction == "long" else lim - t2r * risk
+    return ts.simulate_limit(t["_fwd"], direction, stop, t1, t2, atr=t["atr"],
+                             limit_offset_atr=offset_atr, limit_wait_bars=wait_bars,
+                             candle_minutes=15, trail=trail)
+
+
+FILL_GRID = list(product([0.0, 0.15, 0.3], [2, 4, 8]))
+
+
+def fill_model_study(trades):
+    """For one signal group: market baseline vs limit variants. For each variant report
+    fill rate, stats of FILLED trades (maker fees), and the SAME filled subset re-costed as
+    market/taker so the fee effect is separated from the selection effect."""
+    rows = []
+    base = stats([sim_trade_market(t) for t in trades])   # explicit market/taker baseline
+    for off, wait in FILL_GRID:
+        filled, filled_market = [], []
+        for t in trades:
+            r = sim_trade_limit(t, off, wait)
+            if r and r.get("filled"):
+                filled.append(r)
+                # market-equivalent on the same subset: taker fees, same entry bar/price
+                m = ts.simulate(t["_fwd"][r["fill_bar"]:], t["direction"], t["stop"],
+                                r["entry_price"] + (DEFAULT_T1_R * abs(r["entry_price"] - t["stop"]) * (1 if t["direction"] == "long" else -1)),
+                                r["entry_price"] + (t["target_r"] * abs(r["entry_price"] - t["stop"]) * (1 if t["direction"] == "long" else -1)),
+                                entry_price=r["entry_price"], candle_minutes=15)
+                if m:
+                    filled_market.append(m)
+        rows.append({"offset": off, "wait": wait, "fill_rate": len(filled) / len(trades) if trades else 0,
+                     "limit": stats(filled), "market_same_subset": stats(filled_market)})
+    return base, rows
 
 
 # ─── Stats ───────────────────────────────────────────────────────────────────
@@ -531,21 +592,29 @@ def run(args):
         print(f"  signals {sym}: {len(tr)}")
     print(f"Total trades: {len(trades)}  (fetch {fetch_s:.0f}s, total {time.time() - t0:.0f}s)")
 
-    # default simulation
+    # default simulation (configured ENTRY_MODEL)
+    n_signals = len(trades)
     for t in trades:
         t["_res"] = sim_trade(t)
         if t["_res"]:
             t["risk_pct"] = t["_res"]["risk_pct"]
     trades = [t for t in trades if t["_res"]]
+    unfilled = n_signals - len(trades)
+    print(f"Entry model: {ENTRY_MODEL} — {len(trades)}/{n_signals} signals filled "
+          f"({unfilled} unfilled dropped)")
 
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     L = []
     L.append(f"# Unified backtest — {today}")
     L.append(f"\nUniverse: {len(data)} symbols ({', '.join(data)}); days={args.days}; "
-             f"trades={len(trades)}; window 4h→192×15m, 1h→96×15m; entry=market at next 15m open; "
+             f"trades={len(trades)}; window 4h→192×15m, 1h→96×15m; entry per ENTRY_MODEL (below); "
              f"T1={DEFAULT_T1_R}R partial 50%, BE after T1, +0.3R trail after 1R MFE; costs per "
-             f"config (taker {config.TAKER_FEE_PCT*100:.3f}% + slip {config.SLIPPAGE_PCT*100:.2f}% per side).")
+             f"config (taker {config.TAKER_FEE_PCT*100:.3f}% + slip {config.SLIPPAGE_PCT*100:.2f}% per side; "
+             f"maker {config.MAKER_FEE_PCT*100:.3f}%). **Entry model: {ENTRY_MODEL}**"
+             + (f" (limit at next open ∓ {LIMIT_OFFSET_ATR}×ATR, wait {LIMIT_WAIT_BARS} bars; "
+                f"{len(trades)}/{n_signals} signals filled, {unfilled} unfilled dropped)" if ENTRY_MODEL == "limit_open" else "")
+             + ".")
     L.append(f"\nMetric: **profitable%** = net-of-cost blended R > 0. Bar: SHIP ≥{SHIP_PROFITABLE_PCT}% & net>0 & "
              f"n≥{SHIP_MIN_N} on TEST; CANDIDATE ≥{CANDIDATE_PROFITABLE_PCT}%.")
     if skipped:
@@ -606,18 +675,41 @@ def run(args):
             c = combo or (DEFAULT_T1_R, 1.0, None, True)
             best_te = stats([sim_trade(t, *c) for t in r["test_trades"]])
             best_desc = f"{r['filter']}={r['bucket']} + T1={c[0]} stop×{c[1]} T2={c[2] or 'default'} trail={'on' if c[3] else 'off'}"
-        verdict_src = best_te if (best_te and best_te["n"]) else s_te
-        if verdict_src["n"] >= SHIP_MIN_N and (verdict_src["profitable_pct"] or 0) >= SHIP_PROFITABLE_PCT and (verdict_src["net_exp"] or 0) > 0:
-            verdict = "SHIP"
-        elif verdict_src["n"] >= MIN_TEST_N and (verdict_src["profitable_pct"] or 0) >= CANDIDATE_PROFITABLE_PCT and (verdict_src["net_exp"] or 0) > 0:
-            verdict = "CANDIDATE"
-        else:
-            verdict = "NO"
+        def _verdict(v):
+            if not v or not v["n"]:
+                return "NO"
+            if v["n"] >= SHIP_MIN_N and (v["profitable_pct"] or 0) >= SHIP_PROFITABLE_PCT and (v["net_exp"] or 0) > 0:
+                return "SHIP"
+            if v["n"] >= MIN_TEST_N and (v["profitable_pct"] or 0) >= CANDIDATE_PROFITABLE_PCT and (v["net_exp"] or 0) > 0:
+                return "CANDIDATE"
+            return "NO"
+        # Two candidates only: the plain rule (no selection at all) and the ONE variant chosen
+        # on train. Taking the better of two is mild selection; taking the best of 300 cuts
+        # would not be, which is why the filter table is informational.
+        v_def, v_best = _verdict(s_te), _verdict(best_te)
+        order = {"SHIP": 2, "CANDIDATE": 1, "NO": 0}
+        verdict = v_def if order[v_def] >= order[v_best] else v_best
+        verdict += f" (default {v_def}; train-selected {v_best})"
         ship_rows.append((sig, tf, s_te, s_mte, best_desc, best_te, verdict))
         per_sig_detail.extend(det)
 
     L.append(f"\nTotal filter cuts tested across signals: {total_cuts}.")
     L.extend(per_sig_detail)
+
+    # (f) fill-model study: maker (passive) entry vs market
+    L.append("\n## (f) Fill model — passive (maker) entry vs market (taker)\n")
+    L.append(f"Limit rests at the next 15m open improved by offset×ATR; fills only when price trades THROUGH it "
+             f"within `wait` bars (touch ≠ fill); maker fee {config.MAKER_FEE_PCT*100:.3f}% on entry + take-profits, "
+             f"stops still taker+slippage. 'market same subset' re-costs the identical filled trades at taker "
+             f"fees, so (limit − market same subset) = pure fee effect and (market same subset − baseline) = "
+             f"selection effect of waiting for a fill. Unfilled signals are lost opportunities, not losses.\n")
+    for (sig, tf), tr in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+        base, rows = fill_model_study(tr)
+        L.append(f"\n### {sig} ({tf}) — market baseline: {fmt(base)}\n")
+        L.append("| offset×ATR | wait bars | fill rate | LIMIT (maker) filled | market, same subset |")
+        L.append("|---|---|---|---|---|")
+        for r in rows:
+            L.append(f"| {r['offset']} | {r['wait']} | {r['fill_rate']*100:.0f}% | {fmt(r['limit'])} | {fmt(r['market_same_subset'])} |")
 
     # (e) funding-squeeze parameter sweep (positioning candidates)
     fs_names = {"funding_squeeze_short", "funding_squeeze_long"}
@@ -673,7 +765,12 @@ def main():
     ap.add_argument("--skip-fetch", action="store_true")
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--no-derivs", action="store_true", help="skip funding/OI fetch + positioning features")
+    ap.add_argument("--entry", choices=["market", "limit_open"], default=None,
+                    help="override config.ENTRY_MODEL for this run")
     args = ap.parse_args()
+    if args.entry:
+        global ENTRY_MODEL
+        ENTRY_MODEL = args.entry
     run(args)
 
 

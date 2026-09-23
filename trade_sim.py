@@ -42,7 +42,7 @@ MINUTES = {"15": 15, "60": 60, "240": 240}
 
 
 def cost_rr(risk_pct, hold_minutes=0.0):
-    """Round-trip cost of one trade in R, from % of notional.
+    """Round-trip TAKER cost of one trade in R, from % of notional (legacy default).
 
     `risk_pct` = |entry - stop| / entry. A fixed % fee costs MORE R on a tight-stop
     trade, which is exactly the asymmetry a gross-R backtest hides.
@@ -55,10 +55,44 @@ def cost_rr(risk_pct, hold_minutes=0.0):
     return round((roundtrip + funding) / rp, 4)
 
 
+# Fee models (fractions of notional per leg). "taker" = the legacy default: market in,
+# market out, slippage both sides, whatever the exit. "maker_entry" = passive limit fill on
+# entry (maker fee, no slippage) + limit take-profits (maker) while stops / breakeven /
+# trail / expiry are still market exits (taker + slippage).
+def _leg_costs(fee_model):
+    taker = config.TAKER_FEE_PCT + config.SLIPPAGE_PCT
+    maker = getattr(config, "MAKER_FEE_PCT", 0.0002)
+    if fee_model == "maker_entry":
+        return {"entry": maker, "target": maker, "stop": taker, "expiry": taker}
+    return {"entry": taker, "target": taker, "stop": taker, "expiry": taker}
+
+
+def cost_rr_legs(risk_pct, hold_minutes, fee_model, exit_reason, t1_hit, t1_partial):
+    """Cost in R for one trade given how each leg actually filled."""
+    if not getattr(config, "COST_MODEL_ENABLED", True):
+        return 0.0
+    rp = float(risk_pct) if risk_pct and risk_pct > 0 else config.FALLBACK_RISK_PCT
+    legs = _leg_costs(fee_model)
+    if exit_reason == "target_2":
+        final = legs["target"]
+    elif exit_reason == "expired":
+        final = legs["expiry"]
+    elif exit_reason == "target_1":      # T1 filled, remainder marked at expiry
+        final = legs["expiry"]
+    else:                                # stop_loss / be_stop / trail_stop
+        final = legs["stop"]
+    if t1_hit:
+        exit_cost = t1_partial * legs["target"] + (1 - t1_partial) * final
+    else:
+        exit_cost = final
+    funding = config.FUNDING_PCT_PER_8H * (float(hold_minutes) / 60.0 / 8.0)
+    return round((legs["entry"] + exit_cost + funding) / rp, 4)
+
+
 def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None,
              max_candles=None, candle_minutes=15,
              lock_trigger_r=LOCK_TRIGGER_R, lock_stop_r=LOCK_STOP_R,
-             t1_partial=T1_PARTIAL, trail=True):
+             t1_partial=T1_PARTIAL, trail=True, fee_model="taker"):
     """Simulate one trade. Returns a result dict, or None if `candles` is empty.
 
     Args:
@@ -69,6 +103,8 @@ def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None
         max_candles: cap on how many candles the trade may live; default all.
         candle_minutes: 15 for the evaluator / unified backtest, used for funding.
         lock_trigger_r / lock_stop_r / t1_partial / trail: management parameters.
+        fee_model: "taker" (default, legacy: market both ways) or "maker_entry"
+            (passive entry + limit take-profits at maker fee; stops still taker).
     """
     if not candles:
         return None
@@ -149,7 +185,10 @@ def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None
 
     risk_pct = risk / entry if entry else None
     hold_minutes = n * candle_minutes
-    cost = cost_rr(risk_pct, hold_minutes)
+    if fee_model == "taker":
+        cost = cost_rr(risk_pct, hold_minutes)          # legacy path, unchanged numbers
+    else:
+        cost = cost_rr_legs(risk_pct, hold_minutes, fee_model, exit_reason, t1_hit, t1_partial)
 
     return {
         "entry_price": round(entry, 8),
@@ -167,6 +206,7 @@ def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None
         "candles_to_exit": n,
         "hold_minutes": hold_minutes,
         "risk_pct": round(risk_pct, 6) if risk_pct else None,
+        "fee_model": fee_model,
         "cost_rr": cost,
         "net_rr": round(actual_rr - cost, 3),
         "net_blended_rr": round(blended_rr - cost, 3),
@@ -175,6 +215,45 @@ def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None
         "won": actual_rr > 0,            # legacy gross flag (kept for old aggregations)
         "won_net": (actual_rr - cost) > 0,
     }
+
+
+def simulate_limit(candles, direction, stop, target_1, target_2=None, atr=None,
+                   limit_offset_atr=0.0, limit_wait_bars=4, max_candles=None,
+                   candle_minutes=15, fee_model="maker_entry", **kw):
+    """Passive (maker) entry: rest a limit at the first bar's open, improved by
+    `limit_offset_atr` × ATR in the trade's favour (long: below, short: above). The order
+    fills only if price trades THROUGH the limit (strictly beyond it) within
+    `limit_wait_bars`; a touch is not a fill. Unfilled → returns {"filled": False}.
+    On a fill the trade is simulated from the fill bar with `simulate()` (stop checked in
+    the fill bar too — we were filled on the way against us, so that is fair) and costed
+    with the maker-entry fee model. Everything else is identical to the market path.
+    """
+    if not candles:
+        return None
+    is_long = direction == "long"
+    base = float(candles[0]["open"])
+    off = (float(limit_offset_atr) * float(atr)) if (atr and limit_offset_atr) else 0.0
+    limit = base - off if is_long else base + off
+    if (is_long and limit <= float(stop)) or ((not is_long) and limit >= float(stop)):
+        return {"filled": False, "reason": "limit beyond stop"}
+    fill_bar = None
+    for j, c in enumerate(candles[:max(1, int(limit_wait_bars))]):
+        traded_through = (float(c["low"]) < limit) if is_long else (float(c["high"]) > limit)
+        if traded_through:
+            fill_bar = j
+            break
+    if fill_bar is None:
+        return {"filled": False, "reason": "not filled", "limit_price": round(limit, 8)}
+    fwd = candles[fill_bar:]
+    res = simulate(fwd, direction, stop, target_1, target_2, entry_price=limit,
+                   max_candles=max_candles, candle_minutes=candle_minutes,
+                   fee_model=fee_model, **kw)
+    if res is None:
+        return {"filled": False, "reason": "invalid levels at fill"}
+    res["filled"] = True
+    res["fill_bar"] = fill_bar
+    res["limit_price"] = round(limit, 8)
+    return res
 
 
 def summarize(results):

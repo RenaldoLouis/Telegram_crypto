@@ -133,6 +133,37 @@ def test_summarize():
         config.COST_MODEL_ENABLED = prev
 
 
+def test_limit_entry_fill_and_fees():
+    import trade_sim as ts, config
+    # long: limit at open 100 - 0.5*ATR(2) = 99; first bar low 99.5 -> no fill; second bar low 98.5 -> fill
+    c = [{"open": 100, "high": 101, "low": 99.5, "close": 100.5},
+         {"open": 100.5, "high": 101, "low": 98.5, "close": 100},
+         {"open": 100, "high": 104, "low": 99.8, "close": 103.5},
+         {"open": 103.5, "high": 105, "low": 103, "close": 104}]
+    r = ts.simulate_limit(c, "long", stop=97, target_1=100.5, target_2=102, atr=2.0,
+                          limit_offset_atr=0.5, limit_wait_bars=4)
+    assert r["filled"] and r["fill_bar"] == 1 and abs(r["entry_price"] - 99) < 1e-9
+    assert r["exit_reason"] == "target_2" and r["fee_model"] == "maker_entry"
+    # same trade costed as taker must be MORE expensive than maker_entry
+    m = ts.simulate(c[1:], "long", 97, 100.5, 102, entry_price=99)
+    assert m["cost_rr"] > r["cost_rr"] > 0
+    # touch is not a fill: low == limit exactly -> unfilled
+    c2 = [{"open": 100, "high": 101, "low": 99.0, "close": 100.5}] * 4
+    assert ts.simulate_limit(c2, "long", 97, 100.5, 102, atr=2.0, limit_offset_atr=0.5)["filled"] is False
+    # limit beyond stop is rejected
+    assert ts.simulate_limit(c, "long", 99.5, 100.5, 102, atr=2.0, limit_offset_atr=1.0)["filled"] is False
+    # stop exit under maker_entry still pays taker on the exit leg (cost above pure-maker)
+    c3 = [{"open": 100, "high": 100.2, "low": 98.9, "close": 99}, {"open": 99, "high": 99.2, "low": 96.5, "close": 97}]
+    r3 = ts.simulate_limit(c3, "long", 97, 100.5, 102, atr=2.0, limit_offset_atr=0.5, limit_wait_bars=2)
+    assert r3["filled"] and r3["exit_reason"] == "stop_loss"
+    rp = r3["risk_pct"]; pure_maker = 2 * config.MAKER_FEE_PCT / rp
+    assert r3["cost_rr"] > pure_maker
+    # default market path unchanged: fee_model taker, cost == cost_rr
+    d = ts.simulate(c, "long", 97, 100.5, 102)
+    assert d["fee_model"] == "taker" and abs(d["cost_rr"] - ts.cost_rr(d["risk_pct"], d["hold_minutes"])) < 1e-9
+    print("PASS test_limit_entry_fill_and_fees")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for t in tests:

@@ -182,6 +182,15 @@ WATCH_PROMOTION_MIN_TRADES = 30   # min sample for a single watch signal to read
 # Tight-stop setups (small risk_pct) correctly pay MORE R per unit of fee.
 COST_MODEL_ENABLED = True
 TAKER_FEE_PCT = 0.00055        # Bybit USDT-perp taker fee, each side (~0.055%)
+MAKER_FEE_PCT = 0.0002         # Bybit USDT-perp maker fee (VIP0 ~0.02%) — passive fills, no slippage (2026-09-23 fill model)
+# Entry model (2026-09-23 fill-model study): "limit_open" = rest a post-only limit at the next 15m
+# open (improved by LIMIT_OFFSET_ATR × ATR), filled only if price trades THROUGH it within
+# LIMIT_WAIT_BARS 15m bars; maker fee on entry + take-profits, taker on stops. Fill rate 96-99% at
+# offset 0 and +0.03..+0.08R net per trade vs market on every rule. "market" = legacy taker fill.
+# Used identically by weekly_eval (scoring), unified_backtest (validation) and the brief text.
+ENTRY_MODEL = "limit_open"
+LIMIT_WAIT_BARS = 2            # 30 minutes; unfilled → status "not_filled" (not a loss, not counted)
+LIMIT_OFFSET_ATR = 0.0
 SLIPPAGE_PCT = 0.0003          # assumed slippage each side (entry + exit fill), tunable
 FUNDING_PCT_PER_8H = 0.0001    # avg |funding| per 8h, applied as a cost over the hold
 FALLBACK_RISK_PCT = 0.031      # median recovered risk_pct — used when a trade's own is unrecoverable

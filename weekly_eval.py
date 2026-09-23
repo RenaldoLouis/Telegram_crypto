@@ -187,8 +187,24 @@ def evaluate_setup(client, setup, run_timestamp_utc):
                 "reason": f"first open {first_open} already beyond target_1 {target_1}"}
 
     max_candles = days * 96  # 15m candles per eval window
-    sim = trade_sim.simulate(candles, direction, stop_loss, target_1, target_2,
-                             entry_price=None, max_candles=max_candles, candle_minutes=15)
+    entry_model = getattr(config, "ENTRY_MODEL", "market")
+    if entry_model == "limit_open":
+        # Passive entry (fill-model study 2026-09-23): post-only limit at the first 15m
+        # open, filled only if price trades through it within LIMIT_WAIT_BARS. Unfilled
+        # = no trade (excluded from the hit-rate book like not_triggered).
+        sim = trade_sim.simulate_limit(
+            candles, direction, stop_loss, target_1, target_2, atr=None,
+            limit_offset_atr=getattr(config, "LIMIT_OFFSET_ATR", 0.0),
+            limit_wait_bars=getattr(config, "LIMIT_WAIT_BARS", 2),
+            max_candles=max_candles, candle_minutes=15)
+        if sim is not None and not sim.get("filled"):
+            return {"status": "not_filled",
+                    "reason": f"limit at {sim.get('limit_price', first_open)} not traded through "
+                              f"within {getattr(config, 'LIMIT_WAIT_BARS', 2)} bars",
+                    "entry_model": entry_model}
+    else:
+        sim = trade_sim.simulate(candles, direction, stop_loss, target_1, target_2,
+                                 entry_price=None, max_candles=max_candles, candle_minutes=15)
     if sim is None:
         return {"status": "invalid_levels",
                 "reason": f"degenerate/inverted levels (entry {first_open}, stop {stop_loss}, "
@@ -203,7 +219,7 @@ def evaluate_setup(client, setup, run_timestamp_utc):
     if risk > 0:
         for mult, key in ((0.75, "075"), (1.0, "100")):
             t1_at = entry_price + mult * risk if direction == "long" else entry_price - mult * risk
-            s = trade_sim.simulate(candles, direction, stop_loss, t1_at, None,
+            s = trade_sim.simulate(candles[sim.get("fill_bar", 0):], direction, stop_loss, t1_at, None,
                                    entry_price=entry_price, max_candles=max_candles,
                                    candle_minutes=15, trail=False)
             hit = bool(s and s["target_1_hit"])
@@ -214,6 +230,9 @@ def evaluate_setup(client, setup, run_timestamp_utc):
 
     result = {
         "status": "evaluated",
+        "entry_model": entry_model,
+        "fee_model": sim.get("fee_model"),
+        "fill_bar": sim.get("fill_bar", 0),
         "entry_triggered": True,
         "entry_price": round(entry_price, 6),
         "exit_price": round(sim["exit_price"], 6),
@@ -822,7 +841,7 @@ def update_lifetime_stats(all_evals):
 
             stats["total_setups"] += 1
 
-            if r.get("status") == "not_triggered":
+            if r.get("status") in ("not_triggered", "not_filled"):
                 stats["total_not_triggered"] += 1
                 continue
 
@@ -1674,7 +1693,7 @@ def generate_summary(all_evals):
                        if r["status"] == "evaluated" and r.get("source") in ("watch", "shadow")]
     evaluated = [r for r in all_results
                  if r["status"] == "evaluated" and r.get("source") not in ("watch", "shadow")]
-    not_triggered = [r for r in all_results if r["status"] == "not_triggered"]
+    not_triggered = [r for r in all_results if r["status"] in ("not_triggered", "not_filled")]
     total = len([r for r in all_results if r.get("source") not in ("watch", "shadow")])
 
     if not evaluated:
