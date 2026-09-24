@@ -1,20 +1,20 @@
 # Performance Summary
-_Last updated: 2026-09-23 10:04 UTC_
-_Total runs evaluated: 316_
+_Last updated: 2026-09-24 23:55 UTC_
+_Total runs evaluated: 325_
 
 ## Overall Stats
-- Total setups: 399
-- Triggered: 353 (88%)
-- Not triggered: 18
-- **Win rate: 35.4%** (125W / 228L)  (**↑ +0.0%** from previous eval: 35.4%)
-- **Profitable (net, partial model): 43.1%** (152/353; target ≥70%)
+- Total setups: 401
+- Triggered: 354 (88%)
+- Not triggered: 19
+- **Win rate: 35.6%** (126W / 228L)  (**↑ +0.2%** from previous eval: 35.4%)
+- **Profitable (net, partial model): 43.2%** (153/354; target ≥70%)
 - Avg actual R:R: -0.11
-- Avg winning R:R: 1.18
+- Avg winning R:R: 1.17
 - Avg losing R:R: -0.81
-- _(EXECUTE book only — WATCH lane: 122 paper trades, 47.5% profitable, net -0.213R; excluded from every number above)_
+- _(EXECUTE book only — WATCH lane: 127 paper trades, 48.8% profitable, net -0.196R; excluded from every number above)_
 
 ### Partial Profit Model (50% at T1 + BE stop)
-- **Blended win rate: 45.6%** (115W / 137L)
+- **Blended win rate: 45.8%** (116W / 137L)
 - Avg blended R:R: -0.12
 - BE stops (T1 hit then reversed to entry): 28
 
@@ -181,13 +181,14 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | 2026-09-14 | 1 | 1 | 0 | 100% | 35.3% |
 | 2026-09-15 | 1 | 1 | 0 | 100% | 35.5% |
 | 2026-09-16 | 1 | 0 | 1 | 0% | 35.4% |
+| 2026-09-22 | 1 | 1 | 0 | 100% | 35.6% |
 
 **⚠️ Win rate is NOT improving across recent runs. Review what changed and whether the feedback loop is being followed.**
 
 ## By Setup Type
 | Setup Type | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
-| trend_pullback | 300 | 114 | 186 | 38% | -0.05 |
+| trend_pullback | 301 | 115 | 186 | 38% | -0.05 |
 | other | 19 | 5 | 14 | 26% | -0.37 |
 | failed_breakout | 12 | 1 | 11 | 8% | -0.76 |
 | funding_squeeze | 8 | 1 | 7 | 12% | -0.48 |
@@ -200,13 +201,13 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Confidence | Trades | Wins | Losses | Win Rate |
 |---|---|---|---|---|
 | high | 11 | 3 | 8 | 27% |
-| medium | 299 | 109 | 190 | 36% |
+| medium | 300 | 110 | 190 | 37% |
 | low | 43 | 13 | 30 | 30% |
 
 ## By Rank Position
 | Rank | Trades | Win Rate |
 |---|---|---|
-| #1 | 149 | 39% |
+| #1 | 150 | 39% |
 | #2 | 109 | 33% |
 | #3 | 51 | 33% |
 | #4 | 25 | 32% |
@@ -216,7 +217,7 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Model | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
 | claude-haiku-4-5 | 8 | 1 | 7 | 12% | -0.25 |
-| claude-sonnet-4-6 | 341 | 123 | 218 | 36% | -0.10 |
+| claude-sonnet-4-6 | 342 | 124 | 218 | 36% | -0.10 |
 | unknown | 4 | 1 | 3 | 25% | -0.61 |
 
 ## Your Predictions vs Reality (LEARN FROM EACH ONE)
@@ -224,6 +225,7 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 
 | Date | Symbol | Dir | TF | Conf | TF-Conf | Pred R:R | Actual R:R | Exit | MFE |
 |---|---|---|---|---|---|---|---|---|---|
+| 2026-09-22 | CASHCATU | S | intra | med | 3/4 | 0.75 | 0.41 | target_1 | 0.88R |
 | 2026-09-16 | 1000PEPE | S | intra | med | 3/4 | 0.943 | -1.0 | stop_loss | 0.82R |
 | 2026-09-15 | BTCUSDT | S | intra | med | 3/4 | 0.957 | 0.3 | trail_stop | 1.3R |
 | 2026-09-14 | PUMPFUNU | S | intra | med | 3/4 | 0.844 | 0.68 | target_1 | 0.92R |
@@ -243,10 +245,9 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 | 2026-08-11 | SQDUSDT | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.13R |
 | 2026-08-09 | BMTUSDT | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.41R |
 | 2026-08-09 | XRPUSDT | S | intra | med | 3/4 | 0.75 | 0.78 | target_1 | 1.85R |
-| 2026-08-07 | ESPORTSU | S | intra | med | 3/4 | 0.75 | -1.0 | stop_loss | 0.14R |
 
 **Prediction gap: avg predicted R:R = 1.5, avg actual = -0.11 (gap of 1.6R)**
-**Direction accuracy: 221/353 (63%) reached 0.5R+ favorable. Avg MFE: 0.94R**
+**Direction accuracy: 222/354 (63%) reached 0.5R+ favorable. Avg MFE: 0.94R**
 
 ## Trader's Actual Trades (Manual Log)
 - Closed trades: 4 (1W / 3L)
@@ -288,10 +289,10 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 - **Failure category**: wrong_direction
 
 ## Key Insights for Future Briefs
-- WARNING: Win rate is 35% (below 40%). Apply stricter entry criteria — prefer fewer, higher-conviction setups.
+- WARNING: Win rate is 36% (below 40%). Apply stricter entry criteria — prefer fewer, higher-conviction setups.
 - Best setup type: **range_breakout** (2/3 wins)
 - Worst setup type: **post_liquidation** (0/4 wins, 0%) — deprioritize unless 4/4 TF confluence
 - CALIBRATION ISSUE: 'High' confidence setups don't outperform 'Medium'. Recalibrate confidence scoring.
 - Best performing model: **claude-sonnet-4-6** (36% win rate, -0.10 avg R:R)
-- claude-sonnet-4-6: 36% win rate, -0.10 avg R:R over 341 trades
+- claude-sonnet-4-6: 36% win rate, -0.10 avg R:R over 342 trades
 - claude-haiku-4-5: 12% win rate, -0.25 avg R:R over 8 trades

@@ -1,0 +1,31 @@
+{
+  "run_tag": "20260921_2142",
+  "run_timestamp_utc": "2026-09-21T21:42:31.595862+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-09-24T23:55:31.132894+00:00",
+  "results": [
+    {
+      "status": "not_filled",
+      "reason": "limit at 0.12777 not traded through within 2 bars",
+      "entry_model": "limit_open",
+      "symbol": "FFUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 5.0,
+      "source": "mechanical",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    }
+  ]
+}
