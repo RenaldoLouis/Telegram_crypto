@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-09-25T20:06:15.279927+00:00",
+  "run_tag": "20260925_2006",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "LSKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.33596615,
+      "entry_high": 0.34957385,
+      "stop_loss": 0.4108085,
+      "target_1": 0.28995,
+      "target_2": 0.206693,
+      "predicted_rr": 0.776,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 54.0, ADX 20.4, near EMA20"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.526,
+      "signal_test_n": 152,
+      "regime": "risk_on",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 20.4,
+          "rsi": 53.96,
+          "macd": -0.005967,
+          "macd_hist": -0.000343,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.45,
+          "range_pct": 57.79
+        },
+        "tf_1h": {
+          "adx": 19.82,
+          "rsi": 39.05,
+          "macd": -0.009735,
+          "macd_hist": -0.001037,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.49,
+          "range_pct": 22.61
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
