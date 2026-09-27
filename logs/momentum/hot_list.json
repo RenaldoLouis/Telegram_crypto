@@ -1,33 +1,33 @@
 {
-  "generated_utc": "2026-09-27T08:01:32.831630+00:00",
+  "generated_utc": "2026-09-27T22:58:12.895645+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 30.0,
-      "median_change_pct": 1.24,
-      "btc_change_pct": 0.75,
-      "avg_funding_pct": 0.0024,
-      "large_decline_count": 4
+      "pct_declining": 48.0,
+      "median_change_pct": 0.2,
+      "btc_change_pct": -0.09,
+      "avg_funding_pct": 0.0031,
+      "large_decline_count": 2
     },
-    "detected_utc": "2026-09-27T08:01:32.830995+00:00",
+    "detected_utc": "2026-09-27T22:58:12.895036+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
     {
       "symbol": "NEARUSDT",
-      "flagged_utc": "2026-09-27T08:01:32.830783+00:00",
-      "expires_utc": "2026-09-29T08:01:32.830783+00:00",
+      "flagged_utc": "2026-09-27T22:58:12.894813+00:00",
+      "expires_utc": "2026-09-29T22:58:12.894813+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 5.4,
-      "price_change_24h_pct": 11.2943,
-      "turnover_24h_usd": 302890999.9029,
+      "last_price": 5.456,
+      "price_change_24h_pct": 9.756499999999999,
+      "turnover_24h_usd": 364709673.5211,
       "funding_rate_pct": 0.01,
-      "open_interest": 46289086.9,
-      "volume_acceleration": 0.7314184301733947,
-      "price_acceleration_pct": 9.837
+      "open_interest": 46740103.5,
+      "volume_acceleration": 1.2040954456818382,
+      "price_acceleration_pct": -1.5378000000000007
     },
     {
       "symbol": "BTWUSDT",
@@ -156,6 +156,22 @@
       "open_interest": 22837354.0,
       "volume_acceleration": null,
       "price_acceleration_pct": null
+    },
+    {
+      "symbol": "QNTUSDT",
+      "flagged_utc": "2026-09-27T22:58:12.894813+00:00",
+      "expires_utc": "2026-09-29T22:58:12.894813+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 342.35,
+      "price_change_24h_pct": 137.776,
+      "turnover_24h_usd": 406373017.8078,
+      "funding_rate_pct": 0.006881,
+      "open_interest": 73236.12,
+      "volume_acceleration": 2.1404370348112978,
+      "price_acceleration_pct": 71.36290000000001
     }
   ]
 }
