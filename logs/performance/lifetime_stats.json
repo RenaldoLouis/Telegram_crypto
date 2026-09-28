@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-28 02:54 UTC",
+  "last_updated": "2026-09-28 16:59 UTC",
   "total_setups": 401,
   "total_evaluated": 354,
   "total_not_triggered": 19,
@@ -1268,7 +1268,8 @@
     "20260923_0200",
     "20260923_1110",
     "20260923_1725",
-    "20260925_2006"
+    "20260925_2006",
+    "20260927_1414"
   ],
   "by_source": {
     "claude": {
@@ -1291,9 +1292,9 @@
     },
     "shadow": {
       "wins": 2,
-      "losses": 0,
-      "total": 2,
-      "rr_sum": 1.54
+      "losses": 1,
+      "total": 3,
+      "rr_sum": 0.54
     }
   },
   "by_signal_backed": {
