@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_12 trades: 8W / 4L (67% WR, 0.17 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 75% WR, 0.24 avg blended R:R_
+_11 trades: 7W / 4L (64% WR, 0.00 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 73% WR, 0.14 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -16,9 +16,8 @@ _Partial profit model (50% at T1 + BE stop): 75% WR, 0.24 avg blended R:R_
 | 2026-09-12 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.49 | trail_stop | 1.04R |
 | 2026-09-12 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.74 (W) | 0.74 | target_1 | 0.96R |
 | 2026-09-05 | 1000PEPEUS | S | intra | trend_pullba | med | 3/4 | 0.821 | -1.0 (L) | -1.0 | stop_loss | 0.05R |
-| 2026-08-31 | SOXLUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 2.05 (W) | 1.41 | target_2 | 2.2R |
 
-- Recent 'trend_pullback': 8/12 (67% WR)
+- Recent 'trend_pullback': 7/11 (64% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
