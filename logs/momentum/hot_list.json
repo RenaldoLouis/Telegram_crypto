@@ -1,49 +1,33 @@
 {
-  "generated_utc": "2026-09-30T23:40:50.762458+00:00",
+  "generated_utc": "2026-10-01T05:38:51.517220+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 36.0,
-      "median_change_pct": 0.64,
-      "btc_change_pct": -0.06,
-      "avg_funding_pct": -0.0022,
-      "large_decline_count": 4
+      "pct_declining": 12.0,
+      "median_change_pct": 1.48,
+      "btc_change_pct": 1.03,
+      "avg_funding_pct": -0.0096,
+      "large_decline_count": 2
     },
-    "detected_utc": "2026-09-30T23:40:50.762044+00:00",
+    "detected_utc": "2026-10-01T05:38:51.516570+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
     {
       "symbol": "NEARUSDT",
-      "flagged_utc": "2026-09-30T23:40:50.761826+00:00",
-      "expires_utc": "2026-10-02T23:40:50.761826+00:00",
+      "flagged_utc": "2026-10-01T05:38:51.516350+00:00",
+      "expires_utc": "2026-10-03T05:38:51.516350+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 5.374,
-      "price_change_24h_pct": 9.7406,
-      "turnover_24h_usd": 413297808.8347,
-      "funding_rate_pct": 0.01,
-      "open_interest": 36181010.9,
-      "volume_acceleration": 1.032723987036327,
-      "price_acceleration_pct": 4.9186000000000005
-    },
-    {
-      "symbol": "ZECUSDT",
-      "flagged_utc": "2026-09-29T01:48:05.471322+00:00",
-      "expires_utc": "2026-10-01T01:48:05.471322+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 1399.03,
-      "price_change_24h_pct": -10.9703,
-      "turnover_24h_usd": 683176918.9843,
-      "funding_rate_pct": 0.01,
-      "open_interest": 160030.64,
-      "volume_acceleration": 1.09396153374725,
-      "price_acceleration_pct": 2.5211000000000006
+      "last_price": 5.482,
+      "price_change_24h_pct": 10.6133,
+      "turnover_24h_usd": 407674894.422,
+      "funding_rate_pct": 0.007914000000000001,
+      "open_interest": 36158481.9,
+      "volume_acceleration": 0.9863950055081252,
+      "price_acceleration_pct": 0.8727
     },
     {
       "symbol": "QNTUSDT",
@@ -60,38 +44,6 @@
       "open_interest": 100600.23,
       "volume_acceleration": 0.7248246698188875,
       "price_acceleration_pct": -8.830300000000001
-    },
-    {
-      "symbol": "HBARUSDT",
-      "flagged_utc": "2026-09-29T01:48:05.471322+00:00",
-      "expires_utc": "2026-10-01T01:48:05.471322+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 0.12065,
-      "price_change_24h_pct": 23.9724,
-      "turnover_24h_usd": 330029917.2395,
-      "funding_rate_pct": 0.01,
-      "open_interest": 387683944.0,
-      "volume_acceleration": 1.1121766721348618,
-      "price_acceleration_pct": -2.7865
-    },
-    {
-      "symbol": "ONDOUSDT",
-      "flagged_utc": "2026-09-29T01:48:05.471322+00:00",
-      "expires_utc": "2026-10-01T01:48:05.471322+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 0.5071,
-      "price_change_24h_pct": -11.655,
-      "turnover_24h_usd": 206429407.3269,
-      "funding_rate_pct": -0.006004,
-      "open_interest": 170408263.0,
-      "volume_acceleration": 0.8619404983396257,
-      "price_acceleration_pct": 4.806499999999999
     },
     {
       "symbol": "ARKUSDT",
@@ -124,6 +76,22 @@
       "open_interest": 478458040.0,
       "volume_acceleration": 1.0264734132978288,
       "price_acceleration_pct": 12.659300000000009
+    },
+    {
+      "symbol": "SOXLUSDT",
+      "flagged_utc": "2026-10-01T05:38:51.516350+00:00",
+      "expires_utc": "2026-10-03T05:38:51.516350+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 158.27,
+      "price_change_24h_pct": 8.7766,
+      "turnover_24h_usd": 213123931.2566,
+      "funding_rate_pct": 0.0,
+      "open_interest": 310870.42,
+      "volume_acceleration": 1.0545908163200788,
+      "price_acceleration_pct": 8.5413
     }
   ]
 }
