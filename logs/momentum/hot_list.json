@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-10-03T05:07:52.258863+00:00",
+  "generated_utc": "2026-10-03T11:33:22.467875+00:00",
   "market_regime": {
     "regime": "risk_off",
     "metrics": {
-      "pct_declining": 82.0,
-      "median_change_pct": -2.91,
-      "btc_change_pct": -2.36,
-      "avg_funding_pct": -0.0002,
-      "large_decline_count": 15
+      "pct_declining": 74.0,
+      "median_change_pct": -2.33,
+      "btc_change_pct": -2.2,
+      "avg_funding_pct": 0.0009,
+      "large_decline_count": 11
     },
-    "detected_utc": "2026-10-03T05:07:52.258165+00:00",
+    "detected_utc": "2026-10-03T11:33:22.467333+00:00",
     "previous_regime": "risk_off"
   },
   "coins": [
@@ -62,22 +62,6 @@
       "price_acceleration_pct": 8.697600000000001
     },
     {
-      "symbol": "SOXLUSDT",
-      "flagged_utc": "2026-10-01T05:38:51.516350+00:00",
-      "expires_utc": "2026-10-03T05:38:51.516350+00:00",
-      "trigger": "big_move",
-      "all_triggers": [
-        "big_move"
-      ],
-      "last_price": 158.27,
-      "price_change_24h_pct": 8.7766,
-      "turnover_24h_usd": 213123931.2566,
-      "funding_rate_pct": 0.0,
-      "open_interest": 310870.42,
-      "volume_acceleration": 1.0545908163200788,
-      "price_acceleration_pct": 8.5413
-    },
-    {
       "symbol": "BTWUSDT",
       "flagged_utc": "2026-10-01T13:01:49.775482+00:00",
       "expires_utc": "2026-10-03T13:01:49.775482+00:00",
@@ -127,20 +111,20 @@
     },
     {
       "symbol": "SANDUSDT",
-      "flagged_utc": "2026-10-03T05:07:52.257911+00:00",
-      "expires_utc": "2026-10-05T05:07:52.257911+00:00",
+      "flagged_utc": "2026-10-03T11:33:22.467113+00:00",
+      "expires_utc": "2026-10-05T11:33:22.467113+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move",
         "funding_squeeze"
       ],
-      "last_price": 0.08296,
-      "price_change_24h_pct": 78.3319,
-      "turnover_24h_usd": 323242806.1561,
-      "funding_rate_pct": -0.090773,
-      "open_interest": 230452101.0,
-      "volume_acceleration": 1.789523130683457,
-      "price_acceleration_pct": 41.0488
+      "last_price": 0.07345,
+      "price_change_24h_pct": 11.575199999999999,
+      "turnover_24h_usd": 335340466.4696,
+      "funding_rate_pct": -0.10057600000000001,
+      "open_interest": 249560772.0,
+      "volume_acceleration": 1.0374259228143745,
+      "price_acceleration_pct": -66.75670000000001
     },
     {
       "symbol": "LONGXIAUSDT",
