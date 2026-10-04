@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-30 02:48 UTC",
+  "last_updated": "2026-10-04 01:23 UTC",
   "total_setups": 401,
   "total_evaluated": 354,
   "total_not_triggered": 19,
@@ -194,6 +194,11 @@
       "wins": 7,
       "losses": 4,
       "total": 11
+    },
+    "2026-10": {
+      "wins": 0,
+      "losses": 0,
+      "total": 0
     }
   },
   "prediction_gap": {
@@ -1270,7 +1275,10 @@
     "20260923_1725",
     "20260925_2006",
     "20260927_1414",
-    "20260928_1605"
+    "20260928_1605",
+    "20261001_0010",
+    "20261001_1301",
+    "20261001_2017"
   ],
   "by_source": {
     "claude": {
@@ -1292,10 +1300,10 @@
       "rr_sum": -17.89
     },
     "shadow": {
-      "wins": 2,
-      "losses": 2,
-      "total": 4,
-      "rr_sum": 0.54
+      "wins": 3,
+      "losses": 4,
+      "total": 7,
+      "rr_sum": -0.03999999999999995
     }
   },
   "by_signal_backed": {

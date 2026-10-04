@@ -1,5 +1,5 @@
 # Strategic Rules (derived from 354 evaluated trades — solid sample)
-_Last updated: 2026-09-30 02:48 UTC_
+_Last updated: 2026-10-04 01:23 UTC_
 
 0. **v13.0 UNPROVEN (MONITOR)**: deployed 2026-09-23; 0 v2-engine forward trades yet. Target ≥70% profitable (net, partial model) and net exp > +0.00R over 30 trades; baseline (pre-fix, not comparable) 43.1% profitable / -0.178R net. ACTION: nothing is proven until the forward book says so.
 
@@ -10,9 +10,8 @@ _Last updated: 2026-09-30 02:48 UTC_
 5. **TARGETS TOO FAR**: Predicted avg 1.5R but actual is -0.11R (gap: 1.6R). Average MFE is 0.9R, so set T1 at max 0.7R from entry. Backtest: T1 at 0.75R would hit 51% of trades, T1 at 1.0R would hit 38% (vs current T1 hit rate of 127/354 = 36%). ACTION: Place T1 at the nearest REAL structural level. Use ATR: T1 should be 1.5-2× ATR from entry, NOT 3×+.
 6. **WINNING SYMBOLS**: 1000BONKUSDT (6/7), FARTCOINUSDT (5/6), DEXEUSDT (3/4), VANRYUSDT (2/3), EWYUSDT (2/3). ACTION: Give these symbols slight priority when they appear in the scan.
 7. **LOSING SYMBOLS**: WLDUSDT (0/6), ONDOUSDT (0/3), ZECUSDT (0/3), HYPEUSDT (0/3). ACTION: Require 3/4+ TF confluence + volume confirmed for these symbols. Do not include as filler.
-8. **IMPROVING**: 2026-08 was 33% → 2026-09 is 64%. Current approach is working — maintain it.
-9. **PARTIAL PROFIT HELPS**: With 50% close at T1 + BE stop, blended WR is 46% (vs raw 36%), avg blended R:R -0.12. ACTION: Always recommend taking 50% profit at T1 and moving stop to breakeven.
-10. **BEST MODEL**: claude-sonnet-4-6 (36% WR, -0.10 avg R:R). Consider using this model for production runs.
-11. **NEUTRAL REGIME LOSING**: 80/253 (32% WR, -0.15 avg R:R over 253 trades). ACTION: During neutral, reduce to max 1-2 setups and require 3/4 TF + volume + fresh entry.
-12. **EFFECTIVE RULES**: regime_cautious (16/38=42%, +0.07R), trend_pullback (30/56=54%, +0.03R). ACTION: Continue applying these rules — they correlate with positive expectancy.
-13. **INEFFECTIVE RULES**: partial_profit (11/33=33%, -0.16R). ACTION: Stop leaning on these rules — they correlate with net losses.
+8. **PARTIAL PROFIT HELPS**: With 50% close at T1 + BE stop, blended WR is 46% (vs raw 36%), avg blended R:R -0.12. ACTION: Always recommend taking 50% profit at T1 and moving stop to breakeven.
+9. **BEST MODEL**: claude-sonnet-4-6 (36% WR, -0.10 avg R:R). Consider using this model for production runs.
+10. **NEUTRAL REGIME LOSING**: 80/253 (32% WR, -0.15 avg R:R over 253 trades). ACTION: During neutral, reduce to max 1-2 setups and require 3/4 TF + volume + fresh entry.
+11. **EFFECTIVE RULES**: regime_cautious (16/38=42%, +0.07R), trend_pullback (30/56=54%, +0.03R). ACTION: Continue applying these rules — they correlate with positive expectancy.
+12. **INEFFECTIVE RULES**: partial_profit (11/33=33%, -0.16R). ACTION: Stop leaning on these rules — they correlate with net losses.

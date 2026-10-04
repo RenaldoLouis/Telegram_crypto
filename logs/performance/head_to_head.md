@@ -1,6 +1,6 @@
 # Head-to-Head: Mechanical vs Claude
 
-Total evaluated trades: 486
+Total evaluated trades: 489
 Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net = gross − cost.
 
 Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose managed trade (50% at T1 + BE/+0.3R trail) closed green NET of cost; target ≥70% over ≥30 trades with net exp > 0. [lo–hi] = Wilson 95% CI.
@@ -11,7 +11,7 @@ Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose manag
 |---|---|---|---|---|---|---|
 | claude | 299 | 32.1% | **39.8% [34–45]** | -0.129 | **-0.202** | 0.67 |
 | mechanical | 55 | 54.5% | **61.8% [49–74]** | +0.023 | **-0.036** | 0.90 |
-| shadow | 4 | 50.0% | **75.0%** | +0.135 | **+0.110** | 1.42 |
+| shadow | 7 | 42.9% | **57.1% [25–84]** | -0.006 | **-0.059** | 0.83 |
 | watch | 128 | 34.4% | **49.2% [41–58]** | -0.140 | **-0.180** | 0.61 |
 
 ## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)
@@ -22,7 +22,7 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 |---|---|---|---|---|---|---|
 | rsi_rejection_short | 19 | 57.9% | **68.4% [46–85]** | +0.202 | **+0.154** | building (19/30) |
 | (unknown) | 12 | 50.0% | **66.7% [39–86]** | +0.185 | **+0.169** | building (12/30) |
-| trend_pullback_short | 22 | 54.5% | **63.6% [43–80]** | +0.074 | **+0.037** | building (22/30) |
+| trend_pullback_short | 25 | 52.0% | **60.0% [41–77]** | +0.042 | **-0.002** | building (25/30) |
 | failed_breakout_short | 30 | 30.0% | **53.3% [36–70]** | -0.120 | **-0.172** | ✗ below bar |
 | range_reversion_short | 8 | 0.0% | **37.5% [14–69]** | -0.625 | **-0.712** | building (8/30) |
 | rsi_bounce_long | 18 | 27.8% | **33.3% [16–56]** | -0.232 | **-0.257** | building (18/30) |
@@ -54,23 +54,23 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 
 ## Eval engine v2 era (post-fix book — the one the 70% target is judged on)
 
-n=4 v2-scored trades. Pre-fix records are not comparable.
+n=7 v2-scored trades. Pre-fix records are not comparable.
 
 | source | n | **profitable%** | net exp (R) | net PF | status vs target |
 |---|---|---|---|---|---|
-| shadow | 4 | **75.0%** | +0.110 | 1.42 | ↑ clears bar, building sample (4/30) |
+| shadow | 7 | **57.1% [25–84]** | -0.059 | 0.83 | building (7/30) |
 
 | source | signal | n | **profitable%** | net exp (R) | status vs target |
 |---|---|---|---|---|---|
+| shadow | trend_pullback_short | 4 | **50.0%** | -0.141 | building (4/30) |
 | shadow | liquidity_sweep_long | 3 | **66.7%** | +0.051 | building (3/30) |
-| shadow | trend_pullback_short | 1 | **100.0%** | +0.288 | ↑ clears bar, building sample (1/30) |
 
 ## Verdict
 **Mechanical LEADS on expectancy** (mechanical +0.023R vs claude -0.129R; n=55/299).
 ⚠️ CONCENTRATION: mechanical book is one-directional (short-only), 53/55 from a single signal — lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE until both directions and >1 signal have live data.
 
 ## Net-of-cost reality check
-- Whole book: gross -0.113R → **net -0.175R** (PF 0.68, n=486)
+- Whole book: gross -0.113R → **net -0.176R** (PF 0.67, n=489)
 - Mechanical: gross +0.023R → **net -0.036R** (n=55)
 - Signal-backed: gross -0.013R → **net -0.070R** (n=82) — the only cut that should be near a real net edge
-- **VERDICT: an edge SURVIVES costs** — best source net +0.110R (shadow). Net-positive on a real cost model — this is tradeable-grade, keep pushing sample.
+- **VERDICT: NO edge survives costs yet** — best source net -0.036R (mechanical). Every source is net-negative or breakeven. The gross edge is a cost illusion; the only path to a real edge is cutting the losing longs and/or raising per-trade R by widening targets or entering closer to stop — NOT more rule-tuning.
