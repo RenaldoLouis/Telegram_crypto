@@ -8,13 +8,19 @@ on:
     # 90-min signal-freshness window (SIGNAL_MAX_AGE_MIN) — i.e. half of the forward
     # sample was silently lost. Now:
     #   - '7 */2'  : the main pulse+scan run, off the top of the hour (every 2h UTC).
-    #   - '37 0,4,…' and '5 1,5,…' : scan-ONLY retries at +37 and +65 min after each 4h
-    #     close, still inside the freshness window; a signal already taken by an earlier
-    #     run is dropped by the cross-run dedup; SCAN_QUIET_IF_EMPTY suppresses the
+    #   - '20 …', '37 …', '50 …', '5 …' : scan-ONLY retries at +20/+37/+50/+65 min after each
+    #     4h close, all inside the 90-min freshness window; a signal already taken by an
+    #     earlier run is dropped by the cross-run dedup; SCAN_QUIET_IF_EMPTY suppresses the
     #     empty-brief archive + Telegram on these so they add no noise.
+    #     2026-10-04 audit: with 3 shots per close only 24/65 closes (37%) got a successful
+    #     scan inside the window (00:00 UTC 2/11, 08:00 UTC 1/10) — GitHub schedule delays
+    #     plus Bybit timeouts through the tunnel (43/126 runs failed). Two more shots per
+    #     close; the fix for the timeouts is the WG_CONF endpoint, not the schedule.
     # CI is mechanical-only (no ANTHROPIC_API_KEY) → extra runs cost zero tokens.
     - cron: '7 */2 * * *'
+    - cron: '20 0,4,8,12,16,20 * * *'
     - cron: '37 0,4,8,12,16,20 * * *'
+    - cron: '50 0,4,8,12,16,20 * * *'
     - cron: '5 1,5,9,13,17,21 * * *'
   workflow_dispatch:
     # Allow manual trigger from GitHub Actions tab

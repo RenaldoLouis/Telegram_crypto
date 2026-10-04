@@ -34,8 +34,11 @@ jobs:
             total=$(echo "$json" | jq '[.workflow_runs[] | select(.status=="completed")] | length')
             ok=$(echo "$json" | jq '[.workflow_runs[] | select(.conclusion=="success")] | length')
             echo "$wf: $ok/$total succeeded in last 24h"
-            # Alert when fewer than half the completed runs succeeded.
-            if [ "$total" -gt 0 ] && [ $((ok * 2)) -lt "$total" ]; then
+            # Alert when fewer than half the completed runs succeeded. The scan workflow
+            # alerts below 75% (2026-10-04: a 34% failure rate cost a third of the forward
+            # sample for 11 days without ever tripping the 50% bar).
+            min_pct=50; [ "$wf" = momentum_pulse.yml ] && min_pct=75
+            if [ "$total" -gt 0 ] && [ $((ok * 100)) -lt $((total * min_pct)) ]; then
               report="$report
           ⚠️ $wf: only $ok/$total runs succeeded"
             fi

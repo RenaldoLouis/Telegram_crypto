@@ -50,6 +50,18 @@ V2_ERA_START_UTC = "2026-09-23T07:45:00+00:00"
 # gates, caps). No "observation" fallback: 90% of pre-v13 WATCH rows were gate-rejected setups
 # (net -0.20R) and they were what the user saw most days. An empty brief is a valid brief.
 WATCH_REQUIRES_GATES = True
+# WHICH gates a WATCH candidate must clear (2026-10-04, user-approved). "harness" = exactly the
+# gates unified_backtest.py applied to the population it validated: the rule itself (incl. its
+# own gates), the T1/T2 structure from signal_levels, valid fields, one setup per symbol, and
+# the cross-run (symbol, direction) dedup. NOT the EXECUTE-only gates (confluence floor, 4/4
+# refusal, long volume/blacklist/backing, regime + same-direction caps) — the harness never
+# applied those, so applying them live made the WATCH population a different, much smaller
+# one than the validated one: SANDUSDT range_reversion_short fired on 2026-10-02 12:00 UTC
+# and was dropped for tf_confluence 1 < 3, while ~75% of the rule's backtested trades sat in
+# the harness's confluence 0-1 bucket (gated report: train 46/60, test 28/41). The forward
+# test clock therefore stood at n=0 after 11 days. "execute" = the pre-fix behaviour.
+# EXECUTE setups are unaffected: they keep every gate.
+WATCH_GATE_PARITY = "harness"
 # Surfacing gate (2026-09-23, after the research items 1-4 all came back negative): only a rule
 # whose unified-backtest TEST hit rate is >= this fraction may be shown in the brief. Gated
 # candidates below it are still LOGGED as source="shadow" (evaluated by eval-scan, excluded from

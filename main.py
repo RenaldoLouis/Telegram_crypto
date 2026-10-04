@@ -100,10 +100,16 @@ def _rank_key(s):
         return 999
 
 
-def setup_violations(setup, regime_label):
+def setup_violations(setup, regime_label, structural_only=False):
     """Per-setup BLOCKING checks. A non-empty return means the setup is dropped
     by enforce_setups(). Cross-setup rules (count cap, dedupe, long cap, 4/4-rank-1)
     live in enforce_setups, not here.
+
+    `structural_only=True` (WATCH lane, `config.WATCH_GATE_PARITY == "harness"`): apply
+    only the checks the unified backtester's population also satisfied — T1 cap, T2 edge
+    floor, valid fields. The EXECUTE-only gates (long volume/blacklist/backing, confluence
+    floor, 4/4 refusal) are skipped so the live WATCH population matches the validated one.
+    EXECUTE setups always run with structural_only=False.
     """
     violations = []
     sym = setup.get("symbol", "?")
@@ -130,15 +136,17 @@ def setup_violations(setup, regime_label):
         violations.append("missing/invalid price fields for R:R check")
 
     # Long volume gate: every long must have volume confirmation.
-    if direction == "long" and not setup.get("volume_confirmed", False):
+    if structural_only:
+        pass  # harness parity (WATCH lane): no long gates, no confluence gates — see docstring
+    elif direction == "long" and not setup.get("volume_confirmed", False):
         violations.append("LONG without volume_confirmed (long volume gate)")
-    if direction == "long" and sym in LONG_BLACKLIST:
+    if not structural_only and direction == "long" and sym in LONG_BLACKLIST:
         violations.append("LONG on blacklisted symbol (negative long history)")
     # Long signal-backing gate (audit 2026-08-02, lever #1): discretionary longs are the
     # entire net loss (185t, 29% WR, -0.25R net). A long must be backed by a validated long
     # signal (set on entry_indicators by enrich_with_entry_indicators, which runs before this).
     # Signal-backed longs pass in ALL regimes — this bans unbacked longs, not longs-in-rallies.
-    if direction == "long" and config.LONG_REQUIRE_SIGNAL_BACKING:
+    if not structural_only and direction == "long" and config.LONG_REQUIRE_SIGNAL_BACKING:
         sig_backed = (setup.get("backtested_signal")
                       or setup.get("entry_indicators", {}).get("backtested_signal"))
         escape = config.ALLOW_DISCRETIONARY_LONGS_IN_RISK_ON and regime_label == "risk_on"
@@ -148,7 +156,7 @@ def setup_violations(setup, regime_label):
     # Confluence floor (audit 2026-07-13): the 2/4 bucket loses in BOTH directions
     # (2/4 long -0.66R/18t, 2/4 short -0.80R/5t; conf=2 overall 9% WR over 23 trades).
     # 3/4 is the empirical sweet spot, so require >= 3/4 for ANY setup.
-    if setup.get("tf_confluence", 0) < config.LONG_MIN_CONFLUENCE:
+    if not structural_only and setup.get("tf_confluence", 0) < config.LONG_MIN_CONFLUENCE:
         violations.append(
             f"tf_confluence {setup.get('tf_confluence', 0)} "
             f"< {config.LONG_MIN_CONFLUENCE} (confluence floor — 2/4 loses in both directions)"
@@ -157,7 +165,8 @@ def setup_violations(setup, regime_label):
     # 4/4 confluence refusal (net-of-cost cut 2026-08-09): 4/4 is the worst real bucket
     # (net -0.305R / 23% WR / n=71) — worse than 3/4 (-0.095R / n=237). Full alignment = a
     # late, exhausted move. Escalated from demote-only to outright refusal. Reversible.
-    if getattr(config, "REFUSE_4OF4_CONFLUENCE", False) and (setup.get("tf_confluence") or 0) >= 4:
+    if (not structural_only and getattr(config, "REFUSE_4OF4_CONFLUENCE", False)
+            and (setup.get("tf_confluence") or 0) >= 4):
         violations.append(
             "tf_confluence 4/4 refused (worst bucket: net -0.305R/23% WR over n=71; "
             "full alignment = late/exhausted move)"
@@ -199,16 +208,21 @@ def _demote_4of4_from_top(setups):
     return non_4of4 + four_of4
 
 
-def enforce_setups(setups, regime_label):
+def enforce_setups(setups, regime_label, harness_parity=False):
     """Drop rule-breaking setups and apply cross-setup trims, returning the kept
     list (re-ranked 1..N). This REPLACES the old log-only validate_setups: violators
     are now actually removed, so the deterministic risk layer is an enforcer, not a
     logger. Applied to whichever source is the delivered output.
+
+    `harness_parity=True` (WATCH lane only): apply what unified_backtest.py also applied —
+    structural per-setup checks + one setup per symbol. No regime/direction/count caps,
+    no 4/4 demotion. The cross-run (symbol, direction) dedup is applied by the caller
+    (`_drop_active_duplicates`) and mirrors the harness's UB_DEDUP_DAYS window.
     """
     # 1. Drop per-setup violators.
     kept = []
     for s in setups:
-        v = setup_violations(s, regime_label)
+        v = setup_violations(s, regime_label, structural_only=harness_parity)
         if v:
             print(f"  ✂ DROP {s.get('symbol','?')} ({s.get('direction','?')}): {'; '.join(v)}")
             continue
@@ -223,6 +237,12 @@ def enforce_setups(setups, regime_label):
             continue
         seen[sym] = s
     kept = list(seen.values())
+
+    if harness_parity:
+        kept = sorted(kept, key=_rank_key)
+        for i, s in enumerate(kept, 1):
+            s["rank"] = i
+        return kept
 
     # 3. Regime-aware long cap (audit 2026-07-13): longs are the entire net loss
     # (-33R / 29% WR); outside a confirmed risk_on rally, cap longs per run.
@@ -475,7 +495,13 @@ def build_watch_candidates(raw_mechanical, technicals, interest_scores, regime_l
         if not watch_raw:
             return []
         enrich_with_entry_indicators(watch_raw, technicals)
-        kept = enforce_setups(watch_raw, regime_label)
+        # 2026-10-04 (user-approved): gate PARITY with the harness. The EXECUTE-only gates
+        # (confluence floor, 4/4 refusal, long gates, caps) were never part of the validated
+        # population; applied live they dropped the pre-registered rule's fires (SANDUSDT
+        # 10-02: conf 1 < 3) and held the forward test at n=0 for 11 days. See
+        # config.WATCH_GATE_PARITY. EXECUTE setups still go through the full enforce_setups.
+        parity = getattr(config, "WATCH_GATE_PARITY", "execute") == "harness"
+        kept = enforce_setups(watch_raw, regime_label, harness_parity=parity)
     else:
         candidate = raw_mechanical[0] if raw_mechanical else None  # already ranked by expectancy
         if candidate is None:
