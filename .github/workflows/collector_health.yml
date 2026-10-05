@@ -28,7 +28,7 @@ jobs:
         run: |
           since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
           report=""
-          for wf in liquidation_collector.yml cvd_collector.yml momentum_pulse.yml; do
+          for wf in liquidation_collector.yml cvd_collector.yml momentum_pulse.yml xs_momentum_paper.yml; do
             json=$(gh api -X GET "repos/${{ github.repository }}/actions/workflows/$wf/runs" \
                      -f "created=>=$since" -f per_page=50)
             total=$(echo "$json" | jq '[.workflow_runs[] | select(.status=="completed")] | length')

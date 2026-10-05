@@ -1,0 +1,70 @@
+name: XS Momentum Paper Test (weekly)
+
+# Forward PAPER test of the cross-sectional momentum (ex-carry) book — a separate product
+# from the per-trade signal screener. Pre-registered 2026-10-05 (progress.md banner; bar is
+# also printed verbatim at the top of logs/xs_momentum/scorecard.md). Research/paper only:
+# zero Claude tokens, NO order API, nothing here places trades (CORE PRINCIPLE).
+#
+# Every Monday just after the 00:00 UTC daily close:
+#   rebalance → logs/xs_momentum/weights_<monday>.json (idempotent: no-op if present)
+#   score     → scores the previous Monday's weights once this Monday's close exists,
+#               appends logs/xs_momentum/scores.jsonl, rewrites scorecard.md, one Telegram
+#               message only when a new week was scored.
+# Two shots (+20 / +50 min) because GitHub delays schedules; the second is a no-op if the
+# first succeeded. Bybit is reached through the same split-tunnel VPN as the scan.
+
+on:
+  schedule:
+    - cron: '20 0 * * 1'
+    - cron: '50 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pybit requests python-dotenv pandas
+
+      - name: Setup WireGuard VPN (split-tunnel, health-gated)
+        uses: ./.github/actions/bybit-vpn
+        with:
+          wg_conf: ${{ secrets.WG_CONF }}
+
+      - name: Rebalance (write this Monday's paper weights)
+        run: python xs_momentum_paper.py rebalance
+
+      - name: Score (previous week, if its closing bar now exists)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python xs_momentum_paper.py score
+
+      - name: Disconnect VPN
+        if: always()
+        run: sudo wg-quick down wg0 || true
+
+      - name: Commit and push paper-test output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add logs/xs_momentum/
+          git diff --cached --quiet && exit 0
+          git commit -m "xs-momentum paper: weekly rebalance + score [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push && break || sleep 5
+          done
