@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-10-06T15:02:05.062575+00:00",
+  "run_tag": "20261006_1502",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "HYPEUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 92.82167855,
+      "entry_high": 93.03832145,
+      "stop_loss": 92.08946429,
+      "target_1": 93.56040178,
+      "target_2": 94.61107142,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 92.5000 low, RSI 31.4, ADX 24.5"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 21.2,
+          "rsi": 71.62,
+          "macd": 1.249384,
+          "macd_hist": 0.264938,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.94,
+          "range_pct": 8.06
+        },
+        "tf_1h": {
+          "adx": 24.54,
+          "rsi": 31.44,
+          "macd": 0.119325,
+          "macd_hist": -0.172141,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.44,
+          "range_pct": 3.19
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
