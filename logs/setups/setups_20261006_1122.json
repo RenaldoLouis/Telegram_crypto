@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-10-06T11:22:36.449019+00:00",
+  "run_tag": "20261006_1122",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "LYNUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.02288425,
+      "entry_high": 0.02327575,
+      "stop_loss": 0.02338375,
+      "target_1": 0.02330781,
+      "target_2": 0.0236875,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 0.0243 low, RSI 32.1, ADX 14.7"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "cautious",
+      "interest_score": null,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 14.76,
+          "rsi": 47.23,
+          "macd": -0.00081,
+          "macd_hist": -1.1e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.43,
+          "range_pct": 59.96
+        },
+        "tf_1h": {
+          "adx": 14.72,
+          "rsi": 32.07,
+          "macd": -0.000797,
+          "macd_hist": -0.000322,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.89,
+          "range_pct": 28.9
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
