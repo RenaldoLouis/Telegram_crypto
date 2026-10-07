@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-10-07T04:13:36.849122+00:00",
+  "run_tag": "20261007_0413",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "SANDUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.0686354,
+      "entry_high": 0.0695846,
+      "stop_loss": 0.062782,
+      "target_1": 0.073856,
+      "target_2": 0.081766,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 37.1 bouncing (was 24.8), ADX 26.0"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "neutral",
+      "interest_score": 7.0,
+      "rank": 3,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.99,
+          "rsi": 37.05,
+          "macd": 0.000994,
+          "macd_hist": -0.001345,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.37,
+          "range_pct": 23.62
+        },
+        "tf_1h": {
+          "adx": 29.14,
+          "rsi": 59.77,
+          "macd": 0.000299,
+          "macd_hist": 0.000625,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.96,
+          "range_pct": 11.64
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
