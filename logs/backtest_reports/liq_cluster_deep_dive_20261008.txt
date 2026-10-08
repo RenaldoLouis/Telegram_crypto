@@ -1,0 +1,59 @@
+    Cache hit: ADAUSDT 1h (1000 candles)
+    Cache hit: XRPUSDT 1h (1000 candles)
+    Cache hit: SOLUSDT 1h (1000 candles)
+    Cache hit: BTCUSDT 1h (1000 candles)
+    Cache hit: ETHUSDT 1h (1000 candles)
+    Cache hit: DOGEUSDT 1h (1000 candles)
+    Cache hit: SUIUSDT 1h (1000 candles)
+    Cache hit: XLMUSDT 1h (1000 candles)
+    Cache hit: ENAUSDT 1h (1000 candles)
+    Cache hit: HBARUSDT 1h (1000 candles)
+    Cache hit: TRXUSDT 1h (1000 candles)
+    Cache hit: NEARUSDT 1h (1000 candles)
+    Cache hit: OPUSDT 1h (1000 candles)
+    Cache hit: ARBUSDT 1h (1000 candles)
+    Cache hit: INJUSDT 1h (1000 candles)
+    Cache hit: LINKUSDT 1h (1000 candles)
+    Cache hit: AVAXUSDT 1h (1000 candles)
+    Cache hit: LTCUSDT 1h (1000 candles)
+    Cache hit: WLDUSDT 1h (1000 candles)
+
+======== interval 60 — tagged 521 ========
+NEAR by direction:  long: n= 46 wr 54 net +0.244 | short: n= 47 wr 38 net -0.144
+NEAR per-symbol: XLMUSDT:n=  7 wr 29 net -0.535; ENAUSDT:n=  7 wr 71 net +0.431; LINKUSDT:n=  7 wr 43 net +0.084; SUIUSDT:n=  6 wr 33 net -0.239; HBARUSDT:n=  6 wr 67 net +0.595; AVAXUSDT:n=  6 wr 67 net +0.595
+NEAR by month:   Aug: n=0 | Sep: n= 93 wr 46 net +0.048
+coverage>=50% of window hours: 348 trades | <50%: 173
+  HIcov: at n=149 wr 38 net -0.136 | near n= 66 wr 42 net -0.062 | far n= 52 wr 38 net -0.091 | none n= 81 wr 44 net +0.045
+  LOcov: at n= 40 wr 35 net -0.197 | near n= 27 wr 56 net +0.317 | far n= 43 wr 33 net -0.258 | none n= 63 wr 38 net -0.106
+chrono(by-time) split — ALL: n=309 wr 39 net -0.102 -> n=212 wr 42 net -0.052 | NEAR: n= 58 wr 47 net +0.066 -> n= 35 wr 46 net +0.018
+NEAR & HIcov chrono: n= 31 wr 39 net -0.152 -> n= 35 wr 46 net +0.018
+    Cache hit: ADAUSDT 4h (1000 candles)
+    Cache hit: XRPUSDT 4h (1000 candles)
+    Cache hit: SOLUSDT 4h (1000 candles)
+    Cache hit: BTCUSDT 4h (1000 candles)
+    Cache hit: ETHUSDT 4h (1000 candles)
+    Cache hit: DOGEUSDT 4h (1000 candles)
+    Cache hit: SUIUSDT 4h (1000 candles)
+    Cache hit: XLMUSDT 4h (1000 candles)
+    Cache hit: ENAUSDT 4h (1000 candles)
+    Cache hit: HBARUSDT 4h (1000 candles)
+    Cache hit: TRXUSDT 4h (1000 candles)
+    Cache hit: NEARUSDT 4h (1000 candles)
+    Cache hit: OPUSDT 4h (1000 candles)
+    Cache hit: ARBUSDT 4h (1000 candles)
+    Cache hit: INJUSDT 4h (1000 candles)
+    Cache hit: LINKUSDT 4h (1000 candles)
+    Cache hit: AVAXUSDT 4h (1000 candles)
+    Cache hit: LTCUSDT 4h (1000 candles)
+    Cache hit: WLDUSDT 4h (1000 candles)
+
+======== interval 240 — tagged 162 ========
+NEAR by direction:  long: n=  4 wr 50 net +0.178 | short: n=0
+NEAR per-symbol: ETHUSDT:n=  1 wr  0 net -1.072; DOGEUSDT:n=  1 wr  0 net -1.072; ENAUSDT:n=  1 wr100 net +1.428; NEARUSDT:n=  1 wr100 net +1.428
+NEAR by month:   Aug: n=  1 wr  0 net -1.072 | Sep: n=  3 wr 67 net +0.595
+coverage>=50% of window hours: 81 trades | <50%: 81
+  HIcov: at n= 10 wr 40 net -0.072 | near n=  1 wr  0 net -1.072 | far n=0 | none n= 70 wr 53 net +0.228
+  LOcov: at n= 17 wr 18 net -0.558 | near n=  3 wr 67 net +0.595 | far n=0 | none n= 61 wr 26 net -0.400
+chrono(by-time) split — ALL: n= 95 wr 29 net -0.312 -> n= 67 wr 51 net +0.174 | NEAR: n=  4 wr 50 net +0.178 -> n=0
+NEAR & HIcov chrono: n=  1 wr  0 net -1.072 -> n=0
+4h AT-bucket composition: ADAUSDT/s/-1.0; ADAUSDT/s/-1.0; ADAUSDT/s/-1.0; XRPUSDT/l/-0.7; XRPUSDT/s/+1.5; XRPUSDT/s/-1.0; SOLUSDT/l/-1.0; SOLUSDT/s/-1.0; BTCUSDT/l/-1.0; BTCUSDT/s/-1.0; ETHUSDT/l/+1.5; SUIUSDT/l/-1.0; SUIUSDT/s/-1.0; XLMUSDT/l/-1.0; XLMUSDT/s/-1.0; ENAUSDT/l/+1.5; HBARUSDT/l/+1.5; HBARUSDT/s/-1.0; NEARUSDT/l/+1.5; OPUSDT/l/+1.5; ARBUSDT/l/-1.0; ARBUSDT/l/-1.0; LINKUSDT/l/-0.1; LINKUSDT/l/-1.0; LTCUSDT/l/-1.0; LTCUSDT/l/-1.0; WLDUSDT/s/+1.5

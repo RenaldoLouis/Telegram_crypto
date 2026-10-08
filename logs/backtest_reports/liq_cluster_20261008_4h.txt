@@ -1,0 +1,35 @@
+Loaded 214 file(s); liquidation data for 19 symbols.
+Total liq events: 88,774 | widest coverage: 59.5 days
+    Cache hit: ADAUSDT 4h (1000 candles)
+    Cache hit: XRPUSDT 4h (1000 candles)
+    Cache hit: SOLUSDT 4h (1000 candles)
+    Cache hit: BTCUSDT 4h (1000 candles)
+    Cache hit: ETHUSDT 4h (1000 candles)
+    Cache hit: DOGEUSDT 4h (1000 candles)
+    Cache hit: SUIUSDT 4h (1000 candles)
+    Cache hit: XLMUSDT 4h (1000 candles)
+    Cache hit: ENAUSDT 4h (1000 candles)
+    Cache hit: HBARUSDT 4h (1000 candles)
+    Cache hit: TRXUSDT 4h (1000 candles)
+    Cache hit: NEARUSDT 4h (1000 candles)
+    Cache hit: OPUSDT 4h (1000 candles)
+    Cache hit: ARBUSDT 4h (1000 candles)
+    Cache hit: INJUSDT 4h (1000 candles)
+    Cache hit: LINKUSDT 4h (1000 candles)
+    Cache hit: AVAXUSDT 4h (1000 candles)
+    Cache hit: LTCUSDT 4h (1000 candles)
+    Cache hit: WLDUSDT 4h (1000 candles)
+
+Symbols with klines+liq overlap: 19 | tagged trades: 162
+ALL: n=162 wr38 net -0.111
+
+BY distance-to-ALIGNED-liq-cluster (long=sell-cluster below / short=buy-cluster above):
+  at(<=0.5A)           n=  27 wr 26 net -0.378
+  near(0.5-1.5A)       n=   4 wr 50 net +0.178
+  noAlignedCluster     n= 131 wr 40 net -0.064
+
+TRAIN/TEST (chrono split) — is 'near an aligned liq cluster' better OOS?
+  ALL           TRAIN net +0.000(n=0)  TEST net -0.111(n=162)
+  NEAR-aligned  TRAIN net +0.000(n=0)  TEST net -0.306(n=31)
+
+  VERDICT: promote to a live feature ONLY if NEAR-aligned TEST net clearly beats ALL TEST net AND is >= ~0 — else it's another empty lever (fork C).
