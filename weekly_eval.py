@@ -525,17 +525,27 @@ def _increment_bucket(bucket, key, result):
         bucket[key]["losses"] += 1
 
 
+def _managed_rr(r):
+    """(gross, net) R of the MANAGED trade the brief prescribes (50% at T1, BE/+0.3R
+    trail, remainder to T2/expiry) — the same definition trade_sim.summarize gives
+    unified_backtest. Pinned 2026-10-08 as the ONE expectancy measure in this file, so the
+    hit rate and the net>0 guard judge the same trade the harness validated."""
+    gross = r.get("blended_rr")
+    if gross is None:
+        gross = r.get("actual_rr", 0)
+    net = r.get("net_blended_rr")
+    if net is None:
+        net = gross - trade_cost_rr(r)
+    return gross, net
+
+
 def _profitable(r):
     """The 2026-09-23 hit-rate metric: managed trade (partial at T1 + trail) closed
     green NET of cost. Stored as `profitable` by the v2 engine; derived from
     net_blended_rr for older records."""
     if r.get("profitable") is not None:
         return bool(r["profitable"])
-    nb = r.get("net_blended_rr")
-    if nb is None:
-        nb = (r.get("blended_rr") if r.get("blended_rr") is not None
-              else r.get("actual_rr", 0)) - trade_cost_rr(r)
-    return nb > 0
+    return _managed_rr(r)[1] > 0
 
 
 def _v2_era(r, run_ts=None):
@@ -691,8 +701,7 @@ def _independent_bets(records):
             key = (_bar_floor_min(r["_run_ts"], 240), r.get("direction"))
         except (KeyError, ValueError, TypeError):
             key = ("solo", i)
-        groups.setdefault(key, []).append(
-            r.get("net_rr", r.get("actual_rr", 0) - trade_cost_rr(r)))
+        groups.setdefault(key, []).append(_managed_rr(r)[1])
     return [sum(v) / len(v) for v in groups.values()]
 
 
@@ -716,14 +725,19 @@ def _group_stats(results):
         return {"n": 0, "wr": 0.0, "exp": 0.0, "pf": 0.0, "wins": 0,
                 "net_wr": 0.0, "net_exp": 0.0, "net_pf": 0.0,
                 "prof": 0, "prof_pct": 0.0, "prof_ci": None}
-    rr = [r.get("actual_rr", 0) for r in results]
+    # Expectancy / PF are on the MANAGED trade (_managed_rr — same as trade_sim.summarize);
+    # until 2026-10-08 they used the full-position leg (actual_rr / net_rr), a different
+    # trade from the one profitable% and the harness measure. win% stays the legacy
+    # full-position `won`.
+    managed = [_managed_rr(r) for r in results]
+    rr = [g for g, _ in managed]
     wins = sum(1 for r in results if r.get("won"))
     gross_win = sum(x for x in rr if x > 0)
     gross_loss = abs(sum(x for x in rr if x < 0))
     pf = gross_win / gross_loss if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
     # Net-of-cost twins (audit 2026-08-02). trade_cost_rr recovers risk_pct from stored
     # fields, so net stats are correct for historical evals scored before the cost model.
-    nrr = [r.get("net_rr", r.get("actual_rr", 0) - trade_cost_rr(r)) for r in results]
+    nrr = [n for _, n in managed]
     nwins = sum(1 for x in nrr if x > 0)
     ngw = sum(x for x in nrr if x > 0)
     ngl = abs(sum(x for x in nrr if x < 0))
@@ -785,7 +799,10 @@ def generate_head_to_head(all_evals):
     lines = ["# Head-to-Head: Mechanical vs Claude", "",
              f"Total evaluated trades: {len(evaluated)}",
              f"Cost model: {rt_pct*100:.3f}% round-trip (fee {config.TAKER_FEE_PCT*100:.3f}%"
-             f" + slippage {config.SLIPPAGE_PCT*100:.3f}% ×2) + funding; net = gross − cost.", "",
+             f" + slippage {config.SLIPPAGE_PCT*100:.3f}% ×2) + funding; net = gross − cost.",
+             "Every expectancy / PF below is the MANAGED trade (50% at T1, BE/+0.3R trail, rest to "
+             "T2/expiry) — the same definition as unified_backtest (pinned 2026-10-08). win% is the "
+             "legacy full-position win.", "",
              f"Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose "
              f"managed trade (50% at T1 + BE/+0.3R trail) closed green NET of cost; "
              f"target ≥{hit_target:.0f}% over ≥{hit_min_n} trades with net exp > 0. "

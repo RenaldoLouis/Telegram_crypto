@@ -9,10 +9,12 @@ name: Liquidation Collector (chained)
 #
 # Backtest later: download all artifacts, concat the JSONL, run the cluster map.
 # NOTE: this is a data collector only — zero trading decisions (CORE PRINCIPLE).
+#
+# STOPPED 2026-10-08: fork A failed its pre-registered re-run (→ fork C), so the schedule
+# is removed — it only held a VPN tunnel the scan needs. The collected store stays in
+# logs/liquidations/ci/. Manual runs still work; restore the cron to resume collection.
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'   # every 6h UTC; each job runs ~5.5h -> near-continuous
   workflow_dispatch: {}
 
 # Don't stack overlapping runs if a job overruns / a manual dispatch collides.

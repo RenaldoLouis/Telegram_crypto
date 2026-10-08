@@ -1,5 +1,6 @@
 """Behavior tests for the 2026-10-08 eval readout fixes in weekly_eval.py:
-cross-run duplicate marking (trade identity = signal bar) and the gated VERDICT line.
+cross-run duplicate marking (trade identity = signal bar), the gated VERDICT line, and the
+managed-trade expectancy definition.
 
 Run: venv/bin/python test_eval_readout.py
 """
@@ -57,12 +58,24 @@ def test_later_copy_marked_duplicate_and_idempotent():
 
 
 def test_same_block_same_direction_is_one_bet():
-    rs = [{"_run_ts": "2026-10-05T17:20:00+00:00", "direction": "long", "net_rr": x}
+    rs = [{"_run_ts": "2026-10-05T17:20:00+00:00", "direction": "long", "net_blended_rr": x}
           for x in (1.0, 1.0, 1.0, 1.0, -1.0)]
-    rs.append({"_run_ts": "2026-10-05T17:20:00+00:00", "direction": "short", "net_rr": -1.0})
+    rs.append({"_run_ts": "2026-10-05T17:20:00+00:00", "direction": "short", "net_blended_rr": -1.0})
     bets = sorted(we._independent_bets(rs))
     assert bets == [-1.0, 0.6], bets
     print("  ✓ test_same_block_same_direction_is_one_bet")
+
+
+def test_expectancy_is_the_managed_trade():
+    # Runner stopped at BE after T1: full-position leg is -0.1R net, managed trade +0.3R net.
+    r = {"status": "evaluated", "actual_rr": 0.0, "net_rr": -0.1, "blended_rr": 0.4,
+         "net_blended_rr": 0.3, "profitable": True, "won": False}
+    s = we._group_stats([r])
+    assert abs(s["net_exp"] - 0.3) < 1e-9 and abs(s["exp"] - 0.4) < 1e-9, s
+    legacy = {"status": "evaluated", "actual_rr": 1.0, "risk_pct": 0.02}   # pre-blended record
+    g, n = we._managed_rr(legacy)
+    assert g == 1.0 and n < 1.0, (g, n)
+    print("  ✓ test_expectancy_is_the_managed_trade")
 
 
 def _v2(source, net, ts, direction="long", sig="liquidity_sweep_long"):
@@ -111,4 +124,5 @@ if __name__ == "__main__":
     test_same_block_same_direction_is_one_bet()
     test_verdict_ignores_shadow_and_small_n()
     test_verdict_needs_ci_above_zero()
-    print("All 5 eval-readout tests passed.")
+    test_expectancy_is_the_managed_trade()
+    print("All 6 eval-readout tests passed.")
