@@ -6,8 +6,8 @@
   "evaluated_at_utc": "2026-08-22T06:40:10.676538+00:00",
   "results": [
     {
-      "status": "no_data",
-      "reason": "Could not fetch klines",
+      "status": "duplicate",
+      "reason": "same signal bar as run 20260820_1000 (cross-run race) \u2014 not counted",
       "symbol": "1000PEPEUSDT",
       "direction": "short",
       "timeframe": "scalp",
@@ -23,7 +23,8 @@
       "regime": "risk_on",
       "interest_score": 9.0,
       "source": "watch",
-      "backtested_signal": "rsi_rejection_short"
+      "backtested_signal": "rsi_rejection_short",
+      "duplicate_of": "20260820_1000"
     }
   ]
 }

@@ -1,22 +1,22 @@
 # Performance Summary
-_Last updated: 2026-10-08 03:20 UTC_
+_Last updated: 2026-10-08 03:32 UTC_
 _Total runs evaluated: 349_
 
 ## Overall Stats
 - Total setups: 401
-- Triggered: 354 (88%)
+- Triggered: 353 (88%)
 - Not triggered: 19
-- **Win rate: 35.6%** (126W / 228L)  (**↓ -0.0%** from previous eval: 35.6%) ⚠️ REGRESSION
-- **Profitable (net, partial model): 43.2%** (153/354; target ≥70%)
+- **Win rate: 35.7%** (126W / 227L)  (**↑ +0.1%** from previous eval: 35.6%)
+- **Profitable (net, partial model): 43.1%** (152/353; target ≥70%)
 - Avg actual R:R: -0.11
 - Avg winning R:R: 1.17
-- Avg losing R:R: -0.81
-- _(EXECUTE book only — WATCH lane: 162 paper trades, 51.9% profitable, net -0.132R; excluded from every number above)_
+- Avg losing R:R: -0.82
+- _(EXECUTE book only — WATCH lane: 159 paper trades, 52.2% profitable, net -0.125R; excluded from every number above)_
 
 ### Partial Profit Model (50% at T1 + BE stop)
-- **Blended win rate: 45.8%** (116W / 137L)
+- **Blended win rate: 45.6%** (115W / 137L)
 - Avg blended R:R: -0.12
-- BE stops (T1 hit then reversed to entry): 28
+- BE stops (T1 hit then reversed to entry): 27
 
 ## Win Rate Trend (per eval run)
 This tracks whether recommendations are IMPROVING over time. If not trending up, something needs to change.
@@ -136,59 +136,59 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | 2026-07-25 | 1 | 1 | 0 | 100% | 34.6% |
 | 2026-07-26 | 1 | 0 | 1 | 0% | 34.5% |
 | 2026-07-27 | 1 | 0 | 1 | 0% | 34.4% |
-| 2026-07-27 | 2 | 0 | 2 | 0% | 34.1% |
-| 2026-07-27 | 1 | 1 | 0 | 100% | 34.4% |
-| 2026-07-28 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-07-29 | 1 | 0 | 1 | 0% | 34.5% |
-| 2026-07-29 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-07-30 | 1 | 0 | 1 | 0% | 34.6% |
-| 2026-07-30 | 1 | 1 | 0 | 100% | 34.8% |
-| 2026-07-30 | 1 | 1 | 0 | 100% | 35.0% |
-| 2026-07-30 | 3 | 0 | 3 | 0% | 34.7% |
-| 2026-07-30 | 3 | 0 | 3 | 0% | 34.3% |
-| 2026-07-31 | 2 | 2 | 0 | 100% | 34.7% |
-| 2026-07-31 | 1 | 1 | 0 | 100% | 35.0% |
-| 2026-07-31 | 1 | 0 | 1 | 0% | 34.8% |
-| 2026-08-01 | 3 | 0 | 3 | 0% | 34.5% |
-| 2026-08-01 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-08-01 | 2 | 0 | 2 | 0% | 34.5% |
-| 2026-08-02 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-08-03 | 2 | 0 | 2 | 0% | 34.5% |
-| 2026-08-03 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-08-03 | 2 | 1 | 1 | 50% | 34.8% |
-| 2026-08-03 | 1 | 0 | 1 | 0% | 34.7% |
-| 2026-08-04 | 1 | 0 | 1 | 0% | 34.6% |
-| 2026-08-04 | 2 | 0 | 2 | 0% | 34.4% |
-| 2026-08-04 | 1 | 0 | 1 | 0% | 34.3% |
-| 2026-08-05 | 1 | 1 | 0 | 100% | 34.5% |
-| 2026-08-05 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-08-05 | 2 | 0 | 2 | 0% | 34.4% |
-| 2026-08-07 | 3 | 1 | 2 | 33% | 34.4% |
-| 2026-08-09 | 1 | 1 | 0 | 100% | 34.6% |
-| 2026-08-09 | 1 | 0 | 1 | 0% | 34.5% |
-| 2026-08-11 | 2 | 0 | 2 | 0% | 34.3% |
-| 2026-08-11 | 1 | 0 | 1 | 0% | 34.2% |
-| 2026-08-22 | 1 | 1 | 0 | 100% | 34.4% |
-| 2026-08-27 | 1 | 0 | 1 | 0% | 34.3% |
-| 2026-08-28 | 1 | 1 | 0 | 100% | 34.5% |
-| 2026-08-31 | 1 | 1 | 0 | 100% | 34.7% |
-| 2026-09-05 | 1 | 0 | 1 | 0% | 34.6% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 34.8% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 35.0% |
-| 2026-09-12 | 1 | 1 | 0 | 100% | 35.2% |
-| 2026-09-12 | 2 | 1 | 1 | 50% | 35.2% |
-| 2026-09-13 | 1 | 0 | 1 | 0% | 35.1% |
-| 2026-09-14 | 1 | 1 | 0 | 100% | 35.3% |
-| 2026-09-15 | 1 | 1 | 0 | 100% | 35.5% |
-| 2026-09-16 | 1 | 0 | 1 | 0% | 35.4% |
-| 2026-09-22 | 1 | 1 | 0 | 100% | 35.6% |
+| 2026-07-27 | 1 | 0 | 1 | 0% | 34.2% |
+| 2026-07-27 | 1 | 1 | 0 | 100% | 34.5% |
+| 2026-07-28 | 1 | 1 | 0 | 100% | 34.7% |
+| 2026-07-29 | 1 | 0 | 1 | 0% | 34.6% |
+| 2026-07-29 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-07-30 | 1 | 0 | 1 | 0% | 34.7% |
+| 2026-07-30 | 1 | 1 | 0 | 100% | 34.9% |
+| 2026-07-30 | 1 | 1 | 0 | 100% | 35.1% |
+| 2026-07-30 | 3 | 0 | 3 | 0% | 34.8% |
+| 2026-07-30 | 3 | 0 | 3 | 0% | 34.4% |
+| 2026-07-31 | 2 | 2 | 0 | 100% | 34.9% |
+| 2026-07-31 | 1 | 1 | 0 | 100% | 35.1% |
+| 2026-07-31 | 1 | 0 | 1 | 0% | 35.0% |
+| 2026-08-01 | 3 | 0 | 3 | 0% | 34.6% |
+| 2026-08-01 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-08-01 | 2 | 0 | 2 | 0% | 34.6% |
+| 2026-08-02 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-08-03 | 2 | 0 | 2 | 0% | 34.6% |
+| 2026-08-03 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-08-03 | 2 | 1 | 1 | 50% | 34.9% |
+| 2026-08-03 | 1 | 0 | 1 | 0% | 34.8% |
+| 2026-08-04 | 1 | 0 | 1 | 0% | 34.7% |
+| 2026-08-04 | 2 | 0 | 2 | 0% | 34.5% |
+| 2026-08-04 | 1 | 0 | 1 | 0% | 34.4% |
+| 2026-08-05 | 1 | 1 | 0 | 100% | 34.6% |
+| 2026-08-05 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-08-05 | 2 | 0 | 2 | 0% | 34.5% |
+| 2026-08-07 | 3 | 1 | 2 | 33% | 34.5% |
+| 2026-08-09 | 1 | 1 | 0 | 100% | 34.7% |
+| 2026-08-09 | 1 | 0 | 1 | 0% | 34.6% |
+| 2026-08-11 | 2 | 0 | 2 | 0% | 34.4% |
+| 2026-08-11 | 1 | 0 | 1 | 0% | 34.3% |
+| 2026-08-22 | 1 | 1 | 0 | 100% | 34.5% |
+| 2026-08-27 | 1 | 0 | 1 | 0% | 34.4% |
+| 2026-08-28 | 1 | 1 | 0 | 100% | 34.6% |
+| 2026-08-31 | 1 | 1 | 0 | 100% | 34.8% |
+| 2026-09-05 | 1 | 0 | 1 | 0% | 34.7% |
+| 2026-09-12 | 1 | 1 | 0 | 100% | 34.9% |
+| 2026-09-12 | 1 | 1 | 0 | 100% | 35.1% |
+| 2026-09-12 | 1 | 1 | 0 | 100% | 35.3% |
+| 2026-09-12 | 2 | 1 | 1 | 50% | 35.3% |
+| 2026-09-13 | 1 | 0 | 1 | 0% | 35.2% |
+| 2026-09-14 | 1 | 1 | 0 | 100% | 35.4% |
+| 2026-09-15 | 1 | 1 | 0 | 100% | 35.6% |
+| 2026-09-16 | 1 | 0 | 1 | 0% | 35.5% |
+| 2026-09-22 | 1 | 1 | 0 | 100% | 35.7% |
 
 **⚠️ Win rate is NOT improving across recent runs. Review what changed and whether the feedback loop is being followed.**
 
 ## By Setup Type
 | Setup Type | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
-| trend_pullback | 301 | 115 | 186 | 38% | -0.05 |
+| trend_pullback | 300 | 115 | 185 | 38% | -0.05 |
 | other | 19 | 5 | 14 | 26% | -0.37 |
 | failed_breakout | 12 | 1 | 11 | 8% | -0.76 |
 | funding_squeeze | 8 | 1 | 7 | 12% | -0.48 |
@@ -201,14 +201,14 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Confidence | Trades | Wins | Losses | Win Rate |
 |---|---|---|---|---|
 | high | 11 | 3 | 8 | 27% |
-| medium | 300 | 110 | 190 | 37% |
+| medium | 299 | 110 | 189 | 37% |
 | low | 43 | 13 | 30 | 30% |
 
 ## By Rank Position
 | Rank | Trades | Win Rate |
 |---|---|---|
 | #1 | 150 | 39% |
-| #2 | 109 | 33% |
+| #2 | 108 | 33% |
 | #3 | 51 | 33% |
 | #4 | 25 | 32% |
 | #5 | 19 | 32% |
@@ -217,7 +217,7 @@ This tracks whether recommendations are IMPROVING over time. If not trending up,
 | Model | Trades | Wins | Losses | Win Rate | Avg R:R |
 |---|---|---|---|---|---|
 | claude-haiku-4-5 | 8 | 1 | 7 | 12% | -0.25 |
-| claude-sonnet-4-6 | 342 | 124 | 218 | 36% | -0.10 |
+| claude-sonnet-4-6 | 341 | 124 | 217 | 36% | -0.10 |
 | unknown | 4 | 1 | 3 | 25% | -0.61 |
 
 ## Your Predictions vs Reality (LEARN FROM EACH ONE)
@@ -247,7 +247,7 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 | 2026-08-09 | XRPUSDT | S | intra | med | 3/4 | 0.75 | 0.78 | target_1 | 1.85R |
 
 **Prediction gap: avg predicted R:R = 1.5, avg actual = -0.11 (gap of 1.6R)**
-**Direction accuracy: 222/354 (63%) reached 0.5R+ favorable. Avg MFE: 0.94R**
+**Direction accuracy: 221/353 (63%) reached 0.5R+ favorable. Avg MFE: 0.94R**
 
 ## Trader's Actual Trades (Manual Log)
 - Closed trades: 4 (1W / 3L)
@@ -294,5 +294,5 @@ Each row is a setup YOU recommended. Study the gap between predicted and actual 
 - Worst setup type: **post_liquidation** (0/4 wins, 0%) — deprioritize unless 4/4 TF confluence
 - CALIBRATION ISSUE: 'High' confidence setups don't outperform 'Medium'. Recalibrate confidence scoring.
 - Best performing model: **claude-sonnet-4-6** (36% win rate, -0.10 avg R:R)
-- claude-sonnet-4-6: 36% win rate, -0.10 avg R:R over 342 trades
+- claude-sonnet-4-6: 36% win rate, -0.10 avg R:R over 341 trades
 - claude-haiku-4-5: 12% win rate, -0.25 avg R:R over 8 trades

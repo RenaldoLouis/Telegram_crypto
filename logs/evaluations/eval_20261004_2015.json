@@ -6,7 +6,7 @@
   "evaluated_at_utc": "2026-10-08T03:20:06.735349+00:00",
   "results": [
     {
-      "status": "evaluated",
+      "status": "duplicate",
       "entry_model": "limit_open",
       "fee_model": "maker_entry",
       "fill_bar": 0,
@@ -51,10 +51,12 @@
       "interest_score": 3.0,
       "source": "shadow",
       "backtested_signal": "failed_breakout_short",
-      "signal_name": "failed_breakout_short"
+      "signal_name": "failed_breakout_short",
+      "duplicate_of": "20261004_2003",
+      "reason": "same signal bar as run 20261004_2003 (cross-run race) \u2014 not counted"
     },
     {
-      "status": "evaluated",
+      "status": "duplicate",
       "entry_model": "limit_open",
       "fee_model": "maker_entry",
       "fill_bar": 0,
@@ -99,7 +101,9 @@
       "interest_score": 3.0,
       "source": "shadow",
       "backtested_signal": "failed_breakout_short",
-      "signal_name": "failed_breakout_short"
+      "signal_name": "failed_breakout_short",
+      "duplicate_of": "20261004_2003",
+      "reason": "same signal bar as run 20261004_2003 (cross-run race) \u2014 not counted"
     }
   ]
 }

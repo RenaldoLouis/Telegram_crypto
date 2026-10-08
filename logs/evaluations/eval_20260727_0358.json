@@ -41,7 +41,7 @@
       "backtested_signal": "trend_pullback_short"
     },
     {
-      "status": "evaluated",
+      "status": "duplicate",
       "entry_triggered": true,
       "entry_price": 0.7183,
       "exit_price": 0.7183,
@@ -73,7 +73,9 @@
       "regime": "neutral",
       "interest_score": 0.0,
       "source": "mechanical",
-      "backtested_signal": "trend_pullback_short"
+      "backtested_signal": "trend_pullback_short",
+      "duplicate_of": "20260727_0300",
+      "reason": "same signal bar as run 20260727_0300 (cross-run race) \u2014 not counted"
     }
   ]
 }
