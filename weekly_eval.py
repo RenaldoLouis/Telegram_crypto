@@ -286,6 +286,21 @@ def run_evaluation():
     # --- Phase 2: Evaluate NEW setups from last {EVAL_LOOKBACK_WEEKS} weeks only ---
     cutoff = datetime.now(timezone.utc) - timedelta(weeks=EVAL_LOOKBACK_WEEKS)
     all_setup_files = sorted(SETUPS_DIR.glob("setups_*.json"))
+
+    # Trade identity = signal bar (see _signal_bar_key): later runs re-reporting a trade
+    # an earlier run already issued are duplicates — re-mark any already scored.
+    setup_records = {}
+    for sf in all_setup_files:
+        try:
+            rec = json.loads(sf.read_text(encoding="utf-8"))
+            setup_records[rec["run_tag"]] = rec
+        except Exception:
+            continue
+    first_issue = _first_issuers(setup_records.values())
+    n_dupes = _mark_duplicate_evals(all_evals, setup_records, first_issue)
+    if n_dupes:
+        print(f"Marked {n_dupes} previously scored cross-run duplicate(s) as status=duplicate.")
+
     setup_files = []
     for sf in all_setup_files:
         try:
@@ -344,7 +359,13 @@ def run_evaluation():
 
                 print(f"  → {symbol} ({setup['direction']} {setup['timeframe']})...", end=" ")
 
-                result = evaluate_setup(client, setup, run_ts)
+                key = _signal_bar_key(setup, run_ts)
+                first = first_issue.get(key) if key else None
+                if first and first[1] != run_tag:
+                    result = {"status": "duplicate", "duplicate_of": first[1],
+                              "reason": f"same signal bar as run {first[1]} (cross-run race) — not counted"}
+                else:
+                    result = evaluate_setup(client, setup, run_ts)
                 if result is None:
                     print("too early to evaluate")
                     continue  # skip this setup, evaluate others
@@ -424,7 +445,7 @@ def run_evaluation():
 
     # --- Phase 3: Update tiered knowledge system ---
     # Layer 1: Update lifetime stats incrementally
-    update_lifetime_stats(all_evals)
+    update_lifetime_stats(all_evals, rebuild=n_dupes > 0)
     # Layer 2: Generate strategic rules from lifetime stats (for Claude)
     generate_strategic_rules()
     # Layer 3: Generate recent performance window (for Claude)
@@ -570,6 +591,109 @@ def _wilson(k, n, z=1.96):
     centre = (p + z * z / (2 * n)) / denom
     half = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / denom
     return (round(max(0.0, centre - half) * 100, 1), round(min(1.0, centre + half) * 100, 1))
+
+
+def _mean_ci(xs, z=1.96):
+    """(mean, lo, hi) 95% interval for a mean, t-quantile via the Cornish-Fisher
+    expansion (no scipy). None if fewer than 2 values."""
+    n = len(xs)
+    if n < 2:
+        return None
+    m = sum(xs) / n
+    sd = (sum((x - m) ** 2 for x in xs) / (n - 1)) ** 0.5
+    df = n - 1
+    t = z + (z ** 3 + z) / (4 * df) + (5 * z ** 5 + 16 * z ** 3 + 3 * z) / (96 * df * df)
+    half = t * sd / n ** 0.5
+    return (m, m - half, m + half)
+
+
+# ---- Trade identity (2026-10-08) ----------------------------------------------------------
+# A trade is identified by its signal bar, not by the scan run that reported it. main.py's
+# cross-run dedup only sees setup files already on disk: when the Mac's `git pull` fails at
+# wake (DNS), it scans the same 4h close CI already scanned and re-emits the same trade
+# (2026-10-04: MUBARAKUSDT + PUMPFUNUSDT, 20:03 CI and 20:15 Mac). The scorer keeps the
+# first run that issued (symbol, direction, source, signal, signal bar) and marks later
+# copies status="duplicate" (never scored, never counted).
+_TF_MINUTES = {"15m": 15, "1h": 60, "4h": 240, "1d": 1440}
+
+
+def _bar_floor_min(run_ts, minutes):
+    """Epoch minute of the last UTC-aligned bar boundary at/before `run_ts` = the close of
+    the last CLOSED bar the scan saw."""
+    t = datetime.fromisoformat(run_ts)
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=timezone.utc)
+    m = int(t.timestamp() // 60)
+    return m - m % minutes
+
+
+def _signal_bar_key(setup, run_ts):
+    """(symbol, direction, source, signal, tf, bar close) or None when the setup carries no
+    signal/timeframe (legacy Claude rows) — those are never treated as duplicates."""
+    minutes = _TF_MINUTES.get(setup.get("signal_tf"))
+    if not minutes or not setup.get("signal_name") or not run_ts:
+        return None
+    try:
+        bar = _bar_floor_min(run_ts, minutes)
+    except (ValueError, TypeError):
+        return None
+    return (setup.get("symbol"), setup.get("direction"), setup.get("source", "claude"),
+            setup["signal_name"], setup["signal_tf"], bar)
+
+
+def _first_issuers(setup_records):
+    """key -> (run_ts, run_tag) of the earliest run that issued that trade."""
+    first = {}
+    for rec in setup_records:
+        run_ts, run_tag = rec.get("run_timestamp_utc"), rec.get("run_tag")
+        for s in rec.get("setups", []):
+            key = _signal_bar_key(s, run_ts)
+            if key and (key not in first or (run_ts, run_tag) < first[key]):
+                first[key] = (run_ts, run_tag)
+    return first
+
+
+def _mark_duplicate_evals(all_evals, setup_records, first_issue):
+    """Re-mark already-scored copies of a trade issued earlier by another run as
+    status="duplicate" and rewrite their eval files. Idempotent. Returns the count."""
+    marked = 0
+    for ev in all_evals:
+        rec = setup_records.get(ev.get("run_tag"))
+        if not rec:
+            continue
+        by_sym = {(s.get("symbol"), s.get("source", "claude")): s for s in rec.get("setups", [])}
+        changed = False
+        for r in ev.get("results", []):
+            if r.get("status") == "duplicate":
+                continue
+            s = by_sym.get((r.get("symbol"), r.get("source", "claude")))
+            key = _signal_bar_key(s, rec.get("run_timestamp_utc")) if s else None
+            first = first_issue.get(key) if key else None
+            if first and first[1] != ev["run_tag"]:
+                r["status"] = "duplicate"
+                r["duplicate_of"] = first[1]
+                r["reason"] = f"same signal bar as run {first[1]} (cross-run race) — not counted"
+                changed = True
+                marked += 1
+        if changed:
+            (EVALS_DIR / f"eval_{ev['run_tag']}.json").write_text(
+                json.dumps(ev, indent=2), encoding="utf-8")
+    return marked
+
+
+def _independent_bets(records):
+    """Net R per independent bet: same-direction trades from runs in the same 4h block are
+    one market bet (a broad bounce firing on five coins is not five draws), so they are
+    averaged into one value. Records without a run timestamp count as their own bet."""
+    groups = {}
+    for i, r in enumerate(records):
+        try:
+            key = (_bar_floor_min(r["_run_ts"], 240), r.get("direction"))
+        except (KeyError, ValueError, TypeError):
+            key = ("solo", i)
+        groups.setdefault(key, []).append(
+            r.get("net_rr", r.get("actual_rr", 0) - trade_cost_rr(r)))
+    return [sum(v) / len(v) for v in groups.values()]
 
 
 def _fmt_prof(s):
@@ -804,16 +928,35 @@ def generate_head_to_head(all_evals):
               f"- Mechanical: gross {m['exp']:+.3f}R → **net {m['net_exp']:+.3f}R** (n={m['n']})",
               f"- Signal-backed: gross {backed['exp']:+.3f}R → **net {backed['net_exp']:+.3f}R** "
               f"(n={backed['n']}) — the only cut that should be near a real net edge"]
-    best_net = max((_group_stats(v)["net_exp"], k) for k, v in by_source.items())
-    survives = best_net[0] > 0
-    lines.append(
-        f"- **VERDICT: {'an edge SURVIVES costs' if survives else 'NO edge survives costs yet'}** — "
-        f"best source net {best_net[0]:+.3f}R ({best_net[1]}). "
-        + ("Net-positive on a real cost model — this is tradeable-grade, keep pushing sample."
-           if survives else
-           "Every source is net-negative or breakeven. The gross edge is a cost illusion; "
-           "the only path to a real edge is cutting the losing longs and/or raising per-trade "
-           "R by widening targets or entering closer to stop — NOT more rule-tuning."))
+    # VERDICT — re-gated 2026-10-08. It used to fire on ANY lane with net > 0, and on 10-08
+    # called the shadow lane (rules that FAILED the surface bar and are never shown)
+    # "tradeable-grade" at +0.006R over 32 trades, five of them one same-bar bounce. Now it
+    # is judged only on the v2-era SURFACED book (mechanical + watch = what the user sees),
+    # needs n >= the hit-rate sample bar, and needs the 95% CI of net expectancy per
+    # independent bet to clear zero.
+    surfaced = [r for r in v2 if r.get("source") in ("mechanical", "watch")]
+    sv = _group_stats(surfaced)
+    bets = _independent_bets(surfaced)
+    ci = _mean_ci(bets)
+    basis = (f"v2-era surfaced book (mechanical + watch; shadow excluded): n={sv['n']} trades "
+             f"= {len(bets)} independent bets, profitable {_fmt_prof(sv)}, net {sv['net_exp']:+.3f}R")
+    if ci and len(bets) >= 5:
+        basis += f", 95% CI of net per bet [{ci[1]:+.2f}, {ci[2]:+.2f}]R"
+    if sv["n"] < hit_min_n:
+        verdict = f"NOT DECIDABLE YET ({sv['n']}/{hit_min_n} trades)"
+        tail = (f"Below {hit_min_n} trades the sign of any lane is noise — including the "
+                f"all-era rows above.")
+    elif ci and ci[1] > 0:
+        verdict = "an edge SURVIVES costs"
+        tail = (f"Net expectancy is above zero with 95% confidence; promotion still needs "
+                f"profitable% ≥ {hit_target:.0f}% (v2 table above).")
+    elif ci and ci[2] < 0:
+        verdict = "NO edge — net-negative with 95% confidence"
+        tail = "The pre-registered decision rule applies; do not tune the rule to rescue it."
+    else:
+        verdict = "NO edge proven — the CI spans zero"
+        tail = "Keep sampling under the same frozen rules; do not tune."
+    lines.append(f"- **VERDICT: {verdict}** — {basis}. {tail}")
 
     PERFORMANCE_DIR.mkdir(parents=True, exist_ok=True)
     out = PERFORMANCE_DIR / "head_to_head.md"
@@ -829,16 +972,18 @@ def generate_head_to_head(all_evals):
               f"{s['net_exp']:+.3f}R over {s['n']}t (≥{bar:.0f}%/{min_n}t) — review for EXECUTE.")
 
 
-def update_lifetime_stats(all_evals):
+def update_lifetime_stats(all_evals, rebuild=False):
     """Incrementally update lifetime_stats.json with only new evaluation data.
 
     On first run, bootstraps from all existing evals. On subsequent runs,
-    only processes run_tags not yet in processed_run_tags.
+    only processes run_tags not yet in processed_run_tags. `rebuild=True` bootstraps
+    from scratch — needed when already-counted results change status (duplicates),
+    since the counters cannot subtract.
     """
     PERFORMANCE_DIR.mkdir(parents=True, exist_ok=True)
 
     # Load existing stats or start fresh
-    if LIFETIME_STATS_FILE.exists():
+    if LIFETIME_STATS_FILE.exists() and not rebuild:
         try:
             stats = json.loads(LIFETIME_STATS_FILE.read_text(encoding="utf-8"))
         except Exception:
@@ -883,6 +1028,8 @@ def update_lifetime_stats(all_evals):
             stats["monthly_trend"][month_key] = {"wins": 0, "losses": 0, "total": 0}
 
         for r in ev["results"]:
+            if r.get("status") == "duplicate":
+                continue  # same trade as an earlier run's (cross-run race) — not a setup
             # WATCH-tier candidates are paper-tracked for coverage + eval velocity, NOT
             # part of the edge-proven book. Keep them OUT of every global/edge counter
             # (total, overall expectancy, monthly, confluence, version line) so the
