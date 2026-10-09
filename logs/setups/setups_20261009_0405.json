@@ -1,0 +1,122 @@
+{
+  "run_timestamp_utc": "2026-10-09T04:05:09.492463+00:00",
+  "run_tag": "20261009_0405",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2
+  },
+  "setups": [
+    {
+      "symbol": "1000PEPEUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.0038976,
+      "entry_high": 0.0039324,
+      "stop_loss": 0.003683,
+      "target_1": 0.004124,
+      "target_2": 0.004379,
+      "predicted_rr": 0.901,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 30.1 bouncing (was 16.8), ADX 33.4"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 3.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 33.42,
+          "rsi": 30.11,
+          "macd": -0.000124,
+          "macd_hist": -2.8e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.24,
+          "range_pct": 20.94
+        },
+        "tf_1h": {
+          "adx": 38.66,
+          "rsi": 42.86,
+          "macd": -4.6e-05,
+          "macd_hist": 1.7e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.32,
+          "range_pct": 11.3
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    },
+    {
+      "symbol": "ZECUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 1212.4911429,
+      "entry_high": 1227.5288571,
+      "stop_loss": 1119.758572,
+      "target_1": 1295.198571,
+      "target_2": 1420.512856,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 34.0 bouncing (was 24.1), ADX 24.1"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 0.0,
+      "rank": 3,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 24.07,
+          "rsi": 34.04,
+          "macd": -42.266979,
+          "macd_hist": -12.985393,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.92,
+          "range_pct": 22.44
+        },
+        "tf_1h": {
+          "adx": 31.65,
+          "rsi": 50.87,
+          "macd": -17.715328,
+          "macd_hist": 9.832364,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.71,
+          "range_pct": 10.97
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
