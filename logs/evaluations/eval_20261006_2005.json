@@ -3,7 +3,7 @@
   "run_timestamp_utc": "2026-10-06T20:05:06.337677+00:00",
   "model": "claude-sonnet-4-6",
   "regime": "cautious",
-  "evaluated_at_utc": "2026-10-08T03:20:16.015797+00:00",
+  "evaluated_at_utc": "2026-10-12T02:08:11.972933+00:00",
   "results": [
     {
       "status": "evaluated",
@@ -52,6 +52,54 @@
       "source": "shadow",
       "backtested_signal": "liquidity_sweep_long",
       "signal_name": "liquidity_sweep_long"
+    },
+    {
+      "status": "evaluated",
+      "entry_model": "limit_open",
+      "fee_model": "maker_entry",
+      "fill_bar": 0,
+      "entry_triggered": true,
+      "entry_price": 0.23771,
+      "exit_price": 0.233552,
+      "exit_reason": "trail_stop",
+      "target_1_hit": true,
+      "target_2_hit": false,
+      "stop_hit": false,
+      "be_stop_hit": false,
+      "trail_stop_hit": true,
+      "actual_rr": 0.3,
+      "blended_rr": 0.52,
+      "won": true,
+      "max_favorable_rr": 1.62,
+      "max_adverse_rr": -0.26,
+      "candles_to_exit": 39,
+      "hold_minutes": 585,
+      "risk_pct": 0.058302,
+      "sim_t1_075r_hit": true,
+      "sim_t1_100r_hit": true,
+      "cost_rr": 0.0145,
+      "net_rr": 0.285,
+      "net_blended_rr": 0.51,
+      "won_net": true,
+      "profitable": true,
+      "eval_engine": "v2_market_open",
+      "symbol": "ENAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "cautious",
+      "interest_score": 3.0,
+      "source": "shadow",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
     }
   ]
 }

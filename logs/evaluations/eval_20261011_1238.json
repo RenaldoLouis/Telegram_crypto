@@ -1,0 +1,75 @@
+{
+  "run_tag": "20261011_1238",
+  "run_timestamp_utc": "2026-10-11T12:38:54.110720+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-10-12T02:08:47.616872+00:00",
+  "results": [
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261011_1211",
+      "reason": "same signal bar as run 20261011_1211 (cross-run race) \u2014 not counted",
+      "symbol": "CFXUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 6.0,
+      "source": "shadow",
+      "backtested_signal": "failed_breakout_short",
+      "signal_name": "failed_breakout_short"
+    },
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261011_1211",
+      "reason": "same signal bar as run 20261011_1211 (cross-run race) \u2014 not counted",
+      "symbol": "1000PEPEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 2,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "source": "shadow",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    },
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261011_1211",
+      "reason": "same signal bar as run 20261011_1211 (cross-run race) \u2014 not counted",
+      "symbol": "PUMPFUNUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 4,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 1.0,
+      "source": "shadow",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Recent Performance (last 4 weeks)
-_10 trades: 7W / 3L (70% WR, 0.10 avg R:R)_
-_Partial profit model (50% at T1 + BE stop): 80% WR, 0.25 avg blended R:R_
+_4 trades: 3W / 1L (75% WR, 0.10 avg R:R)_
+_Partial profit model (50% at T1 + BE stop): 75% WR, 0.21 avg blended R:R_
 
 ## Trade-by-Trade (LEARN FROM EACH ONE)
 | Date | Symbol | Dir | TF | Type | Conf | TF-Conf | Pred R:R | Actual R:R | Blended | Exit | MFE |
@@ -9,14 +9,8 @@ _Partial profit model (50% at T1 + BE stop): 80% WR, 0.25 avg blended R:R_
 | 2026-09-16 | 1000PEPEUS | S | intra | trend_pullba | med | 3/4 | 0.943 | -1.0 (L) | -1.0 | stop_loss | 0.82R |
 | 2026-09-15 | BTCUSDT | S | intra | trend_pullba | med | 3/4 | 0.957 | 0.3 (W) | 0.58 | trail_stop | 1.3R |
 | 2026-09-14 | PUMPFUNUSD | S | intra | trend_pullba | med | 3/4 | 0.844 | 0.68 (W) | 0.68 | target_1 | 0.92R |
-| 2026-09-13 | SOLUSDT | S | intra | trend_pullba | med | 3/4 | 0.977 | -1.0 (L) | -1.0 | stop_loss | 0.67R |
-| 2026-09-12 | DOGEUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.53 | trail_stop | 1.46R |
-| 2026-09-12 | XRPUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.0 (L) | 0.36 | be_stop | 0.88R |
-| 2026-09-12 | CASHCATUSD | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.53 | trail_stop | 1.04R |
-| 2026-09-12 | FARTCOINUS | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.3 (W) | 0.49 | trail_stop | 1.04R |
-| 2026-09-12 | BEATUSDT | S | intra | trend_pullba | med | 3/4 | 0.75 | 0.74 (W) | 0.74 | target_1 | 0.96R |
 
-- Recent 'trend_pullback': 7/10 (70% WR)
+- Recent 'trend_pullback': 3/4 (75% WR)
 
 ## Trader's Recent Actual Trades
 - **SPKUSDT** (2026-04-23) — LOSS
