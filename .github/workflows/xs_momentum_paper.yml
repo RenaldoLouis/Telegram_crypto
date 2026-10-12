@@ -38,7 +38,7 @@ concurrency:
 jobs:
   paper:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60         # a real rebalance is ~520 kline calls through the tunnel (25 min was overrun 2026-10-12)
     permissions:
       contents: write
 
@@ -65,13 +65,13 @@ jobs:
           wg_conf: ${{ secrets.WG_CONF }}
 
       - name: Rebalance (write this Monday's paper weights)
-        run: python xs_momentum_paper.py rebalance
+        run: python -u xs_momentum_paper.py rebalance   # -u: progress visible in the log
 
       - name: Score (previous week, if its closing bar now exists)
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python xs_momentum_paper.py score
+        run: python -u xs_momentum_paper.py score
 
       - name: Disconnect VPN
         if: always()

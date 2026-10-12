@@ -189,8 +189,8 @@ def build_panel(rows_by_symbol, end_exclusive_ms):
         closes[sym], turns[sym] = c[~c.index.duplicated()], t[~t.index.duplicated()]
     if not closes:
         return pd.DataFrame(), pd.DataFrame()
-    close = pd.DataFrame(closes).sort_index()
-    turn = pd.DataFrame(turns).reindex(close.index)
+    close = pd.DataFrame(closes).sort_index().sort_index(axis=1)   # columns by symbol: independent of fetch order
+    turn = pd.DataFrame(turns).reindex(index=close.index, columns=close.columns)
     full = pd.date_range(close.index[0], close.index[-1], freq="D", tz="UTC")
     return close.reindex(full), turn.reindex(full)
 
@@ -250,7 +250,9 @@ def rebalance(source, asof_monday, out_dir=OUT_DIR, threads=4):
     print(f"  {len(symbols)} symbols; fetching {max(BOOKS.values()) + 35} daily bars each …")
 
     need_days = max(BOOKS.values()) + 35
-    rows, fails = _fetch_many(lambda s: source.klines(s, asof_ms - need_days * DAY_MS, asof_ms - 1, limit=200), symbols, 1, "klines")
+    # Parallel like the funding fetch: ~520 sequential calls through the CI tunnel (~2-3 s each)
+    # overran the job timeout on 2026-10-12. Same data either way — fetch order does not enter the book.
+    rows, fails = _fetch_many(lambda s: source.klines(s, asof_ms - need_days * DAY_MS, asof_ms - 1, limit=200), symbols, threads, "klines")
     close, turn = build_panel(rows, asof_ms)
     if close.empty or bar_t not in close.index:
         raise RuntimeError("panel missing the Sunday bar — is it closed yet?")
