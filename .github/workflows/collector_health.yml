@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       actions: read
+      contents: read            # reads the scan-keeper coverage ledger
 
     steps:
       - name: Check last 24h of collector + scan runs
@@ -43,6 +44,25 @@ jobs:
           ⚠️ $wf: only $ok/$total runs succeeded"
             fi
           done
+          # Scan keeper (2026-10-12): the forward test needs EVERY 4h close scanned, so the
+          # check is per close, not per run — each close of the last 24h (older than 1h) must
+          # have an ok=true line in logs/scan_keeper/coverage.jsonl.
+          ledger=$(gh api -H "Accept: application/vnd.github.raw" \
+                     "repos/${{ github.repository }}/contents/logs/scan_keeper/coverage.jsonl" 2>/dev/null || true)
+          now=$(date -u +%s); expected=0; got=0; missed=""
+          for c in $(seq $(( (now - 86400) / 14400 * 14400 + 14400 )) 14400 $((now - 3600))); do
+            tag=$(date -u -d "@$c" +%Y-%m-%dT%H:%MZ); expected=$((expected + 1))
+            if echo "$ledger" | grep -q "\"close\":\"$tag\",\"ok\":true"; then
+              got=$((got + 1))
+            else
+              missed="$missed $tag"
+            fi
+          done
+          echo "scan keeper: $got/$expected 4h closes scanned in last 24h"
+          if [ "$got" -lt "$expected" ]; then
+            report="$report
+          ⚠️ scan keeper: $got/$expected 4h closes scanned — missed:$missed"
+          fi
           if [ -n "$report" ]; then
             msg="🚨 crypto-screener CI health (last 24h):$report
           Every failed collector window is lost CVD data / a missed scan — check the VPN endpoint."

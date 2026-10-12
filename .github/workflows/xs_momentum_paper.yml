@@ -10,14 +10,30 @@ name: XS Momentum Paper Test (weekly)
 #   score     → scores the previous Monday's weights once this Monday's close exists,
 #               appends logs/xs_momentum/scores.jsonl, rewrites scorecard.md, one Telegram
 #               message only when a new week was scored.
-# Two shots (+20 / +50 min) because GitHub delays schedules; the second is a no-op if the
-# first succeeded. Bybit is reached through the same split-tunnel VPN as the scan.
+# Several shots because GitHub delays AND drops schedules (2026-10-12: both Monday crons were
+# skipped outright, the first week had to be dispatched by hand). Every shot after a
+# successful one is a no-op: `rebalance` targets the most recent Monday whatever day it runs
+# (weights as of Monday 00:00 UTC, idempotent if the file exists) and `score` only scores
+# weeks not yet in scores.jsonl. Belt and braces: scan_keeper.yml also dispatches this
+# workflow after the Monday 00:00 UTC close (dispatch is not subject to schedule drops).
+# Bybit is reached through the same split-tunnel VPN as the scan.
 
 on:
   schedule:
     - cron: '20 0 * * 1'
     - cron: '50 0 * * 1'
+    - cron: '23 3 * * 1'
+    - cron: '23 7 * * 1'
+    - cron: '23 13 * * 1'
+    - cron: '23 19 * * 1'
+    - cron: '23 6 * * 2'
   workflow_dispatch:
+
+# Shots that overlap must not both score the same week (double append to scores.jsonl):
+# a later shot waits, then checks out the earlier one's pushed output and no-ops.
+concurrency:
+  group: xs-momentum-paper
+  cancel-in-progress: false
 
 jobs:
   paper:
@@ -31,6 +47,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Branch tip at job START, not the trigger-time SHA: a shot that waited in the
+          # concurrency queue must see the output the earlier shot pushed.
+          ref: master
 
       - name: Set up Python
         uses: actions/setup-python@v5

@@ -1,0 +1,203 @@
+name: Scan Keeper (4h-close aligned)
+
+# 2026-10-12 — takes the Mac out of the critical path. GitHub's scheduler delays and DROPS
+# cron runs: CI alone caught 6/18 4h closes 10-05 → 10-08 even with five shots per close,
+# and on 10-12 both Monday paper-test crons were skipped outright. The forward test was
+# therefore carried by the Mac's launchd scan (Mac awake + VPN up at every close).
+#
+# Nothing time-critical here waits on the scheduler. A `keep` job stays alive ~5.5h, sleeps
+# until each 4h bar close (00/04/08/12/16/20 UTC), scans at close +2 min and retries at
+# +15/+30/+50 min (inside the 90-min SIGNAL_MAX_AGE_MIN window) until one scan succeeds.
+# Every close is recorded in logs/scan_keeper/coverage.jsonl (ok true/false), which
+# collector_health.yml checks daily.
+#
+# Chaining: right after setup, `keep` dispatches its successor (workflow_dispatch is not
+# delayed or dropped the way schedule is); the successor waits in the job-level concurrency
+# group and starts the moment this job ends. The hourly `watchdog` (schedule) only restarts
+# the chain when no keeper run is active or queued — it never queues a second one.
+#
+# Also on the loop: after the 00:00 UTC close it runs the evaluator (weekly_eval.py, same as
+# `eval-scan`: scores setups whose 2-day window has ended) and on Mondays it dispatches the
+# XS-momentum paper test.
+#
+# Zero Claude (no ANTHROPIC_API_KEY), no order API. A close scanned twice (handover, Mac,
+# momentum_pulse.yml retries) is harmless: the cross-run dedup drops setups that are already
+# active and the scorer marks same-signal-bar copies as duplicates.
+
+on:
+  schedule:
+    - cron: '41 * * * *'     # watchdog only
+  workflow_dispatch: {}
+
+jobs:
+  watchdog:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Restart the keeper chain if it died
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          active=$(gh run list -R "$GITHUB_REPOSITORY" --workflow scan_keeper.yml \
+                     --event workflow_dispatch --limit 10 --json status \
+                     --jq '[.[] | select(.status != "completed")] | length')
+          if [ "${active:-0}" -gt 0 ]; then
+            echo "keeper chain alive ($active active/queued run(s))"
+          else
+            gh workflow run scan_keeper.yml -R "$GITHUB_REPOSITORY" --ref master
+            echo "::warning::no active keeper run — chain restarted"
+          fi
+
+  keep:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350        # under the 6h hard cap; the loop hands over before this
+    concurrency:
+      group: scan-keeper
+      cancel-in-progress: false
+    permissions:
+      contents: write           # push setups / briefs / evals / coverage ledger
+      actions: write            # dispatch the successor and the paper test
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        # Same set as momentum_pulse.yml: anthropic/telethon only satisfy top-level imports.
+        run: pip install pybit requests python-dotenv pandas anthropic telethon
+
+      - name: Queue the successor run
+        # After setup on purpose: if setup itself breaks, no successor exists to fail the
+        # same way in a tight loop — the watchdog restarts the chain within the hour.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run scan_keeper.yml -R "$GITHUB_REPOSITORY" --ref master
+
+      - name: Setup WireGuard VPN (split-tunnel, health-gated)
+        # A failed health gate does not end the job: the loop re-checks Bybit before every
+        # scan attempt and rebuilds the tunnel (the collectors' recovery pattern).
+        continue-on-error: true
+        uses: ./.github/actions/bybit-vpn
+        with:
+          wg_conf: ${{ secrets.WG_CONF }}
+
+      - name: Scan every 4h close in this window
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SCAN_QUIET_IF_EMPTY: '1'   # Telegram only when something is surfaced
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e -u
+          START=$(date -u +%s)
+          END=$((START + 330 * 60))   # take no close whose last retry (+75 min) ends past this
+          LEDGER=logs/scan_keeper/coverage.jsonl
+          mkdir -p logs/scan_keeper
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          failed_closes=0
+
+          iso() { date -u -d "@$1" +%Y-%m-%dT%H:%MZ; }
+          wait_until() { local d=$(( $1 - $(date -u +%s) )); [ "$d" -gt 0 ] && sleep "$d"; return 0; }
+          bybit_ok() { curl -s -m 10 https://api.bybit.com/v5/market/time | grep -q '"retCode":0'; }
+          vpn_heal() {
+            bybit_ok && return 0
+            for i in 1 2 3; do
+              sudo wg-quick down wg0 >/dev/null 2>&1
+              sleep 10
+              sudo wg-quick up wg0 >/dev/null 2>&1
+              sleep 3
+              bybit_ok && { echo "VPN healed (rebuild $i)"; return 0; }
+            done
+            echo "::warning::Bybit still unreachable through the tunnel"
+            return 1
+          }
+          git_sync() {
+            git pull -q --rebase --autostash origin master \
+              || { git rebase --abort 2>/dev/null; git reset -q --hard origin/master; }
+          }
+          git_push() {
+            for i in 1 2 3 4 5; do
+              git pull -q --rebase origin master && git push -q && return 0
+              git rebase --abort 2>/dev/null
+              sleep $((5 + RANDOM % 10))
+            done
+            return 1
+          }
+          commit_push() {   # $1 = message, rest = paths
+            local msg=$1; shift
+            git add "$@" 2>/dev/null
+            git diff --cached --quiet && return 0
+            git commit -q -m "$msg [skip ci]"
+            # An unpushed commit stays local and rides the next push.
+            git_push || echo "::warning::push failed — will retry with the next commit: $msg"
+          }
+
+          while :; do
+            git_sync
+            now=$(date -u +%s)
+            last=$(( now / 14400 * 14400 ))
+            # Just after a close that no keeper has scanned yet (chain handover / restart)?
+            if [ $((now - last)) -lt 2700 ] && \
+               ! grep -q "\"close\":\"$(iso "$last")\",\"ok\":true" "$LEDGER" 2>/dev/null; then
+              C=$last
+            else
+              C=$((last + 14400))
+            fi
+            if [ $((C + 4500)) -gt "$END" ]; then
+              echo "next close $(iso "$C") does not fit this window — handing over to the queued successor"
+              break
+            fi
+
+            echo "waiting for the $(iso "$C") close"
+            ok=false; attempts=0
+            for off in 120 900 1800 3000; do      # +2 / +15 / +30 / +50 min
+              wait_until $((C + off))
+              attempts=$((attempts + 1))
+              vpn_heal
+              git_sync
+              echo "::group::scan $(iso "$C") — attempt $attempts"
+              timeout 900 python main.py && ok=true
+              echo "::endgroup::"
+              $ok && break
+            done
+            $ok || { failed_closes=$((failed_closes + 1)); echo "::warning::$(iso "$C") close: no successful scan"; }
+            printf '{"close":"%s","ok":%s,"attempts":%d,"finished":"%s","run_id":"%s"}\n' \
+              "$(iso "$C")" "$ok" "$attempts" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$GITHUB_RUN_ID" >> "$LEDGER"
+            commit_push "scan-keeper: $(iso "$C") close" logs/setups logs/briefs "$LEDGER"
+
+            if [ $((C % 86400)) -eq 0 ]; then
+              echo "::group::daily eval (weekly_eval.py)"
+              vpn_heal
+              git_sync
+              timeout 1800 python weekly_eval.py || echo "::warning::weekly_eval.py failed"
+              echo "::endgroup::"
+              commit_push "eval: daily auto-score (scan-keeper)" logs/evaluations logs/performance
+              if [ "$(date -u -d "@$C" +%u)" = 1 ]; then
+                gh workflow run xs_momentum_paper.yml -R "$GITHUB_REPOSITORY" --ref master \
+                  && echo "Monday: dispatched the XS-momentum paper test" \
+                  || echo "::warning::paper-test dispatch failed (its own retry crons remain)"
+              fi
+            fi
+          done
+
+          if [ "$failed_closes" -gt 0 ]; then
+            echo "::error::$failed_closes close(s) in this window never got a successful scan"
+            exit 1
+          fi
+
+      - name: Disconnect VPN
+        if: always()
+        run: sudo wg-quick down wg0 || true
