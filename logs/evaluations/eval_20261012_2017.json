@@ -1,0 +1,53 @@
+{
+  "run_tag": "20261012_2017",
+  "run_timestamp_utc": "2026-10-12T20:17:08.597680+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-10-13T00:03:58.586564+00:00",
+  "results": [
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261012_2002",
+      "reason": "same signal bar as run 20261012_2002 (cross-run race) \u2014 not counted",
+      "symbol": "SANDUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "cautious",
+      "interest_score": 3.0,
+      "source": "shadow",
+      "backtested_signal": "range_reversion_long",
+      "signal_name": "range_reversion_long"
+    },
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261012_2002",
+      "reason": "same signal bar as run 20261012_2002 (cross-run race) \u2014 not counted",
+      "symbol": "ZECUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 3,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "source": "shadow",
+      "backtested_signal": "liquidity_sweep_long",
+      "signal_name": "liquidity_sweep_long"
+    }
+  ]
+}
