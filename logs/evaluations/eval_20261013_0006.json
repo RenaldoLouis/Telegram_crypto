@@ -1,0 +1,31 @@
+{
+  "run_tag": "20261013_0006",
+  "run_timestamp_utc": "2026-10-13T00:06:53.715591+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "cautious",
+  "evaluated_at_utc": "2026-10-13T08:09:55.037509+00:00",
+  "results": [
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261013_0002",
+      "reason": "same signal bar as run 20261013_0002 (cross-run race) \u2014 not counted",
+      "symbol": "ADAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "medium",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "cautious",
+      "interest_score": 9.0,
+      "source": "shadow",
+      "backtested_signal": "range_reversion_long",
+      "signal_name": "range_reversion_long"
+    }
+  ]
+}
