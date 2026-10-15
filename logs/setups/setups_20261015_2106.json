@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-10-15T21:06:59.721978+00:00",
+  "run_tag": "20261015_2106",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "NILUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.08200285,
+      "entry_high": 0.08337715,
+      "stop_loss": 0.08012482,
+      "target_1": 0.084838,
+      "target_2": 0.08782036,
+      "predicted_rr": 0.837,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 0.0822 low, RSI 41.6, ADX 18.1"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "risk_off",
+      "interest_score": 4.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 19.29,
+          "rsi": 66.89,
+          "macd": 0.000542,
+          "macd_hist": 0.001157,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.22,
+          "range_pct": 28.58
+        },
+        "tf_1h": {
+          "adx": 18.13,
+          "rsi": 41.63,
+          "macd": 0.000841,
+          "macd_hist": -0.000638,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.95,
+          "range_pct": 16.5
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
