@@ -1,6 +1,6 @@
 # Head-to-Head: Mechanical vs Claude
 
-Total evaluated trades: 593
+Total evaluated trades: 594
 Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net = gross − cost.
 Every expectancy / PF below is the MANAGED trade (50% at T1, BE/+0.3R trail, rest to T2/expiry) — the same definition as unified_backtest (pinned 2026-10-08). win% is the legacy full-position win.
 
@@ -12,7 +12,7 @@ Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose manag
 |---|---|---|---|---|---|---|
 | claude | 299 | 32.1% | **39.8% [34–45]** | -0.123 | **-0.195** | 0.67 |
 | mechanical | 54 | 55.6% | **61.1% [48–73]** | +0.011 | **-0.048** | 0.88 |
-| shadow | 110 | 44.5% | **55.5% [46–64]** | +0.005 | **-0.046** | 0.89 |
+| shadow | 111 | 45.0% | **55.9% [47–65]** | +0.017 | **-0.034** | 0.92 |
 | watch | 130 | 34.6% | **50.0% [42–58]** | -0.089 | **-0.129** | 0.71 |
 
 ## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)
@@ -25,8 +25,8 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 | (unknown) | 12 | 50.0% | **66.7% [39–86]** | +0.192 | **+0.176** | building (12/30) |
 | failed_breakout_short | 59 | 47.5% | **62.7% [50–74]** | +0.127 | **+0.090** | ✗ below bar |
 | trend_pullback_short | 44 | 50.0% | **56.8% [42–70]** | +0.070 | **+0.032** | ✗ below bar |
+| liquidity_sweep_long | 48 | 27.1% | **45.8% [33–60]** | -0.204 | **-0.260** | ✗ below bar |
 | range_reversion_short | 11 | 9.1% | **45.5% [21–72]** | -0.342 | **-0.411** | building (11/30) |
-| liquidity_sweep_long | 47 | 25.5% | **44.7% [31–59]** | -0.236 | **-0.293** | ✗ below bar |
 | rsi_bounce_long | 34 | 38.2% | **44.1% [29–60]** | -0.122 | **-0.145** | ✗ below bar |
 | range_reversion_long | 6 | 0.0% | **16.7% [3–56]** | -0.808 | **-1.060** | building (6/30) |
 | observation | 8 | 12.5% | **12.5% [2–47]** | -0.527 | **-0.538** | building (8/30) |
@@ -55,18 +55,18 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 
 ## Eval engine v2 era (post-fix book — the one the 70% target is judged on)
 
-n=113 v2-scored trades. Pre-fix records are not comparable.
+n=114 v2-scored trades. Pre-fix records are not comparable.
 
 | source | n | **profitable%** | net exp (R) | net PF | status vs target |
 |---|---|---|---|---|---|
-| shadow | 110 | **55.5% [46–64]** | -0.046 | 0.89 | ✗ below bar |
+| shadow | 111 | **55.9% [47–65]** | -0.034 | 0.92 | ✗ below bar |
 | watch | 3 | **66.7%** | +0.105 | 1.31 | building (3/30) |
 
-_Forward-sample velocity: 3 surfaced v2 trades in 10 days (2.2/week) → ~12 more weeks to n=30 at this rate._
+_Forward-sample velocity: 3 surfaced v2 trades in 10 days (2.1/week) → ~13 more weeks to n=30 at this rate._
 
 | source | signal | n | **profitable%** | net exp (R) | status vs target |
 |---|---|---|---|---|---|
-| shadow | liquidity_sweep_long | 38 | **50.0% [35–65]** | -0.192 | ✗ below bar |
+| shadow | liquidity_sweep_long | 39 | **51.3% [36–66]** | -0.153 | ✗ below bar |
 | shadow | failed_breakout_short | 29 | **72.4% [54–85]** | +0.305 | ↑ clears bar, building sample (29/30) |
 | shadow | trend_pullback_short | 24 | **50.0% [31–69]** | -0.060 | building (24/30) |
 | shadow | rsi_bounce_long | 16 | **56.2% [33–77]** | -0.051 | building (16/30) |
@@ -78,7 +78,7 @@ _Forward-sample velocity: 3 surfaced v2 trades in 10 days (2.2/week) → ~12 mor
 ⚠️ CONCENTRATION: mechanical book is one-directional (short-only), 52/54 from a single signal — lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE until both directions and >1 signal have live data.
 
 ## Net-of-cost reality check
-- Whole book: gross -0.080R → **net -0.140R** (PF 0.73, n=593)
+- Whole book: gross -0.077R → **net -0.137R** (PF 0.73, n=594)
 - Mechanical: gross +0.011R → **net -0.048R** (n=54)
 - Signal-backed: gross -0.025R → **net -0.082R** (n=81) — the only cut that should be near a real net edge
 - **VERDICT: NOT DECIDABLE YET (3/30 trades)** — v2-era surfaced book (mechanical + watch; shadow excluded): n=3 trades = 3 independent bets, profitable 66.7%, net +0.105R. Below 30 trades the sign of any lane is noise — including the all-era rows above.
