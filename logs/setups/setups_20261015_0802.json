@@ -1,0 +1,281 @@
+{
+  "run_timestamp_utc": "2026-10-15T08:02:26.680088+00:00",
+  "run_tag": "20261015_0802",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 5
+  },
+  "setups": [
+    {
+      "symbol": "ARCUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.0411846,
+      "entry_high": 0.0435354,
+      "stop_loss": 0.026688,
+      "target_1": 0.054114,
+      "target_2": 0.073704,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 34.0 bouncing (was 27.2), ADX 33.9"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 10.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 33.85,
+          "rsi": 34.04,
+          "macd": -0.006187,
+          "macd_hist": 0.001256,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.21,
+          "range_pct": 98.38
+        },
+        "tf_1h": {
+          "adx": 40.43,
+          "rsi": 68.2,
+          "macd": 0.001903,
+          "macd_hist": 0.000658,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.04,
+          "range_pct": 41.09
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    },
+    {
+      "symbol": "ENAUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.1838734,
+      "entry_high": 0.1864666,
+      "stop_loss": 0.167882,
+      "target_1": 0.19857,
+      "target_2": 0.219746,
+      "predicted_rr": 0.775,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 30.5 bouncing (was 27.1), ADX 33.4"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 13.0,
+      "rank": 4,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 33.38,
+          "rsi": 30.46,
+          "macd": -0.008712,
+          "macd_hist": -0.002716,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.46,
+          "range_pct": 35.03
+        },
+        "tf_1h": {
+          "adx": 49.32,
+          "rsi": 28.3,
+          "macd": -0.005677,
+          "macd_hist": -0.000645,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.11,
+          "range_pct": 16.08
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    },
+    {
+      "symbol": "ONDOUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.43185185,
+      "entry_high": 0.43614815,
+      "stop_loss": 0.405358,
+      "target_1": 0.4554815,
+      "target_2": 0.491284,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 31.1 bouncing (was 23.3), ADX 30.8"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 7.0,
+      "rank": 6,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.8,
+          "rsi": 31.07,
+          "macd": -0.013767,
+          "macd_hist": -0.004429,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.04,
+          "range_pct": 25.49
+        },
+        "tf_1h": {
+          "adx": 41.63,
+          "rsi": 36.89,
+          "macd": -0.008211,
+          "macd_hist": -0.000537,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.17,
+          "range_pct": 10.65
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    },
+    {
+      "symbol": "SOXLUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 101.42517855,
+      "entry_high": 102.33482145,
+      "stop_loss": 101.61196429,
+      "target_1": 102.08102678,
+      "target_2": 102.41607142,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 103.1900 low, RSI 29.5, ADX 41.0"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "risk_off",
+      "interest_score": 0.0,
+      "rank": 7,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 52.73,
+          "rsi": 23.05,
+          "macd": -8.857812,
+          "macd_hist": -1.820778,
+          "trend": "bearish",
+          "ema20_dist_atr": 3.12,
+          "range_pct": 39.44
+        },
+        "tf_1h": {
+          "adx": 41.03,
+          "rsi": 29.54,
+          "macd": -4.772244,
+          "macd_hist": 0.013592,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.59,
+          "range_pct": 23.85
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.1794496,
+      "entry_high": 0.1807504,
+      "stop_loss": 0.171428,
+      "target_1": 0.186604,
+      "target_2": 0.197444,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 33.1 bouncing (was 26.7), ADX 39.5"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 8.0,
+      "rank": 8,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 39.47,
+          "rsi": 33.11,
+          "macd": -0.004542,
+          "macd_hist": -0.001096,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.03,
+          "range_pct": 15.69
+        },
+        "tf_1h": {
+          "adx": 44.94,
+          "rsi": 39.47,
+          "macd": -0.002512,
+          "macd_hist": -0.000107,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.06,
+          "range_pct": 8.31
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
