@@ -1,6 +1,6 @@
 # Head-to-Head: Mechanical vs Claude
 
-Total evaluated trades: 581
+Total evaluated trades: 593
 Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net = gross − cost.
 Every expectancy / PF below is the MANAGED trade (50% at T1, BE/+0.3R trail, rest to T2/expiry) — the same definition as unified_backtest (pinned 2026-10-08). win% is the legacy full-position win.
 
@@ -12,7 +12,7 @@ Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose manag
 |---|---|---|---|---|---|---|
 | claude | 299 | 32.1% | **39.8% [34–45]** | -0.123 | **-0.195** | 0.67 |
 | mechanical | 54 | 55.6% | **61.1% [48–73]** | +0.011 | **-0.048** | 0.88 |
-| shadow | 98 | 44.9% | **55.1% [45–65]** | +0.012 | **-0.029** | 0.93 |
+| shadow | 110 | 44.5% | **55.5% [46–64]** | +0.005 | **-0.046** | 0.89 |
 | watch | 130 | 34.6% | **50.0% [42–58]** | -0.089 | **-0.129** | 0.71 |
 
 ## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)
@@ -23,12 +23,12 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 |---|---|---|---|---|---|---|
 | rsi_rejection_short | 19 | 57.9% | **68.4% [46–85]** | +0.218 | **+0.170** | building (19/30) |
 | (unknown) | 12 | 50.0% | **66.7% [39–86]** | +0.192 | **+0.176** | building (12/30) |
-| failed_breakout_short | 55 | 45.5% | **61.8% [49–74]** | +0.116 | **+0.077** | ✗ below bar |
-| trend_pullback_short | 42 | 47.6% | **54.8% [40–69]** | +0.034 | **-0.005** | ✗ below bar |
+| failed_breakout_short | 59 | 47.5% | **62.7% [50–74]** | +0.127 | **+0.090** | ✗ below bar |
+| trend_pullback_short | 44 | 50.0% | **56.8% [42–70]** | +0.070 | **+0.032** | ✗ below bar |
 | range_reversion_short | 11 | 9.1% | **45.5% [21–72]** | -0.342 | **-0.411** | building (11/30) |
-| liquidity_sweep_long | 43 | 27.9% | **44.2% [30–59]** | -0.225 | **-0.282** | ✗ below bar |
+| liquidity_sweep_long | 47 | 25.5% | **44.7% [31–59]** | -0.236 | **-0.293** | ✗ below bar |
 | rsi_bounce_long | 34 | 38.2% | **44.1% [29–60]** | -0.122 | **-0.145** | ✗ below bar |
-| range_reversion_long | 4 | 0.0% | **25.0%** | -0.713 | **-0.765** | building (4/30) |
+| range_reversion_long | 6 | 0.0% | **16.7% [3–56]** | -0.808 | **-1.060** | building (6/30) |
 | observation | 8 | 12.5% | **12.5% [2–47]** | -0.527 | **-0.538** | building (8/30) |
 
 ## By signal backing (gross → net of cost)
@@ -55,30 +55,30 @@ Bar to promote a watch signal into the gated EXECUTE book: **profitable% ≥ 70%
 
 ## Eval engine v2 era (post-fix book — the one the 70% target is judged on)
 
-n=101 v2-scored trades. Pre-fix records are not comparable.
+n=113 v2-scored trades. Pre-fix records are not comparable.
 
 | source | n | **profitable%** | net exp (R) | net PF | status vs target |
 |---|---|---|---|---|---|
-| shadow | 98 | **55.1% [45–65]** | -0.029 | 0.93 | ✗ below bar |
+| shadow | 110 | **55.5% [46–64]** | -0.046 | 0.89 | ✗ below bar |
 | watch | 3 | **66.7%** | +0.105 | 1.31 | building (3/30) |
 
-_Forward-sample velocity: 3 surfaced v2 trades in 9 days (2.4/week) → ~11 more weeks to n=30 at this rate._
+_Forward-sample velocity: 3 surfaced v2 trades in 10 days (2.2/week) → ~12 more weeks to n=30 at this rate._
 
 | source | signal | n | **profitable%** | net exp (R) | status vs target |
 |---|---|---|---|---|---|
-| shadow | liquidity_sweep_long | 34 | **50.0% [34–66]** | -0.166 | ✗ below bar |
-| shadow | failed_breakout_short | 25 | **72.0% [52–86]** | +0.311 | ↑ clears bar, building sample (25/30) |
-| shadow | trend_pullback_short | 22 | **45.5% [27–65]** | -0.139 | building (22/30) |
+| shadow | liquidity_sweep_long | 38 | **50.0% [35–65]** | -0.192 | ✗ below bar |
+| shadow | failed_breakout_short | 29 | **72.4% [54–85]** | +0.305 | ↑ clears bar, building sample (29/30) |
+| shadow | trend_pullback_short | 24 | **50.0% [31–69]** | -0.060 | building (24/30) |
 | shadow | rsi_bounce_long | 16 | **56.2% [33–77]** | -0.051 | building (16/30) |
+| shadow | range_reversion_long | 3 | **0.0%** | -1.452 | building (3/30) |
 | watch | range_reversion_short | 3 | **66.7%** | +0.105 | building (3/30) |
-| shadow | range_reversion_long | 1 | **0.0%** | -1.057 | building (1/30) |
 
 ## Verdict
 **Mechanical LEADS on expectancy** (mechanical +0.011R vs claude -0.123R; n=54/299).
 ⚠️ CONCENTRATION: mechanical book is one-directional (short-only), 52/54 from a single signal — lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE until both directions and >1 signal have live data.
 
 ## Net-of-cost reality check
-- Whole book: gross -0.080R → **net -0.139R** (PF 0.73, n=581)
+- Whole book: gross -0.080R → **net -0.140R** (PF 0.73, n=593)
 - Mechanical: gross +0.011R → **net -0.048R** (n=54)
 - Signal-backed: gross -0.025R → **net -0.082R** (n=81) — the only cut that should be near a real net edge
 - **VERDICT: NOT DECIDABLE YET (3/30 trades)** — v2-era surfaced book (mechanical + watch; shadow excluded): n=3 trades = 3 independent bets, profitable 66.7%, net +0.105R. Below 30 trades the sign of any lane is noise — including the all-era rows above.
