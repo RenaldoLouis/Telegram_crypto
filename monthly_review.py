@@ -315,7 +315,10 @@ def daily_pick_study(v2_all, now):
 
 # ---- 6. backtest fade check ------------------------------------------------------------------
 def backtest_fade(now, rule=FROZEN_RULE, tf=FROZEN_TF):
-    files = sorted(REPORT_DIR.glob("unified_*_trades.json"))
+    # only full harness runs (unified_YYYYMMDD_trades.json) — study runs such as
+    # unified_YYYYMMDD_cvd_trades.json use a smaller universe/window and are not comparable
+    files = sorted(f for f in REPORT_DIR.glob("unified_*_trades.json")
+                   if re.fullmatch(r"unified_\d{8}_trades\.json", f.name))
     if not files:
         return {"note": "no unified backtest trade log found — run `python monthly_review.py refresh-backtest`"}
     f = files[-1]

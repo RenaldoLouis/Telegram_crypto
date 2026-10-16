@@ -42,6 +42,7 @@ from pybit.unified_trading import HTTP
 import config
 import signal_rules as sr
 import derivs_data as dd
+import cvd_data
 import trade_sim as ts
 
 BASE_DIR = Path(__file__).parent
@@ -197,8 +198,9 @@ def _safe(x, nd=4):
 _PREP_CACHE = {}
 
 
-def _prepare(symbol, data, deriv):
-    """Indicator dfs (+ positioning columns) and 15m arrays for one symbol, cached."""
+def _prepare(symbol, data, deriv, cvd=None):
+    """Indicator dfs (+ positioning columns, + on-venue CVD when `cvd` is given) and 15m arrays
+    for one symbol, cached."""
     if symbol in _PREP_CACHE:
         return _PREP_CACHE[symbol]
     m15 = data["15"]
@@ -212,15 +214,18 @@ def _prepare(symbol, data, deriv):
         if dfs[iv] is not None and iv in ("240", "60"):
             # positioning columns as of each bar's close (funding, OI, 24h price change)
             dd.attach_to_df(dfs[iv], deriv, INTERVAL_MS[iv], 6 if iv == "240" else 24)
+            if cvd is not None:
+                # on-venue taker-flow momentum as of each bar's close (fork #4, 2026-10-16)
+                cvd_data.attach_to_df(dfs[iv], cvd, symbol, INTERVAL_MS[iv])
     _PREP_CACHE[symbol] = (m15_ts, m15_c, dfs)
     return _PREP_CACHE[symbol]
 
 
-def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None):
+def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None, cvd=None):
     """Walk every closed 4h/1h bar, fire signals, simulate on 15m. Returns trades."""
     if not data["15"]:
         return []
-    m15_ts, m15_c, dfs = _prepare(symbol, data, deriv)
+    m15_ts, m15_c, dfs = _prepare(symbol, data, deriv, cvd)
     trend_d = TrendIndex(dfs["D"], "D")
     trend_h1 = TrendIndex(dfs["60"], "60")
     trend_h4 = TrendIndex(dfs["240"], "240")
@@ -308,6 +313,9 @@ def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None)
             "btc_24h_change_pct": btc_h4.change_pct(close_t, 6) if btc_h4 else None,
             "btc_aligned": (btc_t == want) if btc_t else None,
             "is_major": symbol in MAJORS_SET,
+            # on-venue CVD (None unless --cvd; NaN-gated by bar coverage in cvd_data)
+            "cvd_slope": _safe(row.get("cvd_slope"), 3) if cvd is not None else None,
+            "cvd_cov": _safe(row.get("cvd_cov"), 2) if cvd is not None else None,
             "_fwd": fwd,  # dropped before saving
         })
     return trades
@@ -480,6 +488,94 @@ def filter_study(train, test):
     return rows, n_cuts
 
 
+# ─── CVD on-venue study (fork #4 Phase 2, PRE-REGISTERED 2026-10-16) ────────
+
+CVD_THRS = (0.05, 0.10, 0.20, 0.40)
+# The bar, fixed before the first run (progress.md banner "PRE-REGISTERED — CVD ON-VENUE TEST").
+CVD_BAR = {"pass_min_test_n": 30, "pass_prof_lift_pp": 5.0, "inconclusive_min_test_n": 15,
+           "min_trades_with_cvd": 10, "min_bucket_n": 5}
+
+
+def _cvd_buckets(trades, thr):
+    conf = [t for t in trades if cvd_data.confirm_bucket(t.get("cvd_slope"), t["direction"], thr) == "confirm"]
+    contra = [t for t in trades if cvd_data.confirm_bucket(t.get("cvd_slope"), t["direction"], thr) == "contra"]
+    return conf, contra
+
+
+def cvd_study(groups):
+    """Per rule/tf: baseline (CVD-available trades, chrono 60/40) vs the slope-CONFIRM bucket at
+    each threshold, judged by the pre-registered bar. Returns (report lines, fork verdict,
+    {(sig, tf): rule verdict})."""
+    B = CVD_BAR
+    L = ["\n## (g) CVD on-venue — PRE-REGISTERED test (bar fixed 2026-10-16 before the run)\n",
+         f"Feature: cvd_slope (k={cvd_data.K_BARS}, {cvd_data.DENOM_WINDOW}-bar |delta| normaliser) from Bybit minute "
+         f"taker buckets; bars with < {cvd_data.MIN_COVERAGE:.0%} minute coverage are NA and excluded from baseline and "
+         f"buckets, deltas of valid bars are scaled by 1/coverage (amendment 2026-10-16: the collector captured a median "
+         f"45/60 minutes inside covered hours, so the original 80% gate left zero valid 4h bars). "
+         f"Confirm = flow momentum aligned with the trade and |slope| ≥ thr; contra = opposed. "
+         f"Split: chronological 60/40 by signal time among CVD-available trades, per rule/tf.\n",
+         f"**PASS** (→ shadow-lane variant with its own forward clock): some thr has TEST confirm n ≥ {B['pass_min_test_n']}, "
+         f"TEST confirm profitable% ≥ TEST baseline + {B['pass_prof_lift_pp']:.0f} pp, TEST confirm net > baseline net and > 0, "
+         f"TRAIN confirm beats TRAIN baseline (profitable% and net), and TRAIN monotonic (confirm net at thr {CVD_THRS[-1]} ≥ at {CVD_THRS[0]}). "
+         f"**INCONCLUSIVE** (→ one extension, re-run ~2026-12-15, final): confirm > baseline on both halves (profitable% and net) "
+         f"with TEST confirm n in [{B['inconclusive_min_test_n']}, {B['pass_min_test_n']}). **FAIL** otherwise (→ fork #4 closed, collector stopped).\n"]
+    per_rule = {}
+    for (sig, tf), tr in sorted(groups.items(), key=lambda kv: (kv[0][0], kv[0][1])):
+        avail = [t for t in tr if t.get("cvd_slope") is not None]
+        if len(avail) < B["min_trades_with_cvd"]:
+            L.append(f"\n### {sig} ({tf}) — {len(avail)} trades with CVD (of {len(tr)}) → SKIPPED (too few)")
+            per_rule[(sig, tf)] = "SKIPPED"
+            continue
+        train, test = split_train_test(avail)
+        b_tr, b_te = stats([t["_res"] for t in train]), stats([t["_res"] for t in test])
+        L.append(f"\n### {sig} ({tf}) — {len(avail)} trades with CVD (of {len(tr)})\n")
+        L.append(f"- baseline TRAIN {fmt(b_tr)} · TEST {fmt(b_te)}\n")
+        L.append("| thr | TRAIN confirm | TRAIN contra | TEST confirm | TEST contra | flag |")
+        L.append("|---|---|---|---|---|---|")
+        tr_conf_net = {}
+        cells = []
+        for thr in CVD_THRS:
+            c_tr, x_tr = _cvd_buckets(train, thr)
+            c_te, x_te = _cvd_buckets(test, thr)
+            s_ctr, s_xtr = stats([t["_res"] for t in c_tr]), stats([t["_res"] for t in x_tr])
+            s_cte, s_xte = stats([t["_res"] for t in c_te]), stats([t["_res"] for t in x_te])
+            if s_ctr["n"] >= B["min_bucket_n"]:
+                tr_conf_net[thr] = s_ctr["net_exp"] or 0.0
+            beats_tr = (s_ctr["n"] >= B["min_bucket_n"] and (s_ctr["profitable_pct"] or 0) > (b_tr["profitable_pct"] or 0)
+                        and (s_ctr["net_exp"] or 0) > (b_tr["net_exp"] or 0))
+            beats_te_soft = (s_cte["n"] >= B["inconclusive_min_test_n"] and (s_cte["profitable_pct"] or 0) > (b_te["profitable_pct"] or 0)
+                             and (s_cte["net_exp"] or 0) > (b_te["net_exp"] or 0))
+            beats_te_full = (s_cte["n"] >= B["pass_min_test_n"]
+                             and (s_cte["profitable_pct"] or 0) >= (b_te["profitable_pct"] or 0) + B["pass_prof_lift_pp"]
+                             and (s_cte["net_exp"] or 0) > (b_te["net_exp"] or 0) and (s_cte["net_exp"] or 0) > 0)
+            cells.append((thr, beats_tr, beats_te_soft, beats_te_full, s_cte["n"]))
+            flag = "pass-cell" if beats_tr and beats_te_full else ("points right" if beats_tr and beats_te_soft else "")
+            L.append(f"| {thr} | {fmt(s_ctr)} | {fmt(s_xtr)} | {fmt(s_cte)} | {fmt(s_xte)} | {flag} |")
+        monotonic = (CVD_THRS[0] in tr_conf_net and CVD_THRS[-1] in tr_conf_net
+                     and tr_conf_net[CVD_THRS[-1]] >= tr_conf_net[CVD_THRS[0]])
+        if any(c[1] and c[3] for c in cells) and monotonic:
+            v = "PASS"
+        elif any(c[1] and c[2] for c in cells):
+            v = "INCONCLUSIVE"
+        else:
+            v = "FAIL"
+        L.append(f"\n- TRAIN monotonic (net at {CVD_THRS[-1]} ≥ at {CVD_THRS[0]}): {monotonic} → **rule verdict: {v}**")
+        per_rule[(sig, tf)] = v
+    vs = set(per_rule.values()) - {"SKIPPED"}
+    if not vs:
+        verdict = "NOT_RUN"   # no rule had enough CVD-tagged trades: a data problem, not a result
+    else:
+        verdict = "PASS" if "PASS" in vs else ("INCONCLUSIVE" if "INCONCLUSIVE" in vs else "FAIL")
+    n_cells = sum(1 for v in per_rule.values() if v != "SKIPPED") * len(CVD_THRS)
+    L.append(f"\n**FORK #4 VERDICT: {verdict}** — {n_cells} confirm cells examined (expect ~{n_cells * 0.05:.1f} chance "
+             f"winners at 5%; the TRAIN/TEST agreement, monotonicity and n floors are the guards). "
+             + {"PASS": "Next: build the slope-confirmed shadow-lane variant with its own forward clock.",
+                "INCONCLUSIVE": "Next: ONE extension — keep collecting, re-run ~2026-12-15 under this same bar; that run is final.",
+                "FAIL": "Next: close fork #4 — remove the collector cron (keep the store), close Phase 5's CVD input.",
+                "NOT_RUN": "No verdict: too few trades carried a valid cvd_slope — fix the data/definition, do not record a result."}[verdict])
+    return L, verdict, per_rule
+
+
 # ─── Management sweep ────────────────────────────────────────────────────────
 
 MGMT_GRID = list(product([0.5, 0.75, 1.0], [0.75, 1.0, 1.5], [1.5, 2.0], [True, False]))
@@ -547,8 +643,25 @@ def run(args):
     t0 = time.time()
     enabled = set(args.signals.split(",")) if args.signals else None
     tfs = set(args.tfs.split(","))
+    cvd = None
+    if getattr(args, "cvd", False):
+        # Fork #4 Phase 2 (2026-10-16): on-venue CVD features from logs/cvd/ci. Study-only:
+        # rsi_rejection_short (the rule the Binance lead was found on; DISABLED under v13) is
+        # re-enabled in this process so the filter can be judged on it too. Nothing persists.
+        cvd = cvd_data.load_store()
+        lo, hi = cvd.span_ms()
+        print(f"CVD store: {len(cvd.symbols)} symbols, "
+              f"{datetime.fromtimestamp(lo / 1000, tz=timezone.utc):%Y-%m-%d} → "
+              f"{datetime.fromtimestamp(hi / 1000, tz=timezone.utc):%Y-%m-%d}")
+        sr.SIGNAL_TFS["rsi_rejection_short"] = ("4h", "1h")
+        print("  study-only: rsi_rejection_short re-enabled on 4h/1h for this run")
+        for thr in CVD_THRS:
+            FILTERS[f"cvd_confirm_{thr}"] = (lambda t, thr=thr:
+                                             cvd_data.confirm_bucket(t.get("cvd_slope"), t["direction"], thr))
     if args.symbols and args.symbols != "auto":
         symbols = [s.strip().upper() for s in args.symbols.split(",") if s.strip()]
+    elif cvd is not None:
+        symbols = list(cvd.symbols)
     else:
         symbols = auto_universe(10 if args.quick else args.max_symbols)
     if "BTCUSDT" not in symbols:
@@ -587,7 +700,7 @@ def run(args):
 
     trades = []
     for sym, d in data.items():
-        tr = build_trades(sym, d, btc_h4, enabled, tfs, deriv=derivs.get(sym))
+        tr = build_trades(sym, d, btc_h4, enabled, tfs, deriv=derivs.get(sym), cvd=cvd)
         trades.extend(tr)
         print(f"  signals {sym}: {len(tr)}")
     print(f"Total trades: {len(trades)}  (fetch {fetch_s:.0f}s, total {time.time() - t0:.0f}s)")
@@ -696,6 +809,13 @@ def run(args):
     L.append(f"\nTotal filter cuts tested across signals: {total_cuts}.")
     L.extend(per_sig_detail)
 
+    # (g) CVD on-venue study (only with --cvd; pre-registered bar)
+    cvd_verdict = None
+    if cvd is not None:
+        g_lines, cvd_verdict, _per = cvd_study(groups)
+        L.extend(g_lines)
+        print(f"CVD on-venue study → FORK #4 VERDICT: {cvd_verdict}")
+
     # (f) fill-model study: maker (passive) entry vs market
     L.append("\n## (f) Fill model — passive (maker) entry vs market (taker)\n")
     L.append(f"Limit rests at the next 15m open improved by offset×ATR; fills only when price trades THROUGH it "
@@ -741,9 +861,12 @@ def run(args):
              f"UB_MIN_HISTORY_DAYS, UB_DEFAULT_T1_R, UB_SHIP_PROFITABLE_PCT, UB_CANDIDATE_PROFITABLE_PCT, "
              f"UB_MIN_TEST_N, UB_SHIP_MIN_N.")
     report = "\n".join(L)
-    rp = REPORT_DIR / f"unified_{today}.md"
+    # a --cvd run is a study on a smaller universe/window: keep its files apart so the monthly
+    # fade check (which reads the newest full `unified_<date>_trades.json`) does not pick it up
+    tag = f"{today}_cvd" if cvd is not None else today
+    rp = REPORT_DIR / f"unified_{tag}.md"
     rp.write_text(report, encoding="utf-8")
-    tp = REPORT_DIR / f"unified_{today}_trades.json"
+    tp = REPORT_DIR / f"unified_{tag}_trades.json"
     slim = []
     for t in trades:
         s = {k: v for k, v in t.items() if not k.startswith("_")}
@@ -767,6 +890,9 @@ def main():
     ap.add_argument("--no-derivs", action="store_true", help="skip funding/OI fetch + positioning features")
     ap.add_argument("--entry", choices=["market", "limit_open"], default=None,
                     help="override config.ENTRY_MODEL for this run")
+    ap.add_argument("--cvd", action="store_true",
+                    help="fork #4: attach on-venue cvd_slope from logs/cvd/ci and run the pre-registered "
+                         "CVD study (universe = CVD symbols unless --symbols; report → unified_<date>_cvd.md)")
     args = ap.parse_args()
     if args.entry:
         global ENTRY_MODEL

@@ -9,10 +9,15 @@ name: CVD Collector (chained)
 #
 # Backtest later: download all artifacts, concat the JSONL, rebuild per-bar CVD.
 # NOTE: data collector only — zero trading decisions (CORE PRINCIPLE).
+#
+# STOPPED 2026-10-16: fork #4 FAILED its pre-registered on-venue test (unified_backtest.py --cvd:
+# 183 CVD-tagged trades, largest TEST confirm bucket n=11; rsi_rejection_short confirm not better
+# than baseline on Bybit), so the schedule is removed. All 197 artifacts are merged in
+# logs/cvd/ci/ (gitignored). Manual runs still work; restore the cron to resume collection.
+# Data-quality note for any restart: inside covered hours the WS captured a median 45/60 minutes
+# (6–60 min dropouts under the 10-min stall watchdog) — lower CVD_STALL_SECONDS to ~120 first.
 
 on:
-  schedule:
-    - cron: '30 */6 * * *'   # offset 30m from the liq collector to spread VPN load
   workflow_dispatch: {}
 
 concurrency:
