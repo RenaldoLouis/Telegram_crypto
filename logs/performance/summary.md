@@ -1,17 +1,17 @@
 # Performance Summary
-_Last updated: 2026-10-15 03:03 UTC_
-_Total runs evaluated: 393_
+_Last updated: 2026-10-16 00:06 UTC_
+_Total runs evaluated: 397_
 
 ## Overall Stats
 - Total setups: 401
 - Triggered: 353 (88%)
-- Not triggered: 20
+- Not triggered: 21
 - **Win rate: 35.7%** (126W / 227L)  (**↓ -0.0%** from previous eval: 35.7%) ⚠️ REGRESSION
 - **Profitable (net, partial model): 43.1%** (152/353; target ≥70%)
 - Avg actual R:R: -0.11
 - Avg winning R:R: 1.17
 - Avg losing R:R: -0.82
-- _(EXECUTE book only — WATCH lane: 241 paper trades, 52.7% profitable, net -0.085R; excluded from every number above)_
+- _(EXECUTE book only — WATCH lane: 248 paper trades, 52.4% profitable, net -0.089R; excluded from every number above)_
 
 ### Partial Profit Model (50% at T1 + BE stop)
 - **Blended win rate: 45.6%** (115W / 137L)
