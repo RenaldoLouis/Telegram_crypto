@@ -1,0 +1,122 @@
+{
+  "run_timestamp_utc": "2026-10-16T16:02:04.313291+00:00",
+  "run_tag": "20261016_1602",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2
+  },
+  "setups": [
+    {
+      "symbol": "SEIUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.06408465,
+      "entry_high": 0.06479535,
+      "stop_loss": 0.06817232,
+      "target_1": 0.06164076,
+      "target_2": 0.05697536,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0663, RSI 47.8"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "risk_on",
+      "interest_score": 2.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 22.44,
+          "rsi": 47.83,
+          "macd": -0.000645,
+          "macd_hist": 0.000551,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.46,
+          "range_pct": 15.4
+        },
+        "tf_1h": {
+          "adx": 26.6,
+          "rsi": 64.04,
+          "macd": 0.00103,
+          "macd_hist": 0.000115,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.38,
+          "range_pct": 9.64
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 5.0023321,
+      "entry_high": 5.0796679,
+      "stop_loss": 5.427679,
+      "target_1": 4.75099075,
+      "target_2": 4.267642,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 50.2, ADX 19.6, near EMA20"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.526,
+      "signal_test_n": 152,
+      "regime": "risk_on",
+      "interest_score": 0.0,
+      "rank": 4,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 19.64,
+          "rsi": 50.24,
+          "macd": -0.002273,
+          "macd_hist": 0.036033,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.26,
+          "range_pct": 18.17
+        },
+        "tf_1h": {
+          "adx": 20.84,
+          "rsi": 27.9,
+          "macd": 0.041494,
+          "macd_hist": -0.029996,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.57,
+          "range_pct": 7.47
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
