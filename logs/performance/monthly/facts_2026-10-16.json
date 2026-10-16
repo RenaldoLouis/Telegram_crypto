@@ -1,0 +1,871 @@
+{
+  "generated_at": "2026-10-16T08:36:48.810213+00:00",
+  "tag": "2026-10-16",
+  "review_cadence_days": 30,
+  "goal": "a proven, owned, fully mechanical Bybit USDT-perp edge that eventually trades itself; success = >= 70% of SURFACED suggestions profitable (managed trade, net of cost) over >= 30 forward trades AND net expectancy > 0",
+  "rules_in_force": {
+    "surface_bar": "a rule is shown only with TEST hit rate >= 60% on >= 30 out-of-sample trades; everything else is the shadow lane (scored, never shown, never counted)",
+    "entry_model": "limit_open",
+    "frozen_forward_test_1": {
+      "n_decide": 30,
+      "n_extend": 50,
+      "promote_pct": 70.0,
+      "extend_floor_pct": 60.0,
+      "kill_after_n": 20,
+      "kill_below_pct": 60.0,
+      "expiry": "2026-12-31"
+    },
+    "band": {
+      "window": 30,
+      "target_pct": 70.0,
+      "floor_pct": 60.0,
+      "red_max_wins": 12
+    },
+    "validation_path": "unified_backtest.py only (chrono train/test, costs, same trade_sim as the evaluator); a rule that lives only in a backtest or only live is a bug",
+    "frozen_while_clock_runs": "signal_rules.py detection of the frozen rule, its volume gate, ENTRY_MODEL, trade_sim management",
+    "ai_reviewer": "report-only; read-only sandbox; may not change any rule; proposals go to the shadow lane / a new unified_backtest run with their own forward clock"
+  },
+  "forward_test_1": {
+    "rule": "range_reversion_short 4h + vol_spike>=1.5 (frozen)",
+    "n": 3,
+    "wins": 2,
+    "prof_pct": 66.7,
+    "prof_ci": [
+      20.8,
+      93.9
+    ],
+    "net": 0.105,
+    "net_ci": [
+      -2.29,
+      2.499
+    ],
+    "independent_bets": 3,
+    "bar": {
+      "n_decide": 30,
+      "n_extend": 50,
+      "promote_pct": 70.0,
+      "extend_floor_pct": 60.0,
+      "kill_after_n": 20,
+      "kill_below_pct": 60.0,
+      "expiry": "2026-12-31"
+    },
+    "trades": [
+      {
+        "date": "2026-10-05",
+        "symbol": "ADAUSDT",
+        "profitable": true,
+        "net": 0.199
+      },
+      {
+        "date": "2026-10-05",
+        "symbol": "ENAUSDT",
+        "profitable": true,
+        "net": 1.131
+      },
+      {
+        "date": "2026-10-10",
+        "symbol": "CHIPUSDT",
+        "profitable": false,
+        "net": -1.016
+      }
+    ],
+    "days_to_expiry": 76,
+    "first_trade_utc": "2026-10-05T08:05:09.538916+00:00",
+    "days_running": 11,
+    "pace_per_week": 1.91,
+    "projected_n_at_expiry": 23.7,
+    "decision": "BUILDING (3/30) \u2014 no decision yet; the rule stays frozen"
+  },
+  "band": {
+    "n": 3,
+    "wins": 2,
+    "prof_pct": 66.7,
+    "prof_ci": [
+      20.8,
+      93.9
+    ],
+    "net": 0.105,
+    "net_ci": [
+      -2.29,
+      2.499
+    ],
+    "window": 30,
+    "status": "BUILDING",
+    "previous_status": null,
+    "rule": {
+      "GREEN": ">=70% profitable AND net>0 \u2014 the real-money bar",
+      "OK": "60-70% \u2014 inside the band, nothing to do",
+      "YELLOW": "<60% once \u2014 explain it; change nothing",
+      "RED": "<60% on two consecutive reviews, or <= 12/30 wins \u2014 act: retire, promote a shadow rule that passed, or test a recorded recommendation; never re-tune on the losing month",
+      "BUILDING": "fewer than 30 surfaced trades scored in the v2 era"
+    }
+  },
+  "paper_test_2": {
+    "rules_hash": "3d7e0eb5d26a0b61",
+    "bar": {
+      "n_decide": 26,
+      "n_extend": 52,
+      "sharpe_pass": 1.0,
+      "mdd_pass": 0.2,
+      "pct_pos_pass": 0.55,
+      "sharpe_fail": 0.5,
+      "mdd_kill": 0.25
+    },
+    "books": {
+      "k56": {
+        "n_weeks": 1,
+        "cum_net_pct": 3.17,
+        "sharpe": null,
+        "max_dd_pct": 0.0,
+        "pct_weeks_positive": 100.0,
+        "verdict": "BUILDING (1/26)",
+        "weeks": [
+          {
+            "week": "2026-10-05",
+            "net_pct": 3.17
+          }
+        ]
+      },
+      "k91": {
+        "n_weeks": 1,
+        "cum_net_pct": 0.72,
+        "sharpe": null,
+        "max_dd_pct": 0.0,
+        "pct_weeks_positive": 100.0,
+        "verdict": "BUILDING (1/26)",
+        "weeks": [
+          {
+            "week": "2026-10-05",
+            "net_pct": 0.72
+          }
+        ]
+      }
+    }
+  },
+  "shadow_lane": {
+    "by_signal": {
+      "liquidity_sweep_long": {
+        "lanes": [
+          "shadow"
+        ],
+        "all": {
+          "n": 43,
+          "wins": 23,
+          "prof_pct": 53.5,
+          "prof_ci": [
+            38.9,
+            67.5
+          ],
+          "net": -0.12,
+          "net_ci": [
+            -0.422,
+            0.183
+          ]
+        },
+        "last_30d": {
+          "n": 43,
+          "wins": 23,
+          "prof_pct": 53.5,
+          "prof_ci": [
+            38.9,
+            67.5
+          ],
+          "net": -0.12,
+          "net_ci": [
+            -0.422,
+            0.183
+          ]
+        },
+        "by_direction": {
+          "long": {
+            "n": 43,
+            "wins": 23,
+            "prof_pct": 53.5,
+            "prof_ci": [
+              38.9,
+              67.5
+            ],
+            "net": -0.12,
+            "net_ci": [
+              -0.422,
+              0.183
+            ]
+          }
+        },
+        "by_month": {
+          "2026-09": {
+            "n": 3,
+            "wins": 2,
+            "prof_pct": 66.7,
+            "prof_ci": [
+              20.8,
+              93.9
+            ],
+            "net": 0.033,
+            "net_ci": [
+              -2.188,
+              2.254
+            ]
+          },
+          "2026-10": {
+            "n": 40,
+            "wins": 21,
+            "prof_pct": 52.5,
+            "prof_ci": [
+              37.5,
+              67.1
+            ],
+            "net": -0.131,
+            "net_ci": [
+              -0.449,
+              0.187
+            ]
+          }
+        },
+        "surface_bar": {
+          "tf": "1h",
+          "backtest_test_hit_pct": 51.0,
+          "backtest_test_n": 341,
+          "meets_surface_bar": false
+        }
+      },
+      "failed_breakout_short": {
+        "lanes": [
+          "shadow"
+        ],
+        "all": {
+          "n": 31,
+          "wins": 22,
+          "prof_pct": 71.0,
+          "prof_ci": [
+            53.4,
+            83.9
+          ],
+          "net": 0.293,
+          "net_ci": [
+            -0.045,
+            0.632
+          ]
+        },
+        "last_30d": {
+          "n": 31,
+          "wins": 22,
+          "prof_pct": 71.0,
+          "prof_ci": [
+            53.4,
+            83.9
+          ],
+          "net": 0.293,
+          "net_ci": [
+            -0.045,
+            0.632
+          ]
+        },
+        "by_direction": {
+          "short": {
+            "n": 31,
+            "wins": 22,
+            "prof_pct": 71.0,
+            "prof_ci": [
+              53.4,
+              83.9
+            ],
+            "net": 0.293,
+            "net_ci": [
+              -0.045,
+              0.632
+            ]
+          }
+        },
+        "by_month": {
+          "2026-10": {
+            "n": 31,
+            "wins": 22,
+            "prof_pct": 71.0,
+            "prof_ci": [
+              53.4,
+              83.9
+            ],
+            "net": 0.293,
+            "net_ci": [
+              -0.045,
+              0.632
+            ]
+          }
+        },
+        "surface_bar": {
+          "tf": "4h",
+          "backtest_test_hit_pct": 54.5,
+          "backtest_test_n": 112,
+          "meets_surface_bar": false
+        }
+      },
+      "trend_pullback_short": {
+        "lanes": [
+          "shadow"
+        ],
+        "all": {
+          "n": 25,
+          "wins": 13,
+          "prof_pct": 52.0,
+          "prof_ci": [
+            33.5,
+            70.0
+          ],
+          "net": -0.011,
+          "net_ci": [
+            -0.395,
+            0.373
+          ]
+        },
+        "last_30d": {
+          "n": 25,
+          "wins": 13,
+          "prof_pct": 52.0,
+          "prof_ci": [
+            33.5,
+            70.0
+          ],
+          "net": -0.011,
+          "net_ci": [
+            -0.395,
+            0.373
+          ]
+        },
+        "by_direction": {
+          "short": {
+            "n": 25,
+            "wins": 13,
+            "prof_pct": 52.0,
+            "prof_ci": [
+              33.5,
+              70.0
+            ],
+            "net": -0.011,
+            "net_ci": [
+              -0.395,
+              0.373
+            ]
+          }
+        },
+        "by_month": {
+          "2026-09": {
+            "n": 1,
+            "wins": 1,
+            "prof_pct": 100.0,
+            "prof_ci": [
+              20.7,
+              100.0
+            ],
+            "net": 0.288,
+            "net_ci": null
+          },
+          "2026-10": {
+            "n": 24,
+            "wins": 12,
+            "prof_pct": 50.0,
+            "prof_ci": [
+              31.4,
+              68.6
+            ],
+            "net": -0.024,
+            "net_ci": [
+              -0.424,
+              0.377
+            ]
+          }
+        },
+        "surface_bar": {
+          "tf": "4h",
+          "backtest_test_hit_pct": 52.6,
+          "backtest_test_n": 152,
+          "meets_surface_bar": false
+        }
+      },
+      "rsi_bounce_long": {
+        "lanes": [
+          "shadow"
+        ],
+        "all": {
+          "n": 19,
+          "wins": 9,
+          "prof_pct": 47.4,
+          "prof_ci": [
+            27.3,
+            68.3
+          ],
+          "net": -0.204,
+          "net_ci": [
+            -0.531,
+            0.123
+          ]
+        },
+        "last_30d": {
+          "n": 19,
+          "wins": 9,
+          "prof_pct": 47.4,
+          "prof_ci": [
+            27.3,
+            68.3
+          ],
+          "net": -0.204,
+          "net_ci": [
+            -0.531,
+            0.123
+          ]
+        },
+        "by_direction": {
+          "long": {
+            "n": 19,
+            "wins": 9,
+            "prof_pct": 47.4,
+            "prof_ci": [
+              27.3,
+              68.3
+            ],
+            "net": -0.204,
+            "net_ci": [
+              -0.531,
+              0.123
+            ]
+          }
+        },
+        "by_month": {
+          "2026-10": {
+            "n": 19,
+            "wins": 9,
+            "prof_pct": 47.4,
+            "prof_ci": [
+              27.3,
+              68.3
+            ],
+            "net": -0.204,
+            "net_ci": [
+              -0.531,
+              0.123
+            ]
+          }
+        },
+        "surface_bar": {
+          "tf": "4h",
+          "backtest_test_hit_pct": 51.0,
+          "backtest_test_n": 96,
+          "meets_surface_bar": false
+        }
+      },
+      "range_reversion_short": {
+        "lanes": [
+          "watch"
+        ],
+        "all": {
+          "n": 3,
+          "wins": 2,
+          "prof_pct": 66.7,
+          "prof_ci": [
+            20.8,
+            93.9
+          ],
+          "net": 0.105,
+          "net_ci": [
+            -2.29,
+            2.499
+          ]
+        },
+        "last_30d": {
+          "n": 3,
+          "wins": 2,
+          "prof_pct": 66.7,
+          "prof_ci": [
+            20.8,
+            93.9
+          ],
+          "net": 0.105,
+          "net_ci": [
+            -2.29,
+            2.499
+          ]
+        },
+        "by_direction": {
+          "short": {
+            "n": 3,
+            "wins": 2,
+            "prof_pct": 66.7,
+            "prof_ci": [
+              20.8,
+              93.9
+            ],
+            "net": 0.105,
+            "net_ci": [
+              -2.29,
+              2.499
+            ]
+          }
+        },
+        "by_month": {
+          "2026-10": {
+            "n": 3,
+            "wins": 2,
+            "prof_pct": 66.7,
+            "prof_ci": [
+              20.8,
+              93.9
+            ],
+            "net": 0.105,
+            "net_ci": [
+              -2.29,
+              2.499
+            ]
+          }
+        },
+        "surface_bar": {
+          "tf": "4h",
+          "backtest_test_hit_pct": 66.0,
+          "backtest_test_n": 41,
+          "meets_surface_bar": true
+        }
+      },
+      "range_reversion_long": {
+        "lanes": [
+          "shadow"
+        ],
+        "all": {
+          "n": 3,
+          "wins": 0,
+          "prof_pct": 0.0,
+          "prof_ci": [
+            0.0,
+            56.2
+          ],
+          "net": -1.452,
+          "net_ci": [
+            -2.987,
+            0.083
+          ]
+        },
+        "last_30d": {
+          "n": 3,
+          "wins": 0,
+          "prof_pct": 0.0,
+          "prof_ci": [
+            0.0,
+            56.2
+          ],
+          "net": -1.452,
+          "net_ci": [
+            -2.987,
+            0.083
+          ]
+        },
+        "by_direction": {
+          "long": {
+            "n": 3,
+            "wins": 0,
+            "prof_pct": 0.0,
+            "prof_ci": [
+              0.0,
+              56.2
+            ],
+            "net": -1.452,
+            "net_ci": [
+              -2.987,
+              0.083
+            ]
+          }
+        },
+        "by_month": {
+          "2026-10": {
+            "n": 3,
+            "wins": 0,
+            "prof_pct": 0.0,
+            "prof_ci": [
+              0.0,
+              56.2
+            ],
+            "net": -1.452,
+            "net_ci": [
+              -2.987,
+              0.083
+            ]
+          }
+        },
+        "surface_bar": {
+          "tf": "4h",
+          "backtest_test_hit_pct": 73.0,
+          "backtest_test_n": 11,
+          "meets_surface_bar": false
+        }
+      }
+    },
+    "by_direction": {
+      "short": {
+        "n": 59,
+        "wins": 37,
+        "prof_pct": 62.7,
+        "prof_ci": [
+          50.0,
+          73.9
+        ],
+        "net": 0.155,
+        "net_ci": [
+          -0.087,
+          0.396
+        ]
+      },
+      "long": {
+        "n": 65,
+        "wins": 32,
+        "prof_pct": 49.2,
+        "prof_ci": [
+          37.5,
+          61.1
+        ],
+        "net": -0.206,
+        "net_ci": [
+          -0.435,
+          0.023
+        ]
+      }
+    },
+    "total": {
+      "n": 124,
+      "wins": 69,
+      "prof_pct": 55.6,
+      "prof_ci": [
+        46.9,
+        64.1
+      ],
+      "net": -0.034,
+      "net_ci": [
+        -0.201,
+        0.133
+      ]
+    },
+    "note": "all lanes (surfaced + shadow), v2 era, managed trade net of cost. ~6 rules x 2 directions x months = many cells: expect ~1 in 20 to look good by chance."
+  },
+  "daily_pick_study": {
+    "priority": [
+      "range_reversion_short",
+      "failed_breakout_short",
+      "trend_pullback_short",
+      "liquidity_sweep_long",
+      "rsi_bounce_long",
+      "range_reversion_long"
+    ],
+    "span_days": 22,
+    "policies": {
+      "best_rule_each_day": {
+        "n": 16,
+        "wins": 12,
+        "prof_pct": 75.0,
+        "prof_ci": [
+          50.5,
+          89.8
+        ],
+        "net": 0.209,
+        "net_ci": [
+          -0.21,
+          0.629
+        ],
+        "days_with_pick": 16,
+        "days_with_pick_pct": 72.7
+      },
+      "shorts_only": {
+        "n": 13,
+        "wins": 10,
+        "prof_pct": 76.9,
+        "prof_ci": [
+          49.7,
+          91.8
+        ],
+        "net": 0.25,
+        "net_ci": [
+          -0.218,
+          0.718
+        ],
+        "days_with_pick": 13,
+        "days_with_pick_pct": 59.1
+      },
+      "longs_only": {
+        "n": 14,
+        "wins": 7,
+        "prof_pct": 50.0,
+        "prof_ci": [
+          26.8,
+          73.2
+        ],
+        "net": -0.146,
+        "net_ci": [
+          -0.724,
+          0.432
+        ],
+        "days_with_pick": 14,
+        "days_with_pick_pct": 63.6
+      },
+      "only_failed_breakout_short": {
+        "n": 11,
+        "wins": 9,
+        "prof_pct": 81.8,
+        "prof_ci": [
+          52.3,
+          94.9
+        ],
+        "net": 0.426,
+        "net_ci": [
+          -0.091,
+          0.944
+        ],
+        "days_with_pick": 11,
+        "days_with_pick_pct": 50.0
+      },
+      "only_liquidity_sweep_long": {
+        "n": 13,
+        "wins": 7,
+        "prof_pct": 53.8,
+        "prof_ci": [
+          29.1,
+          76.8
+        ],
+        "net": -0.098,
+        "net_ci": [
+          -0.718,
+          0.521
+        ],
+        "days_with_pick": 13,
+        "days_with_pick_pct": 59.1
+      },
+      "only_range_reversion_long": {
+        "n": 3,
+        "wins": 0,
+        "prof_pct": 0.0,
+        "prof_ci": [
+          0.0,
+          56.2
+        ],
+        "net": -1.452,
+        "net_ci": [
+          -2.987,
+          0.083
+        ],
+        "days_with_pick": 3,
+        "days_with_pick_pct": 13.6
+      },
+      "only_range_reversion_short": {
+        "n": 2,
+        "wins": 1,
+        "prof_pct": 50.0,
+        "prof_ci": [
+          9.5,
+          90.5
+        ],
+        "net": -0.408,
+        "net_ci": [
+          -4.755,
+          3.938
+        ],
+        "days_with_pick": 2,
+        "days_with_pick_pct": 9.1
+      },
+      "only_rsi_bounce_long": {
+        "n": 6,
+        "wins": 3,
+        "prof_pct": 50.0,
+        "prof_ci": [
+          18.8,
+          81.2
+        ],
+        "net": -0.255,
+        "net_ci": [
+          -1.039,
+          0.529
+        ],
+        "days_with_pick": 6,
+        "days_with_pick_pct": 27.3
+      },
+      "only_trend_pullback_short": {
+        "n": 9,
+        "wins": 6,
+        "prof_pct": 66.7,
+        "prof_ci": [
+          35.4,
+          87.9
+        ],
+        "net": 0.244,
+        "net_ci": [
+          -0.524,
+          1.011
+        ],
+        "days_with_pick": 9,
+        "days_with_pick_pct": 40.9
+      }
+    },
+    "bar": "a daily policy becomes a promotion CANDIDATE only at >=60% profitable AND net>0 on >=30 forward days, and may be surfaced only at >=70% + net>0; the 2026-09-23 backtest put 'best rule each day' at 54.5% / -0.112R on TEST (Jul-Sep), decaying month by month"
+  },
+  "backtest_fade": {
+    "file": "unified_20260923_trades.json",
+    "run_date": "2026-09-23",
+    "age_days": 23,
+    "freshness": "fresh",
+    "rule": "range_reversion_short 4h + vol_spike>=1.5",
+    "all": {
+      "n": 58,
+      "prof_pct": 79.3,
+      "net": 0.327
+    },
+    "by_month": {
+      "2026-04": {
+        "n": 12,
+        "prof_pct": 100.0,
+        "net": 0.796
+      },
+      "2026-05": {
+        "n": 6,
+        "prof_pct": 83.3,
+        "net": 0.741
+      },
+      "2026-06": {
+        "n": 7,
+        "prof_pct": 85.7,
+        "net": 0.447
+      },
+      "2026-07": {
+        "n": 14,
+        "prof_pct": 71.4,
+        "net": 0.05
+      },
+      "2026-08": {
+        "n": 11,
+        "prof_pct": 81.8,
+        "net": 0.34
+      },
+      "2026-09": {
+        "n": 8,
+        "prof_pct": 50.0,
+        "net": -0.327
+      }
+    },
+    "latest_month": "2026-09",
+    "latest": {
+      "n": 8,
+      "prof_pct": 50.0,
+      "net": -0.327
+    },
+    "prior_months": {
+      "n": 50,
+      "prof_pct": 84.0,
+      "net": 0.431
+    },
+    "fading": true,
+    "note": "backtest = simulated trades on ~30 symbols (same rule, same trade_sim); ~17/month vs ~3 live, so this is the early warning. Treat a STALE file as no information."
+  },
+  "coverage": {
+    "days": 30,
+    "ledger_since": "2026-10-12T04:00Z",
+    "closes_expected": 25,
+    "closes_ok": 25,
+    "closes_logged": 25,
+    "ok_pct": 100.0,
+    "scans_with_any_setup": 120
+  },
+  "recommendations_open": [],
+  "previous_review": null
+}

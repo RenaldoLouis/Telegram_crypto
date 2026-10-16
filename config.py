@@ -75,6 +75,29 @@ SURFACE_MIN_TEST_N = 30
 # large effect and train/test agreement. As the live rule (gate inside the rule): all-period n=101
 # 75% / +0.19R, test n=41 65.9% / -0.04R — a CANDIDATE, not proven). None disables the gate.
 RANGE_REVERSION_SHORT_MIN_VOL_SPIKE = 1.5
+# ---- Engine View in the brief (user decision 2026-10-16) ----
+# Since the surfacing gate (2026-09-23) 149 of 154 briefs said "stand aside" while the engine
+# built ~170 shadow setups. The user wants to SEE what the engine sees every day. The Engine
+# View renders the best recent shadow candidates with their measured numbers (backtest TEST hit
+# rate + live shadow-lane record) and an explicit "below bar — not a recommendation" label. It
+# changes nothing that is counted: shadow rows stay source="shadow", excluded from the book,
+# and a quiet run (SCAN_QUIET_IF_EMPTY=1) stays quiet. Tested 2026-10-16: posting the best
+# candidate every day = 54.5% / -0.112R on backtest TEST and 68.8% / +0.001R live (n=16) —
+# breakeven, which is why it is a view and not a lane.
+ENGINE_VIEW_ENABLED = True
+ENGINE_VIEW_MAX = 2            # candidates shown
+ENGINE_VIEW_LOOKBACK_MIN = 150  # include shadow rows persisted by (quiet) runs this recent
+# ---- Monthly strategy review (2026-10-16) ----
+# weekly_eval.py writes logs/performance/monthly/facts_<date>.{json,md} (pure Python) once every
+# MONTHLY_REVIEW_DAYS. The optional AI pass (`python monthly_review.py ai`, run by `eval-scan`
+# on the Mac only) sends the facts to the Codex CLI on the user's subscription in a READ-ONLY
+# sandbox and stores the answer as review_<date>.md. Report-only: it cannot change a rule; every
+# figure it quotes is checked against the facts file; its recommendations are recorded and
+# graded by later facts. This is the one permitted hosted-model role (CLAUDE.md, CORE PRINCIPLE).
+MONTHLY_REVIEW_DAYS = 30
+MONTHLY_REVIEW_MODEL = "gpt-6.1-sol"
+MONTHLY_REVIEW_EFFORT = "medium"
+MONTHLY_REVIEW_TIMEOUT_S = 1800
 # unified_backtest.py knobs (read via getattr; shown here for discoverability)
 UB_DEDUP_DAYS = 2               # mimic live dedup: one open trade per (symbol, direction)
 UB_MIN_HISTORY_DAYS = 60        # skip symbols with less closed history than this

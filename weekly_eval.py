@@ -460,6 +460,63 @@ def run_evaluation():
     # checks if previous insights helped, generates ACTION rules.
     maybe_run_delta_analysis(all_evals)
 
+    # --- Phase 5 (2026-10-16): lane stats for the brief's Engine View + monthly review facts ---
+    # Both pure Python, both best-effort: a failure here must never fail the eval.
+    try:
+        write_lane_stats(all_evals)
+    except Exception as e:
+        print(f"Lane stats: skipped ({e})")
+    try:
+        import monthly_review
+        monthly_review.maybe_write_facts(all_evals)
+    except Exception as e:
+        print(f"Monthly review facts: skipped ({e})")
+
+
+LANE_STATS_FILE = Path("logs/performance/lane_stats.json")
+
+
+def write_lane_stats(all_evals, now=None):
+    """Per-signal rolling record across ALL lanes (mechanical/watch/shadow), v2 era, for the
+    brief's Engine View (main._engine_view) and the monthly review. Informational — the book
+    counters in lifetime_stats are untouched (watch/shadow stay excluded there)."""
+    now = now or datetime.now(timezone.utc)
+    rows = []
+    for ev in all_evals:
+        ts = ev.get("run_timestamp_utc")
+        if not ts:
+            continue
+        for r in ev.get("results", []):
+            if (r.get("status") == "evaluated" and r.get("source") in ("mechanical", "watch", "shadow")
+                    and _v2_era(r, ts)):
+                rows.append((ts, r))
+    rows.sort(key=lambda x: x[0])
+
+    def st(rs):
+        n = len(rs)
+        if not n:
+            return {"n": 0, "prof_pct": None, "net": None}
+        k = sum(1 for r in rs if _profitable(r))
+        nets = [_managed_rr(r)[1] for r in rs]
+        return {"n": n, "prof_pct": round(100 * k / n, 1), "net": round(sum(nets) / n, 3)}
+
+    def _t(ts):
+        t = datetime.fromisoformat(ts)
+        return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+
+    d30 = now - timedelta(days=30)
+    by_sig = {}
+    for sig in sorted({r.get("signal_name") for _, r in rows if r.get("signal_name")}):
+        rs = [r for _, r in rows if r.get("signal_name") == sig]
+        recent = [r for ts, r in rows if r.get("signal_name") == sig and _t(ts) >= d30]
+        by_sig[sig] = {"all": st(rs), "last30": st(rs[-30:]), "d30": st(recent)}
+    out = {"generated_at": now.isoformat(), "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
+           "lanes": ["mechanical", "watch", "shadow"], "by_signal": by_sig,
+           "by_direction": {d: st([r for _, r in rows if r.get("direction") == d]) for d in ("short", "long")}}
+    LANE_STATS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    LANE_STATS_FILE.write_text(json.dumps(out, indent=2), encoding="utf-8")
+    return out
+
 
 def load_manual_trades():
     """Load the user's manual trade history from logs/trades/my_trades.json."""

@@ -553,6 +553,64 @@ def split_surfaced_shadow(candidates):
     return surfaced, shadow
 
 
+def _lane_stats():
+    """Per-signal live shadow-lane record written by weekly_eval.write_lane_stats (best-effort)."""
+    try:
+        return json.loads(Path("logs/performance/lane_stats.json").read_text(encoding="utf-8")).get("by_signal", {})
+    except Exception:
+        return {}
+
+
+def _engine_view(shadow_now, run_ts, max_items=None, lookback_min=None):
+    """Candidates for the brief's Engine View (user decision 2026-10-16): the best SHADOW rows
+    the engine produced recently — this run's, plus the ones persisted by other runs inside the
+    lookback (the 4h-close scan-keeper run is quiet, so the shadow rows it saves at close+2min
+    would otherwise never be seen; the next non-quiet run shows them). Informational only:
+    the rows stay source="shadow", below bar, excluded from the hit-rate book. Each item gets
+    `_issued_at` (HH:MM UTC of the run that produced it) and `_lane_live` (its rule's live
+    shadow record) for rendering; neither is persisted.
+    """
+    if not getattr(config, "ENGINE_VIEW_ENABLED", True):
+        return []
+    max_items = int(max_items or getattr(config, "ENGINE_VIEW_MAX", 2))
+    lookback = int(lookback_min or getattr(config, "ENGINE_VIEW_LOOKBACK_MIN", 150))
+    now_s = run_ts.timestamp()
+    cutoff = now_s - lookback * 60
+    pool = {}
+
+    def add(s, ts):
+        key = (s.get("symbol"), s.get("direction"), s.get("signal_name"))
+        if key in pool and pool[key][1] <= ts:
+            return  # keep the earliest copy (the run that actually caught the close)
+        pool[key] = (s, ts)
+
+    for s in shadow_now:
+        add(s, now_s)
+    try:
+        for f in Path("logs/setups").glob("setups_*.json"):
+            try:
+                rec = json.loads(f.read_text(encoding="utf-8"))
+                ts = datetime.fromisoformat(rec["run_timestamp_utc"]).timestamp()
+                if ts < cutoff or ts > now_s:
+                    continue
+                for s in rec.get("setups", []):
+                    if s.get("source") == "shadow":
+                        add(s, ts)
+            except Exception:
+                continue
+    except Exception:
+        pass
+    live = _lane_stats()
+    items = []
+    ranked = sorted(pool.values(), key=lambda x: (-(x[0].get("signal_expectancy") or 0.0), x[1]))
+    for s, ts in ranked[:max_items]:
+        s = dict(s)
+        s["_issued_at"] = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%H:%M UTC")
+        s["_lane_live"] = (live.get(s.get("signal_name")) or {}).get("last30") or {}
+        items.append(s)
+    return items
+
+
 async def run_screener():
     print(f"[{datetime.now()}] Starting screener run...")
     run_ts = datetime.now(timezone.utc)
@@ -680,7 +738,13 @@ async def run_screener():
     if deliver_mechanical:
         reason = "PRIMARY_SOURCE=mechanical" if config.PRIMARY_SOURCE == "mechanical" else "Claude unavailable"
         print(f"→ Delivering MECHANICAL brief ({reason})...")
-        clean_brief = format_mechanical_brief(mechanical, regime_label, watch=watch)
+        # Engine View (2026-10-16): best recent shadow candidates, labelled below-bar. Does not
+        # affect what is counted or whether a quiet run stays quiet.
+        engine_view = _engine_view(shadow, run_ts)
+        if engine_view:
+            print("  ENGINE VIEW (below bar, shown): "
+                  + ", ".join(f"{s.get('symbol', '?')} {s.get('signal_name', '?')}" for s in engine_view))
+        clean_brief = format_mechanical_brief(mechanical, regime_label, watch=watch, engine_view=engine_view)
     else:
         print("→ Delivering CLAUDE brief (shadow mode)...")
         clean_brief = strip_pre_analysis(strip_json_block(brief))

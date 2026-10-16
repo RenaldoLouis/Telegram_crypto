@@ -191,14 +191,46 @@ def _entry_line(s):
     return f"- Entry: at market now (signal bar closed; reference {_fmt_price(lo)} — {_fmt_price(hi)})"
 
 
-def format_mechanical_brief(setups, regime="neutral", watch=None):
+def _format_engine_view(items):
+    """Render the Engine View (2026-10-16): the best recent SHADOW candidates — rules that have
+    not passed the surfacing bar — with their measured numbers and an explicit label. Shown so
+    no day is blind; never a recommendation, never counted (source stays "shadow")."""
+    bar = (f"≥{getattr(config, 'SURFACE_MIN_HIT_RATE', 0.6) * 100:.0f}% profitable on "
+           f"≥{getattr(config, 'SURFACE_MIN_TEST_N', 30)} out-of-sample test trades")
+    lines = ["\n## 🔬 Engine View (below bar — NOT a recommendation, not counted)",
+             f"_What the engine saw but did not surface. Each rule below has not passed the bar ({bar}); "
+             "these rows are paper-tracked in the shadow lane. Levels are the engine's, numbers are measured._"]
+    for s in items:
+        direction = (s.get("direction") or "?").capitalize()
+        sig, tf = s.get("signal_name", "?"), s.get("signal_tf", "?")
+        fired = s.get("_issued_at")
+        exp, n = s.get("signal_expectancy"), s.get("signal_test_n")
+        bt = (f"backtest TEST {exp * 100:.0f}% (n={n})" if isinstance(exp, (int, float)) else "backtest: n/a")
+        live = s.get("_lane_live") or {}
+        if live.get("n"):
+            lv = f"live shadow last {live['n']}: {live['prof_pct']:.0f}% / {live['net']:+.2f}R"
+        else:
+            lv = "live shadow: no scored trades yet"
+        lines.append(f"\n**{s.get('symbol', '?')} | {direction} | `{sig}` ({tf})"
+                     + (f" · fired {fired}" if fired else "") + "**")
+        lines.append(_entry_line(s))
+        lines.append(f"- Stop {_fmt_price(s.get('stop_loss'))} · T1 {_fmt_price(s.get('target_1'))} · "
+                     f"T2 {_fmt_price(s.get('target_2'))}")
+        lines.append(f"- {bt} · {lv}")
+    return lines
+
+
+def format_mechanical_brief(setups, regime="neutral", watch=None, engine_view=None):
     """Render mechanically-constructed setups as a markdown brief in the same style
     as Claude's output, so send_brief() can deliver it unchanged. Pure formatting —
     no analysis. Used when PRIMARY_SOURCE == 'mechanical' or Claude failed.
 
     `watch` (optional) is the list of surfaced WATCH candidates (every gated candidate
     whose rule clears the surfacing bars; may be empty — an empty brief is valid).
+    `engine_view` (optional, 2026-10-16) is the list of best recent SHADOW candidates,
+    rendered under an explicit below-bar label (see main._engine_view).
     """
+    ev_lines = _format_engine_view(engine_view) if engine_view else []
     lines = ["## 📊 Market Context (mechanical engine)"]
     if not setups:
         if watch:
@@ -208,6 +240,7 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
                 "(no forced trade)."
             )
             lines.extend(_format_watch_block(watch))
+            lines.extend(ev_lines)
             lines.append("\n## 🧠 One-Line Takeaway")
             n_w = len(watch)
             lines.append(f"Nothing to EXECUTE — {n_w} candidate{'s' if n_w != 1 else ''} to WATCH "
@@ -217,8 +250,13 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
             f"Regime: **{regime}**. No backtest-validated signals fired this scan — "
             "0 setups. An empty scan is a valid outcome; no forced trades."
         )
+        lines.extend(ev_lines)
         lines.append("\n## 🧠 One-Line Takeaway")
-        lines.append("Nothing met the validated-signal bar. Stand aside.")
+        if ev_lines:
+            lines.append("Nothing met the validated-signal bar. Stand aside — the Engine View above is "
+                         "what the engine saw, not a trade.")
+        else:
+            lines.append("Nothing met the validated-signal bar. Stand aside.")
         return "\n".join(lines)
 
     lines.append(
@@ -252,6 +290,7 @@ def format_mechanical_brief(setups, regime="neutral", watch=None):
 
     lines.append("\n## ⚠️ Position Management")
     lines.append("- Take 50% at T1, move stop to breakeven. Once +1R, tighten stop to +0.3R and let the rest run to T2.")
+    lines.extend(ev_lines)
     lines.append("\n## 🧠 One-Line Takeaway")
     lines.append("These are mechanical, backtest-validated signals — you make the final call and place every order manually.")
     return "\n".join(lines)

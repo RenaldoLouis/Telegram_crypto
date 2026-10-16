@@ -117,9 +117,77 @@ def test_watch_gate_parity_keeps_low_confluence_fire():
     print("  ✓ test_watch_gate_parity_keeps_low_confluence_fire")
 
 
+def test_engine_view_renders_below_bar_label_and_stays_uncounted():
+    """Engine View (2026-10-16): shadow rows render under an explicit below-bar label with their
+    measured numbers; the WATCH/EXECUTE text and the shadow rows' source are untouched."""
+    prev = config.ENTRY_MODEL
+    config.ENTRY_MODEL = "limit_open"
+    try:
+        _, shadow = main.split_surfaced_shadow([_cand("DDD", "trend_pullback_short", 0.526, 152)])
+        item = dict(shadow[0]); item["signal_tf"] = "4h"; item["_issued_at"] = "04:02 UTC"
+        item["_lane_live"] = {"n": 26, "prof_pct": 53.8, "net": 0.011}
+        text = format_mechanical_brief([], "neutral", watch=[], engine_view=[item])
+        assert "Engine View (below bar — NOT a recommendation, not counted)" in text, text
+        assert "DDD | Short | `trend_pullback_short` (4h) · fired 04:02 UTC" in text
+        assert "backtest TEST 53% (n=152) · live shadow last 26: 54% / +0.01R" in text
+        assert "post-only LIMIT" in text and "Stand aside" in text
+        assert shadow[0]["source"] == "shadow"          # the persisted row is unchanged
+        # No engine view → the brief is byte-identical to before.
+        assert "Engine View" not in format_mechanical_brief([], "neutral", watch=[], engine_view=[])
+        # With a surfaced WATCH row the view is appended after the watch block, before the takeaway.
+        both = format_mechanical_brief([], "neutral", watch=[_cand("BBB", "range_reversion_short", 0.66, 41)],
+                                       engine_view=[item])
+        assert both.index("Watch Candidate") < both.index("Engine View") < both.index("One-Line Takeaway")
+    finally:
+        config.ENTRY_MODEL = prev
+    print("  ✓ test_engine_view_renders_below_bar_label_and_stays_uncounted")
+
+
+def test_engine_view_picks_recent_shadow_rows_across_runs():
+    """_engine_view merges this run's shadow rows with rows persisted by (quiet) runs inside the
+    lookback, keeps the earliest copy, ranks by backtest hit rate, caps at ENGINE_VIEW_MAX."""
+    import json, os, tempfile
+    from datetime import datetime, timedelta, timezone
+    now = datetime(2026, 10, 16, 6, 7, tzinfo=timezone.utc)
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as tmp:
+        os.chdir(tmp)
+        try:
+            os.makedirs("logs/setups")
+            def rec(ts, setups, tag):
+                json.dump({"run_timestamp_utc": ts.isoformat(), "run_tag": tag, "setups": setups},
+                          open(f"logs/setups/setups_{tag}.json", "w"))
+            keeper = now - timedelta(minutes=125)            # 04:02 UTC quiet keeper run
+            old = now - timedelta(minutes=400)               # outside the lookback
+            s_fb = dict(_cand("FBB", "failed_breakout_short", 0.545, 112)); s_fb["source"] = "shadow"
+            s_ls = dict(_cand("LSS", "liquidity_sweep_long", 0.51, 341, "long")); s_ls["source"] = "shadow"
+            s_old = dict(_cand("OLD", "range_reversion_long", 0.73, 11, "long")); s_old["source"] = "shadow"
+            w = dict(_cand("WWW", "range_reversion_short", 0.66, 41))            # watch row: never in the view
+            rec(keeper, [s_fb, s_ls, w], "20261016_0402")
+            rec(old, [s_old], "20261015_2327")
+            s_now = dict(_cand("FBB", "failed_breakout_short", 0.545, 112)); s_now["source"] = "shadow"
+            s_tp = dict(_cand("TPP", "trend_pullback_short", 0.526, 152)); s_tp["source"] = "shadow"
+            items = main._engine_view([s_now, s_tp], now, max_items=2, lookback_min=150)
+            syms = [i["symbol"] for i in items]
+            assert syms == ["FBB", "TPP"], syms                 # by hit rate: 0.545 > 0.526 > 0.51; OLD excluded
+            assert items[0]["_issued_at"] == "04:02 UTC"        # earliest copy of FBB wins (the keeper's)
+            assert "_lane_live" in items[0]
+            prev = config.ENGINE_VIEW_ENABLED
+            config.ENGINE_VIEW_ENABLED = False
+            try:
+                assert main._engine_view([s_now], now) == []
+            finally:
+                config.ENGINE_VIEW_ENABLED = prev
+        finally:
+            os.chdir(cwd)
+    print("  ✓ test_engine_view_picks_recent_shadow_rows_across_runs")
+
+
 if __name__ == "__main__":
     test_every_candidate_clearing_both_bars_is_surfaced()
     test_n_bar_disabled_when_zero()
     test_brief_renders_every_surfaced_watch_with_limit_entry()
     test_watch_gate_parity_keeps_low_confluence_fire()
-    print("All 4 surfacing tests passed.")
+    test_engine_view_renders_below_bar_label_and_stays_uncounted()
+    test_engine_view_picks_recent_shadow_rows_across_runs()
+    print("All 6 surfacing tests passed.")
