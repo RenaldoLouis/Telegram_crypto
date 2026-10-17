@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-10-17T20:29:28.279173+00:00",
+  "run_tag": "20261017_2029",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "EPICUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.26387185,
+      "entry_high": 0.27572815,
+      "stop_loss": 0.3290815,
+      "target_1": 0.2119,
+      "target_2": 0.151237,
+      "predicted_rr": 0.977,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 55.6, ADX 41.3, near EMA20"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.526,
+      "signal_test_n": 152,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 7,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 41.34,
+          "rsi": 55.63,
+          "macd": -0.029419,
+          "macd_hist": 0.011236,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.57,
+          "range_pct": 55.03
+        },
+        "tf_1h": {
+          "adx": 29.78,
+          "rsi": 46.4,
+          "macd": 0.01079,
+          "macd_hist": -0.001133,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.43,
+          "range_pct": 41.21
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
