@@ -1,0 +1,69 @@
+{
+  "run_timestamp_utc": "2026-10-17T17:01:02.074773+00:00",
+  "run_tag": "20261017_1701",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1
+  },
+  "setups": [
+    {
+      "symbol": "AKEUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.0288229,
+      "entry_high": 0.0290371,
+      "stop_loss": 0.02834462,
+      "target_1": 0.0294,
+      "target_2": 0.03010076,
+      "predicted_rr": 0.803,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 0.0288 low, RSI 35.7, ADX 12.4"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "risk_off",
+      "interest_score": 6.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 39.52,
+          "rsi": 49.84,
+          "macd": 0.000841,
+          "macd_hist": -0.000167,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.12,
+          "range_pct": 46.95
+        },
+        "tf_1h": {
+          "adx": 12.4,
+          "rsi": 35.69,
+          "macd": -0.000267,
+          "macd_hist": -0.000151,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.44,
+          "range_pct": 10.0
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}

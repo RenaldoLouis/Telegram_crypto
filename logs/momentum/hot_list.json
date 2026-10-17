@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-10-17T12:08:07.345460+00:00",
+  "generated_utc": "2026-10-17T17:01:00.290778+00:00",
   "market_regime": {
     "regime": "risk_off",
     "metrics": {
-      "pct_declining": 76.0,
-      "median_change_pct": -3.37,
-      "btc_change_pct": -1.03,
-      "avg_funding_pct": -0.0101,
-      "large_decline_count": 11
+      "pct_declining": 80.0,
+      "median_change_pct": -2.62,
+      "btc_change_pct": -0.18,
+      "avg_funding_pct": -0.0018,
+      "large_decline_count": 12
     },
-    "detected_utc": "2026-10-17T12:08:07.344731+00:00",
+    "detected_utc": "2026-10-17T17:01:00.290363+00:00",
     "previous_regime": "risk_off"
   },
   "coins": [
@@ -95,19 +95,19 @@
     },
     {
       "symbol": "DNAUSDT",
-      "flagged_utc": "2026-10-17T06:51:44.400535+00:00",
-      "expires_utc": "2026-10-19T06:51:44.400535+00:00",
+      "flagged_utc": "2026-10-17T17:01:00.290172+00:00",
+      "expires_utc": "2026-10-19T17:01:00.290172+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.2878,
-      "price_change_24h_pct": 37.3747,
-      "turnover_24h_usd": 46975712.5968,
-      "funding_rate_pct": -0.07635,
-      "open_interest": 5457442.0,
-      "volume_acceleration": 1.3888718280713914,
-      "price_acceleration_pct": -3.579900000000002
+      "last_price": 0.2614,
+      "price_change_24h_pct": -7.2391,
+      "turnover_24h_usd": 41645500.1454,
+      "funding_rate_pct": -0.13483499999999998,
+      "open_interest": 4985994.0,
+      "volume_acceleration": 0.75908667442662,
+      "price_acceleration_pct": 1.4269999999999996
     },
     {
       "symbol": "CLUSDT",
