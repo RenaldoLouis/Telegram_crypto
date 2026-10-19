@@ -154,6 +154,8 @@ main.py  (orchestrator, async)
   ├── cvd_backtest.py              → CVD/order-flow research on free Binance history (found the cvd_slope lead)
   ├── scalp_study.py               → 2026-10-19 pre-registered study on the unified model: 15m 1:1 / 1:1.5 scalp → FAIL
   │                                    (below a no-skill baseline); 12h hold cap + CPI/NFP/FOMC blackout → NO EFFECT
+  ├── trend_study.py               → 2026-10-19 pre-registered, judged on profit: daily breakout + 3×ATR trailing stop,
+  │                                    15 majors, 3 y → CANDIDATE (weak; random entries with the same exit do as well)
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/

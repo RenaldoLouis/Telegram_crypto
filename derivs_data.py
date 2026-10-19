@@ -32,8 +32,9 @@ def _cache_path(kind, symbol, days, extra=""):
     return CACHE_DIR / f"{symbol}_{kind}{extra}_{start_day}_{end_day}.json"
 
 
-def fetch_funding(client, symbol, days, skip_fetch=False):
-    """[(settlement_ts_ms, rate_fraction), ...] oldest first. rate 0.0001 = 0.01%."""
+def fetch_funding(client, symbol, days, skip_fetch=False, max_pages=40):
+    """[(settlement_ts_ms, rate_fraction), ...] oldest first. rate 0.0001 = 0.01%.
+    `max_pages` × 200 rows caps the history (40 pages ≈ 2.7 years at 8h settlements)."""
     cp = _cache_path("funding", symbol, days)
     if cp.exists():
         return [tuple(x) for x in json.loads(cp.read_text())]
@@ -43,12 +44,14 @@ def fetch_funding(client, symbol, days, skip_fetch=False):
     start = now - days * 86_400_000
     out = {}
     end = now
-    for _ in range(40):
+    failed = False
+    for _ in range(max_pages):
         try:
             res = client.get_funding_rate_history(category="linear", symbol=symbol,
                                                   startTime=start, endTime=end, limit=200)
         except Exception as e:
             print(f"    ! {symbol} funding fetch error: {e}")
+            failed = True
             break
         rows = res.get("result", {}).get("list", []) or []
         if not rows:
@@ -61,6 +64,9 @@ def fetch_funding(client, symbol, days, skip_fetch=False):
         end = oldest - 1
         time.sleep(0.1)
     data = sorted(out.items())
+    if failed:   # partial history: use it for this run, never cache it (same fix as unified_backtest)
+        print(f"    ! {symbol} funding: incomplete ({len(data)} rows) — not cached")
+        return data
     cp.write_text(json.dumps(data))
     return data
 
