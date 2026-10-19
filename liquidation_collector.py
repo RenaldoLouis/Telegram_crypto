@@ -58,7 +58,7 @@ def _handle(msg):
             lines.append(json.dumps({
                 "t": int(r.get("T") or recv_ms),   # event time (ms)
                 "sym": r.get("s"),
-                "side": r.get("S"),                  # Buy/Sell (close direction)
+                "side": r.get("S"),                  # position side: Buy = a LONG was liquidated (verified 2026-10-19)
                 "price": price,
                 "qty": qty,
                 "notional": round(price * qty, 2),

@@ -189,6 +189,9 @@ class BybitFetcher:
                 round(float((df.iloc[-i]["close"] - df.iloc[-i]["open"]) / df.iloc[-i]["open"] * 100), 2)
                 for i in [3, 2, 1]
             ],
+            # last CLOSED bar's range — on 1D that is yesterday's high/low (brief context, 2026-10-19)
+            "last_high": float(latest["high"]),
+            "last_low": float(latest["low"]),
         }
 
         # SMA 200 only included when enough candles (1D with 210 candles). Saves tokens on shorter TFs.

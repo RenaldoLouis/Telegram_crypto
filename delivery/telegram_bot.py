@@ -220,7 +220,151 @@ def _format_engine_view(items):
     return lines
 
 
-def format_mechanical_brief(setups, regime="neutral", watch=None, engine_view=None):
+def _usd(x):
+    if x is None:
+        return "n/a"
+    x = float(x)
+    if abs(x) >= 1e9:
+        return f"${x / 1e9:.1f}B"
+    if abs(x) >= 1e6:
+        return f"${x / 1e6:.1f}M"
+    if abs(x) >= 1e3:
+        return f"${x / 1e3:.0f}K"
+    return f"${x:.0f}"
+
+
+def _who_got_hit(long_usd, short_usd):
+    if long_usd + short_usd <= 0:
+        return "quiet"
+    if long_usd >= 2 * short_usd:
+        return "mostly longs wiped out"
+    if short_usd >= 2 * long_usd:
+        return "mostly shorts wiped out"
+    return "both sides"
+
+
+def _format_context(c, regime):
+    """BTC-first market section (2026-10-19). Description only — never a trade input."""
+    def pct(x, nd=1):
+        return f"{x:+.{nd}f}%" if isinstance(x, (int, float)) else "n/a"
+    lines = ["## 📈 Market — BTC first"]
+    trend = f"daily {c.get('trend_1d') or 'n/a'}, 4h {c.get('trend_4h') or 'n/a'}"
+    rsi = c.get("rsi_1d")
+    adx = c.get("adx_1d")
+    lines.append(f"- **BTC {_fmt_price(c.get('price'))}** ({pct(c.get('chg_24h'))} 24h) · trend: {trend}"
+                 + (f" · daily RSI {rsi:.0f}" if isinstance(rsi, (int, float)) else "")
+                 + (f", ADX {adx:.0f}" if isinstance(adx, (int, float)) else ""))
+    vr = c.get("vol_ratio_1d")
+    lines.append("- Volume: " + (f"yesterday {vr:.1f}× its 20-day average" if isinstance(vr, (int, float)) else "n/a")
+                 + f" · 24h turnover {_usd(c.get('turnover_24h'))}")
+    fp = c.get("funding_pct")
+    lines.append("- Leverage: funding " + (f"{fp:+.4f}%/8h" if isinstance(fp, (int, float)) else "n/a")
+                 + f" · open interest {pct(c.get('oi_chg_24h'))} (24h)")
+    cov = c.get("liq_hours_covered") or 0
+    if cov:
+        lg, sh = c.get("liq_long_24h") or 0.0, c.get("liq_short_24h") or 0.0
+        verdict = _who_got_hit(lg, sh) if cov >= 12 else "partial data, no verdict yet"
+        nc = c.get("liq_coins", 0)
+        lines.append(f"- Liquidations, last 24h ({nc} coin{'s' if nc != 1 else ''} with prints, "
+                     f"feed up {cov}/24 h): longs {_usd(lg)} · shorts {_usd(sh)} → {verdict} · "
+                     f"BTC longs {_usd(c.get('liq_btc_long_24h'))} / shorts {_usd(c.get('liq_btc_short_24h'))} · "
+                     f"last 4h longs {_usd(c.get('liq_long_4h'))} / shorts {_usd(c.get('liq_short_4h'))}")
+    else:
+        lines.append("- Liquidations: no feed data in the last 24h yet")
+    if c.get("prev_high") is not None:
+        lines.append(f"- Levels: yesterday H {_fmt_price(c.get('prev_high'))} / L {_fmt_price(c.get('prev_low'))}"
+                     + (f" · 20-day range {_fmt_price(c.get('low_20d'))} – {_fmt_price(c.get('high_20d'))}"
+                        if c.get("high_20d") is not None else ""))
+    pdcl = c.get("pct_declining")
+    lines.append("- Breadth: " + (f"{pdcl:.0f}% of coins down (median {pct(c.get('median_chg'))})"
+                                  if isinstance(pdcl, (int, float)) else "n/a")
+                 + f" · regime: **{c.get('regime') or regime}**")
+    return lines
+
+
+def _trial_label():
+    """'paper trial day N of D' for the daily book (config.DAILY_TRIAL_*), or None."""
+    try:
+        from datetime import date, datetime, timezone
+        start = date.fromisoformat(getattr(config, "DAILY_TRIAL_START", ""))
+        days = int(getattr(config, "DAILY_TRIAL_DAYS", 14))
+        n = (datetime.now(timezone.utc).date() - start).days + 1
+    except Exception:
+        return None
+    if n < 1:
+        return None
+    if n <= days:
+        return f"paper trial, day {n} of {days}"
+    return "paper trial over — real-money decision is yours"
+
+
+def _format_pick(p):
+    direction = (p.get("direction") or "?").capitalize()
+    cap = getattr(config, "DAILY_PICKS_MAX", 3)
+    lines = [f"\n### {p.get('symbol', '?')} | {direction} | `{p.get('signal_name', '?')}` "
+             f"({p.get('signal_tf', '?')}) — pick {p.get('daily_pick_seq', '?')} of {cap} today"]
+    lines.append(_entry_line(p))
+    pr, t2rr = p.get("predicted_rr"), _t2_rr(p)
+    lines.append(f"- Stop loss: {_fmt_price(p.get('stop_loss'))}")
+    lines.append(f"- Target 1: {_fmt_price(p.get('target_1'))}"
+                 + (f" ({pr:.2f}R)" if isinstance(pr, (int, float)) else "") + " — take 50%")
+    lines.append(f"- Target 2: {_fmt_price(p.get('target_2'))}"
+                 + (f" ({t2rr:.2f}R)" if t2rr is not None else ""))
+    exp, n = p.get("signal_expectancy"), p.get("signal_test_n")
+    rec = (f"backtest {exp * 100:.0f}% profitable (n={n})" if isinstance(exp, (int, float)) else "backtest n/a")
+    live = p.get("_lane_live") or {}
+    if live.get("n"):
+        rec += f" · live last {live['n']}: {live['prof_pct']:.0f}% / {live['net']:+.2f}R"
+    lines.append(f"- Record: {rec}")
+    kf = (p.get("reasoning") or {}).get("key_factor")
+    if kf:
+        lines.append(f"- Why: {kf}")
+    if p.get("source") == "watch":
+        lines.append("- This is forward test #1's rule — it counts there too.")
+    return lines
+
+
+def _format_daily_brief(setups, regime, watch, engine_view, daily, earlier, context):
+    """Daily trader brief (2026-10-19): BTC context, today's picks, then the legacy lanes."""
+    cap = getattr(config, "DAILY_PICKS_MAX", 3)
+    lines = _format_context(context, regime) if context else [f"## 📈 Market\nRegime: **{regime}**."]
+    trial = _trial_label()
+    lines.append(f"\n## 🎯 Today's Trades" + (f" ({trial})" if trial else ""))
+    for p in daily:
+        lines.extend(_format_pick(p))
+    if not daily:
+        lines.append("No new pick this scan." if earlier else
+                     "No setup has cleared the engine's gates yet today — no forced trade.")
+    if earlier:
+        lines.append("\n**Earlier today:** " + "; ".join(
+            f"{e.get('symbol', '?')} {e.get('direction', '?')} via `{e.get('signal_name', '?')}` "
+            f"({e.get('_issued_at', '?')})" for e in earlier))
+    lines.append(f"_{len(earlier) + len(daily)} of {cap} picks used today (UTC day). Every pick is scored "
+                 "automatically and judged in Monday's weekly review._")
+    if setups:
+        lines.append("\n## 🏆 Validated Setups")
+        for s in setups:
+            lines.extend(_format_pick(dict(s, daily_pick_seq="—")))
+    watch_show = [w for w in (watch or []) if not w.get("daily_pick")]
+    if watch_show:
+        lines.extend(_format_watch_block(watch_show))
+    if engine_view:
+        lines.extend(_format_engine_view(engine_view))
+    if daily or setups or watch_show:
+        lines.append("\n## ⚠️ Position Management")
+        lines.append("- Take 50% at T1, move the stop to breakeven. Once +1R, tighten the stop to +0.3R "
+                     "and let the rest run to T2. Paper: risk 0.5% of the account per trade.")
+    lines.append("\n## 🧠 One-Line Takeaway")
+    if daily:
+        lines.append("Record these as paper trades. The system scores every pick; Monday's review "
+                     "decides what stays.")
+    else:
+        lines.append("Nothing new to take this scan.")
+    return "\n".join(lines)
+
+
+def format_mechanical_brief(setups, regime="neutral", watch=None, engine_view=None,
+                            daily=None, earlier=None, context=None):
     """Render mechanically-constructed setups as a markdown brief in the same style
     as Claude's output, so send_brief() can deliver it unchanged. Pure formatting —
     no analysis. Used when PRIMARY_SOURCE == 'mechanical' or Claude failed.
@@ -229,7 +373,12 @@ def format_mechanical_brief(setups, regime="neutral", watch=None, engine_view=No
     whose rule clears the surfacing bars; may be empty — an empty brief is valid).
     `engine_view` (optional, 2026-10-16) is the list of best recent SHADOW candidates,
     rendered under an explicit below-bar label (see main._engine_view).
+    `daily` (2026-10-19): when given (a list, possibly empty) the brief is the daily trader
+    layout — BTC `context` first, this scan's daily-book picks, `earlier` picks of the day.
+    When None the legacy layout below is produced unchanged.
     """
+    if daily is not None:
+        return _format_daily_brief(setups, regime, watch, engine_view, daily, earlier or [], context)
     ev_lines = _format_engine_view(engine_view) if engine_view else []
     lines = ["## 📊 Market Context (mechanical engine)"]
     if not setups:

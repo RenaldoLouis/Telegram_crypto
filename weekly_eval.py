@@ -405,6 +405,10 @@ def run_evaluation():
                 # "observation"; Claude-lane setups have none). Fixed 2026-09-10:
                 # this was never copied, so the watch table showed one "(unknown)" row.
                 result["signal_name"] = setup.get("signal_name")
+                # Daily trader book (2026-10-19): the weekly review keys on this flag.
+                if setup.get("daily_pick"):
+                    result["daily_pick"] = True
+                    result["daily_pick_seq"] = setup.get("daily_pick_seq")
                 eval_results.append(result)
 
                 status = result["status"]

@@ -11,6 +11,8 @@ from fetchers.telegram_reader import TelegramReader
 from analyzer.claude_client import ClaudeAnalyzer
 from delivery.telegram_bot import send_brief, format_mechanical_brief
 from mechanical_setups import build_mechanical_setups
+import market_context
+import mechanical_setups as ms
 import signal_levels as sl
 
 
@@ -611,6 +613,65 @@ def _engine_view(shadow_now, run_ts, max_items=None, lookback_min=None):
     return items
 
 
+def _daily_priority():
+    """Signal order for the daily book, FIXED from the 2026-09-23 backtest table (same order as
+    monthly_review.daily_pick_study): rules resting on >= SURFACE_MIN_TEST_N test trades first,
+    by TEST hit rate, then the thin-sample ones."""
+    min_n = int(getattr(config, "SURFACE_MIN_TEST_N", 30) or 0)
+    pri = {}
+    for (sig, _tf), _hit in sorted(ms.EXPECTANCY.items(),
+                                   key=lambda kv: ((ms.TEST_N.get(kv[0]) or 0) < min_n, -kv[1])):
+        pri.setdefault(sig, len(pri))
+    return pri
+
+
+def _daily_picks_today(run_ts):
+    """Daily-book picks already persisted today (UTC day of `run_ts`), oldest first, each with
+    `_issued_at`. Best-effort: unreadable files are skipped."""
+    day = run_ts.date()
+    picks = []
+    for f in Path("logs/setups").glob("setups_*.json"):
+        try:
+            rec = json.loads(f.read_text(encoding="utf-8"))
+            ts = datetime.fromisoformat(rec["run_timestamp_utc"])
+            if ts.date() != day or ts > run_ts:
+                continue
+            for s in rec.get("setups", []):
+                if s.get("daily_pick"):
+                    picks.append(dict(s, _issued_at=ts.strftime("%H:%M UTC"), _ts=ts.timestamp()))
+        except Exception:
+            continue
+    return sorted(picks, key=lambda s: s["_ts"])
+
+
+def select_daily_picks(candidates, already):
+    """Daily trader book (user decision 2026-10-19): take up to DAILY_PICKS_MAX per UTC day from
+    this scan's gated candidates (watch + shadow), first come first served across the day, in the
+    fixed signal priority within a scan, one per coin per day, only DAILY_DIRECTIONS and not
+    DAILY_DISABLED_SIGNALS. Flags the chosen candidate dicts in place (`daily_pick`,
+    `daily_pick_seq`); their `source` is unchanged. Returns the picks."""
+    if not getattr(config, "DAILY_BOOK_ENABLED", False):
+        return []
+    room = int(getattr(config, "DAILY_PICKS_MAX", 3)) - len(already)
+    if room <= 0:
+        return []
+    taken = {p.get("symbol") for p in already}
+    dirs = set(getattr(config, "DAILY_DIRECTIONS", ("long", "short")))
+    off = set(getattr(config, "DAILY_DISABLED_SIGNALS", ()))
+    pri = _daily_priority()
+    picks = []
+    for c in sorted(candidates, key=lambda c: (pri.get(c.get("signal_name"), 99), c.get("rank") or 99)):
+        if len(picks) >= room:
+            break
+        if c.get("direction") not in dirs or c.get("signal_name") in off or c.get("symbol") in taken:
+            continue
+        c["daily_pick"] = True
+        c["daily_pick_seq"] = len(already) + len(picks) + 1
+        taken.add(c.get("symbol"))
+        picks.append(c)
+    return picks
+
+
 async def run_screener():
     print(f"[{datetime.now()}] Starting screener run...")
     run_ts = datetime.now(timezone.utc)
@@ -710,6 +771,14 @@ async def run_screener():
             print(f"  SHADOW (logged, not shown): "
                   + ", ".join(f"{s.get('symbol','?')} {s.get('signal_name','?')}" for s in shadow))
 
+    # 3d. Daily trader book (2026-10-19): up to DAILY_PICKS_MAX of the gated candidates per day,
+    # shown as trades and judged by the Monday weekly review. Flags rows in watch/shadow in place.
+    earlier = _daily_picks_today(run_ts)
+    daily = select_daily_picks(watch + shadow, earlier)
+    for p in daily:
+        print(f"  DAILY PICK {p['daily_pick_seq']}/{getattr(config, 'DAILY_PICKS_MAX', 3)}: "
+              f"{p.get('symbol', '?')} {p.get('direction', '?')} via {p.get('signal_name', '?')}")
+
     # 4. Persist ALL lanes to one file, each tagged `source` (head-to-head data).
     all_setups = mechanical + claude_setups + watch + shadow
     if all_setups:
@@ -723,7 +792,7 @@ async def run_screener():
             "primary_source": config.PRIMARY_SOURCE,
             "regime": regime_label,
             "sources": {"mechanical": len(mechanical), "claude": len(claude_setups),
-                        "watch": len(watch), "shadow": len(shadow)},
+                        "watch": len(watch), "shadow": len(shadow), "daily_picks": len(daily)},
             "setups": all_setups,
         }
         setup_file = setups_dir / f"setups_{run_tag}.json"
@@ -744,7 +813,16 @@ async def run_screener():
         if engine_view:
             print("  ENGINE VIEW (below bar, shown): "
                   + ", ".join(f"{s.get('symbol', '?')} {s.get('signal_name', '?')}" for s in engine_view))
-        clean_brief = format_mechanical_brief(mechanical, regime_label, watch=watch, engine_view=engine_view)
+        try:
+            context = market_context.build(market, bybit)
+        except Exception as e:
+            print(f"  ⚠ market context failed ({type(e).__name__}: {e}) — brief without it")
+            context = None
+        live = _lane_stats()
+        daily_view = [dict(p, _lane_live=(live.get(p.get("signal_name")) or {}).get("last30") or {})
+                      for p in daily]
+        clean_brief = format_mechanical_brief(mechanical, regime_label, watch=watch, engine_view=engine_view,
+                                              daily=daily_view, earlier=earlier, context=context)
     else:
         print("→ Delivering CLAUDE brief (shadow mode)...")
         clean_brief = strip_pre_analysis(strip_json_block(brief))
@@ -752,8 +830,13 @@ async def run_screener():
     # 6. Archive + deliver. SCAN_QUIET_IF_EMPTY=1 (set only on the CI 4h-close RETRY
     # runs, 2026-09-23): when nothing was surfaced, skip the archive + Telegram send so the
     # extra runs that exist purely to catch a 4h close inside the freshness window do not
-    # produce ~18 empty briefs a day. A run that surfaces something behaves normally.
-    if os.environ.get("SCAN_QUIET_IF_EMPTY") == "1" and not mechanical and not watch:
+    # produce ~18 empty briefs a day. A run that surfaces something behaves normally, and so
+    # does the first scan after the daily close (the morning brief, 2026-10-19).
+    mh = getattr(config, "DAILY_MORNING_BRIEF_UTC_HOUR", 0)
+    morning = (run_ts.hour == mh and mh is not None   # once: the backup retry scans share the hour
+               and not any(Path("logs/briefs").glob(f"brief_{run_ts:%Y%m%d}_{mh:02d}*.md")))
+    if (os.environ.get("SCAN_QUIET_IF_EMPTY") == "1" and not mechanical and not watch
+            and not daily and not morning):
         print("  Quiet run (SCAN_QUIET_IF_EMPTY=1): nothing surfaced — no archive, no Telegram.")
         print(f"[{datetime.now()}] Done.\n")
         return

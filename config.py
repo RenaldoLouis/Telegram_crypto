@@ -84,9 +84,34 @@ RANGE_REVERSION_SHORT_MIN_VOL_SPIKE = 1.5
 # and a quiet run (SCAN_QUIET_IF_EMPTY=1) stays quiet. Tested 2026-10-16: posting the best
 # candidate every day = 54.5% / -0.112R on backtest TEST and 68.8% / +0.001R live (n=16) —
 # breakeven, which is why it is a view and not a lane.
-ENGINE_VIEW_ENABLED = True
+# Superseded 2026-10-19 by the daily trader book below (its picks ARE the engine's best
+# candidates, shown as trades); kept switchable.
+ENGINE_VIEW_ENABLED = False
 ENGINE_VIEW_MAX = 2            # candidates shown
 ENGINE_VIEW_LOOKBACK_MIN = 150  # include shadow rows persisted by (quiet) runs this recent
+# ---- Daily trader book (user decision 2026-10-19) ----
+# "A trader for a living trades every day and reviews every week." Each UTC day the scan takes
+# up to DAILY_PICKS_MAX of the gated candidates (watch + shadow), first come first served across
+# the day's 4h scans, ordered within a scan by the fixed backtest priority, one per coin per day.
+# Picks are flagged `daily_pick` (source unchanged, so forward test #1 and every lane readout
+# are untouched), shown as trades in the brief, scored like everything else, and judged by the
+# Monday weekly review (weekly_review.py). Paper trial: DAILY_TRIAL_DAYS from DAILY_TRIAL_START,
+# then the user decides on real size. The weekly review recommends cutting a direction or a
+# signal once it has >= DAILY_CUT_MIN_TRADES scored picks with net < 0; a cut is applied here.
+# Measured before shipping (live v2 data 09-23 → 10-17, first-come): 49 picks, 61.2% / -0.018R
+# (shorts 66.7% / +0.154R, longs 52.6% / -0.290R).
+DAILY_BOOK_ENABLED = True
+DAILY_PICKS_MAX = 3
+DAILY_DIRECTIONS = ("long", "short")   # user: both, the weekly review decides
+DAILY_DISABLED_SIGNALS = ()
+DAILY_TRIAL_START = "2026-10-19"
+DAILY_TRIAL_DAYS = 14
+DAILY_CUT_MIN_TRADES = 20
+DAILY_MORNING_BRIEF_UTC_HOUR = 0       # first scan after the daily close always delivers (07:00 WIB); None = off
+# BTC / market context section of the brief. Liquidations come from liquidation_collector.py
+# (run inside the scan keeper) summarised hourly by liq_summary.py into this committed file.
+LIQ_SUMMARY_PATH = "logs/market/liq_hourly.json"
+LIQ_SUMMARY_KEEP_HOURS = 48
 # ---- Monthly strategy review (2026-10-16) ----
 # weekly_eval.py writes logs/performance/monthly/facts_<date>.{json,md} (pure Python) once every
 # MONTHLY_REVIEW_DAYS. The optional AI pass (`python monthly_review.py ai`, run by `eval-scan`

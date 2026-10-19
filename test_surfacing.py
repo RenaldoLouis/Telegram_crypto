@@ -150,6 +150,8 @@ def test_engine_view_picks_recent_shadow_rows_across_runs():
     from datetime import datetime, timedelta, timezone
     now = datetime(2026, 10, 16, 6, 7, tzinfo=timezone.utc)
     cwd = os.getcwd()
+    enabled = config.ENGINE_VIEW_ENABLED     # off by default since the daily book (2026-10-19)
+    config.ENGINE_VIEW_ENABLED = True
     with tempfile.TemporaryDirectory() as tmp:
         os.chdir(tmp)
         try:
@@ -180,6 +182,7 @@ def test_engine_view_picks_recent_shadow_rows_across_runs():
                 config.ENGINE_VIEW_ENABLED = prev
         finally:
             os.chdir(cwd)
+            config.ENGINE_VIEW_ENABLED = enabled
     print("  ✓ test_engine_view_picks_recent_shadow_rows_across_runs")
 
 
