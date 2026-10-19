@@ -94,12 +94,14 @@ def fetch_closed_klines(client, symbol, interval, days, skip_fetch=False):
     # Bybit answers a start/end window with the NEWEST `limit` bars, so page backwards.
     cursor_end = now
     pages = 0
+    failed = False
     while cursor_end > start_ms and pages < 80:
         try:
             res = client.get_kline(category="linear", symbol=symbol, interval=interval,
                                    start=start_ms, end=cursor_end, limit=1000)
         except Exception as e:
             print(f"    ! {symbol} {interval} fetch error: {e}")
+            failed = True
             break
         rows = res.get("result", {}).get("list", []) or []
         if not rows:
@@ -121,6 +123,11 @@ def fetch_closed_klines(client, symbol, interval, days, skip_fetch=False):
     for r in out:
         by_ts[int(r[0])] = r
     dedup = [by_ts[k] for k in sorted(by_ts)]
+    # A failed page means an empty or truncated series: use it for this run, never cache it
+    # (2026-10-19: a VPN drop cached empty files and they were read back as "no history").
+    if failed:
+        print(f"    ! {symbol} {interval}: incomplete ({len(dedup)} bars) — not cached")
+        return dedup
     cp.write_text(json.dumps(dedup))
     return dedup
 
@@ -346,9 +353,11 @@ def sim_trade(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
     return sim_trade_market(t, t1_r, stop_scale, t2_r, trail)
 
 
-def sim_trade_limit(t, offset_atr, wait_bars, t1_r=DEFAULT_T1_R, t2_r=None, trail=True, stop_scale=1.0):
+def sim_trade_limit(t, offset_atr, wait_bars, t1_r=DEFAULT_T1_R, t2_r=None, trail=True, stop_scale=1.0,
+                    max_candles=None):
     """Passive-entry variant of sim_trade: limit at next open ∓ offset×ATR, filled only if
-    traded through within wait_bars; maker fees on entry + take-profits."""
+    traded through within wait_bars; maker fees on entry + take-profits. `max_candles` caps
+    the hold (15m bars after the fill; None = the whole forward window)."""
     entry, direction = t["entry"], t["direction"]
     t2r = t["target_r"] if t2_r is None else t2_r
     # levels are defined from the LIMIT price so R stays comparable
@@ -363,7 +372,7 @@ def sim_trade_limit(t, offset_atr, wait_bars, t1_r=DEFAULT_T1_R, t2_r=None, trai
     t2 = lim + t2r * risk if direction == "long" else lim - t2r * risk
     return ts.simulate_limit(t["_fwd"], direction, stop, t1, t2, atr=t["atr"],
                              limit_offset_atr=offset_atr, limit_wait_bars=wait_bars,
-                             candle_minutes=15, trail=trail)
+                             max_candles=max_candles, candle_minutes=15, trail=trail)
 
 
 FILL_GRID = list(product([0.0, 0.15, 0.3], [2, 4, 8]))

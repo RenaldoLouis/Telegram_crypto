@@ -152,6 +152,8 @@ main.py  (orchestrator, async)
   ├── liq_cluster_backtest.py      → Fork A harness: distance-to-liq-cluster vs outcome, chrono train/test
   ├── liq_cluster_deep_dive.py     → Fork A robustness slices (per-symbol/direction/month/coverage/alt splits)
   ├── cvd_backtest.py              → CVD/order-flow research on free Binance history (found the cvd_slope lead)
+  ├── scalp_study.py               → 2026-10-19 pre-registered study on the unified model: 15m 1:1 / 1:1.5 scalp → FAIL
+  │                                    (below a no-skill baseline); 12h hold cap + CPI/NFP/FOMC blackout → NO EFFECT
   │
   ├── knowledge/*.md               → 9 trading knowledge files (01–08 + trading_rules)
   └── logs/
@@ -334,6 +336,10 @@ python cvd_backtest.py --interval 4h --months 24 --deep   # --deep = absorption 
 # 2026-10-16) and the VPN for klines. Universe = the CVD symbols; report → logs/backtest_reports/unified_<date>_cvd.md
 python unified_backtest.py --cvd --days 75 --no-derivs
 python test_cvd_data.py
+
+# Scalp / hold-time study (2026-10-19, CLOSED — kept for reference). Pre-registration:
+# logs/backtest_reports/prereg_scalp_study_20261019.md → report scalp_study_<date>.md
+python scalp_study.py [--skip-fetch]
 
 # XS momentum paper test (normally the Monday CI job; run manually to inspect — idempotent)
 python xs_momentum_paper.py rebalance        # this Monday's paper weights → logs/xs_momentum/
