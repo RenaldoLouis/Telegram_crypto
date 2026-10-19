@@ -3,7 +3,7 @@
   "run_timestamp_utc": "2026-10-17T00:19:35.298472+00:00",
   "model": "claude-sonnet-4-6",
   "regime": "cautious",
-  "evaluated_at_utc": "2026-10-18T09:16:55.662961+00:00",
+  "evaluated_at_utc": "2026-10-19T02:35:00.367127+00:00",
   "results": [
     {
       "status": "evaluated",
@@ -52,6 +52,54 @@
       "source": "shadow",
       "backtested_signal": "liquidity_sweep_long",
       "signal_name": "liquidity_sweep_long"
+    },
+    {
+      "status": "evaluated",
+      "entry_model": "limit_open",
+      "fee_model": "maker_entry",
+      "fill_bar": 0,
+      "entry_triggered": true,
+      "entry_price": 137.45,
+      "exit_price": 128.985714,
+      "exit_reason": "stop_loss",
+      "target_1_hit": false,
+      "target_2_hit": false,
+      "stop_hit": true,
+      "be_stop_hit": false,
+      "trail_stop_hit": false,
+      "actual_rr": -1.0,
+      "blended_rr": -1.0,
+      "won": false,
+      "max_favorable_rr": 0.1,
+      "max_adverse_rr": -1.09,
+      "candles_to_exit": 84,
+      "hold_minutes": 1260,
+      "risk_pct": 0.061581,
+      "sim_t1_075r_hit": false,
+      "sim_t1_100r_hit": false,
+      "cost_rr": 0.0213,
+      "net_rr": -1.021,
+      "net_blended_rr": -1.021,
+      "won_net": false,
+      "profitable": false,
+      "eval_engine": "v2_market_open",
+      "symbol": "SKHYUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.976,
+      "tf_confluence": 1,
+      "rank": 6,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "source": "shadow",
+      "backtested_signal": "rsi_bounce_long",
+      "signal_name": "rsi_bounce_long"
     }
   ]
 }
