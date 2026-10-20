@@ -10,6 +10,7 @@ import tempfile
 from datetime import date, datetime, timezone
 from pathlib import Path
 
+import carry_monitor
 import config
 import liq_summary
 import main
@@ -155,6 +156,37 @@ def test_weekly_review_statuses_stats_and_cut_rule():
     print("  ✓ test_weekly_review_statuses_stats_and_cut_rule")
 
 
+def test_carry_line():
+    day = carry_monitor.DAY_MS
+    now = int(datetime(2026, 10, 20, tzinfo=timezone.utc).timestamp() * 1000)
+    rows = [(now - i * day // 3, 0.0001) for i in range(90)]               # 0.01% every 8h for 30 days
+    assert carry_monitor.funding_apr(rows, now, 30) == 10.95
+    assert carry_monitor.funding_apr(rows, now, 7) == 10.95
+    assert carry_monitor.funding_apr([], now, 7) is None
+    ms = lambda y, m, d: int(datetime(y, m, d, 8, tzinfo=timezone.utc).timestamp() * 1000)
+    inst = [{"symbol": "BTCUSDT-23OCT26", "contractType": "LinearFutures", "baseCoin": "BTC", "quoteCoin": "USDT", "deliveryTime": ms(2026, 10, 23)},
+            {"symbol": "BTCUSDT-27NOV26", "contractType": "LinearFutures", "baseCoin": "BTC", "quoteCoin": "USDT", "deliveryTime": ms(2026, 11, 27)},
+            {"symbol": "BTCUSDT-26MAR27", "contractType": "LinearFutures", "baseCoin": "BTC", "quoteCoin": "USDT", "deliveryTime": ms(2027, 3, 26)},
+            {"symbol": "BTCUSDT-25DEC26", "contractType": "LinearFutures", "baseCoin": "BTC", "quoteCoin": "USDT", "deliveryTime": ms(2026, 12, 25)},
+            {"symbol": "BTCUSD", "contractType": "InversePerpetual", "baseCoin": "BTC", "quoteCoin": "USD", "deliveryTime": 0}]
+    assert carry_monitor.next_quarterly(inst, "BTC", now)[0] == "BTCUSDT-25DEC26"   # monthly + < 30 days skipped
+    assert carry_monitor.basis_apr(101.0, 100.0, now + 73 * day, now) == 5.0
+    data = {"funding": {"BTCUSDT": {"apr_7d": 2.1, "apr_30d": 2.6}, "ETHUSDT": None},
+            "quarterly": {"BTC": {"symbol": "BTCUSDT-25DEC26", "days": 66, "apr": 5.6, "turnover_24h": 8e5}, "ETH": None}}
+    md, _ = weekly_review.build(date(2026, 10, 19), [], today=date(2026, 10, 26), carry=data)
+    assert "BTC perp funding paid to shorts, a year: last 7 days 2.1% · last 30 days 2.6%" in md, md
+    assert "ETH perp funding: n/a" in md and "ETH quarterly: n/a" in md
+    assert "`BTCUSDT-25DEC26` (66 days to expiry): basis 5.6% a year" in md and "thin, use limit orders" in md
+    assert "≈ 6 weeks of BTC's 30-day funding" in md                       # 0.31% / (2.6%/52)
+    assert md.index("Keep or cut") < md.index("## Carry") < md.index("Picks this week")
+    assert "## Carry" in weekly_review.telegram_text(md)
+    md0, _ = weekly_review.build(date(2026, 10, 19), [], today=date(2026, 10, 26), carry=None)
+    assert "Data unavailable this week" in md0
+    neg = dict(data, funding={"BTCUSDT": {"apr_7d": -1.0, "apr_30d": -0.5}})
+    assert "BTC funding is negative" in "\n".join(carry_monitor.format_lines(neg))
+    print("  ✓ test_carry_line")
+
+
 def test_daily_brief_layout():
     ctx = {"price": 67234.5, "chg_24h": 1.23, "turnover_24h": 5.2e9, "funding_pct": 0.01, "oi_chg_24h": 2.1,
            "trend_1d": "bullish", "trend_4h": "bearish", "rsi_1d": 54.2, "adx_1d": 21.0, "vol_ratio_1d": 1.3,
@@ -190,5 +222,6 @@ if __name__ == "__main__":
     test_daily_picks_today_reads_only_todays_flagged_rows()
     test_liq_summary_side_merge_prune_and_window()
     test_weekly_review_statuses_stats_and_cut_rule()
+    test_carry_line()
     test_daily_brief_layout()
-    print("All 5 daily-book tests passed.")
+    print("All 6 daily-book tests passed.")

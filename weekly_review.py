@@ -11,6 +11,8 @@ Telegram version. It reads only the daily-book picks (`daily_pick` on the setup/
   * the rule fixed 2026-10-19: a direction or setup with >= DAILY_CUT_MIN_TRADES scored picks and
     net < 0 is flagged CUT. The review RECOMMENDS; the cut itself is one line in config.py
     (DAILY_DIRECTIONS / DAILY_DISABLED_SIGNALS) so the system never rewrites its own rules.
+  * the carry line (`carry_monitor.py`, 2026-10-20): what BTC/ETH cash-and-carry pays on Bybit now
+    (description only — the one Bybit fetch in this script; the review still saves if it fails).
 
 Pure Python, zero Claude, no order API.
 
@@ -26,6 +28,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+import carry_monitor
 import config
 import monthly_review as mr
 
@@ -97,7 +100,7 @@ def cut_flags(rows, min_n=None):
     return out
 
 
-def build(week_monday, picks, today=None):
+def build(week_monday, picks, today=None, carry=None):
     today = today or datetime.now(timezone.utc).date()
     week_end = week_monday + timedelta(days=6)
     start = date.fromisoformat(getattr(config, "DAILY_TRIAL_START", week_monday.isoformat()))
@@ -157,6 +160,9 @@ def build(week_monday, picks, today=None):
     else:
         L.append("\nNo cut this week.")
 
+    L.append("")
+    L.extend(carry_monitor.format_lines(carry))
+
     L.append("\n## Picks this week")
     L.append("| when (UTC) | coin | side | setup | status | net R |")
     L.append("|---|---|---|---|---|---|")
@@ -172,7 +178,8 @@ def telegram_text(md):
     keep = []
     for block in md.split("\n## "):
         head = block.split("\n", 1)[0]
-        if block.startswith("# ") or head in ("This week", "Trial so far") or head.startswith("Keep or cut"):
+        if (block.startswith("# ") or head in ("This week", "Trial so far") or head.startswith("Keep or cut")
+                or head.startswith("Carry")):
             keep.append(block if block.startswith("# ") else "## " + block)
     return "\n".join(keep).replace("# Weekly review", "📅 Weekly review", 1)
 
@@ -184,7 +191,13 @@ def main(argv=None):
     args = ap.parse_args(argv)
     today = datetime.now(timezone.utc).date()
     monday = date.fromisoformat(args.week) if args.week else _monday(today) - timedelta(days=7)
-    md, actions = build(monday, load_picks(), today)
+    carry = None
+    try:
+        from fetchers.bybit_data import BybitFetcher
+        carry = carry_monitor.fetch(BybitFetcher())
+    except Exception as e:
+        print(f"⚠ carry fetch failed ({type(e).__name__}: {e}) — the review says so")
+    md, actions = build(monday, load_picks(), today, carry=carry)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"review_{monday}.md"
     out.write_text(md, encoding="utf-8")
