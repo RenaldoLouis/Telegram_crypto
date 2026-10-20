@@ -1,0 +1,53 @@
+{
+  "run_tag": "20261019_0405",
+  "run_timestamp_utc": "2026-10-19T04:05:09.536997+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-10-20T00:04:19.794135+00:00",
+  "results": [
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261019_0402",
+      "reason": "same signal bar as run 20261019_0402 (cross-run race) \u2014 not counted",
+      "symbol": "XRPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 2,
+      "rank": 6,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "source": "shadow",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    },
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261019_0402",
+      "reason": "same signal bar as run 20261019_0402 (cross-run race) \u2014 not counted",
+      "symbol": "MONUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 8,
+      "rules_applied": [
+        "validated_signal",
+        "range_reversion"
+      ],
+      "regime": "neutral",
+      "interest_score": 4.0,
+      "source": "shadow",
+      "backtested_signal": "rsi_bounce_long",
+      "signal_name": "rsi_bounce_long"
+    }
+  ]
+}
