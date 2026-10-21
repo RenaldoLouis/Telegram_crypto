@@ -1,0 +1,140 @@
+{
+  "run_timestamp_utc": "2026-10-21T14:04:01.639699+00:00",
+  "run_tag": "20261021_1404",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2,
+    "daily_picks": 0
+  },
+  "setups": [
+    {
+      "symbol": "CLUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 97.76321435,
+      "entry_high": 97.99678565,
+      "stop_loss": 96.82535714,
+      "target_1": 98.67098214,
+      "target_2": 99.98928572,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 97.3600 low, RSI 41.9, ADX 18.0"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "risk_on",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 33.51,
+          "rsi": 55.92,
+          "macd": 0.446104,
+          "macd_hist": -0.14819,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.33,
+          "range_pct": 6.13
+        },
+        "tf_1h": {
+          "adx": 17.97,
+          "rsi": 41.88,
+          "macd": -0.086242,
+          "macd_hist": -0.154197,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.01,
+          "range_pct": 3.5
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1792591200000,
+        "score": 6,
+        "points": {
+          "trend_4h": true,
+          "trend_1h": true,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": true,
+          "oi_trapped": false,
+          "volume": true
+        },
+        "derivs_ok": true
+      }
+    },
+    {
+      "symbol": "CTUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 0.29121645,
+      "entry_high": 0.29438355,
+      "stop_loss": 0.28466071,
+      "target_1": 0.3009,
+      "target_2": 0.30907858,
+      "predicted_rr": 0.995,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 0.2890 low, RSI 32.3, ADX 18.0"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "risk_on",
+      "interest_score": 0.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 26.14,
+          "rsi": 47.95,
+          "macd": -0.010132,
+          "macd_hist": -0.001023,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.91,
+          "range_pct": 49.95
+        },
+        "tf_1h": {
+          "adx": 18.01,
+          "rsi": 32.3,
+          "macd": -0.00615,
+          "macd_hist": -0.002151,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.28,
+          "range_pct": 19.87
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1"
+    }
+  ]
+}
