@@ -409,6 +409,9 @@ def run_evaluation():
                 if setup.get("daily_pick"):
                     result["daily_pick"] = True
                     result["daily_pick_seq"] = setup.get("daily_pick_seq")
+                # Trader's checklist (2026-10-21): forward test of score >= 5 (weekly review reads it).
+                if setup.get("checklist"):
+                    result["checklist"] = setup["checklist"]
                 eval_results.append(result)
 
                 status = result["status"]

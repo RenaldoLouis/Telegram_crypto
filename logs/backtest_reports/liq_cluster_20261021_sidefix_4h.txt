@@ -1,0 +1,17 @@
+Loaded 214 file(s); liquidation data for 19 symbols.
+Total liq events: 88,774 | widest coverage: 59.5 days
+
+Symbols with klines+liq overlap: 19 | tagged trades: 162
+ALL: n=162 wr38 net -0.111
+
+BY distance-to-ALIGNED-liq-cluster (long=long-liq cluster below / short=short-liq cluster above):
+  at(<=0.5A)           n=  72 wr 43 net -0.012
+  near(0.5-1.5A)       n=  23 wr 43 net +0.015
+  far(>1.5A)           n=   5 wr 20 net -0.572
+  noAlignedCluster     n=  62 wr 32 net -0.235
+
+TRAIN/TEST (chrono split) — is 'near an aligned liq cluster' better OOS?
+  ALL           TRAIN net +0.000(n=0)  TEST net -0.111(n=162)
+  NEAR-aligned  TRAIN net +0.000(n=0)  TEST net -0.005(n=95)
+
+  VERDICT: promote to a live feature ONLY if NEAR-aligned TEST net clearly beats ALL TEST net AND is >= ~0 — else it's another empty lever (fork C).

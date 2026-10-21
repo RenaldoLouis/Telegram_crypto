@@ -8,8 +8,13 @@ Idea: large liquidation volume piles up at specific prices (magnets). A forced
 long-liquidation is a market SELL (longs blown up = capitulation, bullish
 reversal fuel); a forced short-liquidation is a market BUY (shorts squeezed =
 exhaustion, bearish reversal fuel). So the DIRECTION-ALIGNED test is:
-  - LONG  entry near a big SELL-liq cluster (longs just flushed below) -> good?
-  - SHORT entry near a big BUY-liq  cluster (shorts just squeezed above) -> good?
+  - LONG  entry near a big LONG-liq  cluster (longs just flushed below) -> good?
+  - SHORT entry near a big SHORT-liq cluster (shorts just squeezed above) -> good?
+
+SIDE (corrected 2026-10-21): Bybit's `S` is the POSITION side — "Buy" = a LONG was
+liquidated, "Sell" = a short (verified on our store 2026-10-19). Until 2026-10-21 this
+harness read it the other way round, so the 09-10 and 10-08 runs paired every trade with
+the wrong side's clusters. Pre-registration: logs/backtest_reports/prereg_liq_side_fix_20261021.md
 
 Method mirrors the S/R + downtrend prototypes that already passed/failed:
 tag historical trend_pullback trades with distance-to-nearest-aligned-cluster,
@@ -65,24 +70,24 @@ def load_liquidations(data_dir):
 def build_clusters(events, t_lo, t_hi, bin_w, min_frac):
     """Cluster liquidations in (t_lo, t_hi] into price magnets.
     events: sorted [(t,side,price,notional)]. bin_w: price bin width (abs).
-    Returns [{price, notional, sell_notional, buy_notional}] for bins holding
-    >= min_frac of the window's total liquidation notional."""
+    Returns [{price, notional, long_notional, short_notional}] for bins holding
+    >= min_frac of the window's total liquidation notional ("Buy" = long liquidated)."""
     lo = bisect.bisect_right(events, (t_lo, chr(0x10ffff), 0, 0))
     hi = bisect.bisect_right(events, (t_hi, chr(0x10ffff), float("inf"), float("inf")))
     window = events[lo:hi]
     if not window or bin_w <= 0:
         return []
-    bins = defaultdict(lambda: {"n": 0.0, "sell": 0.0, "buy": 0.0, "pw": 0.0})
+    bins = defaultdict(lambda: {"n": 0.0, "long": 0.0, "short": 0.0, "pw": 0.0})
     total = 0.0
     for _, side, price, notional in window:
         b = round(price / bin_w)
         d = bins[b]
         d["n"] += notional
         d["pw"] += price * notional
-        if side == "Sell":
-            d["sell"] += notional
+        if side == "Buy":
+            d["long"] += notional
         else:
-            d["buy"] += notional
+            d["short"] += notional
         total += notional
     if total <= 0:
         return []
@@ -90,24 +95,25 @@ def build_clusters(events, t_lo, t_hi, bin_w, min_frac):
     for b, d in bins.items():
         if d["n"] >= min_frac * total:
             out.append({"price": d["pw"] / d["n"] if d["n"] else b * bin_w,
-                        "notional": d["n"], "sell_notional": d["sell"],
-                        "buy_notional": d["buy"]})
+                        "notional": d["n"], "long_notional": d["long"],
+                        "short_notional": d["short"]})
     return out
 
 
-def nearest_aligned(clusters, entry, direction, atr):
+def nearest_aligned(clusters, entry, direction, atr, flip=False):
     """Distance (in ATR) to the nearest DIRECTION-ALIGNED capitulation cluster:
-      long  -> sell-dominant cluster at/below entry (longs flushed)
-      short -> buy-dominant  cluster at/above entry (shorts squeezed)
-    Returns (dist_atr, notional) or (None, 0)."""
+      long  -> long-liq-dominant  cluster at/below entry (longs flushed)
+      short -> short-liq-dominant cluster at/above entry (shorts squeezed)
+    flip=True pairs each trade with the OTHER side's clusters — what the pre-2026-10-21
+    harness did by mistake; kept as the control. Returns (dist_atr, notional) or (None, 0)."""
     if atr <= 0:
         return (None, 0.0)
     best = None
     for c in clusters:
-        sell_dom = c["sell_notional"] >= c["buy_notional"]
-        if direction == "long" and sell_dom and c["price"] <= entry + 0.2 * atr:
+        long_dom = (c["long_notional"] >= c["short_notional"]) != flip
+        if direction == "long" and long_dom and c["price"] <= entry + 0.2 * atr:
             d = abs(c["price"] - entry) / atr
-        elif direction == "short" and (not sell_dom) and c["price"] >= entry - 0.2 * atr:
+        elif direction == "short" and (not long_dom) and c["price"] >= entry - 0.2 * atr:
             d = abs(c["price"] - entry) / atr
         else:
             continue
@@ -136,6 +142,8 @@ def main():
     ap.add_argument("--cluster-min-frac", type=float, default=0.05,
                     help="a bin is a cluster if >= this fraction of window notional")
     ap.add_argument("--split", type=float, default=0.60, help="train fraction (chrono)")
+    ap.add_argument("--flip-side", action="store_true",
+                    help="control: pair trades with the other side's clusters (= the pre-2026-10-21 runs)")
     args = ap.parse_args()
 
     ivl_ms = int(args.interval) * 60 * 1000
@@ -194,7 +202,8 @@ def main():
                 atr = float(df.iloc[i]["atr_14"])
                 bin_w = args.bin_atr * atr
                 clusters = build_clusters(ev, T - win_ms, T, bin_w, args.cluster_min_frac)
-                d, notional = nearest_aligned(clusters, s["entry"], s["direction"], atr)
+                d, notional = nearest_aligned(clusters, s["entry"], s["direction"], atr,
+                                              flip=args.flip_side)
                 if d is None:
                     b = "noAlignedCluster"
                 elif d <= 0.5:
@@ -215,7 +224,7 @@ def main():
 
     a = stats(all_tagged)
     print(f"ALL: n={a[0]} wr{a[1]} net {a[2]:+.3f}\n")
-    print("BY distance-to-ALIGNED-liq-cluster (long=sell-cluster below / short=buy-cluster above):")
+    print("BY distance-to-ALIGNED-liq-cluster (long=long-liq cluster below / short=short-liq cluster above):")
     for b in ["at(<=0.5A)", "near(0.5-1.5A)", "far(>1.5A)", "noAlignedCluster"]:
         s = stats(by_bucket[b])
         if s[0]:

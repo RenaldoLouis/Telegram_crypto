@@ -11,6 +11,7 @@ from fetchers.telegram_reader import TelegramReader
 from analyzer.claude_client import ClaudeAnalyzer
 from delivery.telegram_bot import send_brief, format_mechanical_brief
 from mechanical_setups import build_mechanical_setups
+import checklist
 import market_context
 import mechanical_setups as ms
 import signal_levels as sl
@@ -555,6 +556,35 @@ def split_surfaced_shadow(candidates):
     return surfaced, shadow
 
 
+def _stamp_checklist(setups, fetcher):
+    """Stamp the trader's checklist (`checklist.stamp`: version, signal close, score 0-9, points,
+    derivs_ok) on each setup. Forward test pre-registered 2026-10-21
+    (logs/backtest_reports/prereg_checklist_confirm_20261021.md). Instrumentation only: no pick,
+    lane or gate reads it. Two public calls per setup (funding + OI); any failure leaves that
+    setup unstamped and the scan unaffected."""
+    btc4 = fetcher.closed.get(("BTCUSDT", "240"))
+    for s in setups:
+        sym, tf = s.get("symbol"), s.get("signal_tf")
+        rows = {iv: fetcher.closed.get((sym, iv)) for iv in ("240", "60", "D")}
+        if tf not in ("4h", "1h") or not all(rows.values()):
+            continue
+        try:
+            deriv = fetcher.get_recent_derivs(sym)
+        except Exception as e:
+            print(f"  ⚠ checklist derivs {sym}: {type(e).__name__}: {e} — no funding/OI points")
+            deriv = None
+        try:
+            got = checklist.stamp(rows["240"], rows["60"], rows["D"], btc4, deriv, s.get("direction"), tf)
+        except Exception as e:
+            print(f"  ⚠ checklist {sym}: {type(e).__name__}: {e} — not stamped")
+            continue
+        if got:
+            got["derivs_ok"] = deriv is not None
+            s["checklist"] = got
+            print(f"  CHECKLIST: {sym} {s.get('direction')} {got['score']}/9 "
+                  f"({', '.join(k for k, v in got['points'].items() if v) or 'none'})")
+
+
 def _lane_stats():
     """Per-signal live shadow-lane record written by weekly_eval.write_lane_stats (best-effort)."""
     try:
@@ -770,6 +800,10 @@ async def run_screener():
         if shadow:
             print(f"  SHADOW (logged, not shown): "
                   + ", ".join(f"{s.get('symbol','?')} {s.get('signal_name','?')}" for s in shadow))
+
+    # 3c-bis. Trader's checklist (2026-10-21): the 9-point score on every candidate, logged for the
+    # pre-registered forward test. Changes no pick (select_daily_picks does not read it).
+    _stamp_checklist(mechanical + watch + shadow, bybit)
 
     # 3d. Daily trader book (2026-10-19): up to DAILY_PICKS_MAX of the gated candidates per day,
     # shown as trades and judged by the Monday weekly review. Flags rows in watch/shadow in place.

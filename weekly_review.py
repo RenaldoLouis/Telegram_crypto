@@ -35,6 +35,9 @@ import monthly_review as mr
 OUT_DIR = Path(__file__).parent / "logs" / "performance" / "weekly"
 SETUPS_DIR = Path(__file__).parent / "logs" / "setups"
 RISK_PCT = 0.5   # paper sizing in the brief: % of the account risked per trade
+# Trader's checklist forward test (pre-registered 2026-10-21, prereg_checklist_confirm_20261021.md)
+CHECKLIST_MIN_SCORE = 5
+CHECKLIST_N_DECIDE = 30
 
 
 def _monday(d):
@@ -100,7 +103,28 @@ def cut_flags(rows, min_n=None):
     return out
 
 
-def build(week_monday, picks, today=None, carry=None):
+def checklist_lines(rows):
+    """Forward test of the trader's checklist: every scored candidate (all lanes) stamped with a
+    checklist that had its funding/OI data — score >= CHECKLIST_MIN_SCORE vs all. Ready for the
+    user's decision at CHECKLIST_N_DECIDE scored high-score candidates with net > 0 and above all."""
+    rows = [r for r in rows if (r.get("checklist") or {}).get("derivs_ok")]
+    high = [r for r in rows if r["checklist"]["score"] >= CHECKLIST_MIN_SCORE]
+    s_all, s_hi = mr._stats(rows), mr._stats(high)
+    fmt = lambda s: (f"{s['n']} scored · {s['prof_pct']:.0f}% profitable · net {s['net']:+.2f}R/trade"
+                     if s["n"] else "none scored yet")
+    L = [f"\n## Checklist forward test (score ≥ {CHECKLIST_MIN_SCORE} of 9; logged since 2026-10-21, changes no pick)",
+         f"- score ≥ {CHECKLIST_MIN_SCORE}: {fmt(s_hi)}", f"- all candidates: {fmt(s_all)}"]
+    if s_hi["n"] < CHECKLIST_N_DECIDE:
+        L.append(f"- Status: building {s_hi['n']}/{CHECKLIST_N_DECIDE}.")
+    elif s_hi["net"] > 0 and s_hi["net"] > s_all["net"]:
+        L.append("- Status: **READY** — high-score candidates are net positive and beat all candidates; "
+                 "your call whether the daily book picks by checklist score.")
+    else:
+        L.append("- Status: **NOT CONFIRMED** — high-score candidates are not net positive or do not beat all.")
+    return L
+
+
+def build(week_monday, picks, today=None, carry=None, checklist_rows=None):
     today = today or datetime.now(timezone.utc).date()
     week_end = week_monday + timedelta(days=6)
     start = date.fromisoformat(getattr(config, "DAILY_TRIAL_START", week_monday.isoformat()))
@@ -163,6 +187,9 @@ def build(week_monday, picks, today=None, carry=None):
     L.append("")
     L.extend(carry_monitor.format_lines(carry))
 
+    if checklist_rows is not None:
+        L.extend(checklist_lines(checklist_rows))
+
     L.append("\n## Picks this week")
     L.append("| when (UTC) | coin | side | setup | status | net R |")
     L.append("|---|---|---|---|---|---|")
@@ -179,7 +206,7 @@ def telegram_text(md):
     for block in md.split("\n## "):
         head = block.split("\n", 1)[0]
         if (block.startswith("# ") or head in ("This week", "Trial so far") or head.startswith("Keep or cut")
-                or head.startswith("Carry")):
+                or head.startswith("Carry") or head.startswith("Checklist")):
             keep.append(block if block.startswith("# ") else "## " + block)
     return "\n".join(keep).replace("# Weekly review", "📅 Weekly review", 1)
 
@@ -197,7 +224,8 @@ def main(argv=None):
         carry = carry_monitor.fetch(BybitFetcher())
     except Exception as e:
         print(f"⚠ carry fetch failed ({type(e).__name__}: {e}) — the review says so")
-    md, actions = build(monday, load_picks(), today, carry=carry)
+    all_evals = mr.load_evals()
+    md, actions = build(monday, load_picks(all_evals), today, carry=carry, checklist_rows=mr.collect(all_evals))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"review_{monday}.md"
     out.write_text(md, encoding="utf-8")

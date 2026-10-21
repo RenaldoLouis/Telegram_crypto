@@ -36,6 +36,9 @@ class BybitFetcher:
         self._failovers = 0
         self._dead = set()
         self.client = self._client_for(domain)
+        # Closed kline rows per (symbol, interval) from get_multi_tf_indicators — read by the
+        # trader's checklist (checklist.py, 2026-10-21) so it scores the scan's own bars.
+        self.closed = {}
 
     def _client_for(self, domain):
         if domain not in self._clients:
@@ -344,6 +347,20 @@ class BybitFetcher:
                 break
         return swing_high, swing_low
 
+    def get_recent_derivs(self, symbol):
+        """Last settled funding rates (~3 days) + 1h open-interest snapshots (~30 h) as a
+        `derivs_data.DerivIndex` — the same look-ahead-safe lookups the backtests use, for the
+        trader's checklist (funding / OI points). Two public calls."""
+        import derivs_data as dd
+        f = self._api("get_funding_rate_history", category=config.BYBIT_CATEGORY, symbol=symbol, limit=10)
+        o = self._api("get_open_interest", category=config.BYBIT_CATEGORY, symbol=symbol,
+                      intervalTime="1h", limit=30)
+        funding = sorted((int(r["fundingRateTimestamp"]), float(r["fundingRate"]))
+                         for r in f.get("result", {}).get("list", []) or [])
+        oi = sorted((int(r["timestamp"]), float(r["openInterest"]))
+                    for r in o.get("result", {}).get("list", []) or [])
+        return dd.DerivIndex(funding, oi, "1h")
+
     def get_klines_with_indicators(self, symbol):
         """Fetches 1h candles and calculates basic indicators (legacy single-TF)."""
         res = self._api("get_kline",
@@ -383,6 +400,7 @@ class BybitFetcher:
                 closed, open_bar = BybitFetcher._split_closed(candles, interval)
                 if len(closed) < 30:
                     raise ValueError(f"only {len(closed)} closed candles")
+                self.closed[(symbol, str(interval))] = closed
                 indicators = self._compute_indicators(closed)
                 label = tf_labels.get(interval, interval)
                 bar_ms = BAR_MS.get(str(interval), 0)
