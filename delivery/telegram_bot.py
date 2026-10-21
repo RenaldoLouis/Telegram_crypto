@@ -158,8 +158,8 @@ def _format_watch_one(w):
         exp = w.get("signal_expectancy")
         exp_str = f" · backtest hit rate {exp*100:.0f}% (net of cost)" if isinstance(exp, (int, float)) else ""
         lines.append(f"_Signal `{sig}` passed the structural gates but has not yet proven the "
-                     f"70% forward bar{exp_str}. Paper-track it; eval-scan scores it under the "
-                     "unified trade model._")
+                     f"quality bar on forward trades (net > 0, profit factor ≥ 1.3, ≥ 55% green weeks)"
+                     f"{exp_str}. Paper-track it; eval-scan scores it under the unified trade model._")
     pr = w.get("predicted_rr")
     t2rr = _t2_rr(w)
     pr_str = f" (R:R {pr:.2f}:1)" if isinstance(pr, (int, float)) else ""

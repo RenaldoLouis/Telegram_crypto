@@ -779,6 +779,37 @@ def _fmt_prof(s):
     return cell
 
 
+def _fmt_weeks(s):
+    """'57%' — share of green weeks (quality yardstick), '—' without timestamps."""
+    return "—" if s.get("green_weeks_pct") is None else f"{s['green_weeks_pct']:.0f}%"
+
+
+def _green_weeks_pct(results):
+    """Share of ISO weeks (by the scan's run timestamp, `_run_ts`) whose summed managed net R is
+    > 0 — the consistency leg of the quality yardstick (2026-10-21). None without timestamps."""
+    weeks = {}
+    for r in results:
+        try:
+            d = datetime.fromisoformat(str(r["_run_ts"]).replace("Z", "+00:00"))
+        except (KeyError, TypeError, ValueError):
+            continue
+        k = d.isocalendar()[:2]
+        weeks[k] = weeks.get(k, 0.0) + _managed_rr(r)[1]
+    return round(100 * sum(1 for v in weeks.values() if v > 0) / len(weeks), 1) if weeks else None
+
+
+def _quality_clears(s):
+    """The quality yardstick (config.QUALITY_*, 2026-10-21) on a `_group_stats` dict, sample size aside."""
+    return (s["net_exp"] > 0 and s["net_pf"] >= float(getattr(config, "QUALITY_MIN_PF", 1.3))
+            and (s.get("green_weeks_pct") or 0) >= float(getattr(config, "QUALITY_MIN_GREEN_WEEKS_PCT", 55)))
+
+
+def _quality_bar_text():
+    return (f"net exp > 0 · net PF ≥ {float(getattr(config, 'QUALITY_MIN_PF', 1.3)):.1f} · "
+            f"≥ {float(getattr(config, 'QUALITY_MIN_GREEN_WEEKS_PCT', 55)):.0f}% of weeks green · "
+            f"over ≥ {int(getattr(config, 'QUALITY_MIN_TRADES', 30))} trades")
+
+
 def _group_stats(results):
     """WR / expectancy / profit-factor for a list of evaluated result dicts."""
     n = len(results)
@@ -788,7 +819,7 @@ def _group_stats(results):
         # must not omit any key or generate_head_to_head KeyErrors mid eval-scan.
         return {"n": 0, "wr": 0.0, "exp": 0.0, "pf": 0.0, "wins": 0,
                 "net_wr": 0.0, "net_exp": 0.0, "net_pf": 0.0,
-                "prof": 0, "prof_pct": 0.0, "prof_ci": None}
+                "prof": 0, "prof_pct": 0.0, "prof_ci": None, "green_weeks_pct": None}
     # Expectancy / PF are on the MANAGED trade (_managed_rr — same as trade_sim.summarize);
     # until 2026-10-08 they used the full-position leg (actual_rr / net_rr), a different
     # trade from the one profitable% and the harness measure. win% stays the legacy
@@ -809,7 +840,8 @@ def _group_stats(results):
     prof = sum(1 for r in results if _profitable(r))
     return {"n": n, "wr": wins / n * 100, "exp": sum(rr) / n, "pf": pf, "wins": wins,
             "net_wr": nwins / n * 100, "net_exp": sum(nrr) / n, "net_pf": npf,
-            "prof": prof, "prof_pct": prof / n * 100, "prof_ci": _wilson(prof, n)}
+            "prof": prof, "prof_pct": prof / n * 100, "prof_ci": _wilson(prof, n),
+            "green_weeks_pct": _green_weeks_pct(results)}
 
 
 def generate_head_to_head(all_evals):
@@ -842,10 +874,13 @@ def generate_head_to_head(all_evals):
         # backing/direction/signal diagnostics — those measure EXECUTE-book quality.
         # It DOES get its own per-signal promotion table (below): a watch signal that
         # earns net-of-cost expectancy is a candidate to promote into the EXECUTE book.
+        # v2 era only (2026-10-21): pre-v13 watch rows were scored by the retired evaluator and are
+        # not comparable; they used to sit in this table unnoticed because nothing cleared 70%.
         if src in ("watch", "shadow"):
-            by_watch_signal.setdefault(
-                r.get("signal_name") or r.get("backtested_signal") or "(unknown)", []
-            ).append(r)
+            if _v2_era(r):
+                by_watch_signal.setdefault(
+                    r.get("signal_name") or r.get("backtested_signal") or "(unknown)", []
+                ).append(r)
             continue
         key = "signal_backed" if r.get("backtested_signal") else "discretionary"
         by_backed.setdefault(key, []).append(r)
@@ -858,8 +893,7 @@ def generate_head_to_head(all_evals):
             by_mech_signal.setdefault(r.get("backtested_signal") or "(none)", []).append(r)
 
     rt_pct = 2 * (config.TAKER_FEE_PCT + config.SLIPPAGE_PCT)
-    hit_target = float(getattr(config, "HIT_RATE_TARGET_PCT", 70))
-    hit_min_n = int(getattr(config, "HIT_RATE_MIN_TRADES", 30))
+    min_n = int(getattr(config, "QUALITY_MIN_TRADES", 30))
     lines = ["# Head-to-Head: Mechanical vs Claude", "",
              f"Total evaluated trades: {len(evaluated)}",
              f"Cost model: {rt_pct*100:.3f}% round-trip (fee {config.TAKER_FEE_PCT*100:.3f}%"
@@ -867,10 +901,9 @@ def generate_head_to_head(all_evals):
              "Every expectancy / PF below is the MANAGED trade (50% at T1, BE/+0.3R trail, rest to "
              "T2/expiry) — the same definition as unified_backtest (pinned 2026-10-08). win% is the "
              "legacy full-position win.", "",
-             f"Hit-rate metric (2026-09-23): **profitable%** = share of suggestions whose "
-             f"managed trade (50% at T1 + BE/+0.3R trail) closed green NET of cost; "
-             f"target ≥{hit_target:.0f}% over ≥{hit_min_n} trades with net exp > 0. "
-             f"[lo–hi] = Wilson 95% CI.", "",
+             f"Quality yardstick (2026-10-21, replaced the ≥70% hit-rate bar): **{_quality_bar_text()}**. "
+             f"**profitable%** (share of managed trades that closed green NET of cost) is reported, "
+             f"not gated. [lo–hi] = Wilson 95% CI.", "",
              "## By source (gross → net of cost)", "",
              "| source | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | net PF |",
              "|---|---|---|---|---|---|---|"]
@@ -882,11 +915,9 @@ def generate_head_to_head(all_evals):
     # WATCH lane — promotion readout. Watch signals are paper-tracked and OUT of the edge
     # book, but this is where we check if one has quietly become executable: net-of-cost
     # expectancy vs the promotion bar, per signal. A ✅ here = manual promotion candidate.
-    # Promotion bar (2026-09-23): the hit-rate target, not a bare expectancy bar.
-    bar, min_n = hit_target, hit_min_n
-
+    # Promotion bar: the quality yardstick (2026-10-21; was the ≥70% hit-rate target).
     def _promo_status(s):
-        clears = s["prof_pct"] >= bar and s["net_exp"] > 0
+        clears = _quality_clears(s)
         if clears and s["n"] >= min_n:
             return "✅ PROMOTABLE — review for EXECUTE"
         if clears:
@@ -895,19 +926,19 @@ def generate_head_to_head(all_evals):
             return f"building ({s['n']}/{min_n})"
         return "✗ below bar"
 
-    lines += ["", "## WATCH lane — promotion watch (paper-tracked, NOT in the edge book)", "",
+    lines += ["", "## WATCH lane — promotion watch (paper-tracked, NOT in the edge book; v2 era only)", "",
               f"Bar to promote a watch signal into the gated EXECUTE book: "
-              f"**profitable% ≥ {bar:.0f}% AND net-of-cost expectancy > 0 over ≥ {min_n} trades** "
+              f"**{_quality_bar_text()}** "
               f"(then still needs a manual both-direction/robustness sanity check).", "",
-              "| watch signal | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | status |",
-              "|---|---|---|---|---|---|---|"]
+              "| watch signal | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | net PF | weeks+ | status |",
+              "|---|---|---|---|---|---|---|---|---|"]
     if by_watch_signal:
-        for sig in sorted(by_watch_signal, key=lambda k: -_group_stats(by_watch_signal[k])["prof_pct"]):
+        for sig in sorted(by_watch_signal, key=lambda k: -_group_stats(by_watch_signal[k])["net_exp"]):
             s = _group_stats(by_watch_signal[sig])
             lines.append(f"| {sig} | {s['n']} | {s['wr']:.1f}% | **{_fmt_prof(s)}** | {s['exp']:+.3f} | "
-                         f"**{s['net_exp']:+.3f}** | {_promo_status(s)} |")
+                         f"**{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} | {_fmt_weeks(s)} | {_promo_status(s)} |")
     else:
-        lines.append("| _(no watch trades evaluated yet)_ | 0 | — | — | — | — | — |")
+        lines.append("| _(no watch trades evaluated yet)_ | 0 | — | — | — | — | — | — | — |")
 
     lines += ["", "## By signal backing (gross → net of cost)", "",
               "| backing | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | net PF |",
@@ -940,9 +971,9 @@ def generate_head_to_head(all_evals):
     # ---- Eval engine v2 era (post-2026-09-23 fix) -------------------------------------
     # Only records scored by the shared simulator (market-at-open entry, closed-bar
     # signals). Pre-fix records were scored by the entry-zone engine on open-bar signals
-    # and are NOT comparable — this section is the book the 70% target is judged on.
+    # and are NOT comparable — this section is the book the quality yardstick is judged on.
     v2 = [r for r in evaluated if _v2_era(r)]
-    lines += ["", "## Eval engine v2 era (post-fix book — the one the 70% target is judged on)", ""]
+    lines += ["", "## Eval engine v2 era (post-fix book — the one the quality yardstick is judged on)", ""]
     if not v2:
         lines.append(f"_No v2-era trades yet (n=0): scored by the v2 engine AND produced by a scan "
                      f"at/after {getattr(config, 'V2_ERA_START_UTC', '?')} (v13 detector). Pre-fix "
@@ -954,22 +985,21 @@ def generate_head_to_head(all_evals):
             v2_sig.setdefault((r.get("source", "claude"),
                                r.get("signal_name") or r.get("backtested_signal") or "(none)"), []).append(r)
         lines += [f"n={len(v2)} v2-scored trades. Pre-fix records are not comparable.", "",
-                  "| source | n | **profitable%** | net exp (R) | net PF | status vs target |",
-                  "|---|---|---|---|---|---|"]
+                  "| source | n | **net exp (R)** | net PF | weeks+ | profitable% | status vs bar |",
+                  "|---|---|---|---|---|---|---|"]
         for src in sorted(v2_src):
             s = _group_stats(v2_src[src])
-            lines.append(f"| {src} | {s['n']} | **{_fmt_prof(s)}** | {s['net_exp']:+.3f} | "
-                         f"{fmt_pf(s['net_pf'])} | {_promo_status(s)} |")
-        eta = _forward_eta_line([r for r in v2 if r.get("source") in ("mechanical", "watch")],
-                                hit_min_n)
+            lines.append(f"| {src} | {s['n']} | **{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} | "
+                         f"{_fmt_weeks(s)} | {_fmt_prof(s)} | {_promo_status(s)} |")
+        eta = _forward_eta_line([r for r in v2 if r.get("source") in ("mechanical", "watch")], min_n)
         if eta:
             lines += ["", eta]
-        lines += ["", "| source | signal | n | **profitable%** | net exp (R) | status vs target |",
-                  "|---|---|---|---|---|---|"]
+        lines += ["", "| source | signal | n | **net exp (R)** | net PF | weeks+ | profitable% | status vs bar |",
+                  "|---|---|---|---|---|---|---|---|"]
         for (src, sig) in sorted(v2_sig, key=lambda k: (-len(v2_sig[k]), k)):
             s = _group_stats(v2_sig[(src, sig)])
-            lines.append(f"| {src} | {sig} | {s['n']} | **{_fmt_prof(s)}** | {s['net_exp']:+.3f} | "
-                         f"{_promo_status(s)} |")
+            lines.append(f"| {src} | {sig} | {s['n']} | **{s['net_exp']:+.3f}** | {fmt_pf(s['net_pf'])} | "
+                         f"{_fmt_weeks(s)} | {_fmt_prof(s)} | {_promo_status(s)} |")
 
     m, c = _group_stats(by_source.get("mechanical", [])), _group_stats(by_source.get("claude", []))
     lines += ["", "## Verdict"]
@@ -1013,7 +1043,7 @@ def generate_head_to_head(all_evals):
     # called the shadow lane (rules that FAILED the surface bar and are never shown)
     # "tradeable-grade" at +0.006R over 32 trades, five of them one same-bar bounce. Now it
     # is judged only on the v2-era SURFACED book (mechanical + watch = what the user sees),
-    # needs n >= the hit-rate sample bar, and needs the 95% CI of net expectancy per
+    # needs n >= the quality sample bar, and needs the 95% CI of net expectancy per
     # independent bet to clear zero.
     surfaced = [r for r in v2 if r.get("source") in ("mechanical", "watch")]
     sv = _group_stats(surfaced)
@@ -1023,14 +1053,14 @@ def generate_head_to_head(all_evals):
              f"= {len(bets)} independent bets, profitable {_fmt_prof(sv)}, net {sv['net_exp']:+.3f}R")
     if ci and len(bets) >= 5:
         basis += f", 95% CI of net per bet [{ci[1]:+.2f}, {ci[2]:+.2f}]R"
-    if sv["n"] < hit_min_n:
-        verdict = f"NOT DECIDABLE YET ({sv['n']}/{hit_min_n} trades)"
-        tail = (f"Below {hit_min_n} trades the sign of any lane is noise — including the "
+    if sv["n"] < min_n:
+        verdict = f"NOT DECIDABLE YET ({sv['n']}/{min_n} trades)"
+        tail = (f"Below {min_n} trades the sign of any lane is noise — including the "
                 f"all-era rows above.")
     elif ci and ci[1] > 0:
         verdict = "an edge SURVIVES costs"
-        tail = (f"Net expectancy is above zero with 95% confidence; promotion still needs "
-                f"profitable% ≥ {hit_target:.0f}% (v2 table above).")
+        tail = (f"Net expectancy is above zero with 95% confidence; promotion still needs the "
+                f"quality bar ({_quality_bar_text()}; v2 table above).")
     elif ci and ci[2] < 0:
         verdict = "NO edge — net-negative with 95% confidence"
         tail = "The pre-registered decision rule applies; do not tune the rule to rescue it."
@@ -1046,11 +1076,11 @@ def generate_head_to_head(all_evals):
           f"claude {c['n']}t {c['exp']:+.3f}R  ({out})")
     # Surface any watch signal that has quietly earned promotion (don't let it stay buried).
     promotable = [(sig, _group_stats(rs)) for sig, rs in by_watch_signal.items()]
-    promotable = [(sig, s) for sig, s in promotable
-                  if s["prof_pct"] >= bar and s["net_exp"] > 0 and s["n"] >= min_n]
-    for sig, s in sorted(promotable, key=lambda x: -x[1]["prof_pct"]):
-        print(f"  ✅ WATCH PROMOTABLE: {sig} {s['prof_pct']:.0f}% profitable / net "
-              f"{s['net_exp']:+.3f}R over {s['n']}t (≥{bar:.0f}%/{min_n}t) — review for EXECUTE.")
+    promotable = [(sig, s) for sig, s in promotable if _quality_clears(s) and s["n"] >= min_n]
+    for sig, s in sorted(promotable, key=lambda x: -x[1]["net_exp"]):
+        print(f"  ✅ WATCH PROMOTABLE: {sig} net {s['net_exp']:+.3f}R · PF {s['net_pf']:.2f} · "
+              f"weeks+ {_fmt_weeks(s)} · {s['prof_pct']:.0f}% profitable over {s['n']}t "
+              f"({_quality_bar_text()}) — review for EXECUTE.")
 
 
 def update_lifetime_stats(all_evals, rebuild=False):
@@ -2097,7 +2127,7 @@ def generate_summary(all_evals):
         f"- Not triggered: {len(not_triggered)}",
         f"- **Win rate: {win_rate:.1f}%** ({len(wins)}W / {len(losses)}L){prev_wr_str}",
         f"- **Profitable (net, partial model): {exec_stats['prof_pct']:.1f}%** "
-        f"({exec_stats['prof']}/{exec_stats['n']}; target ≥{getattr(config, 'HIT_RATE_TARGET_PCT', 70):.0f}%)",
+        f"({exec_stats['prof']}/{exec_stats['n']}; reported — the bar is the quality yardstick: {_quality_bar_text()})",
         f"- Avg actual R:R: {avg_rr:.2f}",
         f"- Avg winning R:R: {avg_win_rr:.2f}",
         f"- Avg losing R:R: {avg_loss_rr:.2f}",

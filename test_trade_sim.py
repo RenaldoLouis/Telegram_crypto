@@ -164,6 +164,44 @@ def test_limit_entry_fill_and_fees():
     print("PASS test_limit_entry_fill_and_fees")
 
 
+def test_bracket_without_t1():
+    """target_1=None: no partial, no breakeven — a plain stop/target bracket (2026-10-21)."""
+    prev = _no_cost()
+    try:
+        # Long 100, stop 95 (risk 5), T2 115 (3R). Price dips to 98, then runs to 115.
+        r = ts.simulate([c(100, 101, 98, 100), c(100, 108, 99, 107), c(107, 116, 106, 115)],
+                        "long", 95, None, 115, trail=False)
+        assert r["exit_reason"] == "target_2" and r["actual_rr"] == 3.0 and r["blended_rr"] == 3.0
+        assert not r["target_1_hit"]
+        # Without a T1 there is no breakeven stop: a pullback after +1.6R does not exit at 0.
+        r = ts.simulate([c(100, 108, 99, 107), c(107, 107, 96, 97)], "long", 95, None, 115, trail=False)
+        assert r["exit_reason"] == "expired" and r["actual_rr"] == round((97 - 100) / 5, 3)
+    finally:
+        config.COST_MODEL_ENABLED = prev
+
+
+def test_atr_trail_follows_prior_best_and_never_loosens():
+    prev = _no_cost()
+    try:
+        # Long 100, stop 95, trail 4 behind the best price of PRIOR candles.
+        cs = [c(100, 103, 99, 102),     # best -> 103 (trail level for the next candle: 99)
+              c(102, 110, 101, 109),    # protect 99; best -> 110
+              c(109, 109, 107, 108),    # protect 106; low 107 holds
+              c(108, 108, 105, 106)]    # protect 106 (best still 110) -> exits at 106
+        r = ts.simulate(cs, "long", 95, None, None, trail=False, trail_dist=4)
+        assert r["exit_reason"] == "trail_stop" and r["exit_price"] == 106 and r["actual_rr"] == 1.2, r
+        # Short mirror; the trail never sits looser than the initial stop.
+        cs = [c(100, 101, 97, 98), c(98, 99, 92, 93), c(93, 97, 92, 96)]
+        r = ts.simulate(cs, "short", 105, None, None, trail=False, trail_dist=4)
+        assert r["exit_reason"] == "trail_stop" and r["exit_price"] == 96, r
+        r = ts.simulate([c(100, 104, 99, 103)], "short", 102, None, None, trail=False, trail_dist=50)
+        assert r["exit_reason"] == "stop_loss" and r["exit_price"] == 102
+        # Off by default: the same candles without trail_dist run to expiry.
+        assert ts.simulate(cs, "short", 105, None, None, trail=False)["exit_reason"] == "expired"
+    finally:
+        config.COST_MODEL_ENABLED = prev
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     for t in tests:

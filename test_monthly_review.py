@@ -1,5 +1,5 @@
 """Behavior tests for monthly_review.py (2026-10-16): the pre-registered decision rules, the
-hit-rate band, the forward daily-pick study, the fade check, the figure check, the
+quality band (2026-10-21; was the hit-rate band), the forward daily-pick study, the fade check, the figure check, the
 recommendation ledger and the facts cadence. Everything runs offline on synthetic evals.
 
 Run: venv/bin/python test_monthly_review.py
@@ -65,18 +65,29 @@ def test_forward_test_1_follows_the_pre_registered_rule():
     print("  ✓ test_forward_test_1_follows_the_pre_registered_rule")
 
 
+def _pattern(nets, start=START, step_h=24):
+    """One trade per day with the given net R (profitable = net > 0)."""
+    return [_ev(start + timedelta(hours=step_h * i), [_res(f"P{i}USDT", profitable=x > 0, net=x)])
+            for i, x in enumerate(nets)]
+
+
 def test_band_statuses():
-    b = lambda n, w, prev=None: mr.band(_surf(_book(n, w)), prev)["status"]
-    assert b(10, 9) == "BUILDING"
-    assert b(30, 22) == "GREEN"                    # 73% + net>0
-    assert b(30, 19) == "OK"                       # 63%
-    assert b(30, 17) == "YELLOW"                   # 56.7% once
-    assert b(30, 17, prev="YELLOW") == "RED"       # twice in a row
-    assert b(30, 17, prev="OK") == "YELLOW"
-    assert b(30, 12) == "RED"                      # 40%: red even on the first look
-    # the window is the LAST 30 trades: 30 losers followed by 30 winners reads GREEN
-    evs = _book(30, 0, start=START) + _book(30, 30, start=START + timedelta(days=12))
-    assert mr.band(_surf(evs), None)["status"] == "GREEN"
+    """Quality band (2026-10-21): net > 0, PF >= 1.3, >= 55% green weeks on the last 30 trades."""
+    b = lambda evs, prev=None: mr.band(_surf(evs), prev)
+    assert b(_pattern([0.5] * 10))["status"] == "BUILDING"
+    g = b(_pattern([0.5, 0.5, -0.6] * 10))                        # +0.133R, PF 1.67, every week green
+    assert g["status"] == "GREEN" and g["pf"] == 1.67 and g["green_weeks_pct"] == 100.0, g
+    assert b(_pattern([0.5, -0.45] * 15))["status"] == "OK"         # net > 0 but PF 1.11
+    lumpy = b(_pattern([3.0] * 7 + [-0.4] * 23))                    # PF 2.28 but one green week of five
+    assert lumpy["pf"] >= 1.3 and lumpy["green_weeks_pct"] < 55 and lumpy["status"] == "OK", lumpy
+    flat = _pattern([0.5, -0.6] * 15)                                # net -0.05: losing, not clearly
+    assert b(flat)["status"] == "YELLOW"
+    assert b(flat, prev="YELLOW")["status"] == "RED"                 # twice in a row
+    assert b(flat, prev="OK")["status"] == "YELLOW"
+    assert b(_pattern([-0.6] * 30))["status"] == "RED"               # net < 0 at 95%: red on the first look
+    # the window is the LAST 30 trades: 30 losers followed by 30 good trades reads GREEN
+    evs = _pattern([-0.6] * 30) + _pattern([0.5, 0.5, -0.6] * 10, start=START + timedelta(days=31))
+    assert b(evs)["status"] == "GREEN"
     print("  ✓ test_band_statuses")
 
 

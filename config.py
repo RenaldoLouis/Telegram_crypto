@@ -36,11 +36,17 @@ MECHANICAL_MODEL_TAG = "mechanical_v2"   # v13.0 (2026-09-23): closed-bar signal
 # A closed-bar signal is only actionable while it is FRESH — the scan may run up to ~2h after a
 # 4h close, and entering 2h late is not the trade that was validated (entry = next open).
 SIGNAL_MAX_AGE_MIN = {"1h": 45, "4h": 90}
-# Success metric (user decision 2026-09-23): share of surfaced suggestions that close
-# profitable NET of cost under the partial-profit model, sustained; net expectancy must stay > 0
-# so the hit rate is not bought with a bad payoff. Also the WATCH→EXECUTE promotion bar.
-HIT_RATE_TARGET_PCT = 70
-HIT_RATE_MIN_TRADES = 30
+# Success metric — the QUALITY yardstick (user decision 2026-10-21: "quality is more important than
+# quantity … we don't need a 70% win rate"). On >= QUALITY_MIN_TRADES trades: net R per trade > 0
+# (the managed trade), net profit factor >= QUALITY_MIN_PF and >= QUALITY_MIN_GREEN_WEEKS_PCT of weeks
+# green; a backtest must also beat random entries with the same management by QUALITY_RANDOM_MARGIN_R.
+# Win rate is reported, not gated. Read by every readout (weekly_eval head-to-head + WATCH→EXECUTE
+# promotion, the monthly quality band). It replaced HIT_RATE_TARGET_PCT = 70 / HIT_RATE_MIN_TRADES = 30
+# (2026-09-23); forward test #1 keeps that rule as its own pre-registered copy (monthly_review.FT1).
+QUALITY_MIN_TRADES = 30
+QUALITY_MIN_PF = 1.3
+QUALITY_MIN_GREEN_WEEKS_PCT = 55
+QUALITY_RANDOM_MARGIN_R = 0.05
 # Start of the v2 forward book (2026-09-23): setups produced BEFORE this instant came from the
 # pre-v13 detector (open-bar signals, ungated WATCH) — even if the v2 engine scored them they
 # are a different population and are excluded from the v2-era tables. v13.0 was pushed at

@@ -17,6 +17,9 @@ Trade model (identical everywhere):
              the stop moves to breakeven for the remainder.
   * TRAIL  — once MFE (as of PRIOR candles — no intracandle look-ahead) reaches
              `lock_trigger_r`, the stop tightens to `+lock_stop_r`.
+  * ATR TRAIL (optional, `trail_dist`, 2026-10-21) — the stop follows the best price of
+             PRIOR candles at a fixed price distance and never loosens ("let it run").
+             `target_1=None` runs without a partial (a plain stop/target bracket).
   * T2     — full exit of the remainder.
   * TIE    — within one candle the protective stop is checked BEFORE targets
              (conservative: a candle that touched both is scored as a stop).
@@ -92,19 +95,21 @@ def cost_rr_legs(risk_pct, hold_minutes, fee_model, exit_reason, t1_hit, t1_part
 def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None,
              max_candles=None, candle_minutes=15,
              lock_trigger_r=LOCK_TRIGGER_R, lock_stop_r=LOCK_STOP_R,
-             t1_partial=T1_PARTIAL, trail=True, fee_model="taker"):
+             t1_partial=T1_PARTIAL, trail=True, fee_model="taker", trail_dist=None):
     """Simulate one trade. Returns a result dict, or None if `candles` is empty.
 
     Args:
         candles: forward candles, oldest first. Each has open/high/low/close.
         direction: "long" | "short".
-        stop, target_1, target_2: absolute prices. target_2 may be None.
+        stop, target_1, target_2: absolute prices. target_1 / target_2 may be None.
         entry_price: fill price; default = candles[0]["open"] (market at next open).
         max_candles: cap on how many candles the trade may live; default all.
         candle_minutes: 15 for the evaluator / unified backtest, used for funding.
         lock_trigger_r / lock_stop_r / t1_partial / trail: management parameters.
         fee_model: "taker" (default, legacy: market both ways) or "maker_entry"
             (passive entry + limit take-profits at maker fee; stops still taker).
+        trail_dist: price distance of the ATR trail behind the best price of prior
+            candles (None = off). Exits on it are "trail_stop" (taker).
     """
     if not candles:
         return None
@@ -136,16 +141,19 @@ def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None
     exit_reason = None
     mfe = 0.0
     mae = 0.0
+    best = entry          # best price of prior candles (for the ATR trail)
     n = 0
 
     for c in candles:
         n += 1
         hi, lo = float(c["high"]), float(c["low"])
         mfe_prior = mfe
+        best_prior = best
         fav = r_of(hi) if is_long else r_of(lo)
         adv = r_of(lo) if is_long else r_of(hi)
         mfe = max(mfe, fav)
         mae = min(mae, adv)
+        best = max(best, hi) if is_long else min(best, lo)
 
         # Protective stop for this candle — most protective first.
         if trail and mfe_prior >= lock_trigger_r:
@@ -157,13 +165,17 @@ def simulate(candles, direction, stop, target_1, target_2=None, entry_price=None
         else:
             protect_reason = "stop_loss"
             protect = stop
+        if trail_dist is not None:
+            ch = best_prior - trail_dist if is_long else best_prior + trail_dist
+            if (ch > protect) if is_long else (ch < protect):
+                protect, protect_reason = ch, "trail_stop"
 
         stopped = (lo <= protect) if is_long else (hi >= protect)
         if stopped:
             exit_price, exit_reason = protect, protect_reason
             break
-        reached_t1 = (hi >= t1) if is_long else (lo <= t1)
-        if t1 is not None and not t1_hit and reached_t1:
+        reached_t1 = t1 is not None and ((hi >= t1) if is_long else (lo <= t1))
+        if not t1_hit and reached_t1:
             t1_hit = True
         if t2 is not None:
             reached_t2 = (hi >= t2) if is_long else (lo <= t2)

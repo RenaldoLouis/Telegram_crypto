@@ -445,6 +445,40 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-10-21 (6) — Readouts switched to the quality yardstick
+
+**Why (user):** "yeah fix the two loose ends" — the automated readouts still printed the 70% band, and the day's work was uncommitted.
+
+- `config.py`: `QUALITY_MIN_TRADES` 30 / `QUALITY_MIN_PF` 1.3 / `QUALITY_MIN_GREEN_WEEKS_PCT` 55 / `QUALITY_RANDOM_MARGIN_R` 0.05; `HIT_RATE_TARGET_PCT` / `HIT_RATE_MIN_TRADES` removed (forward test #1 keeps its own copy in `monthly_review.FT1`).
+- `monthly_review.py`: the hit-rate band → **quality band** on the last 30 surfaced trades (GREEN net > 0 + PF ≥ 1.3 + ≥ 55% green weeks · OK net > 0 · YELLOW net ≤ 0 once · RED twice, or net < 0 at 95%); facts goal line; the reviewer prompt (`prompts/monthly_review.md`).
+- `weekly_eval.py`: `_group_stats` gains `green_weeks_pct`; head-to-head header, v2-era tables (net R first, PF, weeks green, profitable% reported), VERDICT tail and WATCH→EXECUTE promotion use the quality bar. **Found while switching:** the promotion table mixed eras — 20 of `trend_pullback_short`'s 64 rows were pre-v13 watch rows (retired evaluator, not comparable). Under the new bar that mix would have printed "✅ WATCH PROMOTABLE"; restricted to v2-era rows it reads +0.145R, PF 1.45, 40% weeks green (28 independent bets, 95% CI −0.17..+0.42R) → below bar. Nothing is promotable.
+- `delivery/telegram_bot.py`: the watch note names the quality bar.
+- Tests: `test_monthly_review.py` band test rewritten for the quality band (GREEN / OK on PF / OK on lumpy weeks / YELLOW / RED twice / RED at 95% / last-30 window). All suites pass.
+
+### 2026-10-21 (5) — Yardstick switched to quality; "let winners run" on score ≥ 5 → NO (both variants)
+
+**Why (user):** "are you sure we are not checking all of the strategy in the wrong way? … quality is more important than quantity … we don't need a 70% win rate, even 60/50 is fine … I think we are kinda spiraling." Diagnosis agreed: the code is sound (reproduction checks, random entries ≈ −cost, some things do pass), but every per-trade test since 09-23 used one trade shape built for the ≥ 70% bar (50% off at 0.75R, BE, target ≤ 2R, 1–2 days; the management sweep only tried T1 0.5–1R / T2 1.5–2R and picked by hit rate). User: "yeah let's try that."
+
+**(1) Yardstick (user decision):** for new work, net R/trade > 0, PF ≥ 1.3, ≥ 55% green weeks, ≥ random + 0.05R in backtests; win rate and drawdown reported, not gated (CLAUDE.md § THE SUCCESS METRIC). Running pre-registered tests keep their own rules. The code readouts that still print the 70% band (monthly review band, `weekly_eval` VERDICT) are unchanged for now.
+
+**(2) Study:** `quality_study.py`, bar `prereg_quality_20261021.md`, report `quality_20261021.md`. Score ≥ 5 candidates of the 365-day run (693 of 3,923 trades, 2025-11-15 → 2026-10-13), same limit entry and stop; M0 = today's shape (reproduced all 3,923 recorded results exactly); Q1 = 2 × ATR(4h) trailing stop, no partial, ≤ 7 days; Q2 = 3R bracket, no partial, ≤ 7 days; 3 random twins per trade. `trade_sim` gained `target_1=None` and `trail_dist` (off by default; tests added).
+
+| score ≥ 5, pooled | win % | net R | PF | weeks green | max DD | periods > 0 | random twins |
+|---|---|---|---|---|---|---|---|
+| M0 today's shape | 61% | +0.067 | 1.18 | 56% | 24R | 4/4 (TRAIN +0.004, TEST +0.020) | – |
+| Q1 trailing | 35% | +0.063 | 1.11 | 50% | 45R | 1/4 | −0.029 |
+| Q2 3R bracket | 33% | +0.136 | 1.19 | 46% | 86R | 2/4 | −0.062 |
+
+**Verdict: both NO.** Q2's average is double M0's and +0.20R above random, but it is all trending-market money: OLDER +0.425R and H +0.517R, TRAIN −0.141R and TEST −0.111R (six months of losses in between). Shorts carry it (Q2 shorts +0.210R n 450; longs −0.002R). Letting winners run on these candidates amplifies the market regime rather than adding steady quality; today's shape on score ≥ 5 stays the steadiest variant but also misses the new bar (PF 1.18 < 1.3). No live change.
+
+### 2026-10-21 (4) — Top-down cascade (4h flow → 1h confirms → 30m liquidity sweep → 15m entry) → NO
+
+**Why (user):** "for 4h the purpose is to find the pattern or the flow, 1h is refine or confirmation for the 4h, the 30m is to find the liquidity and 15m is for the entry — is that how our current system works?" It is not (each live rule fires on one timeframe and enters at the next 15m open; no 30m anywhere). User: "run it."
+
+**Study:** `cascade_study.py`, bar `logs/backtest_reports/prereg_cascade_20261021.md` (written before the code), report `cascade_20261021.md`. 4h EMA20/50 flow, 1h agrees, a 30m sweep of the 20-bar low (long; high for short) by ≥ 0.15 ATR, reclaimed with a ≥ 50% wick, then a 15m close beyond the prior 4 bars' extreme within 2 h (invalidated if the stop trades first), stop beyond the sweep wick (floor 0.5 × 30m ATR), T2 2R, 1-day window, harness trade model. 33 symbols (XPLUSDT has no full 15m cache), the 365-day caches, 30m bars built from 15m; four periods; 3 random twins per setup with the same entry.
+
+**Result: NO, on 1,477 trades.** OLDER 52.6% / −0.122R (n 557; random −0.107R) · TRAIN 54.9% / −0.120R (n 479; random −0.103R) · TEST 56.9% / −0.074R (n 325; random −0.097R) · H 52.6% / −0.115R (n 116; random −0.101R). Negative in every period for both longs and shorts, and no better than random entries handled the same way. The next-15m-open diagnostic is worse still (−0.13 to −0.39R): the 15m trigger improves any entry about equally, signal or random, which is geometry rather than information. 1,384 of 3,424 setups were invalidated: price ran through the swept low within 2 hours before any 15m trigger, so most 30m sweeps were not the turn. No live change.
+
 ### 2026-10-21 (3) — Checklist "score ≥ 5": confirmation on older data + forward log live
 
 **Why (user):** "yes go for both" — (1) confirm the post-hoc lead on data no study had touched, (2) start logging the score on every live candidate now so a forward clock runs.

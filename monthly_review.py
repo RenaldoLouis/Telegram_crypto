@@ -6,8 +6,8 @@ Two halves, deliberately separated:
 1. FACTS — pure Python, zero tokens, CI-safe. `maybe_write_facts()` runs at the end of every
    `weekly_eval.run_evaluation()` and, once >= config.MONTHLY_REVIEW_DAYS have passed since the
    last facts file (or none exists), writes logs/performance/monthly/facts_<date>.{json,md}:
-   every pre-registered forward test judged against ITS OWN decision rule, the hit-rate band on
-   the surfaced book, the shadow lane per rule / direction / month, the forward daily-pick study,
+   every pre-registered forward test judged against ITS OWN decision rule, the quality band on
+   the surfaced book (net R, profit factor, green weeks — 2026-10-21; was a hit-rate band), the shadow lane per rule / direction / month, the forward daily-pick study,
    the frozen rule's monthly profile in the latest unified backtest (fade check), scan coverage
    and the open recommendation ledger. Nothing in this file can change a trading rule.
 
@@ -57,10 +57,12 @@ FROZEN_TF = "4h"
 # here so the facts file can judge the test by its own rule; the banner is the source of truth.
 FT1 = {"n_decide": 30, "n_extend": 50, "promote_pct": 70.0, "extend_floor_pct": 60.0,
        "kill_after_n": 20, "kill_below_pct": 60.0, "expiry": "2026-12-31"}
-# Hit-rate band on the surfaced book (user decision 2026-10-16): judged on the last 30 trades,
-# not the calendar month, because a 65% rule shows a sub-60% month ~1 time in 4 by luck.
-BAND = {"window": 30, "target_pct": float(getattr(config, "HIT_RATE_TARGET_PCT", 70)),
-        "floor_pct": 60.0, "red_max_wins": 12}   # 12/30 = 40%: below 60% even at 95% confidence
+# Quality band on the surfaced book: judged on the last 30 trades, not the calendar month (window
+# chosen 2026-10-16 — one bad month is luck about 1 time in 4). Levels = the quality yardstick
+# (user decision 2026-10-21, config.QUALITY_*), which replaced the 70% / 60% hit-rate band.
+BAND = {"window": int(getattr(config, "QUALITY_MIN_TRADES", 30)),
+        "min_pf": float(getattr(config, "QUALITY_MIN_PF", 1.3)),
+        "min_weeks_pct": float(getattr(config, "QUALITY_MIN_GREEN_WEEKS_PCT", 55))}
 
 
 def _ledger():
@@ -184,25 +186,39 @@ def forward_test_1(v2_surfaced, now):
     return out
 
 
-# ---- 2. hit-rate band on the surfaced book --------------------------------------------------
+# ---- 2. quality band on the surfaced book ---------------------------------------------------
+def _quality(rows):
+    """Net profit factor and % of green weeks (by scan time) of the managed trade."""
+    nets = [we._managed_rr(r)[1] for r in rows]
+    gain, loss = sum(x for x in nets if x > 0), -sum(x for x in nets if x < 0)
+    weeks = {}
+    for r in rows:
+        k = _ts_key(r).isocalendar()[:2]
+        weeks[k] = weeks.get(k, 0.0) + we._managed_rr(r)[1]
+    return {"pf": round(gain / loss, 2) if loss > 0 else None,      # None = no losing trade (JSON-safe)
+            "green_weeks_pct": round(100 * sum(1 for v in weeks.values() if v > 0) / len(weeks), 1) if weeks else None}
+
+
 def band(v2_surfaced, previous_status=None):
     rows = sorted(v2_surfaced, key=_ts_key)[-BAND["window"]:]
-    s = _stats(rows)
+    s = {**_stats(rows), **_quality(rows)}
+    net, ci = s["net"] or 0, s["net_ci"]
     if s["n"] < BAND["window"]:
         status = "BUILDING"
-    elif s["wins"] <= BAND["red_max_wins"]:
-        status = "RED"
-    elif s["prof_pct"] < BAND["floor_pct"]:
+    elif ci and ci[1] < 0:
+        status = "RED"                       # losing even at 95% confidence
+    elif net <= 0:
         status = "RED" if previous_status in ("YELLOW", "RED") else "YELLOW"
-    elif s["prof_pct"] >= BAND["target_pct"] and (s["net"] or 0) > 0:
+    elif (s["pf"] is None or s["pf"] >= BAND["min_pf"]) and (s["green_weeks_pct"] or 0) >= BAND["min_weeks_pct"]:
         status = "GREEN"
     else:
         status = "OK"
+    bar = f"net > 0, PF >= {BAND['min_pf']:.1f}, >= {BAND['min_weeks_pct']:.0f}% of weeks green"
     return {**s, "window": BAND["window"], "status": status, "previous_status": previous_status,
-            "rule": {"GREEN": f">={BAND['target_pct']:.0f}% profitable AND net>0 — the real-money bar",
-                     "OK": f"{BAND['floor_pct']:.0f}-{BAND['target_pct']:.0f}% — inside the band, nothing to do",
-                     "YELLOW": f"<{BAND['floor_pct']:.0f}% once — explain it; change nothing",
-                     "RED": f"<{BAND['floor_pct']:.0f}% on two consecutive reviews, or <= {BAND['red_max_wins']}/{BAND['window']} wins — act: retire, promote a shadow rule that passed, or test a recorded recommendation; never re-tune on the losing month",
+            "rule": {"GREEN": f"{bar} — the quality bar (real-money candidate; the user decides)",
+                     "OK": "net > 0 but PF or green weeks below the bar — nothing to do",
+                     "YELLOW": "net <= 0 once — explain it; change nothing",
+                     "RED": "net <= 0 on two consecutive reviews, or net < 0 at 95% confidence — act: retire, promote a shadow rule that passed, or test a recorded recommendation; never re-tune on the losing month",
                      "BUILDING": f"fewer than {BAND['window']} surfaced trades scored in the v2 era"}}
 
 
@@ -308,7 +324,8 @@ def daily_pick_study(v2_all, now):
         s["days_with_pick_pct"] = round(100 * len(picks) / span, 1)
         out["policies"][name] = s
     out["bar"] = ("a daily policy becomes a promotion CANDIDATE only at >=60% profitable AND net>0 on >=30 "
-                  "forward days, and may be surfaced only at >=70% + net>0; the 2026-09-23 backtest put "
+                  "forward days (its own rule, 2026-10-16), and real money is judged on the quality yardstick "
+                  "(net>0, PF>=1.3, >=55% weeks green; 2026-10-21); the 2026-09-23 backtest put "
                   "'best rule each day' at 54.5% / -0.112R on TEST (Jul-Sep), decaying month by month")
     return out
 
@@ -462,8 +479,9 @@ def build_facts(all_evals, now=None):
     return {
         "generated_at": now.isoformat(), "tag": tag, "review_cadence_days": int(getattr(config, "MONTHLY_REVIEW_DAYS", 30)),
         "goal": ("a proven, owned, fully mechanical Bybit USDT-perp edge that eventually trades itself; success = "
-                 f">= {getattr(config, 'HIT_RATE_TARGET_PCT', 70)}% of SURFACED suggestions profitable (managed trade, net of cost) "
-                 f"over >= {getattr(config, 'HIT_RATE_MIN_TRADES', 30)} forward trades AND net expectancy > 0"),
+                 "the quality yardstick (user decision 2026-10-21; replaced the >= 70% hit-rate bar): over >= "
+                 f"{BAND['window']} forward trades, net R per trade > 0 (managed trade, net of cost), net profit factor >= "
+                 f"{BAND['min_pf']:.1f} and >= {BAND['min_weeks_pct']:.0f}% of weeks green; win rate is reported, not gated"),
         "rules_in_force": {
             "surface_bar": f"a rule is shown only with TEST hit rate >= {getattr(config, 'SURFACE_MIN_HIT_RATE', 0.6) * 100:.0f}% on >= "
                            f"{getattr(config, 'SURFACE_MIN_TEST_N', 30)} out-of-sample trades; everything else is the shadow lane (scored, never shown, never counted)",
@@ -520,8 +538,11 @@ def render_md(f):
     if ft["trades"]:
         L.append("- Trades: " + ", ".join(f"{t['date']} {t['symbol']} {'✓' if t['profitable'] else '✗'} {t['net']:+.2f}R" for t in ft["trades"]))
     b = f["band"]
-    L += ["", "## 2. Hit-rate band — surfaced book, last 30 trades",
-          f"- Window: last {b['window']} surfaced v2 trades → **{_cell(b)}** → status **{b['status']}** (previous: {b['previous_status']})",
+    pf = "n/a" if b.get("pf") is None else f"{b['pf']:.2f}"
+    wk = "n/a" if b.get("green_weeks_pct") is None else f"{b['green_weeks_pct']:.0f}%"
+    L += ["", "## 2. Quality band — surfaced book, last 30 trades",
+          f"- Window: last {b['window']} surfaced v2 trades → **{_cell(b)}** · PF {pf} · weeks green {wk} → "
+          f"status **{b['status']}** (previous: {b['previous_status']})",
           f"- Meaning: {b['rule'][b['status']]}"]
     pt = f["paper_test_2"]
     L += ["", "## 3. Forward paper test #2 — XS momentum (pre-registered 2026-10-05)"]

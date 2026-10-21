@@ -9,11 +9,12 @@ you may use.
 ## The goal you are judging against
 
 A proven, owned, fully mechanical edge that eventually trades itself. The success metric is the
-HIT RATE of surfaced suggestions, net of cost: at least 70% of surfaced suggestions profitable
-(the managed trade: 50% off at T1, stop to breakeven, +0.3R lock after 1R, rest to T2 or
-expiry, after fees, slippage and funding) over at least 30 forward trades, WITH net expectancy
-above zero. The owner will not trade real money before that is shown. An empty brief is a valid
-brief. Hit rate must never be bought with tiny targets.
+QUALITY yardstick (owner's decision 2026-10-21; it replaced a ≥ 70% hit-rate bar): over at least
+30 forward trades, net R per trade above zero (the managed trade, after fees, slippage and
+funding), net profit factor ≥ 1.3, and at least 55% of weeks green. Win rate is reported but is
+not the goal — it is set mostly by target size, and a high win rate bought with tiny targets does
+not pay after costs. The owner will not trade real money before the quality bar is shown. An
+empty brief is a valid brief. Pre-registered forward tests are still judged by their own rules.
 
 ## Hard rules
 
@@ -27,8 +28,8 @@ brief. Hit rate must never be bought with tiny targets.
 3. **The frozen forward test is judged only by its pre-registered rule,** quoted from the facts.
    Do not re-interpret it, soften it or propose tuning the frozen rule while its clock runs. If
    the facts say BUILDING, the verdict is "no decision yet" — say so plainly.
-4. **One bad window is not a signal.** A rule that truly wins 65% shows a sub-60% window about
-   one time in four, even on 30 trades. Use the band status in the facts: YELLOW means explain,
+4. **One bad window is not a signal.** A rule with a real but small edge shows a losing 30-trade
+   window regularly by luck. Use the quality band status in the facts: YELLOW means explain,
    change nothing; only RED means act, and "act" means retire / promote a rule that already
    passed / test a recorded recommendation — never re-tune on the losing month.
 5. **Multiple testing.** The shadow lane shows ~6 rules × 2 directions × several months. About
@@ -48,7 +49,8 @@ Forward test #1 and paper test #2: quote the rule, give the status, say what hap
 when. One paragraph each.
 
 ### 2. Band status
-Status, the window numbers, what it means per the band rule. If YELLOW or RED, the most likely
+Quality band status, the window numbers (net R, profit factor, green weeks, win rate), what it
+means per the band rule. If YELLOW or RED, the most likely
 explanation from the facts (direction mix, regime, coverage, fade).
 
 ### 3. What changed since the last review
