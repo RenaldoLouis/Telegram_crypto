@@ -1,0 +1,72 @@
+{
+  "run_timestamp_utc": "2026-10-21T05:00:11.698261+00:00",
+  "run_tag": "20261021_0500",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_on",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1,
+    "daily_picks": 1
+  },
+  "setups": [
+    {
+      "symbol": "XLMUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.18062645,
+      "entry_high": 0.18157355,
+      "stop_loss": 0.18438929,
+      "target_1": 0.17863303,
+      "target_2": 0.17452142,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.1825, RSI 71.1"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "risk_on",
+      "interest_score": 1.0,
+      "rank": 3,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 31.34,
+          "rsi": 71.11,
+          "macd": -0.000455,
+          "macd_hist": 0.000974,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.72,
+          "range_pct": 6.73
+        },
+        "tf_1h": {
+          "adx": 28.4,
+          "rsi": 46.77,
+          "macd": 0.001219,
+          "macd_hist": 5.6e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.45,
+          "range_pct": 4.75
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "daily_pick": true,
+      "daily_pick_seq": 3
+    }
+  ]
+}
