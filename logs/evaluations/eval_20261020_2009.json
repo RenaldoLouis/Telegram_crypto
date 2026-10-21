@@ -1,0 +1,31 @@
+{
+  "run_tag": "20261020_2009",
+  "run_timestamp_utc": "2026-10-20T20:09:55.679760+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_on",
+  "evaluated_at_utc": "2026-10-21T00:04:47.186195+00:00",
+  "results": [
+    {
+      "status": "duplicate",
+      "duplicate_of": "20261020_2006",
+      "reason": "same signal bar as run 20261020_2006 (cross-run race) \u2014 not counted",
+      "symbol": "OPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 8,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "risk_on",
+      "interest_score": 3.0,
+      "source": "shadow",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short"
+    }
+  ]
+}
