@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T00:04:47.222639+00:00",
+  "generated_at": "2026-10-21T01:14:06.436444+00:00",
   "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
   "lanes": [
     "mechanical",
@@ -94,27 +94,27 @@
     },
     "trend_pullback_short": {
       "all": {
-        "n": 43,
-        "prof_pct": 65.1,
-        "net": 0.174
+        "n": 44,
+        "prof_pct": 63.6,
+        "net": 0.145
       },
       "last30": {
         "n": 30,
         "prof_pct": 73.3,
-        "net": 0.296
+        "net": 0.295
       },
       "d30": {
-        "n": 43,
-        "prof_pct": 65.1,
-        "net": 0.174
+        "n": 44,
+        "prof_pct": 63.6,
+        "net": 0.145
       }
     }
   },
   "by_direction": {
     "short": {
-      "n": 91,
-      "prof_pct": 64.8,
-      "net": 0.154
+      "n": 92,
+      "prof_pct": 64.1,
+      "net": 0.141
     },
     "long": {
       "n": 107,
