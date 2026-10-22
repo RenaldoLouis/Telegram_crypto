@@ -1,0 +1,157 @@
+{
+  "run_timestamp_utc": "2026-10-22T05:27:30.231896+00:00",
+  "run_tag": "20261022_0527",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2,
+    "daily_picks": 0
+  },
+  "setups": [
+    {
+      "symbol": "CRVUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.37581,
+      "entry_high": 0.37959,
+      "stop_loss": 0.41285,
+      "target_1": 0.3457,
+      "target_2": 0.3074,
+      "predicted_rr": 0.91,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.4058, RSI 70.3"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 38.02,
+          "rsi": 70.26,
+          "macd": 0.012044,
+          "macd_hist": 0.001996,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.03,
+          "range_pct": 20.6
+        },
+        "tf_1h": {
+          "adx": 37.98,
+          "rsi": 41.91,
+          "macd": 0.002907,
+          "macd_hist": -0.001168,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.94,
+          "range_pct": 7.45
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1792641600000,
+        "score": 2,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": true,
+          "oi_trapped": true,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    },
+    {
+      "symbol": "SOXLUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 94.04078565,
+      "entry_high": 94.71921435,
+      "stop_loss": 93.47464286,
+      "target_1": 95.05901785,
+      "target_2": 96.19071428,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 94.7700 low, RSI 28.8, ADX 23.1"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 25.39,
+          "rsi": 44.7,
+          "macd": -0.300284,
+          "macd_hist": 0.188571,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.21,
+          "range_pct": 19.5
+        },
+        "tf_1h": {
+          "adx": 23.14,
+          "rsi": 28.81,
+          "macd": -1.47028,
+          "macd_hist": -0.918059,
+          "trend": "bearish",
+          "ema20_dist_atr": 2.42,
+          "range_pct": 11.64
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1792645200000,
+        "score": 3,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": true,
+          "trendline": true,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
