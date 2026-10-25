@@ -302,6 +302,53 @@ def f_combo(P):
     return (f_xs_momentum(P, 56, 0, 0.1) + f_carry(P, 7, 0.1) + f_new_listing_short(P, 1, 30, False)) / 3
 
 
+def f_carry_liquid(P, days, top, frac):
+    return xs_book(P, -P.fund.rolling(days, min_periods=days).sum(), frac, elig=liquid(P, top))
+
+
+def f_carry_invvol(P, days, frac):
+    return xs_book(P, -P.fund.rolling(days, min_periods=days).sum(), frac, invvol=True)
+
+
+def vol_managed(P, W, target=TARGET_VOL, window=30, cap=2.0):
+    """Scale a book by target / its own trailing realised volatility (past returns only)."""
+    base = run_weights(P, W)
+    vol = base.rolling(window, min_periods=window).std() * math.sqrt(365)
+    k = (target / vol).clip(upper=cap).replace([np.inf, -np.inf], np.nan).fillna(0.0)
+    return W.mul(k, axis=0)
+
+
+def f_vol_managed(P, base, params):
+    return vol_managed(P, BASES[base](P, **params))
+
+
+def f_ratio_trend(P, long_leg, sma, short_flat):
+    """Trend on a relative price: long `long_leg` / short BTC (same notional) while the ratio is
+    above its SMA, flat (or the reverse) otherwise. `long_leg` = ETHUSDT or 'alts' (equal-weight
+    20 most liquid non-BTC names)."""
+    W = pd.DataFrame(0.0, index=P.close.index, columns=P.close.columns)
+    if long_leg == "alts":
+        el = liquid(P, 21).copy()
+        el["BTCUSDT"] = False
+        basket = el.astype(float).div(el.sum(axis=1).replace(0, np.nan), axis=0).fillna(0.0)
+        leg_ret = (basket.shift(1) * P.ret.fillna(0.0)).sum(axis=1)
+        idx = (1 + leg_ret).cumprod()
+    else:
+        basket = pd.DataFrame(0.0, index=W.index, columns=W.columns)
+        basket[long_leg] = 1.0
+        idx = P.close[long_leg]
+    ratio = idx / P.close["BTCUSDT"]
+    ma = ratio.rolling(sma, min_periods=sma).mean()
+    side = pd.Series(np.where(ratio > ma, 1.0, 0.0 if short_flat else -1.0), index=W.index)
+    side[ma.isna()] = 0.0
+    W = basket.mul(side * 0.5, axis=0)
+    W["BTCUSDT"] = W["BTCUSDT"] - side * 0.5
+    return W
+
+
+BASES = {"xs_carry": f_carry, "btc_trend": f_btc_trend, "listing": f_new_listing_short, "xs_mom": f_xs_momentum}
+
+
 def variants():
     """(family, name, fn, params, engine) — the full DISCOVERY menu, in a fixed order."""
     v = []
@@ -349,6 +396,21 @@ def variants():
         v.append(("mom_carry", f"mom56_carry7_{int(fr * 100)}pct", f_mom_carry, {"lookback": 56, "days": 7, "frac": fr}, "weights"))
     v.append(("reversal", "xs_rev_7d_top50_20pct", f_reversal_liquid, {"lookback": 7, "top": 50, "frac": 0.2}, "weights"))
     v.append(("combo", "combo_mom56_carry7_listing30", f_combo, {}, "weights"))
+    # Round 2 — written after round 1's ranking (all counted): carry built with more care,
+    # volatility management, relative-value trends.
+    v.append(("carry", "xs_carry_7d_top50_20pct", f_carry_liquid, {"days": 7, "top": 50, "frac": 0.2}, "weights"))
+    v.append(("carry", "xs_carry_7d_20pct_invvol", f_carry_invvol, {"days": 7, "frac": 0.2}, "weights"))
+    v.append(("carry", "xs_carry_1d_20pct", f_carry, {"days": 1, "frac": 0.2}, "weights"))
+    v.append(("carry", "xs_carry_7d_30pct", f_carry, {"days": 7, "frac": 0.3}, "weights"))
+    for base, params, tag in (("xs_carry", {"days": 7, "frac": 0.2}, "xs_carry_7d_20pct"),
+                              ("btc_trend", {"sma": 50, "short": False}, "btc_sma50_long"),
+                              ("listing", {"delay": 1, "hold": 60, "hedge": True}, "new_listing_short_d1_h60_btc"),
+                              ("xs_mom", {"lookback": 28, "skip": 0, "frac": 0.1}, "xs_mom_28d_skip0_10pct")):
+        v.append(("volman", f"volman_{tag}", f_vol_managed, {"base": base, "params": params}, "weights"))
+    for leg in ("ETHUSDT", "alts"):
+        for sma in (50, 100):
+            v.append(("ratio", f"ratio_{'eth' if leg == 'ETHUSDT' else 'alts'}_btc_sma{sma}", f_ratio_trend,
+                      {"long_leg": leg, "sma": sma, "short_flat": False}, "weights"))
     return v
 
 
