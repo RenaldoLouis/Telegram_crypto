@@ -346,6 +346,43 @@ def f_ratio_trend(P, long_leg, sma, short_flat):
     return W
 
 
+def pick_combo(led, store, min_sharpe=0.5, max_corr=0.5, exclude=("combo", "harvest")):
+    """The combination rule: the best DISCOVERY variant of each family (Sharpe ≥ min_sharpe,
+    alpha t > 0), taken in Sharpe order and kept only if its daily returns correlate < max_corr
+    with every sleeve already kept. Returns [(name, scale to 20% vol)]."""
+    best = {}
+    for r in led:
+        m = r["metrics"]
+        if not m or r["family"] in exclude or m["alpha_t"] <= 0 or m["sharpe"] < min_sharpe:
+            continue
+        if r["family"] not in best or m["sharpe"] > best[r["family"]]["metrics"]["sharpe"]:
+            best[r["family"]] = r
+    chosen = []
+    for r in sorted(best.values(), key=lambda x: -x["metrics"]["sharpe"]):
+        if all(abs(store[r["name"]].corr(store[c["name"]])) < max_corr for c in chosen):
+            chosen.append(r)
+    return [(c["name"], round(TARGET_VOL / c["metrics"]["vol"], 4)) for c in chosen]
+
+
+def f_combination(P, components):
+    """Equal-risk blend: each component's weights × its DISCOVERY 20%-vol scale, averaged."""
+    menu = {name: (fn, params) for _, name, fn, params, _ in variants()}
+    W = None
+    for name, scale in components:
+        fn, params = menu[name]
+        w = fn(P, **params) * scale
+        W = w if W is None else W.add(w, fill_value=0.0)
+    return W / len(components)
+
+
+def f_combination_harvest(P, components, harvest):
+    """The weights blend plus the hedged funding harvest as one more equal-risk sleeve; returns
+    (blend weights, harvest weights, harvest scale) — booked by build_series."""
+    name, scale = harvest
+    params = {n: p for _, n, _, p, _ in variants()}[name]
+    return f_combination(P, components), f_harvest(P, **params), scale
+
+
 BASES = {"xs_carry": f_carry, "btc_trend": f_btc_trend, "listing": f_new_listing_short, "xs_mom": f_xs_momentum}
 
 
@@ -411,10 +448,22 @@ def variants():
         for sma in (50, 100):
             v.append(("ratio", f"ratio_{'eth' if leg == 'ETHUSDT' else 'alts'}_btc_sma{sma}", f_ratio_trend,
                       {"long_leg": leg, "sma": sma, "short_flat": False}, "weights"))
+    # Round 3 — `pick_combo` run on the 98-variant ledger (picks frozen here, scales = 20% / each
+    # sleeve's DISCOVERY volatility), committed before the blends were evaluated.
+    sleeves = [("volman_btc_sma50_long", 0.7378), ("xs_carry_7d_20pct", 0.9855),
+               ("xs_mom_28d_skip0_10pct", 0.5152), ("new_listing_short_d1_h60_btc", 0.3387)]
+    v.append(("combo", "combo_4_sleeves", f_combination, {"components": sleeves}, "weights"))
+    v.append(("combo", "combo_5_sleeves_with_harvest", f_combination_harvest,
+              {"components": sleeves, "harvest": ("funding_harvest_top5", 5.056)}, "combo_harvest"))
     return v
 
 
 def build_series(P, fn, params, engine):
+    if engine == "combo_harvest":
+        Wc, Wh, sh = fn(P, **params)
+        n = len(params["components"])
+        r = (run_weights(P, Wc) * n + run_harvest(P, Wh) * sh) / (n + 1)
+        return r, (Wc * n).add(Wh.abs() * sh, fill_value=0.0) / (n + 1)
     W = fn(P, **params)
     return run_harvest(P, W) if engine == "harvest" else run_weights(P, W), W
 
