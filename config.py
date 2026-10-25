@@ -168,6 +168,15 @@ TELEGRAM_LOOKBACK_HOURS = 12         # Read messages from last N hours
 # === Watchlist (your personal focus) ===
 WATCHLIST = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]  # Always include these
 
+# === Crypto-only universe (2026-10-25, user-approved) ===
+# Bybit also lists tokenized stocks, ETFs, commodities and forex as USDT perps and flags them with
+# `symbolType` in instruments-info. Every rule was validated on crypto, yet the daily book's first
+# week picked SKHYNIXUSDT (stock) and KORUUSDT (3x ETF). The scan and unified_backtest.py's auto
+# universe drop these before scoring. Same set as xs_momentum_paper.RULES["crypto_only"], which
+# keeps its own frozen copy under its rules_hash.
+SCAN_EXCLUDE_SYMBOL_TYPES = ("stock", "ETF", "commodity", "forex")
+SCAN_EXCLUDE_SYMBOLS = ("XAUTUSDT", "PAXGUSDT", "USDCUSDT", "USDEUSDT", "USD1USDT")  # pegged tokens Bybit leaves unflagged
+
 # === Momentum Pulse Settings ===
 MOMENTUM_PULSE_EXPIRY_HOURS = 48          # Hot list entries expire after this
 MOMENTUM_BIG_MOVE_PCT = 8.0              # Flag if price moved > this %

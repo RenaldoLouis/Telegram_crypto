@@ -44,6 +44,7 @@ import signal_rules as sr
 import derivs_data as dd
 import cvd_data
 import trade_sim as ts
+from fetchers.bybit_data import BybitFetcher
 
 BASE_DIR = Path(__file__).parent
 CACHE_DIR = BASE_DIR / "logs" / "backtest_cache" / "unified"
@@ -132,16 +133,18 @@ def fetch_closed_klines(client, symbol, interval, days, skip_fetch=False):
     return dedup
 
 
-def auto_universe(max_symbols):
+def auto_universe(max_symbols, exclude=frozenset()):
     """Live universe (symbols the pre-filter actually selected, by frequency) blended
     with the majors set. Half the slots go to majors (needed for the majors-vs-others
-    cut), half to the most frequent non-major live symbols. BTCUSDT always included."""
+    cut), half to the most frequent non-major live symbols. BTCUSDT always included.
+    `exclude` = symbols the live scan drops (non-crypto perps, 2026-10-25), so old setup
+    logs cannot pull a stock or ETF perp into the validated population."""
     freq = Counter()
     for f in SETUPS_DIR.glob("setups_*.json"):
         try:
             rec = json.loads(f.read_text())
             for s in rec.get("setups", []):
-                if s.get("symbol"):
+                if s.get("symbol") and s["symbol"] not in exclude:
                     freq[s["symbol"]] += 1
         except Exception:
             continue
@@ -672,7 +675,8 @@ def run(args):
     elif cvd is not None:
         symbols = list(cvd.symbols)
     else:
-        symbols = auto_universe(10 if args.quick else args.max_symbols)
+        symbols = auto_universe(10 if args.quick else args.max_symbols,
+                                exclude=BybitFetcher().get_non_crypto_symbols())
     if "BTCUSDT" not in symbols:
         symbols.insert(0, "BTCUSDT")
     print(f"Universe ({len(symbols)}): {', '.join(symbols)}")

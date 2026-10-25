@@ -108,6 +108,38 @@ class BybitFetcher:
             for t in by_turnover
         ]
 
+    def get_non_crypto_symbols(self):
+        """USDT perps that are not crypto: Bybit's own `symbolType` flag (stock / ETF /
+        commodity / forex) plus the pegged tokens it leaves unflagged (config.SCAN_EXCLUDE_*).
+        A failed instruments-info call returns just the static pegged list, so the scan
+        still runs; the warning says the TradFi filter was off for this run."""
+        excluded, cursor = set(config.SCAN_EXCLUDE_SYMBOLS), ""
+        try:
+            while True:
+                kwargs = {"category": config.BYBIT_CATEGORY, "limit": 1000}
+                if cursor:
+                    kwargs["cursor"] = cursor
+                res = self._api("get_instruments_info", **kwargs)["result"]
+                excluded |= {i["symbol"] for i in res.get("list", [])
+                             if i.get("symbolType") in config.SCAN_EXCLUDE_SYMBOL_TYPES}
+                cursor = res.get("nextPageCursor") or ""
+                if not cursor:
+                    return excluded
+        except Exception as e:
+            print(f"  ⚠ instruments-info failed ({type(e).__name__}: {e}) — "
+                  f"stock/ETF perps are NOT filtered this run")
+            return set(config.SCAN_EXCLUDE_SYMBOLS)
+
+    @staticmethod
+    def _drop_non_crypto(broad_pool, hot_coins, non_crypto):
+        """Remove non-crypto perps from the ticker pool AND the momentum hot list (hot-list
+        coins bypass the liquidity filter, so they need the same cut). Returns
+        (broad_pool, hot_coins, dropped_symbols)."""
+        seen = {t["symbol"] for t in broad_pool} | {c["symbol"] for c in hot_coins}
+        dropped = sorted(seen & set(non_crypto))
+        return ([t for t in broad_pool if t["symbol"] not in non_crypto],
+                [c for c in hot_coins if c["symbol"] not in non_crypto], dropped)
+
     def _compute_indicators(self, candles):
         """Compute RSI, volume spike, breakout from raw candle data."""
         df = pd.DataFrame(
@@ -573,6 +605,13 @@ class BybitFetcher:
 
         # Step 2: Load momentum pulse hot list (dynamic watchlist) + market regime
         hot_coins, market_regime = self._load_hot_list()
+
+        # Step 2b: crypto only — drop tokenized stocks/ETFs/commodities/forex before scoring
+        broad_pool, hot_coins, dropped = self._drop_non_crypto(
+            broad_pool, hot_coins, self.get_non_crypto_symbols())
+        if dropped:
+            print(f"  Dropped {len(dropped)} non-crypto perps: {', '.join(dropped)}")
+
         hot_syms = {coin["symbol"] for coin in hot_coins}
         hot_map = {coin["symbol"]: coin for coin in hot_coins}
         if hot_coins:
