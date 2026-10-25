@@ -365,12 +365,13 @@ def pick_combo(led, store, min_sharpe=0.5, max_corr=0.5, exclude=("combo", "harv
 
 
 def f_combination(P, components):
-    """Equal-risk blend: each component's weights × its DISCOVERY 20%-vol scale, averaged."""
+    """Equal-risk blend: each component's weights × its DISCOVERY 20%-vol scale, averaged.
+    A component without a frozen scale (None) is itself vol-managed to 20%, so its scale is 1."""
     menu = {name: (fn, params) for _, name, fn, params, _ in variants()}
     W = None
     for name, scale in components:
         fn, params = menu[name]
-        w = fn(P, **params) * scale
+        w = fn(P, **params) * (1.0 if scale is None else scale)
         W = w if W is None else W.add(w, fill_value=0.0)
     return W / len(components)
 
@@ -383,7 +384,8 @@ def f_combination_harvest(P, components, harvest):
     return f_combination(P, components), f_harvest(P, **params), scale
 
 
-BASES = {"xs_carry": f_carry, "btc_trend": f_btc_trend, "listing": f_new_listing_short, "xs_mom": f_xs_momentum}
+BASES = {"xs_carry": f_carry, "btc_trend": f_btc_trend, "listing": f_new_listing_short, "xs_mom": f_xs_momentum,
+         "combo": f_combination}
 
 
 def variants():
@@ -455,6 +457,14 @@ def variants():
     v.append(("combo", "combo_4_sleeves", f_combination, {"components": sleeves}, "weights"))
     v.append(("combo", "combo_5_sleeves_with_harvest", f_combination_harvest,
               {"components": sleeves, "harvest": ("funding_harvest_top5", 5.056)}, "combo_harvest"))
+    # Round 4 — after round 3 failed on 2022 and drawdown: risk control, not new signals.
+    v.append(("volman", "volman_btc_sma50_ls", f_vol_managed, {"base": "btc_trend", "params": {"sma": 50, "short": True}},
+              "weights"))
+    v.append(("combo", "volman_combo_4_sleeves", f_vol_managed, {"base": "combo", "params": {"components": sleeves}},
+              "weights"))
+    sleeves_ls = [("volman_btc_sma50_ls", None)] + sleeves[1:]
+    v.append(("combo", "volman_combo_4_sleeves_btc_ls", f_vol_managed,
+              {"base": "combo", "params": {"components": sleeves_ls}}, "weights"))
     return v
 
 
