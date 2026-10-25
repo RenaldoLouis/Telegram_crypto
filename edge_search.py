@@ -66,18 +66,23 @@ class Panel:
     """Daily close / turnover / funding for every symbol, cut at `end` while loading, plus the
     point-in-time eligibility, per-side cost and the equal-weight eligible market."""
 
-    def __init__(self, end=DISCOVERY_END, symbols=None):
-        insts = json.loads((CACHE / "instruments.json").read_text())["instruments"]
+    def __init__(self, end=DISCOVERY_END, symbols=None, start=None, cache=None):
+        """`start` drops earlier days (the paper test reads a recent window); `cache` = another
+        directory in the same file layout (default: the edge cache)."""
+        cache = cache or CACHE
+        insts = json.loads((cache / "instruments.json").read_text())["instruments"]
         end_ms = None if end is None else int(end.timestamp() * 1000)
+        start_ms = None if start is None else int(start.timestamp() * 1000)
         cl, tu, fu, ou = {}, {}, {}, {}
         for x in insts:
             s = x["symbol"]
             if symbols is not None and s not in symbols:
                 continue
-            kp = CACHE / f"{s}_D.json"
+            kp = cache / f"{s}_D.json"
             if not kp.exists():
                 continue
-            rows = [r for r in json.loads(kp.read_text()) if end_ms is None or r[0] <= end_ms]
+            rows = [r for r in json.loads(kp.read_text())
+                    if (end_ms is None or r[0] <= end_ms) and (start_ms is None or r[0] >= start_ms)]
             if not rows:
                 continue
             idx = pd.to_datetime([r[0] for r in rows], unit="ms", utc=True)
@@ -85,16 +90,18 @@ class Panel:
             tu[s] = pd.Series([r[6] for r in rows], index=idx, dtype=float)
             # A settlement at a day's end (incl. 00:00 of the next day) is paid by the position held
             # over that day: day = floor((ts − 1) / 1 day).
-            fr = [r for r in json.loads((CACHE / f"{s}_funding.json").read_text())
-                  if end_ms is None or r[0] <= end_ms + DAY_MS]
+            fp = cache / f"{s}_funding.json"
+            fr = [r for r in (json.loads(fp.read_text()) if fp.exists() else [])
+                  if (end_ms is None or r[0] <= end_ms + DAY_MS) and (start_ms is None or r[0] > start_ms)]
             if fr:
                 days = pd.to_datetime([(t - 1) // DAY_MS * DAY_MS for t, _ in fr], unit="ms", utc=True)
                 fu[s] = pd.Series([r for _, r in fr], index=days, dtype=float).groupby(level=0).sum()
             # Open interest stamped T sits on the row of day T: known by that day's close whether
             # Bybit's daily value is the snapshot at T or at the end of the day.
-            op = CACHE / f"{s}_oi.json"
+            op = cache / f"{s}_oi.json"
             if op.exists():
-                orows = [r for r in json.loads(op.read_text()) if end_ms is None or r[0] <= end_ms]
+                orows = [r for r in json.loads(op.read_text())
+                         if (end_ms is None or r[0] <= end_ms) and (start_ms is None or r[0] >= start_ms)]
                 if orows:
                     ou[s] = pd.Series([r[1] for r in orows], index=pd.to_datetime([r[0] for r in orows], unit="ms", utc=True),
                                       dtype=float)
