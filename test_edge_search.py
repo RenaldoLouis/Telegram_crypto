@@ -96,6 +96,7 @@ def test_panel_cut_never_reads_holdout_rows():
         # Settlement at 01-01 00:00 belongs to day 12-31 (held over it); 01-01 08:00 is holdout.
         jan1 = int(pd.Timestamp("2025-01-01", tz="UTC").timestamp() * 1000)
         (cache / "X_funding.json").write_text(json.dumps([[jan1, 0.0005], [jan1 + 8 * 3_600_000, 0.9]]))
+        (cache / "X_oi.json").write_text(json.dumps([[t0 + 2 * DAY, 500.0], [jan1, 9e9]]))
         old = es.CACHE
         es.CACHE = cache
         try:
@@ -104,6 +105,7 @@ def test_panel_cut_never_reads_holdout_rows():
             es.CACHE = old
         assert P.close.index.max() == es.DISCOVERY_END and P.close["X"].iloc[-1] == 102
         assert P.fund["X"].iloc[-1] == 0.0005 and P.fund["X"].sum() == 0.0005
+        assert P.oi["X"].max() == 500.0 and P.oi["X"].iloc[-1] == 500.0      # 2025 open interest never loaded
 
 
 def test_confirm_refuses_without_committed_finalists():
