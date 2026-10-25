@@ -13,6 +13,7 @@ Cache: `logs/backtest_cache/edge/` (gitignored) — `instruments.json`, `<SYM>_D
 
 Usage:
     venv/bin/python edge_data.py fetch            # ~1,100 symbols, 6 threads, resumable
+    venv/bin/python edge_data.py fetch-oi         # daily open interest for every cached symbol
     venv/bin/python edge_data.py status           # what is cached
 """
 
@@ -173,6 +174,50 @@ def cmd_fetch(args):
     print(f"Done in {time.time() - t0:.0f}s; failed {len(failed)}: {failed[:20]}")
 
 
+OI_PAGE_DAYS = 200
+
+
+def fetch_oi(symbol, start_ms, end_ms):
+    """Daily open interest (base units, both sides) over [start, end], paged forward in windows."""
+    rows, cursor = {}, start_ms
+    while cursor <= end_ms:
+        end = min(cursor + OI_PAGE_DAYS * DAY_MS - 1, end_ms)
+        res = _get("/v5/market/open-interest", {"category": "linear", "symbol": symbol, "intervalTime": "1d",
+                                                "startTime": cursor, "endTime": end, "limit": OI_PAGE_DAYS})
+        for it in res.get("list", []) or []:
+            rows[int(it["timestamp"])] = float(it["openInterest"])
+        cursor = end + 1
+    return [[t, rows[t]] for t in sorted(rows)]
+
+
+def cmd_fetch_oi(args):
+    """Open-interest history for every cached symbol (`<SYM>_oi.json`), resumable."""
+    insts = json.loads((CACHE / "instruments.json").read_text())["instruments"]
+    t0, failed = time.time(), []
+
+    def one(x):
+        s = x["symbol"]
+        op = CACHE / f"{s}_oi.json"
+        if op.exists():
+            return s, "cached"
+        daily = json.loads((CACHE / f"{s}_D.json").read_text())
+        rows = fetch_oi(s, daily[0][0], daily[-1][0] + DAY_MS) if daily else []
+        op.write_text(json.dumps(rows, separators=(",", ":")))
+        return s, f"{len(rows)} days"
+
+    with ThreadPoolExecutor(THREADS) as ex:
+        futs = {ex.submit(one, x): x["symbol"] for x in insts}
+        for i, f in enumerate(as_completed(futs), 1):
+            try:
+                s, msg = f.result()
+            except Exception as e:                                # noqa: BLE001 — record and continue
+                failed.append(futs[f])
+                s, msg = futs[f], f"FAILED {e}"
+            if i % 100 == 0 or msg.startswith("FAILED"):
+                print(f"  [{i}/{len(insts)}] {s}: {msg} ({time.time() - t0:.0f}s)", flush=True)
+    print(f"Done in {time.time() - t0:.0f}s; failed {len(failed)}: {failed[:20]}")
+
+
 def cmd_status(args):
     insts = json.loads((CACHE / "instruments.json").read_text())["instruments"]
     have = [x for x in insts if (CACHE / f"{x['symbol']}_D.json").exists()]
@@ -185,6 +230,7 @@ def main():
     f = sub.add_parser("fetch")
     f.add_argument("--refresh-instruments", action="store_true")
     f.set_defaults(fn=cmd_fetch)
+    sub.add_parser("fetch-oi").set_defaults(fn=cmd_fetch_oi)
     sub.add_parser("status").set_defaults(fn=cmd_status)
     args = ap.parse_args()
     args.fn(args)

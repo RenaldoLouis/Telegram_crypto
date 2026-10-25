@@ -69,7 +69,7 @@ class Panel:
     def __init__(self, end=DISCOVERY_END, symbols=None):
         insts = json.loads((CACHE / "instruments.json").read_text())["instruments"]
         end_ms = None if end is None else int(end.timestamp() * 1000)
-        cl, tu, fu = {}, {}, {}
+        cl, tu, fu, ou = {}, {}, {}, {}
         for x in insts:
             s = x["symbol"]
             if symbols is not None and s not in symbols:
@@ -90,15 +90,24 @@ class Panel:
             if fr:
                 days = pd.to_datetime([(t - 1) // DAY_MS * DAY_MS for t, _ in fr], unit="ms", utc=True)
                 fu[s] = pd.Series([r for _, r in fr], index=days, dtype=float).groupby(level=0).sum()
-        self.build(cl, tu, fu)
+            # Open interest stamped T sits on the row of day T: known by that day's close whether
+            # Bybit's daily value is the snapshot at T or at the end of the day.
+            op = CACHE / f"{s}_oi.json"
+            if op.exists():
+                orows = [r for r in json.loads(op.read_text()) if end_ms is None or r[0] <= end_ms]
+                if orows:
+                    ou[s] = pd.Series([r[1] for r in orows], index=pd.to_datetime([r[0] for r in orows], unit="ms", utc=True),
+                                      dtype=float)
+        self.build(cl, tu, fu, ou)
 
-    def build(self, cl, tu, fu):
+    def build(self, cl, tu, fu, ou=None):
         close = pd.DataFrame(cl).sort_index()
         idx = pd.date_range(close.index.min(), close.index.max(), freq="D")
         self.close = close.reindex(idx)
         cols = self.close.columns
         self.turn = pd.DataFrame(tu).reindex(index=idx, columns=cols)
         self.fund = pd.DataFrame(fu).reindex(index=idx, columns=cols).fillna(0.0)
+        self.oi = pd.DataFrame(ou or {}).reindex(index=idx, columns=cols)
         self.ret = self.close.pct_change(fill_method=None)
         self.age = self.close.notna().cumsum()
         self.med_turn = self.turn.rolling(30, min_periods=1).median()
@@ -384,6 +393,26 @@ def f_combination_harvest(P, components, harvest):
     return f_combination(P, components), f_harvest(P, **params), scale
 
 
+def oi_growth(P, days):
+    """Change in open interest in contracts (not dollars), so price moves do not leak in."""
+    return P.oi / P.oi.shift(days) - 1
+
+
+def f_oi_growth(P, days, sign, frac):
+    return xs_book(P, sign * oi_growth(P, days), frac)
+
+
+def f_oi_turnover(P, sign, frac):
+    """Open interest in dollars over average daily turnover: how much leverage sits per unit of trading."""
+    return xs_book(P, sign * (P.oi * P.close) / P.turn.rolling(30, min_periods=20).mean(), frac)
+
+
+def f_crowding(P, frac):
+    """Short the crowded names (open interest AND funding rising), long the uncrowded ones."""
+    score = xs_z(oi_growth(P, 7), P.elig) + xs_z(P.fund.rolling(7, min_periods=7).sum(), P.elig)
+    return xs_book(P, -score, frac)
+
+
 BASES = {"xs_carry": f_carry, "btc_trend": f_btc_trend, "listing": f_new_listing_short, "xs_mom": f_xs_momentum,
          "combo": f_combination}
 
@@ -465,6 +494,14 @@ def variants():
     sleeves_ls = [("volman_btc_sma50_ls", None)] + sleeves[1:]
     v.append(("combo", "volman_combo_4_sleeves_btc_ls", f_vol_managed,
               {"base": "combo", "params": {"components": sleeves_ls}}, "weights"))
+    # Round 5 — new information: open interest (positioning / crowding).
+    for days, sign in ((7, -1), (7, 1), (30, -1)):
+        v.append(("oi", f"xs_oi_growth_{days}d_{'short' if sign < 0 else 'long'}_growth_20pct", f_oi_growth,
+                  {"days": days, "sign": sign, "frac": 0.2}, "weights"))
+    for sign in (-1, 1):
+        v.append(("oi", f"xs_oi_per_turnover_{'short' if sign < 0 else 'long'}_high_20pct", f_oi_turnover,
+                  {"sign": sign, "frac": 0.2}, "weights"))
+    v.append(("oi", "xs_crowding_short_20pct", f_crowding, {"frac": 0.2}, "weights"))
     return v
 
 
