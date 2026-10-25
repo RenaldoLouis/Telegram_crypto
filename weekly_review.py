@@ -38,6 +38,11 @@ RISK_PCT = 0.5   # paper sizing in the brief: % of the account risked per trade
 # Trader's checklist forward test (pre-registered 2026-10-21, prereg_checklist_confirm_20261021.md)
 CHECKLIST_MIN_SCORE = 5
 CHECKLIST_N_DECIDE = 30
+# Eval statuses that end a pick without a trade, as the review words them. Before 2026-10-25
+# only not_filled/duplicate were known, so a gap-skipped pick read "still inside its window" forever.
+NO_TRADE_LABELS = {"not_filled": "not filled", "gap_skipped": "gap-skipped",
+                   "invalid_levels": "invalid levels", "no_data": "no price data",
+                   "not_triggered": "not triggered", "duplicate": "duplicates"}
 
 
 def _monday(d):
@@ -45,8 +50,9 @@ def _monday(d):
 
 
 def load_picks(all_evals=None, setups_dir=SETUPS_DIR):
-    """Every daily-book pick with its status: 'scored' (eval row attached), 'not_filled',
-    'duplicate', or 'waiting' (no eval yet). Returns a list of dicts, oldest first."""
+    """Every daily-book pick with its status: 'scored' (eval row attached), a no-trade eval
+    status (NO_TRADE_LABELS: 'not_filled', 'gap_skipped', 'duplicate', ...), or 'waiting'
+    (no eval yet). Returns a list of dicts, oldest first."""
     all_evals = mr.load_evals() if all_evals is None else all_evals
     status, scored = {}, {}
     for ev in all_evals:
@@ -71,7 +77,7 @@ def load_picks(all_evals=None, setups_dir=SETUPS_DIR):
             picks.append({
                 "ts": ts, "symbol": s.get("symbol"), "direction": s.get("direction"),
                 "signal": s.get("signal_name"), "source": s.get("source"),
-                "status": "scored" if k in scored else (st if st in ("not_filled", "duplicate") else "waiting"),
+                "status": "scored" if k in scored else (st if st in NO_TRADE_LABELS else "waiting"),
                 "row": scored.get(k),
             })
     return sorted(picks, key=lambda p: p["ts"])
@@ -144,9 +150,13 @@ def build(week_monday, picks, today=None, carry=None, checklist_rows=None):
     for p in week:
         counts[p["status"]] += 1
     L.append("\n## This week")
+    others = "".join(f", {label} {counts[st]}" for st, label in NO_TRADE_LABELS.items()
+                     if st != "not_filled" and counts[st])
     L.append(f"- Picks made: {len(week)} (scored {counts['scored']}, not filled {counts['not_filled']}, "
-             f"still inside their 2-day window {counts['waiting']}"
-             + (f", duplicates {counts['duplicate']}" if counts["duplicate"] else "") + ")")
+             f"still inside their 2-day window {counts['waiting']}{others})")
+    if counts["gap_skipped"]:
+        L.append("- Gap-skipped = the first price after the signal was already past the stop or T1, "
+                 "so there was no trade to take.")
     wl, _ = _line(rows_week)
     L.append(f"- Result: {wl}")
     for d in ("short", "long"):

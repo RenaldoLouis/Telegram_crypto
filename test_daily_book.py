@@ -126,6 +126,7 @@ def test_weekly_review_statuses_stats_and_cut_rule():
         picks = [("t1", "2026-10-20T00:02:00+00:00", "AAA", "short", "failed_breakout_short"),
                  ("t2", "2026-10-21T04:02:00+00:00", "BBB", "long", "liquidity_sweep_long"),
                  ("t3", "2026-10-22T08:02:00+00:00", "CCC", "short", "trend_pullback_short"),
+                 ("t5", "2026-10-23T04:02:00+00:00", "EEE", "long", "rsi_bounce_long"),
                  ("t4", "2026-10-25T20:02:00+00:00", "DDD", "short", "trend_pullback_short")]
         for tag, ts, sym, dr, sig in picks:
             (sd / f"setups_{tag}.json").write_text(json.dumps(
@@ -133,17 +134,21 @@ def test_weekly_review_statuses_stats_and_cut_rule():
                  "setups": [dict(_cand(sym, sig, dr), daily_pick=True), _cand("NOPE", sig)]}))
         evals = [{"run_tag": "t1", "run_timestamp_utc": picks[0][1], "results": [_eval_row("AAA", "short", picks[0][4], 0.40, True)]},
                  {"run_tag": "t2", "run_timestamp_utc": picks[1][1], "results": [_eval_row("BBB", "long", picks[1][4], -1.05, False)]},
-                 {"run_tag": "t3", "run_timestamp_utc": picks[2][1], "results": [{"status": "not_filled", "symbol": "CCC", "source": "shadow"}]}]
+                 {"run_tag": "t3", "run_timestamp_utc": picks[2][1], "results": [{"status": "not_filled", "symbol": "CCC", "source": "shadow"}]},
+                 # a gap-skipped pick is finished (no trade), not "still inside its window"
+                 {"run_tag": "t5", "run_timestamp_utc": picks[3][1], "results": [{"status": "gap_skipped", "symbol": "EEE", "source": "shadow"}]}]
         got = weekly_review.load_picks(evals, setups_dir=sd)
         assert [(p["symbol"], p["status"]) for p in got] == [("AAA", "scored"), ("BBB", "scored"),
-                                                             ("CCC", "not_filled"), ("DDD", "waiting")], got
+                                                             ("CCC", "not_filled"), ("EEE", "gap_skipped"),
+                                                             ("DDD", "waiting")], got
         prev = (config.DAILY_TRIAL_START, config.DAILY_TRIAL_DAYS)
         config.DAILY_TRIAL_START, config.DAILY_TRIAL_DAYS = "2026-10-19", 14
         try:
             md, actions = weekly_review.build(date(2026, 10, 19), got, today=date(2026, 10, 26))
         finally:
             config.DAILY_TRIAL_START, config.DAILY_TRIAL_DAYS = prev
-        assert "Picks made: 4 (scored 2, not filled 1, still inside their 2-day window 1)" in md, md
+        assert "Picks made: 5 (scored 2, not filled 1, still inside their 2-day window 1, gap-skipped 1)" in md, md
+        assert "Gap-skipped = the first price after the signal was already past the stop or T1" in md
         assert "**50% profitable**" in md and "decision after the 2026-11-02 review" in md
         assert actions == [] and "No cut this week." in md
         assert "This week" in weekly_review.telegram_text(md) and "Picks this week" not in weekly_review.telegram_text(md)
