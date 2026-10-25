@@ -447,6 +447,17 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-10-25 (3) — Edge search with a locked holdout: 114 variants, best blend FAILS the holdout on drawdown by 0.6 pt
+
+**Why (user):** "I have turned on the VPN … if you are a trader who trades for a living, keep finding another strategy to profit monthly until you find it."
+
+- **Protocol** (`prereg_edge_search_20261025.md`, committed before any result): unlimited ideas on DISCOVERY (first bar → 2024-12-31; the panel is cut at load), every variant logged in `edge_search_ledger.jsonl`, finalist Sharpe bar max(1, √(2 ln N)/√years) rising with N, plus ≥ 60% green months, ≥ 3 of 4 years up and none below −10%, DD ≤ 25% at 20% vol, alpha t ≥ 2. HOLDOUT 2025-01-01 → 2026-10-24 read once by `edge_search.py confirm`, which refuses unless `edge_finalists.json` is committed.
+- **Data** (`edge_data.py`): every Bybit USDT perp ever listed — 517 trading + 309 delisted with history (Bybit serves delisted klines/funding/OI when the request names a window inside their life), crypto only, daily bars + every funding settlement + daily open interest, 2020-03 → 2026-10-24. Point-in-time universe: listed ≥ 30 d, 30-day median turnover ≥ $5M. Costs: taker + slippage tiered by liquidity (0.03 / 0.06 / 0.12%), actual funding.
+- **DISCOVERY (5 rounds, 114 variants, 0 finalists):** single strategies all far from the bar — funding carry L/S ~0.6–1.0 Sharpe (59–67% green months), BTC trend 1.1, new-listing short (BTC-hedged) 0.3–0.6, XS momentum ≤ 0.63; open-interest signals (growth, OI per turnover, crowding) all ≤ 0.11. **XS momentum with the paper test's lookbacks (56/91 d) made ≈ nothing in 2021-10 → 2024 (Sharpe ≈ 0.1, 2022 −32..−45% at 20% vol)** — paper test #2's strong backtest is a 2025–26 result. Best: equal-risk blends of uncorrelated sleeves (BTC trend vol-managed + carry 7d + momentum 28d + hedged new-listing short): Sharpe 1.55–1.64 vs bar 1.71, 62% green months, but 2022 −22% and DD 46%. A scoring flaw was fixed on the way (a blend was judged from before all its sleeves traded — stricter after the fix).
+- **User waiver (recorded in `edge_finalists.json` before the run):** the two best blends sent to the holdout with the Sharpe / worst-year / drawdown finalist conditions waived; the holdout PASS rule unchanged.
+- **HOLDOUT (`edge_holdout_20261025.md`): both FAIL on drawdown only.** `volman_combo_4_sleeves`: +35% at 20% vol over 22 months, Sharpe 0.89, 14/22 months green, worst month −8.7%, DD 25.6% (limit 25%; Jul → Oct 2025). `combo_5_sleeves_with_harvest`: Sharpe 0.90, 17/22 green, DD 50%. Market: BTC −14%. Sleeves swapped roles out of sample: momentum 28d +1.70 Sharpe, carry −0.80. **The holdout is spent** — any next step is a forward paper test.
+- Tests: `test_edge_search.py` (9: booking, delisting exit, weekly hold, legs, listing short, rising bar, the load-time cut incl. funding and OI, confirm refusal, finalist bar). All pass.
+
 ### 2026-10-25 (2) — Daily trader's playbook study: 11 classic strategies → all NO
 
 **Why (user):** "forget what we have built … you are a daily trader and the goal is profit, monthly … backtest multiple strategies, ideas and setups with old Bybit data and see which one is profitable."

@@ -32,6 +32,8 @@ _Defined 2026-08-09. This is the single anchor. Before proposing any change, res
 
 **UPDATE 2026-10-25 — daily trader's playbook → all NO.** The user asked to set the screener aside and test, as a daily trader judged on monthly profit, which classic strategies make money on old Bybit data. `playbook_study.py` (pre-registered, `prereg_playbook_20261025.md`): 11 textbook strategies on the 15 majors' 3-year 4h + funding cache, TEST = 2025-08-07 → 2026-10-19, bar = both halves net > 0 + TEST Sharpe ≥ 1 + ≥ 60% green months + DD ≤ 25% at 20% vol + beats random entries. **0 PASS, 0 CANDIDATE, 11 NO**; the closest was 30-day time-series momentum L/S (+14.5% TEST, Sharpe 0.28, 8 of 15 months green). Before fees nothing passes either (best TEST gross Sharpe 0.68). A fill-rule bias found after the run (skipping two-sided 4h bars dropped guaranteed opening-range losers) is corrected conservatively in the report, with the registered numbers kept for the record. Paper test #2 remains the only line that cleared a bar.
 
+**UPDATE 2026-10-25 (later) — edge search with a locked holdout → best blend FAILS on drawdown by 0.6 pt.** VPN back on; user: "keep finding another strategy to profit monthly until you find it." `edge_data.py` downloads every Bybit USDT perp ever listed (309 delisted included), daily bars + funding + OI from 2020; `edge_search.py` (pre-registered, `prereg_edge_search_20261025.md`) searches on DISCOVERY (≤ 2024-12-31, cut at load) with a ledger and a Sharpe bar that rises with the number of variants, then reads the 2025-01 → 2026-10 HOLDOUT once for committed finalists. 5 rounds / 114 variants → 0 finalists; best = equal-risk blends of BTC trend + funding carry + 28-day momentum + hedged new-listing short (Sharpe ≈ 1.6 vs bar 1.71, 62% green months, 2022 −22%). User waived the finalist bar for the two best blends; HOLDOUT: `volman_combo_4_sleeves` +35% at 20% vol, Sharpe 0.89, 14/22 months green, DD 25.6% vs limit 25% → **FAIL**; the 5-sleeve blend with funding harvest DD 50% → FAIL. Sleeves swapped roles out of sample (momentum carried, carry lost). XS momentum at the paper test's 56/91-day lookbacks was flat in 2021–24 — paper test #2's backtest is a 2025–26 result. **The holdout is spent; anything next is a forward paper test.**
+
 **OPERATING DISCIPLINE (how we pursue the goal — non-negotiable):**
 1. **Optimize NET-of-cost expectancy only.** Never chase win rate or gross R.
 2. **Prove before ship.** Every signal/feature must pass out-of-sample train/test (+ walk-forward where possible) on real data before it touches live. In-sample-only results are rejected on principle.
@@ -201,6 +203,11 @@ main.py  (orchestrator, async)
   │                                    Turtle, RSI(2), reversal, 4h fade, vol/opening-range breakout, sessions, CME gap,
   │                                    funding) on the 3-year 15-major cache, judged on green months → all NO
   ├── test_playbook_study.py       → offline tests (booking engine, fills on gaps / two-sided bars, no look-ahead, bar)
+  ├── edge_data.py                 → 2026-10-25 full-history downloader: EVERY Bybit USDT perp incl. delisted (daily bars,
+  │                                    funding, open interest) → logs/backtest_cache/edge/ (gitignored)
+  ├── edge_search.py               → 2026-10-25 pre-registered edge search: DISCOVERY ≤ 2024-12-31 (cut at load), ledger
+  │                                    of every variant (N → rising Sharpe bar), one-shot HOLDOUT via committed finalists
+  ├── test_edge_search.py          → offline tests (engine, delisting exit, load-time cut, confirm refusal, finalist bar)
   ├── test_checklist.py            → offline tests (zone/trendline detectors, live-window == backtest parity on 40 trades,
   │                                    scan never breaks on a checklist failure, weekly-review forward line)
   ├── research/                    → literature write-ups (edge_sources_20261019.md: why not 80% at 1:1, where edge lives)
@@ -425,6 +432,12 @@ python test_checklist.py         # detectors, live/backtest parity, scan-safety,
 # Daily trader's playbook (2026-10-25, CLOSED — all 11 NO): offline, reads the 3-year 15-major cache
 python playbook_study.py         # → logs/backtest_reports/playbook_<date>.md (+ _trades.json)
 python test_playbook_study.py
+
+# Edge search (2026-10-25; HOLDOUT SPENT — best blend failed it on drawdown by 0.6 pt). VPN for the fetches.
+python edge_data.py fetch && python edge_data.py fetch-oi    # every perp incl. delisted → logs/backtest_cache/edge/
+python edge_search.py discover [--families carry,mom]         # DISCOVERY only; appends to the ledger (N grows)
+python edge_search.py report                                   # → logs/backtest_reports/edge_search_<date>.md
+python test_edge_search.py
 
 # Weekly evaluation (run Sundays or whenever)
 source venv/bin/activate
