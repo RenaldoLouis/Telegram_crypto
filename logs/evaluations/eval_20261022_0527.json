@@ -3,7 +3,7 @@
   "run_timestamp_utc": "2026-10-22T05:27:30.231896+00:00",
   "model": "claude-sonnet-4-6",
   "regime": "neutral",
-  "evaluated_at_utc": "2026-10-24T00:05:04.760533+00:00",
+  "evaluated_at_utc": "2026-10-25T00:04:03.807388+00:00",
   "results": [
     {
       "status": "evaluated",
@@ -65,6 +65,45 @@
           "btc_4h": true,
           "funding": false,
           "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    },
+    {
+      "status": "not_filled",
+      "reason": "limit at 0.3771 not traded through within 2 bars",
+      "entry_model": "limit_open",
+      "symbol": "CRVUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "confidence": "low",
+      "predicted_rr": 0.91,
+      "tf_confluence": 1,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "source": "shadow",
+      "backtested_signal": "failed_breakout_short",
+      "signal_name": "failed_breakout_short",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1792641600000,
+        "score": 2,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": true,
+          "oi_trapped": true,
           "volume": false
         },
         "derivs_ok": true
