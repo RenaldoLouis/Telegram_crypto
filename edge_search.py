@@ -555,6 +555,31 @@ def append_ledger(rows):
 
 # ─── Commands ────────────────────────────────────────────────────────────────
 
+def components_of(params):
+    """Sleeve names of a blend (directly, or under vol management); [] for a single strategy."""
+    if "components" in params:
+        names = [c[0] for c in params["components"]]
+        return names + ([params["harvest"][0]] if "harvest" in params else [])
+    if params.get("base") == "combo":
+        return [c[0] for c in params["params"]["components"]]
+    return []
+
+
+def active_start(P, params):
+    """A blend is judged from the day ALL its sleeves trade: before that it is one sleeve at a
+    fraction of its size, which flatters the Sharpe bar's years and distorts the 20%-vol scale
+    (found 2026-10-25 on combo_4_sleeves: 5% vol before 2021-10, 10% after)."""
+    comps = components_of(params)
+    if not comps:
+        return None
+    menu = {n: (fn, p, e) for _, n, fn, p, e in variants()}
+    starts = []
+    for c in comps:
+        r, _ = build_series(P, *menu[c])
+        starts.append(r[r != 0].index[0])
+    return max(starts)
+
+
 def cmd_discover(args):
     t0 = time.time()
     P = Panel(end=DISCOVERY_END)
@@ -569,7 +594,7 @@ def cmd_discover(args):
         if (fams and fam not in fams) or (name in done and not args.again):
             continue
         r, W = build_series(P, fn, params, engine)
-        m = metrics(r, P.mkt)
+        m = metrics(r, P.mkt, start=active_start(P, params))
         gross = W.abs().sum(axis=1)
         rows.append({"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "family": fam, "name": name,
                      "params": params, "engine": engine, "metrics": m,
@@ -594,7 +619,11 @@ def cmd_report(args):
          "| family | variant | active | Sharpe | bar | ann @20v | months green | worst month @20v | 2021 | 2022 | 2023 | 2024 "
          "| DD @20v | beta | alpha t | finalist? |",
          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
-    ranked = sorted((r for r in led if r["metrics"]), key=lambda r: -r["metrics"]["sharpe"])
+    latest = {}                                             # a re-measured variant shows its last line,
+    for r in led:                                           # but every line counts in N
+        latest[r["name"]] = r
+    led_view = list(latest.values())
+    ranked = sorted((r for r in led_view if r["metrics"]), key=lambda r: -r["metrics"]["sharpe"])
     for r in ranked:
         m = r["metrics"]
         ok, miss = finalist_checks(m, n)
@@ -604,7 +633,7 @@ def cmd_report(args):
                  f"{m['worst_month_20v'] * 100:+.1f}% | " + " | ".join("—" if v is None else f"{v * 100:+.0f}%" for v in y) +
                  f" | {m['dd_20v'] * 100:.0f}% | {m['beta']:+.2f} | {m['alpha_t']:+.1f} | "
                  f"{'**YES**' if ok else '; '.join(miss)} |")
-    for r in led:
+    for r in led_view:
         if not r["metrics"]:
             L.append(f"| {r['family']} | {r['name']} | — | inactive (< 60 days) | | | | | | | | | | | | |")
     out = REPORT_DIR / f"edge_search_{datetime.now(timezone.utc):%Y%m%d}.md"
