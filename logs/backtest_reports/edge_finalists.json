@@ -1,0 +1,47 @@
+{
+ "decided": "2026-10-25",
+ "n_trials": 114,
+ "waiver": "User decision 2026-10-25, after seeing the DISCOVERY results: no variant met the finalist bar (prereg_edge_search_20261025.md). The two best blends by DISCOVERY Sharpe are sent to the holdout with finalist conditions 1 (Sharpe >= max(1, sqrt(2 ln N)/sqrt(years)) = 1.71), 3 (no year below -10% at 20% vol) and 4 (max drawdown <= 25% at 20% vol) waived, and the one-per-family limit waived. The HOLDOUT PASS rule is unchanged: net > 0, >= 60% of months green, Sharpe >= 0.75, max drawdown <= 25% at the DISCOVERY scale.",
+ "finalists": [
+  {
+   "name": "combo_5_sleeves_with_harvest",
+   "scale": 2.12192,
+   "discovery": {
+    "start": "2021-10-03",
+    "end": "2024-12-31",
+    "sharpe": 1.6418608581378948,
+    "green": 24,
+    "months": 39,
+    "green_pct": 0.6153846153846154,
+    "dd_20v": 0.6489252669493383,
+    "alpha_t": 2.959728989416024,
+    "years_20v": {
+     "2021": 0.28397975024313316,
+     "2022": -0.48204354022293855,
+     "2023": 0.4898119295861703,
+     "2024": 0.7752365057369464
+    }
+   }
+  },
+  {
+   "name": "volman_combo_4_sleeves",
+   "scale": 1.039297,
+   "discovery": {
+    "start": "2021-10-03",
+    "end": "2024-12-31",
+    "sharpe": 1.6108840422893584,
+    "green": 24,
+    "months": 39,
+    "green_pct": 0.6153846153846154,
+    "dd_20v": 0.4564753493858601,
+    "alpha_t": 2.9130680385998,
+    "years_20v": {
+     "2021": 0.179892644838496,
+     "2022": -0.21505703991367037,
+     "2023": 0.7556878924719922,
+     "2024": 0.3263304610443762
+    }
+   }
+  }
+ ]
+}
