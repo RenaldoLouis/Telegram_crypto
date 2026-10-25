@@ -111,6 +111,8 @@ Quarterly deep analysis (quarterly_analysis.py, manual — still available for d
 > **2026-10-08 — STATE.** **Fork A (liquidation clusters) FAILED its pre-registered re-run → fork C, closed, no further extension** (near-ring TEST −0.114 vs ALL −0.101; the first-pass lead decayed to ~0 on the new data; changelog 2026-10-08). The per-trade screener now rests on forward test #1 alone (n = 2/30, both green, both fired after the 10-04 gate-parity fix); product #2 is the live money-engine candidate (first score 10-12). The eval readout was also corrected: the VERDICT line no longer counts the shadow lane or n < 30, and cross-run duplicates (CI and Mac scanning the same close) are now marked `status="duplicate"`. CI alone caught only 6/18 4h closes from 10-05 to 10-08 (GitHub delays scheduled runs by hours); the Mac launchd scan covers the rest.
 >
 > **2026-10-12 — STATE.** Nothing is decidable: forward test #1 n = 2/30 (one new fire gap-skipped, one pending), paper test #2 week 1 scored (k56 +3.17%, k91 +0.72%; 1/26; the Monday crons were dropped and the CI rebalance overran its timeout, fixed). **The Mac is out of the critical path:** `scan_keeper.yml` scans every 4h close from a long-running CI job that does not depend on the GitHub scheduler, and it auto-runs the evaluator daily and the paper test on Mondays. Check coverage with `logs/scan_keeper/coverage.jsonl`, and the daily health alert covers missed closes. Next look: Monday 10-19.
+>
+> **2026-10-25 — STATE (daily book week 1).** The book lost: 13 of 21 picks scored, 23% profitable, −0.57R/trade, −7.5R; longs −1.16R (3, one bet), shorts −0.40R (10). The whole gated pool agrees with the pre-launch baseline: shorts ≈ breakeven (−0.02R, n 41), longs −0.62R (n 31). No cut flag yet; the user keeps the cut rule as written until the 2026-11-02 review. Checklist score ≥ 5: 6/30, −0.71R. FT#1 n = 4 (projected ≈ 18 at expiry). Paper #2 2/26, both green. Fixed: the scan is now crypto-only (stock/ETF perps had reached the book), and gap-skipped picks are labelled in the weekly review. Changelog 2026-10-25.
 
 > **PRE-REGISTERED FORWARD TEST (written 2026-09-23, BEFORE any v2-scored result exists — the bar below must not be edited after the fact).**
 > **Subject:** `range_reversion_short` 4h with the `vol_spike ≥ 1.5` gate (the only unified-backtest candidate), surfaced as WATCH under `ENTRY_MODEL="limit_open"`, scored by eval engine v2 (`head_to_head.md` § "Eval engine v2 era"). The clock starts at the first v2-scored trade of this rule.
@@ -444,6 +446,15 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 ---
 
 ## Changelog
+
+### 2026-10-25 — Daily book week 1 read; crypto-only scan; gap-skipped picks labelled
+
+**Why (user):** Sunday check-in "how was our experiment going", then "yes make that fixes … we can keep it" (keep the cut rule as written until the 2026-11-02 review).
+
+- **Week 1 (10-19 → 10-25, read Sunday, 13 of 21 picks scored):** 23% profitable, **−0.57R/trade, −7.5R** (≈ −3.7% at 0.5% risk); shorts 10 at −0.40R, longs 3 at −1.16R (one bet: BTC/OP/SOL `liquidity_sweep_long` on the same 4h bar). All 72 gated candidates of the week: 43% / −0.28R (shorts −0.02R, n 41; longs −0.62R, n 31; `liquidity_sweep_long` −0.81R, n 25). Picks did worse than the skipped candidates (−0.21R). No cut flag (longs 3/20, shorts 10/20). Checklist score ≥ 5: 6 scored, −0.71R vs all −0.40R. Forward test #1: n = 4 (3 green, +0.13R), pace 1.5/week → ≈ 18 at the 12-31 expiry. Paper #2: 2/26 weeks, both books green (k56 +3.6%, k91 +4.4%). Scan keeper 38/38 closes.
+- **Crypto-only scan** (`config.SCAN_EXCLUDE_SYMBOL_TYPES` / `SCAN_EXCLUDE_SYMBOLS`, `BybitFetcher.get_non_crypto_symbols` + `_drop_non_crypto`, `unified_backtest.auto_universe(exclude=)`): tokenized stock/ETF/commodity/forex perps (Bybit `symbolType`) and pegged tokens are dropped from the ticker pool and the hot list before scoring, and from the backtest's auto universe (parity, discipline #7). Found because the book picked SKHYNIXUSDT (stock, −0.21R) and KORUUSDT (3x ETF). Live check: 291 flagged, 15 in the top 100 by turnover (SOXL, SPY, MSTR, XAU, CL …). 20 of 264 v2-era candidates had been non-crypto (45% / −0.26R vs crypto 51% / −0.11R). A failed instruments-info call keeps the scan running with only the pegged list (warning logged). Changes the daily book's candidate pool from 10-25 on (a measurement repair, same class as the 2026-10-04 parity fix); forward test #1's rule, gate, entry and management are untouched.
+- **Weekly review:** picks with any no-trade eval status (`gap_skipped`, `invalid_levels`, `no_data`, `not_triggered`) are labelled as such (`weekly_review.NO_TRADE_LABELS`) — WLFIUSDT (10-19) had read "still inside its 2-day window" for 6 days.
+- Tests: new `test_crypto_universe.py` (3), `test_daily_book.py` weekly-review test extended (gap-skipped). All suites pass.
 
 ### 2026-10-21 (6) — Readouts switched to the quality yardstick
 
