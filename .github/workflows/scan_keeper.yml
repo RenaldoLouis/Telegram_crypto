@@ -203,6 +203,10 @@ jobs:
                 timeout 600 python weekly_review.py || echo "::warning::weekly_review.py failed"
               fi
               commit_push "eval: daily auto-score (scan-keeper)" logs/evaluations logs/performance
+              # Paper test #3 (4-sleeve blend, 2026-10-25): daily, its own crons are the backup.
+              gh workflow run blend_paper.yml -R "$GITHUB_REPOSITORY" --ref master \
+                && echo "dispatched paper test #3 (blend)" \
+                || echo "::warning::blend paper dispatch failed (its own retry crons remain)"
               if [ "$(date -u -d "@$C" +%u)" = 1 ]; then
                 gh workflow run xs_momentum_paper.yml -R "$GITHUB_REPOSITORY" --ref master \
                   && echo "Monday: dispatched the XS-momentum paper test" \

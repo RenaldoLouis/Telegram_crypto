@@ -1,0 +1,76 @@
+name: Blend Paper Test (daily)
+
+# Forward PAPER test #3 — the edge search's 4-sleeve blend at 10% volatility (pre-registered
+# 2026-10-25: logs/backtest_reports/prereg_blend_paper_20261025.md). Paper only: zero hosted
+# models, NO order API, nothing here places trades (CORE PRINCIPLE).
+#
+# Every day just after the 00:00 UTC daily close, `blend_paper.py run`:
+#   fetches the last 200 days of daily bars + funding (every trading crypto perp + held symbols),
+#   records weights for each closed day not yet recorded (≤ 7 back), scores every recorded day,
+#   commits logs/blend_paper/, and sends one Telegram message only when a Mon–Sun week or a
+#   calendar month completes.
+# Several shots because GitHub delays and drops schedules; every shot after a successful one is a
+# no-op (nothing to record or score → no fetch). The scan keeper also dispatches this workflow
+# after the 00:00 UTC close (dispatch is not subject to schedule drops). Bybit is reached
+# through the same split-tunnel VPN as the scan.
+
+on:
+  schedule:
+    - cron: '40 0 * * *'
+    - cron: '40 2 * * *'
+    - cron: '25 7 * * *'
+  workflow_dispatch:
+
+# Overlapping shots must not both append the same day to scores.jsonl: a later shot waits, then
+# checks out the earlier one's pushed output and no-ops.
+concurrency:
+  group: blend-paper
+  cancel-in-progress: false
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60          # ~520 symbols × (1 kline + funding pages) through the tunnel
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master            # branch tip at job start: see the output an earlier shot pushed
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pybit requests python-dotenv pandas numpy
+
+      - name: Setup WireGuard VPN (split-tunnel, health-gated)
+        uses: ./.github/actions/bybit-vpn
+        with:
+          wg_conf: ${{ secrets.WG_CONF }}
+
+      - name: Record + score the paper book
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -u blend_paper.py run
+
+      - name: Disconnect VPN
+        if: always()
+        run: sudo wg-quick down wg0 || true
+
+      - name: Commit and push paper-test output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add logs/blend_paper/
+          git diff --cached --quiet && exit 0
+          git commit -m "blend paper: daily record + score [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push && break || sleep 5
+          done
