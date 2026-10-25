@@ -447,6 +447,17 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-10-25 (2) — Daily trader's playbook study: 11 classic strategies → all NO
+
+**Why (user):** "forget what we have built … you are a daily trader and the goal is profit, monthly … backtest multiple strategies, ideas and setups with old Bybit data and see which one is profitable."
+
+- **Pre-registered** (`logs/backtest_reports/prereg_playbook_20261025.md`, committed before the run): 11 textbook strategies on the 15 majors' cached Bybit 4h bars + funding, 2023-10-21 → 2026-10-19; TRAIN = first 60% of days, TEST = 2025-08-07 → 2026-10-19 (438 days). Taker 0.055% + 0.03% slippage on every fill, actual funding, 4h mark-to-market. PASS = net > 0 on both halves, TEST Sharpe ≥ 1, **≥ 60% of TEST months green** (the user's goal), DD ≤ 25% at 20% vol, and beats 18/20 random-entry runs (event rules) or positive alpha (position rules). The VPN was down, so no fresh fetch — the 3-year cache is the only long history on disk.
+- **Result (`playbook_study.py` → `playbook_20261025.md`): 0 PASS, 0 CANDIDATE, 11 NO.** TEST net / Sharpe / green months: A1 30-day momentum L/S +14.5% / 0.28 / 8 of 15 (the closest: positive both halves, alpha +5%/y, but 53% green months); A2 momentum long/flat −9.8%; A3 Turtle −1.3%; B1 Connors RSI(2) +0.3% (TRAIN −37%); B2 daily cross-sectional reversal −103%; B3 fade 4h 3σ moves −27%; C1 volatility breakout −26%; C2 opening-range breakout −65%; C3 session seasonality −77% (the best TRAIN session, 20:00 UTC, t 2.35, did nothing on TEST); C4 CME-gap fill +2.7% (TRAIN −19%); D1 funding extremes −9.5%. References: BTC buy & hold −28%, equal-weight 15 −34%, delta-neutral BTC/ETH carry −1.0% on TEST (funding was low in 2026).
+- **Before costs nothing passes either** (informational table): the best TEST gross Sharpe is 0.68 (C1, which lost 64% gross on TRAIN). Costs decide the intraday rules (C1–C3 and B2 paid 55–75% of capital on TEST), but cheaper execution would not have rescued any of them.
+- **Correction after the run, stated in the report:** the registered fill rule skipped any day whose 4h bar crossed both triggers. For the opening-range breakout that bar is always a stopped-out loss (the stop is the other side of the range), so skipping dropped 1,299 losers (8% of trades) and turned −64% / −65% into an apparent +41% / +19%. The study books those bars conservatively (C2: the stop-out; C1: the side that loses more unless the bar's open settles it); the registered numbers are printed for the record. Verdicts are NO either way.
+- **Reading:** together with the ~12 earlier studies, classic single-strategy trading on these coins did not make money month after month over the last 14 months, with or without fees. The one live line that cleared a pre-registered bar is still paper test #2 (weekly cross-sectional momentum). Caveats: 15 survivor coins, 3 years, a TEST window that was a falling market.
+- Tests: new `test_playbook_study.py` (9: booking = trade net, turnover + funding, fills on gaps and two-sided bars, bracket stop-first, no look-ahead in the momentum weights, month counting, the verdict rule). All pass.
+
 ### 2026-10-25 — Daily book week 1 read; crypto-only scan; gap-skipped picks labelled
 
 **Why (user):** Sunday check-in "how was our experiment going", then "yes make that fixes … we can keep it" (keep the cut rule as written until the 2026-11-02 review).
