@@ -151,9 +151,9 @@ def hold_weekly(W):
     return W.ffill().fillna(0.0)
 
 
-def xs_book(P, score, frac, weekly=True, invvol=False):
+def xs_book(P, score, frac, weekly=True, invvol=False, elig=None):
     """Long the top `frac` of eligible names by score, short the bottom `frac`; 0.5 gross per leg."""
-    s = score.where(P.elig)
+    s = score.where(P.elig if elig is None else elig)
     n = s.count(axis=1)
     k = np.floor(n * frac).clip(lower=1)
     r = s.rank(axis=1, method="first")
@@ -170,6 +170,16 @@ def xs_book(P, score, frac, weekly=True, invvol=False):
 
 def momentum(P, lookback, skip=0):
     return P.close.shift(skip) / P.close.shift(skip + lookback) - 1
+
+
+def liquid(P, top):
+    """Eligible AND among the `top` names by trailing-30-day median turnover that day."""
+    return P.elig & (P.med_turn.where(P.elig).rank(axis=1, ascending=False) <= top)
+
+
+def xs_z(df, elig):
+    x = df.where(elig)
+    return x.sub(x.mean(axis=1), axis=0).div(x.std(axis=1), axis=0)
 
 
 # ─── Strategy families ───────────────────────────────────────────────────────
@@ -265,6 +275,33 @@ def f_harvest(P, top):
     return hold_weekly(W)
 
 
+def f_xs_momentum_liquid(P, lookback, top, frac):
+    return xs_book(P, momentum(P, lookback), frac, elig=liquid(P, top))
+
+
+def f_reversal_liquid(P, lookback, top, frac):
+    return xs_book(P, -momentum(P, lookback), frac, elig=liquid(P, top))
+
+
+def f_mom_carry(P, lookback, days, frac):
+    """Equal blend of the cross-sectional momentum and carry z-scores."""
+    score = xs_z(momentum(P, lookback), P.elig) + xs_z(-P.fund.rolling(days, min_periods=days).sum(), P.elig)
+    return xs_book(P, score, frac)
+
+
+def f_mom_long_btc_hedged(P, lookback, frac):
+    """The momentum long leg at gross 1, hedged with the same notional short BTC."""
+    W = f_xs_momentum(P, lookback, 0, frac).clip(lower=0.0) * 2
+    W["BTCUSDT"] = W["BTCUSDT"] - W.sum(axis=1)
+    return W
+
+
+def f_combo(P):
+    """Fixed before any result (literature priors): momentum 56d + carry 7d + new-listing short,
+    one third of capital each."""
+    return (f_xs_momentum(P, 56, 0, 0.1) + f_carry(P, 7, 0.1) + f_new_listing_short(P, 1, 30, False)) / 3
+
+
 def variants():
     """(family, name, fn, params, engine) — the full DISCOVERY menu, in a fixed order."""
     v = []
@@ -304,6 +341,14 @@ def variants():
         v.append(("calendar", f"btc_{'weekend' if wk else 'weekday'}_long", f_weekend, {"weekend": wk}, "weights"))
     for top in (5, 10):
         v.append(("harvest", f"funding_harvest_top{top}", f_harvest, {"top": top}, "harvest"))
+    # Batch 2 — added and committed before the first DISCOVERY run.
+    for lb in (28, 56, 91):
+        v.append(("mom", f"xs_mom_{lb}d_top50_20pct", f_xs_momentum_liquid, {"lookback": lb, "top": 50, "frac": 0.2}, "weights"))
+        v.append(("mom", f"xs_mom_long_{lb}d_btc_hedged", f_mom_long_btc_hedged, {"lookback": lb, "frac": 0.1}, "weights"))
+    for fr in LEG_FRACS:
+        v.append(("mom_carry", f"mom56_carry7_{int(fr * 100)}pct", f_mom_carry, {"lookback": 56, "days": 7, "frac": fr}, "weights"))
+    v.append(("reversal", "xs_rev_7d_top50_20pct", f_reversal_liquid, {"lookback": 7, "top": 50, "frac": 0.2}, "weights"))
+    v.append(("combo", "combo_mom56_carry7_listing30", f_combo, {}, "weights"))
     return v
 
 
