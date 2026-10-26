@@ -13,6 +13,12 @@ name: Blend Paper Test (daily)
 # no-op (nothing to record or score → no fetch). The scan keeper also dispatches this workflow
 # after the 00:00 UTC close (dispatch is not subject to schedule drops). Bybit is reached
 # through the same split-tunnel VPN as the scan.
+#
+# Since 2026-10-26 the same job also runs the forward paper TOURNAMENT (`tournament_paper.py`,
+# pre-registered: logs/backtest_reports/prereg_tournament_20261026.md) right after paper #3: it
+# reuses paper #3's fresh download when complete (else downloads the same data), records + scores
+# its lanes into logs/tournament/, and sends one Telegram message when a Mon–Sun week completes.
+# Each step runs even if the other failed; the commit step saves whatever succeeded.
 
 on:
   schedule:
@@ -47,7 +53,8 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install pybit requests python-dotenv pandas numpy
+        # anthropic: imported (never called) by weekly_eval, which the tournament reads for the per-trade lanes
+        run: pip install pybit requests python-dotenv pandas numpy anthropic
 
       - name: Setup WireGuard VPN (split-tunnel, health-gated)
         uses: ./.github/actions/bybit-vpn
@@ -60,17 +67,25 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python -u blend_paper.py run
 
+      - name: Record + score the paper tournament
+        if: ${{ !cancelled() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -u tournament_paper.py run
+
       - name: Disconnect VPN
         if: always()
         run: sudo wg-quick down wg0 || true
 
       - name: Commit and push paper-test output
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add logs/blend_paper/
+          for d in logs/blend_paper logs/tournament; do [ -d "$d" ] && git add "$d"; done
           git diff --cached --quiet && exit 0
-          git commit -m "blend paper: daily record + score [skip ci]"
+          git commit -m "paper tests: daily record + score (blend, tournament) [skip ci]"
           for i in 1 2 3; do
             git pull --rebase origin master && git push && break || sleep 5
           done
