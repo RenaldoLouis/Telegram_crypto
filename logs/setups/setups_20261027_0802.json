@@ -1,0 +1,227 @@
+{
+  "run_timestamp_utc": "2026-10-27T08:02:04.318730+00:00",
+  "run_tag": "20261027_0802",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 3,
+    "daily_picks": 0
+  },
+  "setups": [
+    {
+      "symbol": "BANKUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.0273688,
+      "entry_high": 0.0277312,
+      "stop_loss": 0.02930196,
+      "target_1": 0.02623603,
+      "target_2": 0.02404608,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0289, RSI 72.3"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "neutral",
+      "interest_score": 10.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 39.01,
+          "rsi": 72.33,
+          "macd": 0.000458,
+          "macd_hist": 0.000526,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.72,
+          "range_pct": 20.76
+        },
+        "tf_1h": {
+          "adx": 54.21,
+          "rsi": 64.82,
+          "macd": 0.000875,
+          "macd_hist": 0.00012,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.89,
+          "range_pct": 13.27
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1793088000000,
+        "score": 6,
+        "points": {
+          "trend_4h": true,
+          "trend_1h": false,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": true,
+          "oi_trapped": true,
+          "volume": true
+        },
+        "derivs_ok": true
+      }
+    },
+    {
+      "symbol": "TUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 0.0046592,
+      "entry_high": 0.0048308,
+      "stop_loss": 0.005603,
+      "target_1": 0.0041015,
+      "target_2": 0.003029,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 51.4, ADX 30.3, near EMA20"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.526,
+      "signal_test_n": 152,
+      "regime": "neutral",
+      "interest_score": null,
+      "rank": 3,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 30.34,
+          "rsi": 51.41,
+          "macd": -4.7e-05,
+          "macd_hist": -7.6e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.36,
+          "range_pct": 65.83
+        },
+        "tf_1h": {
+          "adx": 17.84,
+          "rsi": 50.8,
+          "macd": -7.7e-05,
+          "macd_hist": 2.8e-05,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.56,
+          "range_pct": 4.52
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1793088000000,
+        "score": 3,
+        "points": {
+          "trend_4h": true,
+          "trend_1h": true,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    },
+    {
+      "symbol": "BTWUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 1.36645805,
+      "entry_high": 1.41956195,
+      "stop_loss": 1.038984,
+      "target_1": 1.689418,
+      "target_2": 2.101062,
+      "predicted_rr": 0.837,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 32.0 bouncing (was 11.9), ADX 48.3"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "neutral",
+      "interest_score": 0.0,
+      "rank": 5,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 48.31,
+          "rsi": 31.99,
+          "macd": -0.135773,
+          "macd_hist": -0.029954,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.74,
+          "range_pct": 74.53
+        },
+        "tf_1h": {
+          "adx": 23.14,
+          "rsi": 67.22,
+          "macd": -0.03526,
+          "macd_hist": 0.03993,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.73,
+          "range_pct": 53.61
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1793088000000,
+        "score": 0,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
