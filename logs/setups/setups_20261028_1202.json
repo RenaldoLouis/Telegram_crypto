@@ -1,0 +1,159 @@
+{
+  "run_timestamp_utc": "2026-10-28T12:02:04.402846+00:00",
+  "run_tag": "20261028_1202",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2,
+    "daily_picks": 1
+  },
+  "setups": [
+    {
+      "symbol": "CHIPUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.05119775,
+      "entry_high": 0.05216225,
+      "stop_loss": 0.05827375,
+      "target_1": 0.04673469,
+      "target_2": 0.0384925,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0572, RSI 70.7"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "neutral",
+      "interest_score": 2.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 36.83,
+          "rsi": 70.68,
+          "macd": 0.002359,
+          "macd_hist": 0.000216,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.34,
+          "range_pct": 29.3
+        },
+        "tf_1h": {
+          "adx": 31.79,
+          "rsi": 37.07,
+          "macd": 0.000469,
+          "macd_hist": -0.000285,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.43,
+          "range_pct": 13.41
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1793188800000,
+        "score": 2,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": true
+        },
+        "derivs_ok": true
+      },
+      "daily_pick": true,
+      "daily_pick_seq": 3
+    },
+    {
+      "symbol": "XANUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.01078515,
+      "entry_high": 0.01107885,
+      "stop_loss": 0.01354484,
+      "target_1": 0.008934,
+      "target_2": 0.00570632,
+      "predicted_rr": 0.765,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.0131, RSI 72.8"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "neutral",
+      "interest_score": 10.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 42.55,
+          "rsi": 72.76,
+          "macd": 0.000562,
+          "macd_hist": 0.000461,
+          "trend": "bullish",
+          "ema20_dist_atr": 1.9,
+          "range_pct": 52.44
+        },
+        "tf_1h": {
+          "adx": 66.32,
+          "rsi": 60.25,
+          "macd": 0.000897,
+          "macd_hist": 3.9e-05,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.38,
+          "range_pct": 49.05
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1793188800000,
+        "score": 3,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": true,
+          "volume": true
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
