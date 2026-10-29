@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-10-29T05:35:33.971146+00:00",
+  "generated_utc": "2026-10-29T12:49:43.197676+00:00",
   "market_regime": {
-    "regime": "cautious",
+    "regime": "neutral",
     "metrics": {
-      "pct_declining": 72.0,
-      "median_change_pct": -1.22,
-      "btc_change_pct": -0.71,
-      "avg_funding_pct": -0.0356,
-      "large_decline_count": 6
+      "pct_declining": 56.0,
+      "median_change_pct": -0.42,
+      "btc_change_pct": -0.9,
+      "avg_funding_pct": -0.0063,
+      "large_decline_count": 5
     },
-    "detected_utc": "2026-10-29T05:35:33.970453+00:00",
-    "previous_regime": "neutral"
+    "detected_utc": "2026-10-29T12:49:43.197197+00:00",
+    "previous_regime": "cautious"
   },
   "coins": [
     {
@@ -159,17 +159,49 @@
     },
     {
       "symbol": "GOOGLUSDT",
-      "flagged_utc": "2026-10-29T05:35:33.970245+00:00",
-      "expires_utc": "2026-10-31T05:35:33.970245+00:00",
+      "flagged_utc": "2026-10-29T12:49:43.196992+00:00",
+      "expires_utc": "2026-10-31T12:49:43.196992+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 293.54,
-      "price_change_24h_pct": -9.7605,
-      "turnover_24h_usd": 71765020.1445,
-      "funding_rate_pct": 0.060819,
-      "open_interest": 113217.44,
+      "last_price": 288.58,
+      "price_change_24h_pct": -11.1104,
+      "turnover_24h_usd": 82545781.6447,
+      "funding_rate_pct": 0.078666,
+      "open_interest": 136736.8,
+      "volume_acceleration": 1.1502230679862246,
+      "price_acceleration_pct": 1.3498999999999999
+    },
+    {
+      "symbol": "HYPEUSDT",
+      "flagged_utc": "2026-10-29T12:49:43.196992+00:00",
+      "expires_utc": "2026-10-31T12:49:43.196992+00:00",
+      "trigger": "big_move",
+      "all_triggers": [
+        "big_move"
+      ],
+      "last_price": 88.926,
+      "price_change_24h_pct": 10.4122,
+      "turnover_24h_usd": 369543119.5123,
+      "funding_rate_pct": 0.01,
+      "open_interest": 3263491.65,
+      "volume_acceleration": 2.4612089100271017,
+      "price_acceleration_pct": 8.051400000000001
+    },
+    {
+      "symbol": "AXISUSDT",
+      "flagged_utc": "2026-10-29T12:49:43.196992+00:00",
+      "expires_utc": "2026-10-31T12:49:43.196992+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.1443,
+      "price_change_24h_pct": -33.0394,
+      "turnover_24h_usd": 29649091.0602,
+      "funding_rate_pct": -0.48167699999999997,
+      "open_interest": 19234887.0,
       "volume_acceleration": null,
       "price_acceleration_pct": null
     }
