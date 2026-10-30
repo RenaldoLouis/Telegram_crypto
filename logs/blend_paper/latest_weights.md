@@ -1,18 +1,18 @@
-# Paper book for 2026-10-28 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-10-29 (held over the next UTC day) — 10% volatility target
 
-44 positions · gross 27.8% of capital · net exposure -0.0% · computed 2026-10-29T00:04:46.848635+00:00 · paper only, no orders.
+44 positions · gross 27.7% of capital · net exposure -0.0% · computed 2026-10-30T00:05:04.346708+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
-| BTCUSDT | long | +4.58% |
-| PONSUSDT | short | -1.44% |
-| LONGXIAUSDT | short | -1.44% |
-| BTWUSDT | long | +0.94% |
-| QUSDT | long | +0.94% |
-| SANDUSDT | long | +0.94% |
-| STRKUSDT | long | +0.94% |
-| USELESSUSDT | short | -0.94% |
-| CASHCATUSDT | short | -0.94% |
+| BTCUSDT | long | +4.55% |
+| PONSUSDT | short | -1.43% |
+| LONGXIAUSDT | short | -1.43% |
+| BTWUSDT | long | +0.93% |
+| QUSDT | long | +0.93% |
+| SANDUSDT | long | +0.93% |
+| STRKUSDT | long | +0.93% |
+| USELESSUSDT | short | -0.93% |
+| CASHCATUSDT | short | -0.93% |
 | CPUSDT | short | -0.50% |
 | CTUSDT | short | -0.50% |
 | 4STOCKUSDT | short | -0.50% |
