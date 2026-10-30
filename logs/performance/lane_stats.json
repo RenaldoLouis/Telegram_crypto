@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29T00:04:13.796996+00:00",
+  "generated_at": "2026-10-30T00:04:26.016087+00:00",
   "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
   "lanes": [
     "mechanical",
@@ -9,19 +9,19 @@
   "by_signal": {
     "failed_breakout_short": {
       "all": {
-        "n": 65,
-        "prof_pct": 64.6,
-        "net": 0.206
+        "n": 68,
+        "prof_pct": 66.2,
+        "net": 0.23
       },
       "last30": {
         "n": 30,
-        "prof_pct": 60.0,
-        "net": 0.172
+        "prof_pct": 63.3,
+        "net": 0.255
       },
       "d30": {
-        "n": 65,
-        "prof_pct": 64.6,
-        "net": 0.206
+        "n": 68,
+        "prof_pct": 66.2,
+        "net": 0.23
       }
     },
     "liquidity_sweep_long": {
@@ -77,49 +77,49 @@
     },
     "rsi_bounce_long": {
       "all": {
-        "n": 56,
+        "n": 58,
         "prof_pct": 50.0,
-        "net": -0.135
+        "net": -0.113
       },
       "last30": {
         "n": 30,
         "prof_pct": 53.3,
-        "net": -0.121
+        "net": -0.102
       },
       "d30": {
-        "n": 56,
+        "n": 58,
         "prof_pct": 50.0,
-        "net": -0.135
+        "net": -0.113
       }
     },
     "trend_pullback_short": {
       "all": {
-        "n": 79,
-        "prof_pct": 58.2,
-        "net": 0.021
+        "n": 82,
+        "prof_pct": 56.1,
+        "net": -0.008
       },
       "last30": {
         "n": 30,
-        "prof_pct": 46.7,
-        "net": -0.186
+        "prof_pct": 43.3,
+        "net": -0.222
       },
       "d30": {
-        "n": 78,
-        "prof_pct": 57.7,
-        "net": 0.018
+        "n": 81,
+        "prof_pct": 55.6,
+        "net": -0.011
       }
     }
   },
   "by_direction": {
     "short": {
-      "n": 148,
-      "prof_pct": 61.5,
-      "net": 0.105
+      "n": 154,
+      "prof_pct": 61.0,
+      "net": 0.101
     },
     "long": {
-      "n": 160,
-      "prof_pct": 45.0,
-      "net": -0.268
+      "n": 162,
+      "prof_pct": 45.1,
+      "net": -0.259
     }
   }
 }
