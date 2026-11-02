@@ -451,6 +451,25 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-02 — Daily book trial review; `failed_breakout_short` forward record checked (pre-registered)
+
+**Daily book, paper trial 10-19 → 11-01:** 36 scored, 42% profitable, −0.23R/trade, −8.3R (≈ −4.2% at 0.5% risk); week 1 −9.5R, week 2 +1.1R. No case for real size; stays a paper lane. The fixed cut rule flags `short` (24 scored, −0.05R) only because shorts reached n = 20 first — longs are worse (12 scored, −0.59R). Not applied (user decides). Paper #2 had its worst week (k56 −8.7%, k91 −9.1%).
+
+**Why the check:** `head_to_head.md` marks `failed_breakout_short` PROMOTABLE (81 forward trades, +0.275R, PF 2.03) while every backtest of it is ≈ breakeven or negative and the 10-19 replication over the same weeks failed (R-2026-10-16-1). User: "yes run that check". Pre-registered `logs/backtest_reports/prereg_fbs_check_20261102.md` before running; `fbs_check.py` → `fbs_check_20261102.md`.
+
+- **Q1 independent bets — HOLDS:** 86 v2 rows (shadow + watch) = 62 bets (same 4h bar = one), +0.279R per bet, 95% CI [+0.07, +0.49], 4/6 weeks green.
+- **Q2 vs random shorts on the same coin, ±3.5 days, same stop in ATR, same management — HOLDS:** +0.380R vs −0.125R, difference per bet +0.43R, CI [+0.23, +0.63]. At the live entry time (sensitivity, not pre-registered) +0.306 vs −0.122R; the signal beat random in 4 of 6 weeks (W42, n 20, lost).
+- **Q3 parity — FAILS (37% within 0.05R):** the live rows replay exactly (100%); the engine scores the same trades higher because it enters at the 4h close (+0.03R) and sets T1/T2 from the fill instead of the setup's prices (+0.045R). A harness convention gap, not the source of the result → backlog item below.
+- **Q4 selection (descriptive):** on the same coins and weeks, engine fires the live scan also took +0.333R (n 69) vs not taken +0.026R (n 204) — the live pre-filter (top 30 by interest score) appears to pick the coins where the pattern works; the fixed-universe backtests never had it. Hypothesis, found after looking.
+- **Q5 history:** 365-d unified backtest (30 fixed symbols) 55.1% / −0.037R, 6/12 months positive.
+- **Verdict by the pre-registered rule: NOT AN EDGE (Q3 failed).** Read honestly: the failure is a harness convention, and the forward record survives clustering and a random baseline; caveats: picked as the best of ~7 rules, six weeks of one falling market. No rule, gate or pick changed.
+- **Backlog:** align `unified_backtest` with `weekly_eval` — enter at the first 15m open after the scan lag, T1/T2 from the setup's level construction (discipline #7: one trade model everywhere).
+
+**Same day — the selection hypothesis tested → FAIL; lead closed.** User: "start step 1". Pre-registered `prereg_fbs_selection_20261102.md`; `fbs_selection.py` (+ `test_fbs_selection.py`, 7 tests) rebuilds the live coin selection at every 4h close of 2025-10-01 → 2026-09-20 (the live `_ticker_interest_score` called as-is, top 30 + watchlist + momentum hot list replayed on the 4h grid; 523 of 571 coins with 4h data, median 31 coins per scan; validity gate 52/64 = 81% of the live record marked selected, gate 80%) and fires `failed_breakout_short` on every liquid coin at the live entry time.
+- Selected 57.4% / **−0.015R** (n 1,253, PF 0.96, 53% weeks green) vs not selected 58.5% / −0.010R (n 1,865). Bars: quality ✗, beats random ✓ (+0.21R, CI [+0.17, +0.27]), selection ✗ (−0.005R), both halves ✗ → **FAIL**. Inside the live span the rebuilt selection points the other way (−0.04R vs +0.13R), so Q4's split was not the pre-filter.
+- Reading: the pattern beats random shorts on the same coins (which lose ≈ −0.22R after costs) but only reaches breakeven. The six-week forward record (+0.28R/bet) is luck/regime. R-2026-10-16-1 graded **refuted** in `recommendations.jsonl`. No live change.
+- Found on the way: the live pre-filter compares Bybit's `openInterest` (in **coins**) to a $50M threshold, so expensive coins fail the OI test unless watchlisted or hot, and cheap high-supply coins pass. Reproduced as-is in the study; not changed live (user decides; the selection made no difference to this rule).
+
 ### 2026-10-26 — Forward paper tournament (pre-registered; shakedown from the 10-25 close, counted from 11-02)
 
 **Why (user):** asked whether a Go bot with Discord bot-to-bot messaging could search for the best strategy. Answered no — the bottleneck is clean data, not compute: the best of N no-edge strategies over 4 years reaches Sharpe 1.54 at N = 114, 2.15 at 10,000, 2.63 at 1,000,000 (`edge_search.sharpe_bar`); the holdout is spent; a Go engine would be a second trade model. Proposed instead: run many frozen candidates forward at once. User: entrants as proposed, two stages 13 + 26 weeks, daily book kept as a paper lane; "yes" to build.
