@@ -1,6 +1,6 @@
 # Performance Summary
-_Last updated: 2026-11-01 00:17 UTC_
-_Total runs evaluated: 504_
+_Last updated: 2026-11-02 00:04 UTC_
+_Total runs evaluated: 509_
 
 ## Overall Stats
 - Total setups: 401
@@ -11,7 +11,7 @@ _Total runs evaluated: 504_
 - Avg actual R:R: -0.11
 - Avg winning R:R: 1.17
 - Avg losing R:R: -0.82
-- _(EXECUTE book only — WATCH lane: 476 paper trades, 52.3% profitable, net -0.086R; excluded from every number above)_
+- _(EXECUTE book only — WATCH lane: 482 paper trades, 52.5% profitable, net -0.083R; excluded from every number above)_
 
 ### Partial Profit Model (50% at T1 + BE stop)
 - **Blended win rate: 45.6%** (115W / 137L)
