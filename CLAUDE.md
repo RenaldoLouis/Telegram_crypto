@@ -269,7 +269,7 @@ Runs on ticker-level data before any kline fetching. Rules from knowledge files:
 
 | Factor | Source | Thresholds |
 |---|---|---|
-| Hard disqualify | `02_risk_management` | <$10M turnover or <$50M OI |
+| Hard disqualify | `02_risk_management` | <$10M turnover or <$50M OI (OI in USD = ticker `openInterestValue`; until 2026-11-02 the coin count `openInterest` was compared to these dollar thresholds) |
 | Liquidity tiers | `04_volume_analysis` | $50M→1pt, $100M→2, $500M→3, $1B+→4 |
 | Price action | `05_crypto_specifics` | 1.5%→1, 3%→2, 5%→3, 10%→4, 15%+→5 |
 | Funding extremes | `04_volume_analysis`, `06_setup_playbook` | ±0.01%→1, ±0.03%→3, ±0.05%+→5 |

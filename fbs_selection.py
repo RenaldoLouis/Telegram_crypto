@@ -191,7 +191,11 @@ class Coin:
         return {"symbol": self.sym, "price_change_24h_pct": pct, "turnover_24h_usd": turnover,
                 "volume_24h": sum(self.rows[x][5] for x in range(i - 5, i + 1)),
                 "funding_rate_pct": self.f_v[j] * 100 if j >= 0 else 0.0,
-                "open_interest": self.o_v[k] if k >= 0 else 0.0}
+                "open_interest": self.o_v[k] if k >= 0 else 0.0,
+                # The study replays the scan AS IT RAN in 2025-26: the pre-filter compared the coin
+                # count to its dollar thresholds (fixed 2026-11-02, it now reads the USD value). Feed
+                # the coin count into the field the scorer reads so the replay stays the old scan.
+                "open_interest_value": self.o_v[k] if k >= 0 else 0.0}
 
 
 # ─── Selection replay ────────────────────────────────────────────────────────

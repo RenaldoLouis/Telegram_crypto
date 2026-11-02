@@ -103,7 +103,8 @@ class BybitFetcher:
                 "turnover_24h_usd": float(t["turnover24h"]),
                 "volume_24h": float(t["volume24h"]),
                 "funding_rate_pct": float(t.get("fundingRate", 0)) * 100,
-                "open_interest": float(t.get("openInterest", 0)),
+                "open_interest": float(t.get("openInterest", 0)),               # in coins
+                "open_interest_value": float(t.get("openInterestValue", 0)),    # in USD
             }
             for t in by_turnover
         ]
@@ -488,7 +489,10 @@ class BybitFetcher:
         abs_funding = abs(funding)
         turnover = ticker.get("turnover_24h_usd", 0)
         volume = ticker.get("volume_24h", 0)
-        oi = ticker.get("open_interest", 0)
+        # Open interest in USD. Bybit's `openInterest` is in COINS; until 2026-11-02 this read it and
+        # compared it to the dollar thresholds below, so BTC (~68k coins ≈ $5.4B) failed the $50M test
+        # and cheap high-supply coins with < $50M passed it. 0 = unknown → never disqualifies.
+        oi = ticker.get("open_interest_value", 0)
 
         # ===== HARD DISQUALIFIERS (from 02_risk_management, 07_watchlist) =====
         # "Any perp below $50M OI or $10M daily volume should be avoided" — 02_risk_management
