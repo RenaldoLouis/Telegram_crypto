@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crypto Screener Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column with a pipeline rail; numbered stations are the real order of a scan. */
+:root {
+  --bg: #f2f4f7;
+  --surface: #fbfcfd;
+  --surface-2: #e9edf2;
+  --ink: #121a2b;
+  --ink-2: #4a5468;
+  --ink-3: #6f798b;
+  --line: #d6dce5;
+  --accent: #0b6e8a;
+  --accent-soft: #d8edf2;
+  --hot: #a8520a;
+  --hot-soft: #f8e8d6;
+  --long: #15803d;
+  --short: #b42318;
+  --bad-soft: #f6dedb;
+  --good-soft: #dcefe2;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141c; --surface: #161d28; --surface-2: #1d2633; --ink: #e7ecf3; --ink-2: #a9b3c2; --ink-3: #8a95a6;
+    --line: #2a3446; --accent: #45b8d4; --accent-soft: #15323c; --hot: #f0a040; --hot-soft: #3a2a17;
+    --long: #4ade80; --short: #f87171; --bad-soft: #3a1f1f; --good-soft: #17301f;
+    --series-1: #3987e5; --series-2: #d95926; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141c; --surface: #161d28; --surface-2: #1d2633; --ink: #e7ecf3; --ink-2: #a9b3c2; --ink-3: #8a95a6;
+  --line: #2a3446; --accent: #45b8d4; --accent-soft: #15323c; --hot: #f0a040; --hot-soft: #3a2a17;
+  --long: #4ade80; --short: #f87171; --bad-soft: #3a1f1f; --good-soft: #17301f;
+  --series-1: #3987e5; --series-2: #d95926; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.3rem); }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.lede { font-size: 1.1rem; color: var(--ink-2); max-width: 62ch; }
+.muted { color: var(--ink-2); }
+.small { font-size: 0.86rem; }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+code { font-family: var(--font-mono); font-size: 0.84em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+header { display: grid; gap: 14px; }
+nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+nav.jump a { font-family: var(--font-mono); font-size: 0.8rem; text-decoration: none; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; background: var(--surface); }
+nav.jump a:hover { color: var(--accent); border-color: var(--accent); }
+section { display: grid; gap: 20px; scroll-margin-top: 16px; }
+.section-head { display: grid; gap: 6px; }
+.section-head p { max-width: 64ch; }
+
+/* ---------- pipeline rail ---------- */
+.rail { position: relative; display: grid; gap: 0; }
+.station { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; position: relative; padding-bottom: 26px; }
+.station:last-child { padding-bottom: 0; }
+.station::before { content: ""; position: absolute; left: 21px; top: 40px; bottom: 0; width: 2px; background: var(--accent); opacity: 0.35; }
+.station:last-child::before { display: none; }
+.dot { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--accent); color: var(--accent); font-family: var(--font-mono); font-weight: 500; font-size: 1rem; z-index: 1; }
+.station-body { display: grid; gap: 10px; min-width: 0; padding-top: 8px; }
+.station-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.when { font-family: var(--font-mono); font-size: 0.76rem; color: var(--ink-3); }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.chip { font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; background: var(--surface-2); color: var(--ink); white-space: nowrap; }
+.chip.accent { background: var(--accent-soft); }
+.arrow { color: var(--ink-3); font-family: var(--font-mono); }
+.lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.lane { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.lane .tag { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.lane strong { font-family: var(--font-display); font-size: 1.1rem; }
+.lane.live { border-color: var(--accent); }
+.bg-jobs { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 10px; }
+.bg-jobs ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+
+/* ---------- clock ---------- */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.clock { min-width: 680px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 36px 14px; }
+.track { position: relative; height: 118px; }
+.axis { position: absolute; left: 0; right: 0; top: 64px; height: 2px; background: var(--line); }
+.tick { position: absolute; top: 70px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-3); text-align: center; line-height: 1.25; }
+.tick b { display: block; color: var(--ink); font-weight: 500; }
+.pulse { position: absolute; top: 58px; width: 2px; height: 14px; background: var(--ink-3); opacity: 0.55; transform: translateX(-50%); }
+.scan { position: absolute; top: 18px; transform: translateX(-50%); display: grid; justify-items: center; gap: 4px; }
+.scan .pin { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); box-shadow: 0 0 0 2px var(--accent); }
+.scan .stem { width: 2px; height: 24px; background: var(--accent); }
+.scan.morning .pin { background: var(--hot); box-shadow: 0 0 0 2px var(--hot); }
+.scan.morning .stem { background: var(--hot); }
+.scan .lbl { position: absolute; top: -18px; font-family: var(--font-mono); font-size: 0.7rem; white-space: nowrap; color: var(--ink-2); }
+.clock-key { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.82rem; color: var(--ink-2); margin-top: 8px; }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.monday { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.monday div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; background: var(--surface-2); }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+.side { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.side.long { color: var(--long); background: var(--good-soft); }
+.side.short { color: var(--short); background: var(--bad-soft); }
+.pill { font-family: var(--font-mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--line); color: var(--ink-2); }
+.pill.shown { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.pill.no { border-color: transparent; background: var(--bad-soft); color: var(--short); }
+.pill.run { border-color: transparent; background: var(--good-soft); color: var(--long); }
+
+/* ---------- figures ---------- */
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.figure svg { display: block; width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.84rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.lk { width: 22px; height: 0; border-top: 2px solid; display: inline-block; }
+.steps { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start; }
+.steps li::before { counter-increment: s; content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--hot); color: var(--surface); font-family: var(--font-mono); font-size: 0.75rem; display: grid; place-items: center; margin-top: 1px; }
+.result-line { font-family: var(--font-mono); font-size: 0.86rem; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.chart-box { position: relative; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 0.78rem; line-height: 1.45; padding: 8px 10px; border-radius: 8px; min-width: 190px; font-family: var(--font-mono); }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 0.86rem; }
+details table { margin-top: 10px; }
+
+/* ---------- status ---------- */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.big { font-family: var(--font-display); font-size: 2.1rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.big small { font-size: 1rem; color: var(--ink-3); font-weight: 600; }
+.bar { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.note { border-left: 3px solid var(--hot); background: var(--hot-soft); padding: 12px 14px; border-radius: 0 10px 10px 0; display: grid; gap: 4px; }
+.tests { display: grid; gap: 10px; }
+.test { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.test p { grid-column: 1 / -1; }
+footer { color: var(--ink-3); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 16px; }
+
+.exp-list { display: grid; gap: 12px; }
+.exp { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 10px; }
+.exp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.exp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin: 0; }
+.exp-grid div { display: grid; gap: 2px; min-width: 0; align-content: start; }
+.exp-grid dt { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); }
+.exp-grid dd { margin: 0; font-size: 0.9rem; }
+.pill.read { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.pill.decide { border-color: transparent; background: var(--hot-soft); color: var(--hot); }
+.pill.auto { color: var(--ink-3); }
+.cal { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.cal > li { display: grid; grid-template-columns: 190px 92px minmax(0, 1fr); gap: 6px 14px; align-items: start; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.cal > li:last-child { border-bottom: none; }
+.cal > li.hl { background: var(--surface-2); }
+.cal-date { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.cal .pill { justify-self: start; }
+.check { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 3px; font-size: 0.88rem; color: var(--ink-2); }
+@media (max-width: 640px) {
+  .exp-grid { grid-template-columns: minmax(0, 1fr); }
+  .cal > li { grid-template-columns: minmax(0, 1fr); }
+  body { font-size: 14.5px; }
+  .lanes { grid-template-columns: minmax(0, 1fr); }
+  .station { grid-template-columns: 36px minmax(0, 1fr); gap: 12px; }
+  .dot { width: 36px; height: 36px; font-size: 0.9rem; }
+  .station::before { left: 17px; top: 34px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  nav.jump a { transition: color .15s, border-color .15s; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">crypto-screener · state on 20 Oct 2026</p>
+    <h1>Crypto Screener Flow</h1>
+    <p class="lede">How one 4-hour candle close becomes a Telegram brief, a scored paper trade and a Monday review. Every step runs on GitHub, so the laptop is not needed. Paper only: the system never places an order.</p>
+    <nav class="jump" aria-label="Sections">
+      <a href="#flow">The flow</a><a href="#experiments">Running experiments</a><a href="#calendar">Review calendar</a><a href="#day">A day</a><a href="#rules">Six rules</a><a href="#trade">One trade</a><a href="#tested">What we tested</a>
+    </nav>
+  </header>
+
+  <!-- ===================== FLOW ===================== -->
+  <section id="flow">
+    <div class="section-head">
+      <h2>The flow, step by step</h2>
+      <p class="muted">Steps 1 to 7 run at every 4h close. Step 8 runs once a day, step 9 once a week.</p>
+    </div>
+    <div class="rail">
+      <div class="station">
+        <div class="dot">1</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Get the data from Bybit</h3><span class="when">every 4h close + 2 min · public API, no key</span></div>
+          <div class="chips">
+            <span class="chip">all USDT perps (~800)</span><span class="arrow">→</span>
+            <span class="chip">top 100 by 24h volume</span><span class="arrow">→</span>
+            <span class="chip">drop &lt; $10M volume or &lt; $50M open interest</span><span class="arrow">→</span>
+            <span class="chip accent">top 30 · about 24 pass</span>
+          </div>
+          <p>Coins flagged by the momentum pulse (big move, volume spike, extreme funding) are added, and BTC, ETH and SOL are always in. For each coin it downloads finished candles on four timeframes: <span class="mono">15m × 100</span>, <span class="mono">1h × 300</span>, <span class="mono">4h × 300</span>, <span class="mono">1D × 210</span>. From those it computes RSI, EMA 20/50, ATR, ADX, MACD, volume spike and the 20-candle range. About 100 API calls per scan.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">2</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Check the six rules</h3><span class="when">on the last finished candle · <code>signal_rules.py</code></span></div>
+          <p>Each rule looks for one chart pattern. A signal only counts for 90 minutes after its 4h candle closes (45 minutes on the 1h), because the trade is meant to start right after the close. <a href="#rules">See the six rules</a>.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">3</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Build the trade</h3><span class="when"><code>mechanical_setups.py</code></span></div>
+          <div class="chips">
+            <span class="chip">limit order at the next 15m open · 30 min to fill</span>
+            <span class="chip">stop from the rule</span>
+            <span class="chip">T1 0.75R: close half, stop to breakeven</span>
+            <span class="chip">after +1R: stop to +0.3R</span>
+            <span class="chip">T2 1.5–2R</span>
+          </div>
+          <p class="muted small">R is the distance from entry to stop. <a href="#trade">Worked example of one trade</a>.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">4</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Safety checks</h3><span class="when"><code>main.py</code></span></div>
+          <p>The levels must make sense (T1 no further than 1R, T2 at least 1.5R). One setup per coin per scan, and no repeat of a coin that already had a setup in the last 2 days.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">5</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Sort into lanes</h3><span class="when">by each rule's backtest record</span></div>
+          <div class="lanes">
+            <div class="lane"><span class="tag">Execute</span><strong>Empty</strong><span class="small muted">Needs ≥ 70% profitable on ≥ 30 test trades. No rule has reached it.</span></div>
+            <div class="lane live"><span class="tag">Watch · shown</span><strong>Range top fade</strong><span class="small muted">Needs ≥ 60% on ≥ 30 test trades. Shown in the brief and paper-tracked.</span></div>
+            <div class="lane"><span class="tag">Shadow · not shown</span><strong>The other five</strong><span class="small muted">Logged and scored, so their live record keeps growing.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">6</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Daily book: up to 3 picks a day</h3><span class="when">paper trial 19 Oct → 1 Nov</span></div>
+          <p>Picks come from the watch and shadow lanes, first come first served across the day (UTC). Within one scan the order is fixed by backtest record, one pick per coin per day, longs and shorts both allowed.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">7</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Telegram brief</h3><span class="when">morning brief always · 07:05 WIB</span></div>
+          <p>BTC first: price, daily and 4h trend, RSI and ADX, volume against its 20-day average, funding, open interest, yesterday's high and low, market breadth, and who got liquidated. Then the day's picks with entry, stop and targets. Other scans only send a message when they make a pick.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">8</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Score the trades</h3><span class="when">daily after 00:00 UTC · <code>weekly_eval.py</code></span></div>
+          <p>Once a pick's window has run out (2 days for 4h signals, 1 day for 1h), the trade is replayed on 15m candles with the same simulator the backtests use: fill, stop, T1, breakeven, T2, fees and funding. Each pick gets a net R and a profitable yes or no.</p>
+        </div>
+      </div>
+
+      <div class="station">
+        <div class="dot">9</div>
+        <div class="station-body">
+          <div class="station-title"><h3>Monday review</h3><span class="when">Telegram + file · <code>weekly_review.py</code></span></div>
+          <p>The week's picks, win rate and net R, longs against shorts, each setup, and the trial so far. A side or setup with 20 or more scored picks and net below zero is flagged to cut; you make the change with one line in the config. It ends with the carry line: what holding spot against a short perp or quarterly future pays right now.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-jobs">
+      <h3>Running in the background</h3>
+      <ul>
+        <li><strong>Momentum pulse</strong>, every 2 hours: flags fast-moving coins for step 1 and labels the market (risk-off, cautious, neutral, risk-on).</li>
+        <li><strong>Liquidation feed</strong>: a live connection to Bybit that runs alongside every scan job, summarised for the brief.</li>
+        <li><strong>Weekly momentum book</strong>, Mondays: the separate paper test that buys the strongest coins and shorts the weakest.</li>
+        <li><strong>Health alert</strong>: a Telegram message if any 4h close is missed. Every close since 12 Oct was caught on the first try.</li>
+        <li><strong>Monthly facts file</strong>, every 30 days: each test judged by its own rule. Next one around 15 Nov.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== EXPERIMENTS ===================== -->
+  <section id="experiments">
+    <div class="section-head">
+      <h2>Still running: what is under investigation</h2>
+      <p class="muted">Each experiment had its pass bar written before it started. None of them trades real money. State on 20 Oct 2026.</p>
+    </div>
+    <div class="exp-list">
+      <article class="exp">
+        <div class="exp-head"><span class="pill run">running</span><h3>Daily book · paper trial</h3><span class="when">19 Oct → 1 Nov · day 2 of 14</span></div>
+        <div class="bar" aria-hidden="true"><i style="width: 14.3%"></i></div>
+        <p>Can up to 3 picks a day from the six rules make money?</p>
+        <dl class="exp-grid">
+          <div><dt>Progress</dt><dd>6 picks. First scores arrive 21–22 Oct.</dd></div>
+          <div><dt>How it is judged</dt><dd>By you, on the Monday numbers. A side or setup with 20+ scored picks and net below zero is flagged to cut.</dd></div>
+          <div><dt>Decision</dt><dd>After the 2 Nov review: trade real money or not.</dd></div>
+          <div><dt>What history says</dt><dd>6-month replay: 54.9% profitable, −0.087R a trade, 5 of 6 months red. Expect a no.</dd></div>
+        </dl>
+      </article>
+      <article class="exp">
+        <div class="exp-head"><span class="pill run">running</span><h3>Weekly momentum book · paper test #2</h3><span class="when">since 5 Oct · week 2 of 26</span></div>
+        <div class="bar" aria-hidden="true"><i style="width: 7.7%"></i></div>
+        <p>Does buying the strongest coins and shorting the weakest each week make money, market-neutral?</p>
+        <dl class="exp-grid">
+          <div><dt>Progress</dt><dd>2 weeks scored, both green: 56-day book +3.6%, 91-day book +4.4%.</dd></div>
+          <div><dt>Pass bar at 26 weeks</dt><dd>Sharpe ≥ 1.0, max drawdown ≤ 20%, ≥ 55% of weeks green → eligible for small real money (your call). Sharpe below 0.5 → retired. Drawdown above 25% at any time → stopped.</dd></div>
+          <div><dt>Decision</dt><dd>Around 5 Apr 2027.</dd></div>
+          <div><dt>What history says</dt><dd>Backtest Sharpe 2.6–2.9 with 65% of weeks green. The only idea that has cleared a pass bar.</dd></div>
+        </dl>
+      </article>
+      <article class="exp">
+        <div class="exp-head"><span class="pill run">running</span><h3>Range top fade · forward test #1</h3><span class="when">since 23 Sep · 3 of 30 trades</span></div>
+        <div class="bar" aria-hidden="true"><i style="width: 10%"></i></div>
+        <p>Does the one rule that cleared the 60% bar hold up on new data?</p>
+        <dl class="exp-grid">
+          <div><dt>Progress</dt><dd>3 trades as of 16 Oct: 2 green, +0.105R a trade. About 2 trades a week.</dd></div>
+          <div><dt>Pass bar at 30 trades</dt><dd>≥ 70% profitable and net above zero → small real money. 60–70% → extend to 50 trades. Below 60% → the 4h mean-reversion rules are closed.</dd></div>
+          <div><dt>Deadline</dt><dd>Closed if it has not reached 30 trades by 31 Dec, or is below 60% after 20.</dd></div>
+          <div><dt>What history says</dt><dd>Its backtest faded from 82% in April to 50% in September. Likely to run out of time before 30.</dd></div>
+        </dl>
+      </article>
+    </div>
+
+    <h3>Readouts that run alongside (not experiments)</h3>
+    <div class="cards">
+      <div class="card"><span class="eyebrow">Carry line · first live 26 Oct</span><div class="big">5.7%<small> a year</small></div><p class="small muted">BTC December quarterly basis, locked if held to expiry. BTC perp funding to shorts: 3.7% over 30 days. Thin market: use limit orders.</p></div>
+      <div class="card"><span class="eyebrow">Liquidation feed</span><div class="big">On<small> since 19 Oct</small></div><p class="small muted">Collecting without gaps since 12:04 UTC on 19 Oct. Shown in every brief; never used to pick a trade.</p></div>
+      <div class="card"><span class="eyebrow">Monthly facts file</span><div class="big">~15<small> Nov</small></div><p class="small muted">Every test judged by its own rule. Its one open recommendation (repeat the failed-breakout result) was already tested on 19 Oct and failed.</p></div>
+    </div>
+
+    <h3 id="calendar">Review calendar</h3>
+    <ol class="cal">
+      <li><span class="cal-date">Wed 21 – Thu 22 Oct</span><span class="pill auto">automatic</span><span>First daily-book picks are scored.</span></li>
+      <li><span class="cal-date">Fri 23 Oct</span><span class="pill auto">optional</span><span>Quick check that the scores and briefs look right.</span></li>
+      <li class="hl"><span class="cal-date">Mon 26 Oct · 07:05 WIB</span><span class="pill read">read</span><span><strong>First weekly review on Telegram</strong>, and the first live run of the review and the carry line. Momentum book week 3 scored the same morning.
+        <ul class="check">
+          <li>Picks made (21 at most) and how many are scored; Saturday and Sunday picks are still inside their window.</li>
+          <li>Win rate and net R, then longs against shorts. History says longs are the weak side.</li>
+          <li>The cut rule will most likely say "building": it needs 20 scored picks on a side or setup.</li>
+          <li>The carry section shows numbers, not "Data unavailable".</li>
+        </ul></span></li>
+      <li class="hl"><span class="cal-date">Mon 2 Nov</span><span class="pill decide">decide</span><span><strong>End of the daily-book trial:</strong> trade real money or not.</span></li>
+      <li><span class="cal-date">~ 15 Nov</span><span class="pill read">read</span><span>Monthly facts file, plus the optional Codex review on the Mac.</span></li>
+      <li><span class="cal-date">31 Dec</span><span class="pill auto">automatic</span><span>Range top fade forward test closes if it has fewer than 30 trades.</span></li>
+      <li class="hl"><span class="cal-date">~ 5 Apr 2027</span><span class="pill decide">decide</span><span><strong>Momentum book at 26 weeks:</strong> pass, extend or retire.</span></li>
+    </ol>
+
+    <h3>Daily book picks so far</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time (UTC)</th><th>Coin</th><th>Side</th><th>Rule</th><th>Lane</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">19 Oct 16:02</td><td>WLFI</td><td><span class="side long">long</span></td><td>Range bottom fade</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="mono">19 Oct 16:02</td><td>BTC</td><td><span class="side short">short</span></td><td>Trend pullback</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="mono">19 Oct 20:02</td><td>CRV</td><td><span class="side short">short</span></td><td>Failed breakout</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="mono">20 Oct 00:02</td><td>PHA</td><td><span class="side short">short</span></td><td>Failed breakout</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="mono">20 Oct 00:02</td><td>CT</td><td><span class="side short">short</span></td><td>Trend pullback</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="mono">20 Oct 00:02</td><td>ENA</td><td><span class="side short">short</span></td><td>Trend pullback</td><td><span class="pill">shadow</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards">
+      <div class="note"><h3>The morning scan fills the day</h3><p class="small">All three of today's picks came from the 07:02 WIB scan, so later scans had no room left.</p></div>
+      <div class="note"><h3>Three shorts at once act like one bet</h3><p class="small">Altcoins move together. If the market bounces, all three lose together.</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== DAY ===================== -->
+  <section id="day">
+    <div class="section-head">
+      <h2>A day on the clock</h2>
+      <p class="muted">Times in WIB (UTC+7), with UTC underneath. The morning scan is the only one that always sends a message.</p>
+    </div>
+    <div class="scroll-x">
+      <div class="clock">
+        <div class="track" id="track"></div>
+        <div class="clock-key">
+          <span class="key"><i style="background: var(--hot)"></i>Morning scan: brief, scoring, Monday review</span>
+          <span class="key"><i style="background: var(--accent)"></i>Scan after each 4h close</span>
+          <span class="key"><i style="background: var(--ink-3); border-radius: 1px; width: 2px; height: 12px"></i>Momentum pulse</span>
+        </div>
+      </div>
+    </div>
+    <div class="monday">
+      <div><h3>Every morning, 07:02 WIB</h3><p class="small muted">Scan, morning brief, then the daily scoring of finished picks.</p></div>
+      <div><h3>Monday morning, extra</h3><p class="small muted">Weekly review with the carry line, and the weekly momentum book is rebalanced and scored.</p></div>
+      <div><h3>Other scans</h3><p class="small muted">11:02, 15:02, 19:02, 23:02, 03:02 WIB. Quiet unless a pick is made and the day still has room.</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== RULES ===================== -->
+  <section id="rules">
+    <div class="section-head">
+      <h2>The six rules</h2>
+      <p class="muted">"Test" is the last 40% of the 6-month backtest, which the rules were not tuned on. Pick order is the order the daily book uses within one scan.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="num">Pick order</th><th>Rule</th><th>Chart</th><th>What it looks for</th><th>Side</th><th class="num">Test profitable</th><th>Lane</th></tr></thead>
+        <tbody>
+          <tr><td class="num mono">1</td><td>Range top fade</td><td class="mono">4h</td><td>Price at the top of a 20-candle range at least 5% wide, RSI above 70, no trend (ADX below 25), volume at least 1.5× average</td><td><span class="side short">short</span></td><td class="num mono">66% · n 41</td><td><span class="pill shown">watch · shown</span></td></tr>
+          <tr><td class="num mono">2</td><td>Failed breakout</td><td class="mono">4h</td><td>Candle pokes above the 20-candle high, closes back below it, red candle</td><td><span class="side short">short</span></td><td class="num mono">54.5% · n 112</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="num mono">3</td><td>Trend pullback</td><td class="mono">4h</td><td>Downtrend (EMA20 below EMA50, MACD below 0), price bounces up to EMA20</td><td><span class="side short">short</span></td><td class="num mono">52.6% · n 152</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="num mono">4</td><td>Liquidity sweep</td><td class="mono">1h</td><td>Dips below the 20-candle low, closes back above it with a long lower wick</td><td><span class="side long">long</span></td><td class="num mono">51% · n 341</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="num mono">5</td><td>RSI bounce</td><td class="mono">4h</td><td>RSI was below 30, now turning up between 30 and 45</td><td><span class="side long">long</span></td><td class="num mono">51% · n 96</td><td><span class="pill">shadow</span></td></tr>
+          <tr><td class="num mono">6</td><td>Range bottom fade</td><td class="mono">4h</td><td>Bottom of a 20-candle range, RSI below 30, ADX below 18</td><td><span class="side long">long</span></td><td class="num mono">73% · n 11</td><td><span class="pill">shadow · too few trades</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== TRADE ===================== -->
+  <section id="trade">
+    <div class="section-head">
+      <h2>How one trade is managed</h2>
+      <p class="muted">A worked example of a long. Each level is measured in R, the distance from entry to stop. Shorts are the mirror image.</p>
+    </div>
+    <div class="figure">
+      <svg id="ladder" viewBox="0 0 680 300" role="img" aria-label="Price path of an example long trade crossing the T1 level, reaching plus 1.2R, then falling back to exit at plus 0.3R"></svg>
+      <ol class="steps">
+        <li><span>Price reaches <strong>T1 at +0.75R</strong>: half the position is closed and the stop on the rest moves to the entry price, so the trade can no longer lose.</span></li>
+        <li><span>Price reaches <strong>+1R</strong>: the stop moves up to <strong>+0.3R</strong> to lock part of the gain.</span></li>
+        <li><span>Price turns back down and hits that stop: the second half closes at <strong>+0.3R</strong>. Had it kept going, the second half would have closed at T2 (+2R here).</span></li>
+      </ol>
+      <p class="result-line">½ × 0.75R + ½ × 0.3R = +0.525R before fees, about +0.48R after fees and funding. Any trade that ends above zero after costs counts as profitable.</p>
+    </div>
+  </section>
+
+
+  <!-- ===================== TESTED ===================== -->
+  <section id="tested">
+    <div class="section-head">
+      <h2>What we tested this week</h2>
+      <p class="muted">Every test had its pass bar written before it ran, and every result was checked on data the idea had not seen.</p>
+    </div>
+
+    <div class="figure">
+      <div class="section-head">
+        <h3>Win rate depends on where the target is</h3>
+        <p class="small muted">Stop fixed at 1R, target moved from 0.25R to 2R, 6 months of data. Our 1,884 signal entries against random entries with the same stop size. Hover a point for the numbers.</p>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="lk" style="border-color: var(--series-1)"></i>Our signals</span>
+        <span><i class="lk" style="border-color: var(--series-2)"></i>Random entries</span>
+        <span><i class="lk" style="border-color: var(--ink-3); border-top-style: dashed"></i>No-edge theory</span>
+      </div>
+      <div class="chart-box" id="chartBox">
+        <svg id="winChart" viewBox="0 0 680 320" role="img" aria-label="Line chart: win rate falls from about 78% at a 0.25R target to about 38% at 2R; our signals and random entries follow the same line"></svg>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <p class="small">A coin-flip with a 0.25R target already wins 78% of the time, and both lines lose money at every target. At 1:1 our signals win 48.7% and random entries 49.2%. An 80% win rate at 1:1 would mean making about +0.6R a trade before fees.</p>
+      <details>
+        <summary>Show the numbers as a table</summary>
+        <div class="table-wrap">
+          <table id="chartTable"><thead><tr><th class="num">Target</th><th class="num">No-edge theory</th><th class="num">Signals: win · net</th><th class="num">Random: win · net</th></tr></thead><tbody></tbody></table>
+        </div>
+      </details>
+    </div>
+
+    <div class="tests">
+      <div class="test"><h3>15m scalp at 1:1</h3><span class="pill no">no</span><p class="small muted">46.6% profitable, −0.164R a trade. Below a coin-flip baseline (48.5%): on 15m the fees are the whole result.</p></div>
+      <div class="test"><h3>Daily breakout with a trailing stop</h3><span class="pill no">no edge</span><p class="small muted">+0.064R a trade, but random entries with the same exit made +0.131R. The profit came from the market's direction, not the entry.</p></div>
+      <div class="test"><h3>The daily book, replayed over 6 months</h3><span class="pill no">loses</span><p class="small muted">526 picks, 54.9% profitable, −0.087R a trade, 5 of 6 months red.</p></div>
+      <div class="test"><h3>Daily long/short book</h3><span class="pill no">no</span><p class="small muted">Ranking coins by funding: collected about 183% a year in funding and lost about as much on price (Sharpe 0.07). Buying coins that lagged BTC: Sharpe −0.87.</p></div>
+      <div class="test"><h3>4h + 1h direction, 15m entry</h3><span class="pill no">no</span><p class="small muted">Requiring 4h and 1h agreement: −0.111R on the test period against −0.120R today. Adding a 15m trigger: −0.011R on the test period but −0.196R on the first 60%.</p></div>
+      <div class="test"><h3>MA200, Bollinger, accumulation/distribution</h3><span class="pill no">no</span><p class="small muted">Trading with the daily MA200 and fading outside the Bollinger band both made +0.09R on the first 60%, then −0.10R and −0.09R on the last 40%. Accumulation/distribution and OBV flipped between the two periods.</p></div>
+      <div class="test"><h3>Weekly momentum long/short book</h3><span class="pill run">running</span><p class="small muted">Backtest Sharpe 2.6 to 2.9 with 65% of weeks green. Paper test: 2 of 26 weeks, both green.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    Sources: the crypto-screener repository, <code>progress.md</code> and <code>logs/backtest_reports/</code> as of 20 Oct 2026 (6-month backtest window 29 Mar → 23 Sep 2026). Paper trading only; no orders are placed.
+  </footer>
+</div>
+
+<script>
+(function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function el(tag, attrs, parent, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* ---------- clock (24h in WIB) ---------- */
+  const track = document.getElementById("track");
+  const pct = (h) => (h / 24) * 100;
+  for (let h = 0; h <= 24; h += 3) {
+    const t = document.createElement("div");
+    t.className = "tick";
+    t.style.left = pct(h) + "%";
+    const utc = (h - 7 + 24) % 24;
+    t.innerHTML = "<b>" + String(h % 24).padStart(2, "0") + ":00</b>" + String(utc).padStart(2, "0") + " UTC";
+    track.appendChild(t);
+  }
+  const axis = document.createElement("div"); axis.className = "axis"; track.appendChild(axis);
+  for (let utc = 0; utc < 24; utc += 2) {           // pulse at :07 past every even UTC hour
+    const wib = (utc + 7 + 7 / 60) % 24;
+    const p = document.createElement("div"); p.className = "pulse"; p.style.left = pct(wib) + "%"; track.appendChild(p);
+  }
+  [0, 4, 8, 12, 16, 20].forEach((utc) => {
+    const wib = (utc + 7 + 2 / 60) % 24;
+    const s = document.createElement("div");
+    s.className = "scan" + (utc === 0 ? " morning" : "");
+    s.style.left = pct(wib) + "%";
+    const hh = Math.floor(wib), mm = Math.round((wib - hh) * 60);
+    s.innerHTML = '<span class="lbl">' + String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0") + (utc === 0 ? " brief" : "") + '</span><span class="pin"></span><span class="stem"></span>';
+    track.appendChild(s);
+  });
+
+  /* ---------- trade ladder ---------- */
+  function drawLadder() {
+    const svg = document.getElementById("ladder");
+    svg.innerHTML = "";
+    const W = 680, H = 300, L = 16, R = 200, T = 18, B = 18;
+    const lo = -1.2, hi = 2.25;
+    const y = (r) => T + (hi - r) / (hi - lo) * (H - T - B);
+    const path = [0, -0.2, -0.42, -0.15, 0.25, 0.52, 0.8, 0.62, 0.95, 1.22, 1.08, 0.76, 0.5, 0.3];
+    const x = (i) => L + i * ((W - L - R) / (path.length - 1));
+    const levels = [
+      { r: 2, label: "T2  +2R", color: css("--long") },
+      { r: 1, label: "+1R  move stop to +0.3R", color: css("--ink-3") },
+      { r: 0.75, label: "T1  +0.75R  close half", color: css("--long") },
+      { r: 0, label: "Entry  0R", color: css("--ink-2") },
+      { r: -1, label: "Stop  −1R", color: css("--short") },
+    ];
+    const lw = W - R + 10;
+    levels.forEach((lv) => {
+      el("line", { x1: L, x2: W - R, y1: y(lv.r), y2: y(lv.r), stroke: lv.color, "stroke-width": 1, opacity: 0.9 }, svg);
+      const dy = lv.r === 1 ? -4 : lv.r === 0.75 ? 10 : 4;
+      el("text", { x: lw, y: y(lv.r) + dy, fill: css("--ink-2"), "font-size": 12, "font-family": css("--font-mono") }, svg, lv.label);
+    });
+    // breakeven stop after T1, then +0.3R stop after +1R
+    el("line", { x1: x(6), x2: x(9), y1: y(0), y2: y(0), stroke: css("--hot"), "stroke-width": 2, "stroke-dasharray": "5 4" }, svg);
+    el("line", { x1: x(9), x2: x(13), y1: y(0.3), y2: y(0.3), stroke: css("--hot"), "stroke-width": 2, "stroke-dasharray": "5 4" }, svg);
+    el("text", { x: x(9) + 6, y: y(0.3) + 16, fill: css("--ink-2"), "font-size": 11, "font-family": css("--font-mono") }, svg, "stop now +0.3R");
+    el("text", { x: x(6) + 6, y: y(0) + 16, fill: css("--ink-2"), "font-size": 11, "font-family": css("--font-mono") }, svg, "stop now at entry");
+    el("polyline", { points: path.map((r, i) => x(i) + "," + y(r)).join(" "), fill: "none", stroke: css("--accent"), "stroke-width": 2.5, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+    el("circle", { cx: x(0), cy: y(0), r: 5, fill: css("--accent"), stroke: css("--surface"), "stroke-width": 2 }, svg);
+    [[6, 0.75], [9, 1.0], [13, 0.3]].forEach(([i, r], n) => {
+      const cy = y(n === 1 ? 1.0 : r);
+      const cx = n === 1 ? x(8) + (x(9) - x(8)) * ((1.0 - 0.95) / (1.22 - 0.95)) : n === 0 ? x(5) + (x(6) - x(5)) * ((0.75 - 0.52) / (0.8 - 0.52)) : x(i);
+      el("circle", { cx: cx, cy: cy, r: 11, fill: css("--hot"), stroke: css("--surface"), "stroke-width": 2 }, svg);
+      el("text", { x: cx, y: cy + 4, "text-anchor": "middle", fill: css("--surface"), "font-size": 12, "font-weight": 600, "font-family": css("--font-mono") }, svg, String(n + 1));
+    });
+  }
+
+  /* ---------- win-rate chart ---------- */
+  const data = [
+    { k: 0.25, th: 80.0, s: 77.4, sn: -0.059, r: 78.3, rn: -0.036 },
+    { k: 0.5, th: 66.7, s: 65.1, sn: -0.051, r: 64.7, rn: -0.046 },
+    { k: 0.75, th: 57.1, s: 55.6, sn: -0.067, r: 55.9, rn: -0.049 },
+    { k: 1.0, th: 50.0, s: 48.7, sn: -0.086, r: 49.2, rn: -0.066 },
+    { k: 1.5, th: 40.0, s: 41.4, sn: -0.096, r: 42.2, rn: -0.065 },
+    { k: 2.0, th: 33.3, s: 37.1, sn: -0.108, r: 39.2, rn: -0.065 },
+  ];
+  const tbody = document.querySelector("#chartTable tbody");
+  data.forEach((d) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td class="num mono">' + d.k + "R</td><td class=\"num mono\">" + d.th.toFixed(1) + "%</td><td class=\"num mono\">" +
+      d.s.toFixed(1) + "% · " + d.sn.toFixed(3) + "R</td><td class=\"num mono\">" + d.r.toFixed(1) + "% · " + d.rn.toFixed(3) + "R</td>";
+    tbody.appendChild(tr);
+  });
+
+  function drawChart() {
+    const svg = document.getElementById("winChart");
+    svg.innerHTML = "";
+    const W = 680, H = 320, L = 52, R = 20, T = 14, B = 40;
+    const x = (k) => L + (k - 0.1) / (2.1 - 0.1) * (W - L - R);
+    const y = (v) => T + (85 - v) / (85 - 30) * (H - T - B);
+    const ink2 = css("--ink-2"), line = css("--line"), mono = css("--font-mono");
+    for (let v = 30; v <= 80; v += 10) {
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: line, "stroke-width": 1 }, svg);
+      el("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end", fill: ink2, "font-size": 12, "font-family": mono }, svg, v + "%");
+    }
+    data.forEach((d) => el("text", { x: x(d.k), y: H - B + 22, "text-anchor": "middle", fill: ink2, "font-size": 12, "font-family": mono }, svg, d.k + "R"));
+    const line2 = (key, color, dash) => el("polyline", { points: data.map((d) => x(d.k) + "," + y(d[key])).join(" "), fill: "none", stroke: color, "stroke-width": 2, "stroke-dasharray": dash || "none", "stroke-linejoin": "round" }, svg);
+    line2("th", css("--ink-3"), "6 5");
+    line2("r", css("--series-2"));
+    line2("s", css("--series-1"));
+    const dots = [];
+    [["r", "--series-2"], ["s", "--series-1"]].forEach(([key, c]) => data.forEach((d, i) => {
+      dots.push(el("circle", { cx: x(d.k), cy: y(d[key]), r: 4.5, fill: css(c), stroke: css("--surface"), "stroke-width": 2 }, svg));
+    }));
+    // 80% reference at 1:1
+    el("circle", { cx: x(1), cy: y(80), r: 5, fill: "none", stroke: css("--hot"), "stroke-width": 2 }, svg);
+    el("text", { x: x(1) + 10, y: y(80) + 4, fill: css("--ink"), "font-size": 12, "font-family": mono }, svg, "80% at 1:1, the goal");
+    const cross = el("line", { x1: 0, x2: 0, y1: T, y2: H - B, stroke: css("--ink-3"), "stroke-width": 1, visibility: "hidden" }, svg);
+    const tip = document.getElementById("tip"), box = document.getElementById("chartBox");
+    const step = (x(0.5) - x(0.25));
+    data.forEach((d) => {
+      const hit = el("rect", { x: x(d.k) - step / 2, y: T, width: step, height: H - T - B, fill: "transparent", tabindex: 0, "aria-label": "Target " + d.k + "R" }, svg);
+      const show = () => {
+        cross.setAttribute("x1", x(d.k)); cross.setAttribute("x2", x(d.k)); cross.setAttribute("visibility", "visible");
+        tip.innerHTML = "<b>Target " + d.k + "R</b><br>No-edge theory " + d.th.toFixed(1) + "%<br>Our signals " + d.s.toFixed(1) + "% · " + d.sn.toFixed(3) + "R<br>Random " + d.r.toFixed(1) + "% · " + d.rn.toFixed(3) + "R";
+        tip.hidden = false;
+        const bw = box.clientWidth, px = x(d.k) / W * bw;
+        tip.style.left = Math.min(Math.max(px + 12, 0), bw - tip.offsetWidth - 4) + "px";
+        tip.style.top = (y(d.s) / H * box.clientHeight - tip.offsetHeight - 14) + "px";
+        if (parseFloat(tip.style.top) < 0) tip.style.top = (y(d.s) / H * box.clientHeight + 14) + "px";
+      };
+      const hide = () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); };
+      hit.addEventListener("mouseenter", show); hit.addEventListener("focus", show);
+      hit.addEventListener("mouseleave", hide); hit.addEventListener("blur", hide);
+    });
+  }
+
+  function drawAll() { drawLadder(); drawChart(); }
+  drawAll();
+  if (window.matchMedia) {
+    try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll); } catch (e) {}
+  }
+  try { new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) {}
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+})();
+</script>
+
+</body>
+</html>
