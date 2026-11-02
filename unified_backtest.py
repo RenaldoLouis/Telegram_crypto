@@ -41,6 +41,7 @@ from pybit.unified_trading import HTTP
 
 import config
 import signal_rules as sr
+import signal_levels as sl
 import derivs_data as dd
 import cvd_data
 import trade_sim as ts
@@ -57,7 +58,11 @@ TF_LABEL = {"60": "1h", "240": "4h"}
 WINDOW_CANDLES = {"4h": 192, "1h": 96}
 DEDUP_DAYS = getattr(config, "UB_DEDUP_DAYS", 2)                 # live cross-run dedup window
 MIN_HISTORY_DAYS = getattr(config, "UB_MIN_HISTORY_DAYS", 60)    # skip newer listings
-DEFAULT_T1_R = getattr(config, "UB_DEFAULT_T1_R", 0.75)
+DEFAULT_T1_R = getattr(config, "UB_DEFAULT_T1_R", 0.75)   # synthetic T1 for sweeps / legacy trade dicts
+# Live parity (2026-11-02): the scan runs at the close + lag, so the evaluator scores from the first 15m
+# candle opening at or after that time; the setup's levels come from the price at the scan.
+SCAN_LAG_MS = int(getattr(config, "UB_SCAN_LAG_MIN", 2) * 60_000)
+SWING_LOOKBACK_BARS = getattr(config, "KLINE_LIMIT", 100)   # the live fetch depth behind swing_high/low
 SHIP_PROFITABLE_PCT = getattr(config, "UB_SHIP_PROFITABLE_PCT", 70.0)
 CANDIDATE_PROFITABLE_PCT = getattr(config, "UB_CANDIDATE_PROFITABLE_PCT", 60.0)
 MIN_TEST_N = getattr(config, "UB_MIN_TEST_N", 20)
@@ -231,6 +236,29 @@ def _prepare(symbol, data, deriv, cvd=None):
     return _PREP_CACHE[symbol]
 
 
+def live_targets(df, i, sig, ref, risk):
+    """T1/T2 exactly as `mechanical_setups._build_one` places them for a live setup: T2 at the
+    signal's target_r × risk from the scan price; T1 at the nearest structural level of the
+    signal TF (last swing high/low, EMA20/50, 20-bar high/low) inside 0.75–1.0R, else 0.75R.
+    Returns (t1, t2, candidate_levels); the levels are kept for management sweeps."""
+    row = df.iloc[i]
+    swing_hi, swing_lo = BybitFetcher._recent_swing_levels(
+        df.iloc[max(0, i - SWING_LOOKBACK_BARS + 1):i + 1])
+    levels = [swing_hi, swing_lo] + [_safe(row.get(c), 10) for c in ("ema20", "ema50", "high_20", "low_20")]
+    direction = sig["direction"]
+    t1, _ = sl.nearest_structural_target(ref, risk, direction, levels)
+    t2 = sl.target_from_r(ref, risk, sig.get("target_r", 2.0), direction)
+    return t1, t2, levels
+
+
+def is_gap_skip(direction, first_open, stop, t1):
+    """weekly_eval.evaluate_setup's gap rule: a setup whose first scored open is already beyond
+    its stop or its T1 is not a trade (status gap_skipped, never counted)."""
+    if direction == "long":
+        return first_open <= stop or first_open >= t1
+    return first_open >= stop or first_open <= t1
+
+
 def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None, cvd=None):
     """Walk every closed 4h/1h bar, fire signals, simulate on 15m. Returns trades."""
     if not data["15"]:
@@ -263,7 +291,13 @@ def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None,
         prev = last_by_key.get(key)
         if prev is not None and close_t < prev + DEDUP_DAYS * 86_400_000:
             continue
-        j = bisect.bisect_left(m15_ts, close_t)
+        # Live parity (2026-11-02). The live scan runs at close + SCAN_LAG_MS and builds the setup
+        # from the price then (≈ the open of the 15m candle starting at the close); weekly_eval
+        # scores it from the first 15m candle opening at or after the scan, with the setup's
+        # FIXED stop/T1/T2. Before this the engine entered at the close and set T1/T2 from the
+        # fill, which scored the same live trades +0.077R/trade better (engine_parity.py).
+        j0 = bisect.bisect_left(m15_ts, close_t)
+        j = bisect.bisect_left(m15_ts, close_t + SCAN_LAG_MS)
         if j >= len(m15_c):
             continue
         fwd = m15_c[j:j + WINDOW_CANDLES[lbl]]
@@ -271,15 +305,18 @@ def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None,
             continue
         row = df.iloc[i]
         atr = float(row["atr"])
-        entry = fwd[0]["open"]
-        stop = sr.levels_for(sig, entry, atr)
-        risk = abs(entry - stop)
-        if risk <= 0 or (sig["direction"] == "long" and stop >= entry) or \
-                (sig["direction"] == "short" and stop <= entry):
-            continue
-        last_by_key[key] = close_t
-        dt = datetime.fromtimestamp(close_t / 1000, tz=timezone.utc)
         direction = sig["direction"]
+        ref = m15_c[j0]["open"]
+        stop = sr.levels_for(sig, ref, atr)
+        risk = abs(ref - stop)
+        if risk <= 0 or (direction == "long" and stop >= ref) or (direction == "short" and stop <= ref):
+            continue
+        t1, t2, t1_levels = live_targets(df, i, sig, ref, risk)
+        entry = fwd[0]["open"]
+        last_by_key[key] = close_t     # a gap-skipped setup was still saved live → it blocks repeats
+        if is_gap_skip(direction, entry, stop, t1):
+            continue
+        dt = datetime.fromtimestamp(close_t / 1000, tz=timezone.utc)
         want = "bullish" if direction == "long" else "bearish"
         t_d, t_1, t_4 = trend_d.trend_at(close_t), trend_h1.trend_at(close_t), trend_h4.trend_at(close_t)
         conf = sum(1 for t in (t_d, t_1, t_4) if t == want)
@@ -311,6 +348,7 @@ def build_trades(symbol, data, btc_h4, enabled, tfs, deriv=None, fs_params=None,
             "signal_time": dt.isoformat(), "signal_ms": close_t,
             "hour_utc": dt.hour, "weekday": dt.weekday(), "is_weekend": dt.weekday() >= 5,
             "entry": entry, "stop": stop, "target_r": float(sig.get("target_r", 2.0)), "atr": atr,
+            "ref_price": ref, "t1": t1, "t2": t2, "t1_levels": t1_levels,
             "atr_pct": _safe(atr / close * 100 if close else None, 3),
             "adx": _safe(row["adx"], 2), "rsi": _safe(row["rsi"], 2),
             "vol_spike": _safe(row["vol_spike"], 2),
@@ -336,18 +374,34 @@ LIMIT_WAIT_BARS = getattr(config, "LIMIT_WAIT_BARS", 2)
 LIMIT_OFFSET_ATR = getattr(config, "LIMIT_OFFSET_ATR", 0.0)
 
 
-def sim_trade_market(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
-    entry, direction = t["entry"], t["direction"]
-    d = abs(entry - t["stop"]) * stop_scale
-    stop = entry - d if direction == "long" else entry + d
-    t2r = t["target_r"] if t2_r is None else t2_r
-    t1 = entry + t1_r * d if direction == "long" else entry - t1_r * d
-    t2 = entry + t2r * d if direction == "long" else entry - t2r * d
-    return ts.simulate(t["_fwd"], direction, stop, t1, t2, entry_price=entry,
+def trade_levels(t, t1_r=None, stop_scale=1.0, t2_r=None):
+    """(stop, t1, t2) for a trade. Defaults = the live setup's fixed levels (`build_trades`).
+    Overrides rebuild them from the scan price the way the live constructor would: stop at
+    stop_scale × the original distance, T1 at t1_r × risk (None = structural, as live), T2 at
+    t2_r × risk (None = the signal's target_r). Trade dicts without live levels (built by older
+    studies) fall back to levels from `entry` with a synthetic 0.75R T1."""
+    direction = t["direction"]
+    if t.get("t1") is not None and t1_r is None and stop_scale == 1.0 and t2_r is None:
+        return t["stop"], t["t1"], t["t2"]
+    ref = t.get("ref_price", t["entry"])
+    d = abs(ref - t["stop"]) * stop_scale
+    stop = ref - d if direction == "long" else ref + d
+    if t1_r is None and t.get("t1_levels") is not None:
+        t1, _ = sl.nearest_structural_target(ref, d, direction, t["t1_levels"])
+    else:
+        t1 = sl.target_from_r(ref, d, DEFAULT_T1_R if t1_r is None else t1_r, direction)
+    t2 = sl.target_from_r(ref, d, t["target_r"] if t2_r is None else t2_r, direction)
+    return stop, t1, t2
+
+
+def sim_trade_market(t, t1_r=None, stop_scale=1.0, t2_r=None, trail=True):
+    """Taker entry at the first scored open with the trade's levels (see `trade_levels`)."""
+    stop, t1, t2 = trade_levels(t, t1_r, stop_scale, t2_r)
+    return ts.simulate(t["_fwd"], t["direction"], stop, t1, t2, entry_price=t["entry"],
                        candle_minutes=15, trail=trail)
 
 
-def sim_trade(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
+def sim_trade(t, t1_r=None, stop_scale=1.0, t2_r=None, trail=True):
     """Default simulation = the configured ENTRY_MODEL (what the brief instructs and the
     evaluator scores). Unfilled limit → None (the trade is dropped, counted as unfilled)."""
     if ENTRY_MODEL == "limit_open":
@@ -356,24 +410,14 @@ def sim_trade(t, t1_r=DEFAULT_T1_R, stop_scale=1.0, t2_r=None, trail=True):
     return sim_trade_market(t, t1_r, stop_scale, t2_r, trail)
 
 
-def sim_trade_limit(t, offset_atr, wait_bars, t1_r=DEFAULT_T1_R, t2_r=None, trail=True, stop_scale=1.0,
+def sim_trade_limit(t, offset_atr, wait_bars, t1_r=None, t2_r=None, trail=True, stop_scale=1.0,
                     max_candles=None):
-    """Passive-entry variant of sim_trade: limit at next open ∓ offset×ATR, filled only if
-    traded through within wait_bars; maker fees on entry + take-profits. `max_candles` caps
-    the hold (15m bars after the fill; None = the whole forward window)."""
-    entry, direction = t["entry"], t["direction"]
-    t2r = t["target_r"] if t2_r is None else t2_r
-    # levels are defined from the LIMIT price so R stays comparable
-    off = offset_atr * t["atr"]
-    lim = entry - off if direction == "long" else entry + off
-    d = abs(lim - t["stop"]) * stop_scale
-    stop = lim - d if direction == "long" else lim + d
-    risk = abs(lim - stop)
-    if risk <= 0 or (direction == "long" and stop >= lim) or (direction == "short" and stop <= lim):
-        return {"filled": False, "reason": "limit beyond stop"}
-    t1 = lim + t1_r * risk if direction == "long" else lim - t1_r * risk
-    t2 = lim + t2r * risk if direction == "long" else lim - t2r * risk
-    return ts.simulate_limit(t["_fwd"], direction, stop, t1, t2, atr=t["atr"],
+    """Passive-entry variant of sim_trade: limit at the first scored open ∓ offset×ATR, filled
+    only if traded through within wait_bars; maker fees on entry + take-profits. Levels are
+    the setup's (fixed at the scan, as live), so an offset changes the fill, not the levels.
+    `max_candles` caps the hold (15m bars after the fill; None = the whole forward window)."""
+    stop, t1, t2 = trade_levels(t, t1_r, stop_scale, t2_r)
+    return ts.simulate_limit(t["_fwd"], t["direction"], stop, t1, t2, atr=t["atr"],
                              limit_offset_atr=offset_atr, limit_wait_bars=wait_bars,
                              max_candles=max_candles, candle_minutes=15, trail=trail)
 
@@ -394,9 +438,8 @@ def fill_model_study(trades):
             if r and r.get("filled"):
                 filled.append(r)
                 # market-equivalent on the same subset: taker fees, same entry bar/price
-                m = ts.simulate(t["_fwd"][r["fill_bar"]:], t["direction"], t["stop"],
-                                r["entry_price"] + (DEFAULT_T1_R * abs(r["entry_price"] - t["stop"]) * (1 if t["direction"] == "long" else -1)),
-                                r["entry_price"] + (t["target_r"] * abs(r["entry_price"] - t["stop"]) * (1 if t["direction"] == "long" else -1)),
+                stop, t1, t2 = trade_levels(t)
+                m = ts.simulate(t["_fwd"][r["fill_bar"]:], t["direction"], stop, t1, t2,
                                 entry_price=r["entry_price"], candle_minutes=15)
                 if m:
                     filled_market.append(m)
@@ -734,8 +777,10 @@ def run(args):
     L = []
     L.append(f"# Unified backtest — {today}")
     L.append(f"\nUniverse: {len(data)} symbols ({', '.join(data)}); days={args.days}; "
-             f"trades={len(trades)}; window 4h→192×15m, 1h→96×15m; entry per ENTRY_MODEL (below); "
-             f"T1={DEFAULT_T1_R}R partial 50%, BE after T1, +0.3R trail after 1R MFE; costs per "
+             f"trades={len(trades)}; window 4h→192×15m, 1h→96×15m from the first 15m open at/after "
+             f"close + {SCAN_LAG_MS // 60000} min (the live scan); entry per ENTRY_MODEL (below); levels as the "
+             f"live setup (stop and T2 from the price at the close, T1 = nearest structural level in "
+             f"0.75–1.0R else 0.75R; gap-skips dropped); 50% at T1, BE after T1, +0.3R trail after 1R MFE; costs per "
              f"config (taker {config.TAKER_FEE_PCT*100:.3f}% + slip {config.SLIPPAGE_PCT*100:.2f}% per side; "
              f"maker {config.MAKER_FEE_PCT*100:.3f}%). **Entry model: {ENTRY_MODEL}**"
              + (f" (limit at next open ∓ {LIMIT_OFFSET_ATR}×ATR, wait {LIMIT_WAIT_BARS} bars; "
@@ -798,9 +843,9 @@ def run(args):
         best_desc = "none"
         if best_f:
             r = best_f[1]
-            c = combo or (DEFAULT_T1_R, 1.0, None, True)
+            c = combo or (None, 1.0, None, True)
             best_te = stats([sim_trade(t, *c) for t in r["test_trades"]])
-            best_desc = f"{r['filter']}={r['bucket']} + T1={c[0]} stop×{c[1]} T2={c[2] or 'default'} trail={'on' if c[3] else 'off'}"
+            best_desc = f"{r['filter']}={r['bucket']} + T1={c[0] or 'structural'} stop×{c[1]} T2={c[2] or 'default'} trail={'on' if c[3] else 'off'}"
         def _verdict(v):
             if not v or not v["n"]:
                 return "NO"

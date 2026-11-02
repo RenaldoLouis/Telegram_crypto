@@ -133,6 +133,9 @@ MONTHLY_REVIEW_TIMEOUT_S = 1800
 UB_DEDUP_DAYS = 2               # mimic live dedup: one open trade per (symbol, direction)
 UB_MIN_HISTORY_DAYS = 60        # skip symbols with less closed history than this
 UB_DEFAULT_T1_R = 0.75          # default partial-profit level (R)
+UB_SCAN_LAG_MIN = 2             # 2026-11-02: the live scan runs at the 4h close + 2 min (scan keeper); the
+                                # backtest builds levels from the price at the close and enters at the first
+                                # 15m open at/after close + lag, exactly as weekly_eval scores a live setup
 UB_SHIP_PROFITABLE_PCT = 70     # SHIP verdict bar on TEST (with net>0 and n>=UB_SHIP_MIN_N)
 UB_CANDIDATE_PROFITABLE_PCT = 60
 UB_MIN_TEST_N = 20
