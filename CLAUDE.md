@@ -208,6 +208,13 @@ main.py  (orchestrator, async)
   │                                    sweep → 15m entry; 30m built from 15m) → NO: negative in all 4 periods, = random
   ├── quality_study.py             → 2026-10-21 pre-registered "let winners run" on score ≥ 5 candidates (2×ATR(4h) trail /
   │                                    3R bracket, ≤ 7 days) under the quality yardstick → NO (regime-dependent, PF < 1.3)
+  ├── orderbook_data.py            → 2026-11-03: Binance `bookDepth` history (per-minute resting notional at ±0.2–5 % of mid;
+  │                                    the free PROXY — Bybit publishes none) → logs/backtest_cache/orderbook/ (gitignored),
+  │                                    look-ahead-safe OrderBookIndex + imbalance()
+  ├── orderbook_study.py           → 2026-11-03 pre-registered: the book as a filter on the live rules (8 variants) and as a
+  │                                    4h signal of its own (4 variants, random-side control) → NO on both; "fade the book"
+  │                                    = post-hoc lead only (prereg_orderbook_20261103.md)
+  ├── test_orderbook_study.py      → offline tests (reducer, no-look-ahead index, tilt, bucket sign, verdicts, trade shape)
   ├── playbook_study.py            → 2026-10-25 pre-registered daily trader's playbook: 11 classic strategies (momentum,
   │                                    Turtle, RSI(2), reversal, 4h fade, vol/opening-range breakout, sessions, CME gap,
   │                                    funding) on the 3-year 15-major cache, judged on green months → all NO
@@ -444,6 +451,12 @@ python indicator_study.py        # pre-registered MA200 / Bollinger / A/D / OBV 
 # Trader's checklist (2026-10-21): study (needs the harness caches; holdout funding/OI + daily candles fetched, VPN)
 python checklist_study.py        # → logs/backtest_reports/checklist_<date>.md
 python test_checklist.py         # detectors, live/backtest parity, scan-safety, weekly-review line
+
+# Order-book depth study (2026-11-03, CLOSED — NO on both tests). Binance archive, no VPN needed; ~1 GB raw per year.
+python orderbook_data.py fetch --symbols BTCUSDT,ETHUSDT --start 2025-10-20 --end 2026-11-02   # idempotent, per-day skip
+python orderbook_data.py status
+python orderbook_study.py        # → logs/backtest_reports/orderbook_<date>.md (+ _rows.json)
+python test_orderbook_study.py
 
 # Daily trader's playbook (2026-10-25, CLOSED — all 11 NO): offline, reads the 3-year 15-major cache
 python playbook_study.py         # → logs/backtest_reports/playbook_<date>.md (+ _trades.json)

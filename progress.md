@@ -451,6 +451,17 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-03 — Order-book depth as a new input (pre-registered) → NO on both tests; "fade the book" is a post-hoc lead only
+
+**Why:** user 2026-11-03 ("ok sure lets try that"): one new INPUT per week, graded train/test within the week, pass → shadow lane with its own clock, fail → written up and closed. The resting order book was the one public data set the engine had never read. Pre-registration `logs/backtest_reports/prereg_orderbook_20261103.md` (features, variants, bar fixed before any number was computed); report `orderbook_20261103.md`.
+
+**Data:** Binance USDT-M `bookDepth` (one snapshot per minute since 2023; cumulative resting notional at ±0.2/1/2/3/4/5 % of mid) — a PROXY, Bybit publishes no depth history. `orderbook_data.py` downloads a year (2025-10-20 → 2026-11-02) for the 29 study symbols on Binance and keeps the snapshot AT each 15m boundary + the 15-minute mean (`logs/backtest_cache/orderbook/`, gitignored, 97 % of boundaries covered). Look-ahead-safe index (`OrderBookIndex.at` reads only snapshots ≤ T; tested).
+
+- **Test A — the book as a filter on the six live rules** (3,531 recorded trades, 365-d harness file; aligned = bid-heavy for a long / ask-heavy for a short): selected on the fit half `tilt_1_0.1` (last-hour tilt at 1 %, +0.244R gap, n 126); on the unseen half the aligned bucket is −0.292R (n 52) vs all −0.107R — the gap reverses, PF 0.43. **NO.** Every `imb` variant also reversed: the **against** bucket (the book leaning the other way) was better than aligned on the unseen half.
+- **Test B — the book as a signal of its own** (every closed 4h bar, band 2 %, live trade shape, 1-ATR stop, 0.75R/2R, random-side control): selected `tilt_0.1` (n 1,445 fit); unseen n 727, 59 %, −0.017R, PF 0.96, random −0.023R. **NO.** All four variants ≤ random + 0.03R; the flipped sign no better.
+- **Post-hoc, NOT a candidate from this study:** trading AGAINST the resting book at 2 % / thr 0.1 (a short into a bid-heavy book, a long into an ask-heavy one) was positive in both halves as a filter on the live rules (+0.038R n 476 fit; +0.056R n 167 unseen, vs all −0.065 / −0.107R). It is the opposite of the pre-registered reading, one of 16 sign-variant cells, and the harness' trades are ≈ +0.075R optimistic vs live before the 11-02 parity fix. If it is to be tested, it needs its own pre-registration on data not used here (Binance depth + a Bybit kline window from before 2025-10-20) — next week's item if the user wants it.
+- **Closed:** resting depth at 1–5 % as a support/resistance reading (the trading-desk sign) adds nothing to our rules and is not a signal. Tests: `test_orderbook_study.py` (11). Zero hosted-model tokens, no order API.
+
 ### 2026-11-02 — Daily book trial review; `failed_breakout_short` forward record checked (pre-registered)
 
 **Daily book, paper trial 10-19 → 11-01:** 36 scored, 42% profitable, −0.23R/trade, −8.3R (≈ −4.2% at 0.5% risk); week 1 −9.5R, week 2 +1.1R. No case for real size; stays a paper lane. The fixed cut rule flags `short` (24 scored, −0.05R) only because shorts reached n = 20 first — longs are worse (12 scored, −0.59R). Not applied (user decides). Paper #2 had its worst week (k56 −8.7%, k91 −9.1%).
