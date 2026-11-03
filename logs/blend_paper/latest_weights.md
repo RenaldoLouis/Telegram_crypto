@@ -1,26 +1,26 @@
-# Paper book for 2026-11-01 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-11-02 (held over the next UTC day) — 10% volatility target
 
-38 positions · gross 28.7% of capital · net exposure +0.0% · computed 2026-11-02T00:04:45.871929+00:00 · paper only, no orders.
+38 positions · gross 28.9% of capital · net exposure +0.0% · computed 2026-11-03T00:04:59.384440+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
-| BTCUSDT | long | +4.31% |
-| USELESSUSDT | short | -1.26% |
-| USUSDT | short | -1.26% |
-| ERAUSDT | long | +1.26% |
-| CASHCATUSDT | short | -1.26% |
-| TIAUSDT | long | +1.26% |
-| PONSUSDT | short | -1.26% |
-| QUSDT | long | +1.26% |
+| BTCUSDT | long | +4.34% |
+| USELESSUSDT | short | -1.27% |
+| USUSDT | short | -1.27% |
+| ERAUSDT | long | +1.27% |
+| CASHCATUSDT | short | -1.27% |
+| TIAUSDT | long | +1.27% |
+| PONSUSDT | short | -1.27% |
+| QUSDT | long | +1.27% |
 | CTUSDT | short | -0.69% |
 | 1000PEPEUSDT | long | +0.67% |
-| 4STOCKUSDT | short | -0.61% |
-| DNAUSDT | short | -0.61% |
-| LONGXIAUSDT | short | -0.61% |
-| AXISUSDT | short | -0.61% |
-| HAJIMIUSDT | short | -0.61% |
-| CPUSDT | short | -0.61% |
-| KIIUSDT | short | -0.61% |
+| 4STOCKUSDT | short | -0.62% |
+| DNAUSDT | short | -0.62% |
+| LONGXIAUSDT | short | -0.62% |
+| AXISUSDT | short | -0.62% |
+| HAJIMIUSDT | short | -0.62% |
+| CPUSDT | short | -0.62% |
+| KIIUSDT | short | -0.62% |
 | ATOMUSDT | long | +0.60% |
 | WUSDT | long | +0.60% |
 | BNBUSDT | long | +0.60% |
