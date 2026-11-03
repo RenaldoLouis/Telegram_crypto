@@ -215,6 +215,16 @@ main.py  (orchestrator, async)
   │                                    4h signal of its own (4 variants, random-side control) → NO on both; "fade the book"
   │                                    = post-hoc lead only (prereg_orderbook_20261103.md)
   ├── test_orderbook_study.py      → offline tests (reducer, no-look-ahead index, tilt, bucket sign, verdicts, trade shape)
+  ├── orderbook_fade_confirm.py    → 2026-11-03 pre-registered confirmation of the post-hoc "fade the book" cell on an untouched
+  │                                    year (signals 2024-10-20 → 2025-10-19; fetch_window = klines of a FIXED window) → NO: the
+  │                                    +0.07R lift replicated but is direction mix (986/1058 "against" trades are shorts)
+  ├── test_orderbook_fade_confirm.py → offline tests (window fetch/cache/no-cache-on-failure, halves, grading tiers, filters)
+  ├── positioning_data.py          → 2026-11-03: Binance `metrics` archive (5-min global long/short ACCOUNT ratio, top-trader
+  │                                    POSITION ratio, OI, taker ratio; since 2023) → logs/backtest_cache/positioning/ (gitignored),
+  │                                    look-ahead-safe PositioningIndex (at/series). Binance = the SOURCE (public endpoint live), not a proxy
+  ├── positioning_study.py         → 2026-11-03 pre-registered: crowd faded / top traders followed, 7d z + 4h tilt, as a filter on
+  │                                    the live rules (8 variants) and as a 4h signal (4 variants, controls) → NO on both
+  ├── test_positioning_study.py    → offline tests (reducer, index gaps, z/tilt features, orientation, Test A PASS/NO)
   ├── playbook_study.py            → 2026-10-25 pre-registered daily trader's playbook: 11 classic strategies (momentum,
   │                                    Turtle, RSI(2), reversal, 4h fade, vol/opening-range breakout, sessions, CME gap,
   │                                    funding) on the 3-year 15-major cache, judged on green months → all NO
@@ -457,6 +467,12 @@ python orderbook_data.py fetch --symbols BTCUSDT,ETHUSDT --start 2025-10-20 --en
 python orderbook_data.py status
 python orderbook_study.py        # → logs/backtest_reports/orderbook_<date>.md (+ _rows.json)
 python test_orderbook_study.py
+# Fade-the-book confirmation (2026-11-03, CLOSED — NO; lift = direction mix) + positioning input (CLOSED — NO on both)
+python orderbook_fade_confirm.py fetch   # klines 2024-07-01 → 2025-10-19 into the unified cache (VPN; idempotent)
+python orderbook_fade_confirm.py run     # → logs/backtest_reports/orderbook_fade_<date>.md (+ _trades.json, _rows.json)
+python positioning_data.py fetch --symbols BTCUSDT,ETHUSDT --start 2025-10-20 --end 2026-11-02   # Binance metrics, no VPN
+python positioning_study.py              # → logs/backtest_reports/positioning_<date>.md (+ _rows.json)
+python test_orderbook_fade_confirm.py && python test_positioning_study.py
 
 # Daily trader's playbook (2026-10-25, CLOSED — all 11 NO): offline, reads the 3-year 15-major cache
 python playbook_study.py         # → logs/backtest_reports/playbook_<date>.md (+ _trades.json)
