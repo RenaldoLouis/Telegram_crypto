@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-11-03T21:43:20.954071+00:00",
+  "generated_utc": "2026-11-04T02:09:25.063511+00:00",
   "market_regime": {
     "regime": "neutral",
     "metrics": {
-      "pct_declining": 24.0,
-      "median_change_pct": 1.82,
-      "btc_change_pct": 1.24,
-      "avg_funding_pct": 0.0107,
-      "large_decline_count": 4
+      "pct_declining": 50.0,
+      "median_change_pct": 0.03,
+      "btc_change_pct": 0.16,
+      "avg_funding_pct": 0.0085,
+      "large_decline_count": 3
     },
-    "detected_utc": "2026-11-03T21:43:20.953550+00:00",
+    "detected_utc": "2026-11-04T02:09:25.062920+00:00",
     "previous_regime": "neutral"
   },
   "coins": [
@@ -94,36 +94,20 @@
       "price_acceleration_pct": 12.7365
     },
     {
-      "symbol": "FLOCKUSDT",
-      "flagged_utc": "2026-11-01T23:29:54.781473+00:00",
-      "expires_utc": "2026-11-03T23:29:54.781473+00:00",
-      "trigger": "funding_squeeze",
-      "all_triggers": [
-        "funding_squeeze"
-      ],
-      "last_price": 0.04028,
-      "price_change_24h_pct": 12.0756,
-      "turnover_24h_usd": 16906994.3671,
-      "funding_rate_pct": -0.092026,
-      "open_interest": 47220664.0,
-      "volume_acceleration": 1.0691604898679719,
-      "price_acceleration_pct": 5.385099999999999
-    },
-    {
       "symbol": "ESPORTSUSDT",
-      "flagged_utc": "2026-11-03T21:43:20.953314+00:00",
-      "expires_utc": "2026-11-05T21:43:20.953314+00:00",
+      "flagged_utc": "2026-11-04T02:09:25.062688+00:00",
+      "expires_utc": "2026-11-06T02:09:25.062688+00:00",
       "trigger": "funding_squeeze",
       "all_triggers": [
         "funding_squeeze"
       ],
-      "last_price": 0.01297,
-      "price_change_24h_pct": -5.604,
-      "turnover_24h_usd": 22933072.2772,
-      "funding_rate_pct": 0.09437799999999999,
-      "open_interest": 306340728.0,
-      "volume_acceleration": 0.776067946505655,
-      "price_acceleration_pct": -8.2502
+      "last_price": 0.01171,
+      "price_change_24h_pct": -19.4635,
+      "turnover_24h_usd": 21145998.6818,
+      "funding_rate_pct": 0.089422,
+      "open_interest": 303109876.0,
+      "volume_acceleration": 0.9220743922227681,
+      "price_acceleration_pct": 13.8595
     },
     {
       "symbol": "SKHYNIXUSDT",
