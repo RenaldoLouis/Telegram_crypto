@@ -76,18 +76,19 @@ def okx_index(sym: str) -> str:
     return f"{okx_base(sym)}-USDT"
 
 
-def store_path(sym: str, series: str) -> Path:
-    return STORE_DIR / f"{sym}_{series}.json"
+def store_path(sym: str, series: str, tag: str = "") -> Path:
+    """`tag` names a second, separate window of the same series (e.g. the untouched 2024-25 year)."""
+    return STORE_DIR / (f"{sym}_{series}_{tag}.json" if tag else f"{sym}_{series}.json")
 
 
-def load_series(sym: str, series: str) -> list[list]:
-    p = store_path(sym, series)
+def load_series(sym: str, series: str, tag: str = "") -> list[list]:
+    p = store_path(sym, series, tag)
     return json.loads(p.read_text()) if p.exists() else []
 
 
-def save_series(sym: str, series: str, rows: list[list]) -> None:
+def save_series(sym: str, series: str, rows: list[list], tag: str = "") -> None:
     STORE_DIR.mkdir(parents=True, exist_ok=True)
-    store_path(sym, series).write_text(json.dumps(rows, separators=(",", ":")))
+    store_path(sym, series, tag).write_text(json.dumps(rows, separators=(",", ":")))
 
 
 def months_between(start: date, end: date):
@@ -297,15 +298,16 @@ FETCHERS = {
 }
 
 
-def fetch_symbol(sym: str, start: date, end: date, series=SERIES, force=False, log=print) -> dict[str, int]:
+def fetch_symbol(sym: str, start: date, end: date, series=SERIES, force=False, log=print,
+                 tag: str = "") -> dict[str, int]:
     """Fill every requested series for one symbol; an existing file is kept unless `force`. A failed
     series is logged and left unwritten (rerun to complete). Returns {series: rows stored or -1}."""
     s_ms = int(datetime(start.year, start.month, start.day, tzinfo=timezone.utc).timestamp() * 1000)
     e_ms = int(datetime(end.year, end.month, end.day, tzinfo=timezone.utc).timestamp() * 1000)
     out = {}
     for name in series:
-        if store_path(sym, name).exists() and not force:
-            out[name] = len(load_series(sym, name))
+        if store_path(sym, name, tag).exists() and not force:
+            out[name] = len(load_series(sym, name, tag))
             continue
         t0 = time.time()
         try:
@@ -314,7 +316,7 @@ def fetch_symbol(sym: str, start: date, end: date, series=SERIES, force=False, l
             log(f"  {sym} {name}: FAILED ({e}) — not stored")
             out[name] = -1
             continue
-        save_series(sym, name, rows)
+        save_series(sym, name, rows, tag)
         out[name] = len(rows)
         log(f"  {sym} {name}: {len(rows)} rows in {time.time() - t0:.0f}s")
     return out
@@ -324,16 +326,17 @@ def fetch_symbol(sym: str, start: date, end: date, series=SERIES, force=False, l
 class VenueIndex:
     """Look-ahead-safe access to the five series of every symbol in the store (or `symbols`)."""
 
-    def __init__(self, symbols=None):
+    def __init__(self, symbols=None, tag: str = ""):
         self._fund: dict[str, dict[str, tuple[list[int], list[list]]]] = {}
         self._prem: dict[str, dict[str, dict[int, float]]] = {}
-        names = symbols or sorted({p.stem.rsplit("_", 2)[0] for p in STORE_DIR.glob("*_bybit_prem.json")})
+        suffix = f"_bybit_prem_{tag}.json" if tag else "_bybit_prem.json"
+        names = symbols or sorted({p.name[:-len(suffix)] for p in STORE_DIR.glob(f"*{suffix}")})
         for sym in names:
             self._fund[sym] = {}
             for name in FUND_SERIES:
-                rows = load_series(sym, name)
+                rows = load_series(sym, name, tag)
                 self._fund[sym][name] = ([r[0] for r in rows], rows)
-            self._prem[sym] = {name: {r[0]: r[1] for r in load_series(sym, name)} for name in PREM_SERIES}
+            self._prem[sym] = {name: {r[0]: r[1] for r in load_series(sym, name, tag)} for name in PREM_SERIES}
 
     def symbols(self):
         return sorted(s for s in self._prem if self._prem[s]["bybit_prem"])
@@ -380,22 +383,24 @@ def main(argv=None):
     f.add_argument("--end", required=True, help="YYYY-MM-DD (UTC, exclusive for bars, inclusive for months)")
     f.add_argument("--series", default=",".join(SERIES))
     f.add_argument("--force", action="store_true")
-    sub.add_parser("status", help="what the store holds")
+    f.add_argument("--tag", default="", help="store under a separate window tag (e.g. 20241001_20251020)")
+    st = sub.add_parser("status", help="what the store holds")
+    st.add_argument("--tag", default="")
     a = ap.parse_args(argv)
     if a.cmd == "fetch":
         start, end = date.fromisoformat(a.start), date.fromisoformat(a.end)
         series = tuple(s.strip() for s in a.series.split(",") if s.strip())
         t0 = time.time()
         for sym in [s.strip() for s in a.symbols.split(",") if s.strip()]:
-            fetch_symbol(sym, start, end, series, a.force)
+            fetch_symbol(sym, start, end, series, a.force, tag=a.tag)
             sys.stdout.flush()
         print(f"done in {time.time() - t0:.0f}s")
     else:
-        idx = VenueIndex()
+        idx = VenueIndex(tag=a.tag)
         for sym in idx.symbols():
             parts = []
             for name in SERIES:
-                rows = load_series(sym, name)
+                rows = load_series(sym, name, a.tag)
                 if rows:
                     d0 = datetime.fromtimestamp(rows[0][0] / 1000, timezone.utc).date()
                     d1 = datetime.fromtimestamp(rows[-1][0] / 1000, timezone.utc).date()
