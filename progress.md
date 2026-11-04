@@ -451,6 +451,20 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-04 — Cross-venue funding & basis dispersion (Bybit vs Binance vs OKX) → NO on both tests by the frozen bar; the basis-tilt filter is the first fit-selected variant to hold out of sample (+0.19R gap, both directions, 9/12 months) and missed on PF only
+
+**Why:** week two of the new-input cadence; the user picked "cross-venue funding and basis dispersion". The engine had only ever read Bybit's own funding/OI. Pre-registration `logs/backtest_reports/prereg_venue_dispersion_20261103.md` committed (561269d) before any feature was computed; code committed (4221192) before the run; report `venue_dispersion_20261104.md` (+ `_rows.json`).
+
+**Data (`venue_data.py` → `logs/backtest_cache/venues/`, gitignored, 29 symbols, 2025-11-01 → 2026-10-15):** Bybit funding settlements (public, interval inferred from spacing: 1h/4h/8h) + Bybit premium-index 15m kline; Binance monthly `fundingRate` + `premiumIndexKlines` 15m archives; OKX 15m swap/index candles → basis (OKX funding not used: its public history keeps ~3 months). All stored by the time they became known; `VenueIndex` answers from rows ≤ T only. The three venues' premiums agree to within ~0.5 bps on BTC (comparable definitions). USUSDT is not on OKX; AKE listed there 2026-09. The download survived a 12-hour laptop sleep (one DNS failure left unwritten and refilled on rerun).
+
+**Features, all FADED (positive = Bybit richer than the other venues → favours a SHORT on Bybit):** `fund_disp` (Bybit − Binance last settled rate, 8h-normalised, bps), `basis_disp_z` (Bybit premium − mean of the other venues' basis per 15m bar, 7-day z), `basis_disp_tilt` (its 4h change in sd units).
+
+**Test A (filter on the 3,531 recorded live-rule trades, 6 variants) → NO.** Selected on the fit half `basis_disp_tilt_1` (fit gap +0.088R); unseen half aligned n=135 · 66% · **+0.076R** · PF 1.22 · 85% weeks green vs all n=888 · 53% · −0.118R → gap **+0.194R**; against n=128 −0.164R. Checks 5/6: fails only PF ≥ 1.3 (1.22). Composition checked (the fade-the-book lesson): longs aligned +0.013R vs all longs −0.163R, shorts +0.207R vs −0.055R — both directions improve, in both halves; aligned beats all in 5 of 6 rules, 16 of 25 symbols, 9 of 12 months; largest same-bar cluster 3; 114 independent bets at +0.061R per bet, 95% CI −0.10 … +0.22 (includes zero); positive in OLDER/TRAIN/TEST, negative in H (n=24, −0.046R). Thresholds are monotonic (tilt 0.5 → gap +0.062R, 1.0 → +0.194R; z 0.5 → +0.095R, 1.0 → +0.177R). Funding dispersion itself adds nothing (fund_disp_1 gap +0.008R).
+
+**Test B (signal of its own, 3 variants) → NO.** Selected `fund_disp_2`: unseen n=461 · 52% · −0.132R vs random −0.064R; the basis variants sit within 0.02R of random. The dispersion does not pick entries; it only sorts the engine's entries.
+
+**Status:** closed under its own pre-registration (NO → closed). The basis-tilt filter is recorded as a LEAD, not a result: n=135, CI through zero, PF below bar. The honest next step is a pre-registered confirmation on the untouched 2024-10-20 → 2025-10-19 year (3,687 trades already rebuilt by `orderbook_fade_confirm.py`; needs the three venues' premium history for that year) — the user decides. Nothing live changed. Tests: `test_venue_study.py` (12).
+
 ### 2026-11-03 (later) — Fade-the-book confirmed on untouched data → NO (the lift was direction mix); crowd/top-trader positioning → NO on both tests
 
 User: "try both: fade the book on untouched data, then something the engine has never seen." Both pre-registered and committed (42fdccc) before any result existed.

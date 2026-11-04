@@ -225,6 +225,13 @@ main.py  (orchestrator, async)
   ├── positioning_study.py         → 2026-11-03 pre-registered: crowd faded / top traders followed, 7d z + 4h tilt, as a filter on
   │                                    the live rules (8 variants) and as a 4h signal (4 variants, controls) → NO on both
   ├── test_positioning_study.py    → offline tests (reducer, index gaps, z/tilt features, orientation, Test A PASS/NO)
+  ├── venue_data.py                → 2026-11-04: cross-venue funding + 15m premium/basis history — Bybit (public funding +
+  │                                    premium-index kline) vs Binance (monthly archives) vs OKX (swap/index candles) →
+  │                                    logs/backtest_cache/venues/ (gitignored), look-ahead-safe VenueIndex (fund_disp, basis_disp)
+  ├── venue_study.py               → 2026-11-04 pre-registered: Bybit-vs-others dispersion FADED, as a filter on the live rules
+  │                                    (6 variants) and as a 4h signal (3 variants, controls) → NO on both by the bar; basis-tilt
+  │                                    filter = LEAD (+0.19R out of sample, both directions, PF 1.22 < 1.3, CI through zero)
+  ├── test_venue_study.py          → offline tests (reducers, 8h-normalised funding, no look-ahead, basis join, features, A PASS/NO)
   ├── playbook_study.py            → 2026-10-25 pre-registered daily trader's playbook: 11 classic strategies (momentum,
   │                                    Turtle, RSI(2), reversal, 4h fade, vol/opening-range breakout, sessions, CME gap,
   │                                    funding) on the 3-year 15-major cache, judged on green months → all NO
@@ -473,6 +480,11 @@ python orderbook_fade_confirm.py run     # → logs/backtest_reports/orderbook_f
 python positioning_data.py fetch --symbols BTCUSDT,ETHUSDT --start 2025-10-20 --end 2026-11-02   # Binance metrics, no VPN
 python positioning_study.py              # → logs/backtest_reports/positioning_<date>.md (+ _rows.json)
 python test_orderbook_fade_confirm.py && python test_positioning_study.py
+# Cross-venue dispersion (2026-11-04, CLOSED — NO on both; basis-tilt filter recorded as a lead). Bybit legs need the VPN.
+python venue_data.py fetch --symbols BTCUSDT,ETHUSDT --start 2025-11-01 --end 2026-10-15   # idempotent per series; --force refetches
+python venue_data.py status
+python venue_study.py                    # → logs/backtest_reports/venue_dispersion_<date>.md (+ _rows.json)
+python test_venue_study.py
 
 # Daily trader's playbook (2026-10-25, CLOSED — all 11 NO): offline, reads the 3-year 15-major cache
 python playbook_study.py         # → logs/backtest_reports/playbook_<date>.md (+ _trades.json)
