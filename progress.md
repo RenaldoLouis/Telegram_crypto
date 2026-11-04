@@ -451,6 +451,16 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-05 — Basis-tilt fade filter confirmed on the untouched 2024-25 year → NO (gap shrank +0.19R → +0.05R, long-side only, filtered book still negative); cross-venue dispersion closed
+
+**Why:** the one lead of week two (`venue_dispersion_20261104.md`, Test A: `basis_disp_tilt_1`, +0.194R out of sample, PF 1.22). User: "lets try that and check it". Pre-registration `prereg_venue_confirm_20261104.md` committed (f57d210) before any venue series of the window was downloaded; code `venue_confirm.py` + window tag in `venue_data.py` committed (b0beeaa) before the run; report `venue_confirm_20261104.md` (+ `_rows.json`; run 2026-11-05 WIB, UTC date tag 11-04).
+
+**Population:** the 3,687 filled live-rule trades of `orderbook_fade_20261103_trades.json` (signals 2024-10-20 → 2025-10-19, 26 symbols, current engine). Data: the three venues' series for 2024-10-01 → 2025-10-20 under tag `20241001_20251020` (all three sources reach back that far; OKX listed the ZEC perp only 2025-11-06, so ZEC has a Binance leg only; 13 series lost to DNS blips during the 2.4-hour download were left unwritten and refilled on rerun). One variant, eight checks, 1 trial.
+
+**Result:** aligned n=513 · 58% · **−0.054R** · PF 0.87 · 28% weeks green vs all n=3682 · 54% · −0.102R → gap **+0.048R** (bar +0.05); against n=514 −0.148R. Gap ≥ 0 in both halves (H1 +0.070R, H2 +0.026R) and against is worse — the ordering replicates — but the size fell by three quarters (winner's curse on a selected variant), the filtered book stays negative, and the composition check fails: longs aligned −0.031R vs all longs −0.158R (+0.127R), shorts aligned −0.086R vs all shorts −0.025R (−0.061R). On the fit year both directions had improved; on the untouched year it is a long-side effect only, and the short side is hurt. By rule the lift lives in `liquidity_sweep_long 1h` (+0.170R) and `rsi_bounce_long` (+0.043R); every short rule is flat or worse. Checks 3 of 8 → **NO** → the lead is closed and the cross-venue dispersion input with it, per the pre-registration.
+
+**What it means:** a Bybit perp whose premium just fell relative to Binance/OKX is a slightly better long entry for the sweep/bounce longs (the two years agree on that sign), but the effect is too small to turn a −0.16R long book green and does not generalise to shorts. Not a product. Week-two tally: dispersion filter NO, dispersion signal NO, confirmation NO. Nothing live changed; nothing pushed. Tests: `test_venue_confirm.py` (7), `test_venue_study.py` (12).
+
 ### 2026-11-04 — Cross-venue funding & basis dispersion (Bybit vs Binance vs OKX) → NO on both tests by the frozen bar; the basis-tilt filter is the first fit-selected variant to hold out of sample (+0.19R gap, both directions, 9/12 months) and missed on PF only
 
 **Why:** week two of the new-input cadence; the user picked "cross-venue funding and basis dispersion". The engine had only ever read Bybit's own funding/OI. Pre-registration `logs/backtest_reports/prereg_venue_dispersion_20261103.md` committed (561269d) before any feature was computed; code committed (4221192) before the run; report `venue_dispersion_20261104.md` (+ `_rows.json`).

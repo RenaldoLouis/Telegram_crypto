@@ -229,9 +229,12 @@ main.py  (orchestrator, async)
   │                                    premium-index kline) vs Binance (monthly archives) vs OKX (swap/index candles) →
   │                                    logs/backtest_cache/venues/ (gitignored), look-ahead-safe VenueIndex (fund_disp, basis_disp)
   ├── venue_study.py               → 2026-11-04 pre-registered: Bybit-vs-others dispersion FADED, as a filter on the live rules
-  │                                    (6 variants) and as a 4h signal (3 variants, controls) → NO on both by the bar; basis-tilt
-  │                                    filter = LEAD (+0.19R out of sample, both directions, PF 1.22 < 1.3, CI through zero)
+  │                                    (6 variants) and as a 4h signal (3 variants, controls) → NO on both by the bar; the basis-tilt
+  │                                    filter looked like a lead (+0.19R out of sample, PF 1.22) → confirmed below
   ├── test_venue_study.py          → offline tests (reducers, 8h-normalised funding, no look-ahead, basis join, features, A PASS/NO)
+  ├── venue_confirm.py             → 2026-11-05 pre-registered confirmation of that one variant on the untouched 2024-25 year
+  │                                    (3,687 trades, window tag 20241001_20251020) → NO: gap +0.05R, long-side only, book still negative
+  ├── test_venue_confirm.py        → offline tests (grading tiers, half boundaries, direction-composition check, tagged store)
   ├── playbook_study.py            → 2026-10-25 pre-registered daily trader's playbook: 11 classic strategies (momentum,
   │                                    Turtle, RSI(2), reversal, 4h fade, vol/opening-range breakout, sessions, CME gap,
   │                                    funding) on the 3-year 15-major cache, judged on green months → all NO
@@ -485,6 +488,9 @@ python venue_data.py fetch --symbols BTCUSDT,ETHUSDT --start 2025-11-01 --end 20
 python venue_data.py status
 python venue_study.py                    # → logs/backtest_reports/venue_dispersion_<date>.md (+ _rows.json)
 python test_venue_study.py
+python venue_confirm.py fetch            # the untouched-year series (2024-10-01 → 2025-10-20, tag 20241001_20251020)
+python venue_confirm.py run              # → logs/backtest_reports/venue_confirm_<date>.md — CLOSED, NO
+python test_venue_confirm.py
 
 # Daily trader's playbook (2026-10-25, CLOSED — all 11 NO): offline, reads the 3-year 15-major cache
 python playbook_study.py         # → logs/backtest_reports/playbook_<date>.md (+ _trades.json)
