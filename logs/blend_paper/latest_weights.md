@@ -1,31 +1,30 @@
-# Paper book for 2026-11-03 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-11-04 (held over the next UTC day) — 10% volatility target
 
-38 positions · gross 28.8% of capital · net exposure -0.0% · computed 2026-11-04T15:34:49.461499+00:00 · paper only, no orders.
+37 positions · gross 27.5% of capital · net exposure -0.0% · computed 2026-11-05T07:24:06.045908+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
-| BTCUSDT | long | +4.33% |
-| USELESSUSDT | short | -1.27% |
+| BTCUSDT | long | +3.71% |
 | USUSDT | short | -1.27% |
 | ERAUSDT | long | +1.27% |
 | CASHCATUSDT | short | -1.27% |
 | TIAUSDT | long | +1.27% |
 | PONSUSDT | short | -1.27% |
+| USELESSUSDT | short | -1.27% |
 | QUSDT | long | +1.27% |
 | CTUSDT | short | -0.69% |
 | 1000PEPEUSDT | long | +0.67% |
+| HAJIMIUSDT | short | -0.62% |
+| AXISUSDT | short | -0.62% |
 | 4STOCKUSDT | short | -0.62% |
 | DNAUSDT | short | -0.62% |
-| LONGXIAUSDT | short | -0.62% |
-| AXISUSDT | short | -0.62% |
-| HAJIMIUSDT | short | -0.62% |
-| CPUSDT | short | -0.62% |
 | KIIUSDT | short | -0.62% |
+| LONGXIAUSDT | short | -0.62% |
 | ATOMUSDT | long | +0.60% |
 | WUSDT | long | +0.60% |
-| BNBUSDT | long | +0.60% |
-| GRASSUSDT | short | -0.60% |
 | DASHUSDT | short | -0.60% |
+| GRASSUSDT | short | -0.60% |
+| BNBUSDT | long | +0.60% |
 | ZECUSDT | short | -0.60% |
 | TAOUSDT | short | -0.60% |
 | GRAMUSDT | long | +0.60% |
