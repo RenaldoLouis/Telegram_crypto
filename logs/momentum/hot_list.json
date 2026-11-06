@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-11-06T15:52:11.964263+00:00",
+  "generated_utc": "2026-11-06T21:27:29.514590+00:00",
   "market_regime": {
-    "regime": "risk_on",
+    "regime": "neutral",
     "metrics": {
-      "pct_declining": 22.0,
-      "median_change_pct": 2.9,
-      "btc_change_pct": -0.18,
-      "avg_funding_pct": -0.0064,
+      "pct_declining": 20.0,
+      "median_change_pct": 1.72,
+      "btc_change_pct": -0.24,
+      "avg_funding_pct": -0.0132,
       "large_decline_count": 1
     },
-    "detected_utc": "2026-11-06T15:52:11.963700+00:00",
-    "previous_regime": "risk_off"
+    "detected_utc": "2026-11-06T21:27:29.513940+00:00",
+    "previous_regime": "risk_on"
   },
   "coins": [
     {
@@ -31,19 +31,19 @@
     },
     {
       "symbol": "SOXLUSDT",
-      "flagged_utc": "2026-11-06T06:23:03.937450+00:00",
-      "expires_utc": "2026-11-08T06:23:03.937450+00:00",
+      "flagged_utc": "2026-11-06T21:27:29.513735+00:00",
+      "expires_utc": "2026-11-08T21:27:29.513735+00:00",
       "trigger": "big_move",
       "all_triggers": [
         "big_move"
       ],
-      "last_price": 44.91,
-      "price_change_24h_pct": -26.304499999999997,
-      "turnover_24h_usd": 1306666496.115,
-      "funding_rate_pct": 0.0,
-      "open_interest": 1736895.98,
-      "volume_acceleration": 1.0635931484654444,
-      "price_acceleration_pct": -12.5323
+      "last_price": 46.02,
+      "price_change_24h_pct": 10.4391,
+      "turnover_24h_usd": 858386886.0546,
+      "funding_rate_pct": 0.006671000000000001,
+      "open_interest": 1656086.66,
+      "volume_acceleration": 0.7259546399619702,
+      "price_acceleration_pct": 3.9299
     },
     {
       "symbol": "KORUUSDT",
@@ -314,6 +314,22 @@
       "turnover_24h_usd": 41422635.3965,
       "funding_rate_pct": -0.20758600000000002,
       "open_interest": 47326759.0,
+      "volume_acceleration": null,
+      "price_acceleration_pct": null
+    },
+    {
+      "symbol": "CYBERUSDT",
+      "flagged_utc": "2026-11-06T21:27:29.513735+00:00",
+      "expires_utc": "2026-11-08T21:27:29.513735+00:00",
+      "trigger": "funding_squeeze",
+      "all_triggers": [
+        "funding_squeeze"
+      ],
+      "last_price": 0.3561,
+      "price_change_24h_pct": 27.9094,
+      "turnover_24h_usd": 37505269.2171,
+      "funding_rate_pct": -0.181185,
+      "open_interest": 8577892.4,
       "volume_acceleration": null,
       "price_acceleration_pct": null
     }
