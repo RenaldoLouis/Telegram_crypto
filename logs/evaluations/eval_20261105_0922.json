@@ -1,0 +1,50 @@
+{
+  "run_tag": "20261105_0922",
+  "run_timestamp_utc": "2026-11-05T09:22:15.219615+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "neutral",
+  "evaluated_at_utc": "2026-11-07T00:03:37.802313+00:00",
+  "results": [
+    {
+      "status": "not_filled",
+      "reason": "limit at 0.3177 not traded through within 2 bars",
+      "entry_model": "limit_open",
+      "symbol": "TRXUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 3,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "neutral",
+      "interest_score": 1.0,
+      "source": "shadow",
+      "backtested_signal": "liquidity_sweep_long",
+      "signal_name": "liquidity_sweep_long",
+      "daily_pick": true,
+      "daily_pick_seq": 3,
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1793869200000,
+        "score": 1,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": true,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}

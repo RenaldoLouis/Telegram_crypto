@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-06T00:03:51.413285+00:00",
+  "generated_at": "2026-11-07T00:03:51.942468+00:00",
   "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
   "lanes": [
     "mechanical",
@@ -9,36 +9,36 @@
   "by_signal": {
     "failed_breakout_short": {
       "all": {
-        "n": 84,
-        "prof_pct": 69.0,
-        "net": 0.243
+        "n": 86,
+        "prof_pct": 69.8,
+        "net": 0.262
       },
       "last30": {
         "n": 30,
         "prof_pct": 83.3,
-        "net": 0.577
+        "net": 0.552
       },
       "d30": {
-        "n": 73,
-        "prof_pct": 69.9,
-        "net": 0.257
+        "n": 74,
+        "prof_pct": 70.3,
+        "net": 0.272
       }
     },
     "liquidity_sweep_long": {
       "all": {
-        "n": 127,
-        "prof_pct": 47.2,
-        "net": -0.231
+        "n": 139,
+        "prof_pct": 48.9,
+        "net": -0.205
       },
       "last30": {
         "n": 30,
-        "prof_pct": 56.7,
-        "net": -0.005
+        "prof_pct": 66.7,
+        "net": 0.101
       },
       "d30": {
-        "n": 109,
-        "prof_pct": 45.0,
-        "net": -0.264
+        "n": 120,
+        "prof_pct": 47.5,
+        "net": -0.224
       }
     },
     "range_reversion_long": {
@@ -53,9 +53,9 @@
         "net": -0.791
       },
       "d30": {
-        "n": 8,
-        "prof_pct": 25.0,
-        "net": -0.791
+        "n": 7,
+        "prof_pct": 28.6,
+        "net": -0.753
       }
     },
     "range_reversion_short": {
@@ -77,49 +77,49 @@
     },
     "rsi_bounce_long": {
       "all": {
-        "n": 67,
-        "prof_pct": 50.7,
-        "net": -0.106
+        "n": 68,
+        "prof_pct": 51.5,
+        "net": -0.099
       },
       "last30": {
         "n": 30,
         "prof_pct": 60.0,
-        "net": 0.026
+        "net": 0.021
       },
       "d30": {
         "n": 66,
         "prof_pct": 50.0,
-        "net": -0.114
+        "net": -0.117
       }
     },
     "trend_pullback_short": {
       "all": {
-        "n": 116,
-        "prof_pct": 59.5,
-        "net": 0.057
+        "n": 121,
+        "prof_pct": 60.3,
+        "net": 0.091
       },
       "last30": {
         "n": 30,
-        "prof_pct": 73.3,
-        "net": 0.307
+        "prof_pct": 83.3,
+        "net": 0.536
       },
       "d30": {
-        "n": 110,
-        "prof_pct": 59.1,
-        "net": 0.045
+        "n": 114,
+        "prof_pct": 59.6,
+        "net": 0.079
       }
     }
   },
   "by_direction": {
     "short": {
-      "n": 206,
-      "prof_pct": 64.1,
-      "net": 0.142
+      "n": 213,
+      "prof_pct": 64.8,
+      "net": 0.168
     },
     "long": {
-      "n": 202,
-      "prof_pct": 47.5,
-      "net": -0.212
+      "n": 215,
+      "prof_pct": 48.8,
+      "net": -0.193
     }
   }
 }
