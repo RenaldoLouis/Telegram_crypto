@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T00:03:51.942468+00:00",
+  "generated_at": "2026-11-08T00:17:10.611420+00:00",
   "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
   "lanes": [
     "mechanical",
@@ -19,26 +19,26 @@
         "net": 0.552
       },
       "d30": {
-        "n": 74,
-        "prof_pct": 70.3,
-        "net": 0.272
+        "n": 71,
+        "prof_pct": 69.0,
+        "net": 0.266
       }
     },
     "liquidity_sweep_long": {
       "all": {
-        "n": 139,
-        "prof_pct": 48.9,
-        "net": -0.205
+        "n": 140,
+        "prof_pct": 49.3,
+        "net": -0.202
       },
       "last30": {
         "n": 30,
         "prof_pct": 66.7,
-        "net": 0.101
+        "net": 0.086
       },
       "d30": {
-        "n": 120,
-        "prof_pct": 47.5,
-        "net": -0.224
+        "n": 117,
+        "prof_pct": 48.7,
+        "net": -0.206
       }
     },
     "range_reversion_long": {
@@ -87,39 +87,39 @@
         "net": 0.021
       },
       "d30": {
-        "n": 66,
-        "prof_pct": 50.0,
-        "net": -0.117
+        "n": 64,
+        "prof_pct": 51.6,
+        "net": -0.089
       }
     },
     "trend_pullback_short": {
       "all": {
-        "n": 121,
-        "prof_pct": 60.3,
-        "net": 0.091
+        "n": 122,
+        "prof_pct": 60.7,
+        "net": 0.098
       },
       "last30": {
         "n": 30,
         "prof_pct": 83.3,
-        "net": 0.536
+        "net": 0.512
       },
       "d30": {
-        "n": 114,
-        "prof_pct": 59.6,
-        "net": 0.079
+        "n": 115,
+        "prof_pct": 60.0,
+        "net": 0.087
       }
     }
   },
   "by_direction": {
     "short": {
-      "n": 213,
-      "prof_pct": 64.8,
-      "net": 0.168
+      "n": 214,
+      "prof_pct": 65.0,
+      "net": 0.171
     },
     "long": {
-      "n": 215,
-      "prof_pct": 48.8,
-      "net": -0.193
+      "n": 216,
+      "prof_pct": 49.1,
+      "net": -0.191
     }
   }
 }
