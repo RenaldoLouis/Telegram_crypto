@@ -1,0 +1,87 @@
+{
+  "run_timestamp_utc": "2026-11-09T12:02:03.872270+00:00",
+  "run_tag": "20261109_1202",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "risk_off",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1,
+    "daily_picks": 0
+  },
+  "setups": [
+    {
+      "symbol": "AVAXUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 8.0172,
+      "entry_high": 8.0628,
+      "stop_loss": 7.736,
+      "target_1": 8.268,
+      "target_2": 8.648,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 37.4 bouncing (was 26.4), ADX 28.0"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "risk_off",
+      "interest_score": 1.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 27.95,
+          "rsi": 37.41,
+          "macd": -0.127653,
+          "macd_hist": -0.021623,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.96,
+          "range_pct": 8.93
+        },
+        "tf_1h": {
+          "adx": 26.03,
+          "rsi": 62.75,
+          "macd": -0.049529,
+          "macd_hist": 0.008808,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.17,
+          "range_pct": 6.37
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794225600000,
+        "score": 1,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": true
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
