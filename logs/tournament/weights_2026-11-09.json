@@ -1,0 +1,150 @@
+{
+ "day": "2026-11-09",
+ "decided_at_utc": "2026-11-10T00:00:00+00:00",
+ "computed_at_utc": "2026-11-10T00:11:52.384918+00:00",
+ "late_hours": 0.2,
+ "version": "tournament_v1",
+ "rules_hash": "ce6337a4bd97ea7c",
+ "lanes": {
+  "mom28": {
+   "n_positions": 14,
+   "gross": 0.2576,
+   "net_exposure": 0.0,
+   "weights": {
+    "1000PEPEUSDT": 0.0184,
+    "AKEUSDT": -0.0184,
+    "ARIAUSDT": 0.0184,
+    "BIRBUSDT": 0.0184,
+    "CAPUSDT": 0.0184,
+    "CHIPUSDT": -0.0184,
+    "CTUSDT": -0.0184,
+    "INJUSDT": 0.0184,
+    "JCTUSDT": 0.0184,
+    "PONSUSDT": -0.0184,
+    "STRKUSDT": -0.0184,
+    "WLDUSDT": -0.0184,
+    "WUSDT": -0.0184,
+    "XMRUSDT": 0.0184
+   }
+  },
+  "listing_short": {
+   "n_positions": 6,
+   "gross": 0.16935000000000003,
+   "net_exposure": -2.0816681711721685e-17,
+   "weights": {
+    "AXISUSDT": -0.016935,
+    "BTCUSDT": 0.084675,
+    "CTUSDT": -0.016935,
+    "DNAUSDT": -0.016935,
+    "KIIUSDT": -0.016935,
+    "LONGXIAUSDT": -0.016935
+   }
+  },
+  "btc_trend": {
+   "n_positions": 0,
+   "gross": 0.0,
+   "net_exposure": 0.0,
+   "weights": {}
+  },
+  "carry7": {
+   "n_positions": 30,
+   "gross": 0.4927500000000002,
+   "net_exposure": 0.0,
+   "weights": {
+    "AEROUSDT": -0.016425,
+    "AKEUSDT": 0.016425,
+    "ARIAUSDT": -0.016425,
+    "ATOMUSDT": 0.016425,
+    "BIRBUSDT": 0.016425,
+    "BTCUSDT": -0.016425,
+    "BTWUSDT": 0.016425,
+    "CAPUSDT": -0.016425,
+    "CASHCATUSDT": -0.016425,
+    "CHIPUSDT": 0.016425,
+    "DASHUSDT": -0.016425,
+    "DGAIUSDT": 0.016425,
+    "ERAUSDT": 0.016425,
+    "FARTCOINUSDT": -0.016425,
+    "GRAMUSDT": 0.016425,
+    "ICPUSDT": -0.016425,
+    "INJUSDT": -0.016425,
+    "JCTUSDT": -0.016425,
+    "LITUSDT": 0.016425,
+    "MONUSDT": 0.016425,
+    "NILUSDT": 0.016425,
+    "PONSUSDT": -0.016425,
+    "QUSDT": 0.016425,
+    "SANDUSDT": 0.016425,
+    "TRXUSDT": 0.016425,
+    "USELESSUSDT": -0.016425,
+    "WLDUSDT": 0.016425,
+    "XMRUSDT": -0.016425,
+    "ZECUSDT": -0.016425,
+    "ZROUSDT": -0.016425
+   }
+  },
+  "random_1": {
+   "n_positions": 14,
+   "gross": 0.2576,
+   "net_exposure": 0.0,
+   "weights": {
+    "ADAUSDT": -0.0184,
+    "AKEUSDT": -0.0184,
+    "ARIAUSDT": -0.0184,
+    "ATOMUSDT": -0.0184,
+    "DGAIUSDT": 0.0184,
+    "ETHFIUSDT": 0.0184,
+    "FARTCOINUSDT": 0.0184,
+    "HBARUSDT": 0.0184,
+    "MONUSDT": 0.0184,
+    "SEIUSDT": -0.0184,
+    "TRXUSDT": 0.0184,
+    "XLMUSDT": -0.0184,
+    "XPLUSDT": 0.0184,
+    "ZECUSDT": -0.0184
+   }
+  },
+  "random_2": {
+   "n_positions": 14,
+   "gross": 0.2576,
+   "net_exposure": 0.0,
+   "weights": {
+    "ARIAUSDT": -0.0184,
+    "AVAXUSDT": -0.0184,
+    "BIRBUSDT": 0.0184,
+    "BTCUSDT": -0.0184,
+    "FARTCOINUSDT": 0.0184,
+    "LITUSDT": -0.0184,
+    "MONUSDT": 0.0184,
+    "ONDOUSDT": 0.0184,
+    "PONSUSDT": 0.0184,
+    "SANDUSDT": 0.0184,
+    "SEIUSDT": -0.0184,
+    "TIAUSDT": -0.0184,
+    "USELESSUSDT": -0.0184,
+    "ZROUSDT": 0.0184
+   }
+  },
+  "random_3": {
+   "n_positions": 14,
+   "gross": 0.2576,
+   "net_exposure": 0.0,
+   "weights": {
+    "AVAXUSDT": 0.0184,
+    "BCHUSDT": 0.0184,
+    "CHIPUSDT": -0.0184,
+    "DASHUSDT": -0.0184,
+    "DOGEUSDT": -0.0184,
+    "ENAUSDT": 0.0184,
+    "FILUSDT": 0.0184,
+    "JUPUSDT": -0.0184,
+    "LITUSDT": 0.0184,
+    "PONSUSDT": -0.0184,
+    "QUSDT": -0.0184,
+    "UNIUSDT": 0.0184,
+    "WLFIUSDT": 0.0184,
+    "XRPUSDT": -0.0184
+   }
+  }
+ }
+}
