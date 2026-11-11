@@ -1,11 +1,11 @@
-# Paper book for 2026-11-09 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-11-10 (held over the next UTC day) — 10% volatility target
 
-38 positions · gross 21.6% of capital · net exposure -0.0% · computed 2026-11-10T00:04:18.456361+00:00 · paper only, no orders.
+38 positions · gross 21.6% of capital · net exposure -0.0% · computed 2026-11-11T00:04:03.174312+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
-| BTCUSDT | long | +2.36% |
-| CTUSDT | short | -1.22% |
+| BTCUSDT | long | +2.37% |
+| CTUSDT | short | -1.23% |
 | PONSUSDT | short | -1.21% |
 | BIRBUSDT | long | +1.21% |
 | 1000PEPEUSDT | long | +0.64% |
