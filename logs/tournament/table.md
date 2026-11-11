@@ -1,4 +1,4 @@
-# Paper tournament — tournament_v1 (2026-11-11 07:07 UTC)
+# Paper tournament — tournament_v1 (2026-11-11 09:48 UTC)
 
 Pre-registration: `logs/backtest_reports/prereg_tournament_20261026.md` · rules_hash `ce6337a4bd97ea7c` · paper only, no orders.
 
