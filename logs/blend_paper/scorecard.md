@@ -1,4 +1,4 @@
-# Paper test #3 — 4-sleeve blend at 10% volatility (2026-11-11 00:12 UTC)
+# Paper test #3 — 4-sleeve blend at 10% volatility (2026-11-12 07:52 UTC)
 
 Pre-registration: `logs/backtest_reports/prereg_blend_paper_20261025.md` · version `blend4_v1` · rules_hash `3036d78205331e63` · paper only, no orders.
 
@@ -6,7 +6,7 @@ Pre-registration: `logs/backtest_reports/prereg_blend_paper_20261025.md` · vers
 
 **Status: RUNNING** — 0/6 full months
 
-Scored days 17 (2026-10-25 → 2026-11-10) · net **+4.64%** of capital · Sharpe — · max drawdown 0.62%
+Scored days 18 (2026-10-25 → 2026-11-11) · net **+4.61%** of capital · Sharpe — · max drawdown 0.62%
 
 | month | net | |
 |---|---|---|
@@ -17,6 +17,6 @@ Scored days 17 (2026-10-25 → 2026-11-10) · net **+4.64%** of capital · Sharp
 | 2026-10-25 | -0.06% | 1 |
 | 2026-11-01 | +2.47% | 7 |
 | 2026-11-08 | +1.80% | 7 |
-| 2026-11-15 | +0.43% | 2 |
+| 2026-11-15 | +0.40% | 3 |
 
-Weights recorded more than 6 h after the close: 2026-10-26, 2026-11-03, 2026-11-04, 2026-11-05. Days scored after a gap: none.
+Weights recorded more than 6 h after the close: 2026-10-26, 2026-11-03, 2026-11-04, 2026-11-05, 2026-11-11. Days scored after a gap: none.
