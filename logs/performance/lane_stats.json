@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T00:04:08.627717+00:00",
+  "generated_at": "2026-11-13T00:03:46.404104+00:00",
   "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
   "lanes": [
     "mechanical",
@@ -9,36 +9,36 @@
   "by_signal": {
     "failed_breakout_short": {
       "all": {
-        "n": 92,
-        "prof_pct": 67.4,
-        "net": 0.22
+        "n": 93,
+        "prof_pct": 66.7,
+        "net": 0.207
       },
       "last30": {
         "n": 30,
         "prof_pct": 73.3,
-        "net": 0.283
+        "net": 0.282
       },
       "d30": {
-        "n": 63,
-        "prof_pct": 65.1,
-        "net": 0.181
+        "n": 64,
+        "prof_pct": 64.1,
+        "net": 0.162
       }
     },
     "liquidity_sweep_long": {
       "all": {
-        "n": 146,
-        "prof_pct": 50.0,
-        "net": -0.185
+        "n": 155,
+        "prof_pct": 47.7,
+        "net": -0.224
       },
       "last30": {
         "n": 30,
-        "prof_pct": 70.0,
-        "net": 0.154
+        "prof_pct": 50.0,
+        "net": -0.196
       },
       "d30": {
-        "n": 112,
-        "prof_pct": 50.0,
-        "net": -0.19
+        "n": 117,
+        "prof_pct": 47.0,
+        "net": -0.235
       }
     },
     "range_reversion_long": {
@@ -87,9 +87,9 @@
         "net": -0.169
       },
       "d30": {
-        "n": 65,
-        "prof_pct": 46.2,
-        "net": -0.181
+        "n": 62,
+        "prof_pct": 48.4,
+        "net": -0.14
       }
     },
     "trend_pullback_short": {
@@ -104,22 +104,22 @@
         "net": 0.609
       },
       "d30": {
-        "n": 106,
-        "prof_pct": 65.1,
-        "net": 0.2
+        "n": 105,
+        "prof_pct": 64.8,
+        "net": 0.191
       }
     }
   },
   "by_direction": {
     "short": {
-      "n": 228,
-      "prof_pct": 64.9,
-      "net": 0.185
+      "n": 229,
+      "prof_pct": 64.6,
+      "net": 0.18
     },
     "long": {
-      "n": 236,
-      "prof_pct": 48.7,
-      "net": -0.192
+      "n": 245,
+      "prof_pct": 47.3,
+      "net": -0.217
     }
   }
 }
