@@ -1,0 +1,161 @@
+{
+  "run_timestamp_utc": "2026-11-14T08:02:04.571245+00:00",
+  "run_tag": "20261114_0802",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2,
+    "daily_picks": 2
+  },
+  "setups": [
+    {
+      "symbol": "BERAUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.1079125,
+      "entry_high": 0.1100875,
+      "stop_loss": 0.1372125,
+      "target_1": 0.08784063,
+      "target_2": 0.052575,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.1344, RSI 56.2"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 36.57,
+          "rsi": 56.25,
+          "macd": 0.001633,
+          "macd_hist": 0.002199,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.24,
+          "range_pct": 35.77
+        },
+        "tf_1h": {
+          "adx": 42.42,
+          "rsi": 53.59,
+          "macd": 0.004509,
+          "macd_hist": -0.00053,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.86,
+          "range_pct": 28.73
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794643200000,
+        "score": 5,
+        "points": {
+          "trend_4h": true,
+          "trend_1h": false,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": true,
+          "volume": true
+        },
+        "derivs_ok": true
+      },
+      "daily_pick": true,
+      "daily_pick_seq": 1
+    },
+    {
+      "symbol": "LITUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "entry_low": 3.07782855,
+      "entry_high": 3.09617145,
+      "stop_loss": 3.03151429,
+      "target_1": 3.12861428,
+      "target_2": 3.19797142,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "liquidity_sweep_long on 1h: swept 3.0671 low, RSI 34.8, ADX 17.4"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "liquidity_sweep_long",
+      "signal_tf": "1h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 341,
+      "regime": "cautious",
+      "interest_score": 8.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 16.06,
+          "rsi": 38.26,
+          "macd": -0.030394,
+          "macd_hist": -0.014385,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.07,
+          "range_pct": 15.56
+        },
+        "tf_1h": {
+          "adx": 17.4,
+          "rsi": 34.75,
+          "macd": -0.033273,
+          "macd_hist": -0.016493,
+          "trend": "bearish",
+          "ema20_dist_atr": 1.47,
+          "range_pct": 11.35
+        },
+        "backtested_signal": "liquidity_sweep_long"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794643200000,
+        "score": 1,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      },
+      "daily_pick": true,
+      "daily_pick_seq": 2
+    }
+  ]
+}
