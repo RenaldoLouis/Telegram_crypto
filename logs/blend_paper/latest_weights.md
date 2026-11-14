@@ -1,39 +1,39 @@
-# Paper book for 2026-11-12 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-11-13 (held over the next UTC day) — 10% volatility target
 
-38 positions · gross 21.7% of capital · net exposure -0.0% · computed 2026-11-13T00:04:12.984913+00:00 · paper only, no orders.
+38 positions · gross 21.4% of capital · net exposure -0.0% · computed 2026-11-14T00:04:38.413083+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
-| BTCUSDT | long | +2.37% |
-| CTUSDT | short | -1.23% |
-| PONSUSDT | short | -1.21% |
-| BIRBUSDT | long | +1.21% |
-| 1000PEPEUSDT | long | +0.64% |
-| STRKUSDT | short | -0.64% |
-| WUSDT | short | -0.64% |
-| LONGXIAUSDT | short | -0.59% |
-| KIIUSDT | short | -0.59% |
-| DNAUSDT | short | -0.59% |
-| AXISUSDT | short | -0.59% |
-| QUSDT | long | +0.57% |
-| ATOMUSDT | long | +0.57% |
-| AEROUSDT | short | -0.57% |
-| SANDUSDT | long | +0.57% |
-| GRAMUSDT | long | +0.57% |
-| ERAUSDT | long | +0.57% |
-| ICPUSDT | short | -0.57% |
-| DASHUSDT | short | -0.57% |
-| CASHCATUSDT | short | -0.57% |
-| DGAIUSDT | long | +0.57% |
-| BTWUSDT | long | +0.57% |
-| ZROUSDT | short | -0.57% |
-| ZECUSDT | short | -0.57% |
-| USELESSUSDT | short | -0.57% |
-| TRXUSDT | long | +0.57% |
-| FARTCOINUSDT | short | -0.57% |
-| NILUSDT | long | +0.57% |
-| MONUSDT | long | +0.57% |
-| LITUSDT | long | +0.57% |
+| BTCUSDT | long | +2.34% |
+| CTUSDT | short | -1.21% |
+| PONSUSDT | short | -1.19% |
+| BIRBUSDT | long | +1.19% |
+| 1000PEPEUSDT | long | +0.63% |
+| STRKUSDT | short | -0.63% |
+| WUSDT | short | -0.63% |
+| LONGXIAUSDT | short | -0.58% |
+| KIIUSDT | short | -0.58% |
+| DNAUSDT | short | -0.58% |
+| AXISUSDT | short | -0.58% |
+| QUSDT | long | +0.56% |
+| ATOMUSDT | long | +0.56% |
+| AEROUSDT | short | -0.56% |
+| SANDUSDT | long | +0.56% |
+| GRAMUSDT | long | +0.56% |
+| ERAUSDT | long | +0.56% |
+| ICPUSDT | short | -0.56% |
+| DASHUSDT | short | -0.56% |
+| CASHCATUSDT | short | -0.56% |
+| DGAIUSDT | long | +0.56% |
+| BTWUSDT | long | +0.56% |
+| ZROUSDT | short | -0.56% |
+| ZECUSDT | short | -0.56% |
+| USELESSUSDT | short | -0.56% |
+| TRXUSDT | long | +0.56% |
+| FARTCOINUSDT | short | -0.56% |
+| NILUSDT | long | +0.56% |
+| MONUSDT | long | +0.56% |
+| LITUSDT | long | +0.56% |
 | AKEUSDT | short | -0.07% |
 | ARIAUSDT | long | +0.07% |
 | CAPUSDT | long | +0.07% |
