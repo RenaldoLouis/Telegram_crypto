@@ -1,0 +1,47 @@
+{
+  "run_tag": "20261114_1602",
+  "run_timestamp_utc": "2026-11-14T16:02:03.416229+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-11-16T00:03:43.837180+00:00",
+  "results": [
+    {
+      "status": "gap_skipped",
+      "reason": "first open 0.7287 already beyond stop 0.73070893",
+      "symbol": "SUIUSDT",
+      "direction": "long",
+      "timeframe": "scalp",
+      "setup_type": "liquidity_sweep",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 1,
+      "rank": 8,
+      "rules_applied": [
+        "validated_signal",
+        "liquidity_sweep"
+      ],
+      "regime": "risk_off",
+      "interest_score": 4.0,
+      "source": "shadow",
+      "backtested_signal": "liquidity_sweep_long",
+      "signal_name": "liquidity_sweep_long",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794672000000,
+        "score": 2,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": true,
+          "oi_trapped": false,
+          "volume": true
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
