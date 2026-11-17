@@ -453,6 +453,14 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-17 (night) — Stablecoin supply flows → NO on both tests; options skew recorder started
+
+**Why:** user "go" to "start the skew recorder now and test stablecoin flows meanwhile".
+
+**Stablecoin study** (`prereg_stablecoin_20261117.md` ae43f3e; `stablecoin_data.py` + `stablecoin_study.py` + tests 9bd2058, before results; report `stablecoin_20261117.md`). DefiLlama total USD and USDT supply, daily, row D used from D + 1; three "follow the money" features; `dvol_study.py`'s functions made reusable for it (the DVOL report reproduces identically). Test A selected `usdt_7d_1` (+0.184R fit gap) → −0.297R unseen → NO. Test B selected `usdt_7d_1` (+0.036R fit) → −0.031R unseen, PF 0.93 → NO. Residual sign recorded in the ledger: all three signal variants beat random in both halves, none near PF 1.3, unseen books long-only.
+
+**Options skew recorder** (`options_collector.py`, `test_options_collector.py`, accc02f): every scan-keeper job runs it in the background — one Deribit `get_book_summary_by_currency` call per currency (BTC, ETH) every 15 min; deltas computed locally (Black-76); per snapshot: per-expiry ATM / 25-delta put / 25-delta call IV, 30-day ATM IV, 25-delta risk reversal and butterfly, put/call volume and OI. Raw rows go to /tmp and are folded into `logs/market/options/<CUR>_<YYYY-MM>.jsonl` before every commit. Data only; live once pushed. Unknown until the first CI run: whether Deribit answers GitHub's US runners directly (the Bybit tunnel is split, Deribit goes direct) — check `logs/market/options/` after the first keeper job; if empty, read `/tmp/options_collector.log` in the job's handover step output.
+
 ### 2026-11-17 (later) — Week 3 new input: options-implied volatility (Deribit DVOL) → NO on both tests; daily book cuts longs
 
 **Why:** user: "just choose whichever bring us closer to our goal" (between cutting longs, a market control for the promotion readout, and week 3's input). Chosen: the new input — the only one of the three that can produce a predictive edge (discipline #3) — plus the cut the user's own rule already called for.

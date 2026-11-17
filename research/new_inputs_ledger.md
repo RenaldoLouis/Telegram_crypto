@@ -12,8 +12,9 @@ _Started 2026-11-03 (user decision after the 2026-11-02 status: "one new input p
 | 1 (11-03) | crowd / top-trader positioning (7-day z, 4h tilt) | Binance `metrics` archive (5-min, the source itself) | NO — −0.134R vs −0.118R | NO — within 0.03R of random | — | CLOSED |
 | 2 (11-04) | cross-venue funding & basis dispersion, faded | Bybit funding + premium-index kline; Binance funding + premium archives; OKX swap/index candles | NO by the bar — selected `basis_disp_tilt_1` +0.076R vs −0.118R (gap +0.19R, PF 1.22 < 1.3) | NO — `fund_disp_2` −0.132R vs random −0.064R | 2024-25 untouched year → NO (gap +0.05R, long-side only, book −0.054R) | CLOSED |
 | 3 (11-17) | options-implied volatility: BTC DVOL level, 24h change, implied − realised (VRP), faded fear | Deribit `get_volatility_index_data` (hourly, the source itself, from 2021) | NO — selected `dvol_z_1` +0.170R gap on fit, −0.058R unseen (aligned −0.176R vs all −0.118R) | NO — `vrp_z_1` +0.002R fit → −0.224R unseen vs random −0.056R | — | CLOSED |
+| 3b (11-17) | stablecoin supply flows: total and USDT, 7d / 30d % change z, follow the money | DefiLlama `stablecoincharts` (daily, from 2017; row D used from D+1) | NO — selected `usdt_7d_1` +0.184R gap on fit → −0.297R unseen (aligned −0.415R; against better) | NO — `usdt_7d_1` +0.036R fit → −0.031R unseen (beats random −0.088R, PF 0.93) | — | CLOSED (residual sign recorded) |
 
-Trials: week 1 = 12 + 12 + 1 selected trials, week 2 = 9 + 1, week 3 = 9. Nothing passed. Nothing live changed.
+Trials: week 1 = 12 + 12 + 1 selected trials, week 2 = 9 + 1, week 3 = 9 + 9. Nothing passed. Nothing live changed.
 
 ## Week 1 — order book, fade-the-book, positioning (2026-11-03)
 
@@ -37,14 +38,20 @@ Trials: week 1 = 12 + 12 + 1 selected trials, week 2 = 9 + 1, week 3 = 9. Nothin
 - **Process note:** the first run forgot the 29-symbol filter and read all 34 symbols (4,038 trades; kept as `dvol_20261117_34sym.md`); same verdicts (A unseen gap −0.066R, B also NO). The registered population (3,531 trades) is the verdict of record.
 - **Lesson:** a market-wide regime number gives every coin the same reading at the same time, so a year holds only a few dozen independent DVOL regimes; the fit-half lift was two regimes (OLDER, TRAIN) and did not survive the next two.
 
+## Week 3b — stablecoin supply flows (2026-11-17)
+
+- **Data.** `stablecoin_data.py`: DefiLlama total USD stablecoin supply and USDT supply, daily since 2017-11 (store `logs/backtest_cache/stablecoins/`); the row dated D is used from D + 1 day because the current day's row is still being updated. Known risk, stated in the pre-registration: DefiLlama may have revised old rows; no archive of first-published values exists.
+- **Study** (`prereg_stablecoin_20261117.md` ae43f3e, `stablecoin_study.py` 9bd2058 on `dvol_study.py`'s machinery, report `stablecoin_20261117.md`). Test A: `usdt_7d_1` (+0.184R fit gap) reversed to −0.297R unseen; with supply only growing in TEST + H, the aligned bucket held longs only (short n/a). Test B: `usdt_7d_1` +0.036R fit → −0.031R unseen.
+- **Residual sign, recorded, not a lead:** as a 4h signal all three variants beat their random control in both halves (unseen: `stable_7d_1` +0.050R · PF 1.13 · 58 % weeks green vs random −0.043R, flipped −0.158R; `stable_30d_1` −0.028R vs −0.056R; `usdt_7d_1` −0.031R vs −0.088R), but none reached PF 1.3 and the unseen books were long-heavy in a year when supply only grew — consistent with supply following price. Re-opening it needs a pre-registered confirmation on an older window (stablecoin history reaches 2017; klines for 2023-24 would have to be fetched).
+
 ## Data that is no longer untouched
 
 The 2024-10-20 → 2025-10-19 trade population (`orderbook_fade_20261103_trades.json`, klines tag `20240701_20251019`) has been read three times (fade-the-book, basis tilt; its klines also by the 2026-11-17 cascade 2×-stop confirmation, `cascade_wide_stop_20261117.md` → NO). A future confirmation needs a window neither study read: e.g. 2023-10 → 2024-10 (Bybit klines + funding reach back; Binance depth/metrics/premium archives from 2023; OKX index candles deep).
 
 ## Candidates not yet tried (free unless noted)
 
-- **Options skew / put-call flow** — Deribit 25-delta skew or put/call volume (DVOL itself closed 2026-11-17; skew history is not on the free API — needs a collector or a paid archive).
-- **Stablecoin supply / market-cap flows** — USDT/USDC issuance and exchange balances (free aggregates; daily resolution).
+- **Options skew / put-call flow** — Deribit 25-delta risk reversal, butterfly and put/call volume/OI for BTC and ETH: RECORDING since 2026-11-17 (`options_collector.py` in the scan keeper, every 15 min → `logs/market/options/`); testable once weeks of data exist.
+- **Stablecoin exchange balances** — stablecoins held ON exchanges (supply itself closed 2026-11-17); free aggregates are scarce.
 - **Exchange reserve / on-chain flows** — paid (CryptoQuant, Glassnode); only if a free aggregate exists.
 - **Binance taker buy/sell ratio** — same family as CVD (fork #4, closed 2026-10-16); low prior.
 
