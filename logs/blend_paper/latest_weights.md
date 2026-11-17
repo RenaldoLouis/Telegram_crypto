@@ -1,44 +1,45 @@
-# Paper book for 2026-11-14 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-11-16 (held over the next UTC day) — 10% volatility target
 
-38 positions · gross 21.4% of capital · net exposure -0.0% · computed 2026-11-15T07:11:50.433631+00:00 · paper only, no orders.
+39 positions · gross 24.0% of capital · net exposure -0.0% · computed 2026-11-17T00:04:14.687221+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
-| BTCUSDT | long | +2.34% |
-| CTUSDT | short | -1.21% |
-| PONSUSDT | short | -1.19% |
-| BIRBUSDT | long | +1.19% |
-| 1000PEPEUSDT | long | +0.63% |
-| STRKUSDT | short | -0.63% |
-| WUSDT | short | -0.63% |
-| KIIUSDT | short | -0.58% |
-| IDOLUSDT | short | -0.58% |
-| DNAUSDT | short | -0.58% |
-| AXISUSDT | short | -0.58% |
-| SANDUSDT | long | +0.56% |
-| ATOMUSDT | long | +0.56% |
-| AEROUSDT | short | -0.56% |
-| ZROUSDT | short | -0.56% |
-| GRAMUSDT | long | +0.56% |
-| ERAUSDT | long | +0.56% |
-| DGAIUSDT | long | +0.56% |
-| FARTCOINUSDT | short | -0.56% |
-| CASHCATUSDT | short | -0.56% |
-| DASHUSDT | short | -0.56% |
-| BTWUSDT | long | +0.56% |
-| ZECUSDT | short | -0.56% |
-| TRXUSDT | long | +0.56% |
-| USELESSUSDT | short | -0.56% |
-| ICPUSDT | short | -0.56% |
-| QUSDT | long | +0.56% |
-| NILUSDT | long | +0.56% |
-| MONUSDT | long | +0.56% |
-| LITUSDT | long | +0.56% |
-| AKEUSDT | short | -0.07% |
-| ARIAUSDT | long | +0.07% |
-| CAPUSDT | long | +0.07% |
-| CHIPUSDT | short | -0.07% |
-| INJUSDT | long | +0.07% |
-| JCTUSDT | long | +0.07% |
-| WLDUSDT | short | -0.07% |
-| XMRUSDT | long | +0.07% |
+| BTCUSDT | long | +2.87% |
+| BIRBUSDT | long | +1.22% |
+| ERAUSDT | long | +1.22% |
+| QUSDT | short | -1.22% |
+| 1000PEPEUSDT | long | +0.62% |
+| AEROUSDT | short | -0.62% |
+| PONSUSDT | short | -0.62% |
+| CASHCATUSDT | short | -0.62% |
+| TRUMPUSDT | short | -0.62% |
+| WLDUSDT | long | +0.60% |
+| AVAXUSDT | long | +0.60% |
+| ADAUSDT | long | +0.60% |
+| WLFIUSDT | long | +0.60% |
+| ATOMUSDT | long | +0.60% |
+| GRASSUSDT | short | -0.60% |
+| INITUSDT | long | +0.60% |
+| TAOUSDT | short | -0.60% |
+| SUIUSDT | long | +0.60% |
+| STXUSDT | short | -0.60% |
+| PUMPFUNUSDT | short | -0.60% |
+| GRAMUSDT | long | +0.60% |
+| FARTCOINUSDT | short | -0.60% |
+| DASHUSDT | short | -0.60% |
+| XMRUSDT | short | -0.60% |
+| ZECUSDT | short | -0.60% |
+| TRXUSDT | long | +0.60% |
+| USELESSUSDT | short | -0.60% |
+| LITUSDT | long | +0.60% |
+| AXISUSDT | short | -0.57% |
+| CTUSDT | short | -0.57% |
+| DNAUSDT | short | -0.57% |
+| KIIUSDT | short | -0.57% |
+| IDOLUSDT | short | -0.57% |
+| AKEUSDT | short | -0.03% |
+| ARIAUSDT | long | +0.03% |
+| JCTUSDT | long | +0.03% |
+| CAPUSDT | long | +0.03% |
+| BTWUSDT | short | -0.03% |
+| MAGMAUSDT | long | +0.03% |
