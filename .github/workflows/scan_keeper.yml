@@ -157,6 +157,14 @@ jobs:
           LIQ_LOOP=$!
           liq_sum() { python liq_summary.py --source "$GITHUB_RUN_ID" --since "$LIQ_SINCE" \
                         || echo "::warning::liq summary failed"; }
+          # Options skew / put-call recorder (2026-11-17, forward data for a future new-input test):
+          # Deribit public API (direct, not through the Bybit tunnel), one snapshot per 15 min into
+          # /tmp; folded into logs/market/options/ by opt_fold before every commit.
+          python options_collector.py loop --out /tmp/options_raw.jsonl --every 900 --until "$END" \
+            2>> /tmp/options_collector.log &
+          OPT_LOOP=$!
+          opt_fold() { python options_collector.py fold --raw /tmp/options_raw.jsonl \
+                         || echo "::warning::options fold failed"; }
 
           while :; do
             git_sync
@@ -182,6 +190,7 @@ jobs:
               vpn_heal
               git_sync
               liq_sum
+              opt_fold
               echo "::group::scan $(iso "$C") — attempt $attempts"
               timeout 900 python main.py && ok=true
               echo "::endgroup::"
@@ -216,10 +225,12 @@ jobs:
           done
 
           # Final liquidation fold so the successor starts from this job's full window.
-          kill "$LIQ_LOOP" 2>/dev/null; pkill -f liquidation_collector.py 2>/dev/null
+          kill "$LIQ_LOOP" "$OPT_LOOP" 2>/dev/null; pkill -f liquidation_collector.py 2>/dev/null
           git_sync
           liq_sum
-          commit_push "scan-keeper: liquidation summary handover" logs/market
+          opt_fold
+          tail -5 /tmp/options_collector.log 2>/dev/null
+          commit_push "scan-keeper: liquidation + options handover" logs/market
 
           if [ "$failed_closes" -gt 0 ]; then
             echo "::error::$failed_closes close(s) in this window never got a successful scan"
