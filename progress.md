@@ -453,6 +453,14 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-17 (later) — Week 3 new input: options-implied volatility (Deribit DVOL) → NO on both tests; daily book cuts longs
+
+**Why:** user: "just choose whichever bring us closer to our goal" (between cutting longs, a market control for the promotion readout, and week 3's input). Chosen: the new input — the only one of the three that can produce a predictive edge (discipline #3) — plus the cut the user's own rule already called for.
+
+**DVOL study** (`prereg_dvol_20261117.md` 03d905e before code; `dvol_data.py` + `dvol_study.py` + `test_dvol_study.py` 96b077d before results; report `dvol_20261117.md`): BTC DVOL hourly from Deribit's public endpoint, one market-wide value for every coin, three features read as "fade the fear". Test A selected `dvol_z_1` (+0.170R gap on the fit half) → unseen aligned −0.176R vs all −0.118R → NO. Test B selected `vrp_z_1` (+0.002R fit) → unseen −0.224R vs random −0.056R → NO. 9 trials, nothing passed. The first run read all 34 symbols instead of the registered 29 (kept as `dvol_20261117_34sym.md`, same verdicts). Ledger: `research/new_inputs_ledger.md` week 3.
+
+**Daily book:** `config.DAILY_DIRECTIONS = ("short",)` — the 2026-11-16 weekly review's fixed rule fired for longs (30 scored, 37 % / −0.37R). Shorts are kept by the same rule (+0.17R), but that record is the BTC decline, not a proven edge (history ≈ breakeven; see the entry below). Longs stay in the shadow lane and every readout; only the picks change. Not applied to the live keeper until pushed.
+
 ### 2026-11-17 — Cascade with a 2× stop confirmed on the 2024-25 year → NO; the 15m cascade family is closed
 
 **Why:** user: "stops getting hit … check the flow at 4h 1h 30m then get in in 15m". A scratchpad diagnostic on the 2026-10-21 cascade data (not a study) found (a) 48% of trades stopped before T1 later reached T1 — random entries 46.5%, so stop hunts are a market feature; (b) a 2× stop with targets scaled to the new risk took the cascade from −0.110R to +0.002R vs random −0.050R (gap +0.053R), picked from 8 variants. Pre-registration `prereg_cascade_wide_stop_20261117.md` committed (335506e) before code; `cascade_confirm.py` + `test_cascade_confirm.py` committed before the run.

@@ -32,6 +32,11 @@ PREREG = "prereg_dvol_20261117.md"
 KINDS = dd.FEATURES
 A_VARIANTS = tuple((k, thr) for k in KINDS for thr in (0.5, 1.0))
 B_VARIANTS = tuple((k, 1.0) for k in KINDS)
+# the 29 symbols of the first new-input study — the registered population ("the 3,531 recorded trades");
+# the first run (2026-11-17) forgot this filter and read all 34 symbols (4,038 trades) — same verdict, see the report
+SYMBOLS = ("1000BONKUSDT,1000PEPEUSDT,ADAUSDT,AKEUSDT,ARBUSDT,BTCUSDT,DOGEUSDT,ENAUSDT,ETHUSDT,FARTCOINUSDT,"
+           "HBARUSDT,INJUSDT,NEARUSDT,ONDOUSDT,OPUSDT,PENGUUSDT,PUMPFUNUSDT,SANDUSDT,SOLUSDT,STRKUSDT,SUIUSDT,"
+           "TRXUSDT,USELESSUSDT,USUSDT,WLDUSDT,XLMUSDT,XPLUSDT,XRPUSDT,ZECUSDT").split(",")
 
 
 def bucket(x, direction: str, thr: float) -> str:
@@ -273,7 +278,8 @@ def main(argv=None):
     t0 = time.time()
     idx = dd.DvolIndex.load()
     trades = [t for t in json.loads(C_TRADES.read_text())
-              if (t["signal"], t["tf"]) in LIVE and t["result"].get("filled") and C_FROM <= t["signal_ms"] < CUTOFF]
+              if (t["signal"], t["tf"]) in LIVE and t["result"].get("filled") and C_FROM <= t["signal_ms"] < CUTOFF
+              and t["symbol"] in SYMBOLS]
     symbols = sorted({t["symbol"] for t in trades})
     print(f"test A population: {len(trades)} trades, {len(symbols)} symbols")
     a_rows, a_table, a_verdict = run_test_a(idx, trades)
