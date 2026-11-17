@@ -1,0 +1,87 @@
+{
+  "run_timestamp_utc": "2026-11-17T08:02:04.014142+00:00",
+  "run_tag": "20261117_0802",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "neutral",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 1,
+    "daily_picks": 0
+  },
+  "setups": [
+    {
+      "symbol": "ETHUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "entry_low": 1822.503,
+      "entry_high": 1835.997,
+      "stop_loss": 1896.72,
+      "target_1": 1778.6475,
+      "target_2": 1694.31,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 3,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "trend_pullback"
+        ],
+        "key_factor": "trend_pullback_short on 4h: EMA20<EMA50, RSI 63.7, ADX 51.1, near EMA20"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "trend_pullback_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.526,
+      "signal_test_n": 152,
+      "regime": "neutral",
+      "interest_score": 4.0,
+      "rank": 1,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 51.08,
+          "rsi": 63.69,
+          "macd": -40.403491,
+          "macd_hist": 10.986488,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.46,
+          "range_pct": 12.44
+        },
+        "tf_1h": {
+          "adx": 18.37,
+          "rsi": 57.15,
+          "macd": 2.992446,
+          "macd_hist": 1.136948,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.4,
+          "range_pct": 4.38
+        },
+        "backtested_signal": "trend_pullback_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794902400000,
+        "score": 5,
+        "points": {
+          "trend_4h": true,
+          "trend_1h": true,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": true,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
