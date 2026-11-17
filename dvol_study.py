@@ -45,21 +45,21 @@ def bucket(x, direction: str, thr: float) -> str:
 
 
 # ----------------------------------------------------------------------------- test A
-def run_test_a(idx, trades):
+def run_test_a(idx, trades, a_variants=A_VARIANTS):
     rows = []
     for t in trades:
         T = t["signal_ms"]
         rec = {"t": T, "sym": t["symbol"], "rule": f"{t['signal']} {t['tf']}", "dir": t["direction"],
                "per": obs.period_of(T), "half": obs.half_of(T), "net": t["result"]["net_blended_rr"],
                "profitable": t["result"]["profitable"], "hold": t["result"]["hold_minutes"], "b": {}}
-        feats = {k: idx.at(k, T) for k in KINDS}
-        for k, thr in A_VARIANTS:
+        feats = {k: idx.at(k, T) for k in {k for k, _ in a_variants}}
+        for k, thr in a_variants:
             rec["b"][f"{k}_{thr:g}"] = bucket(feats[k], t["direction"], thr)
         rows.append(rec)
-    return rows, *grade_a(rows)
+    return rows, *grade_a(rows, a_variants)
 
 
-def grade_a(rows):
+def grade_a(rows, a_variants=A_VARIANTS):
     def cell(sub, name, which):
         return obs.q([r for r in sub if r["b"][name] == which])
 
@@ -67,7 +67,7 @@ def grade_a(rows):
         return [r for r in sub if r["b"][name] != "no_data"]
 
     table = {}
-    for k, thr in A_VARIANTS:
+    for k, thr in a_variants:
         name = f"{k}_{thr:g}"
         ent = {}
         for half in ("fit", "unseen"):
@@ -117,10 +117,10 @@ def grade_a(rows):
 
 
 # ----------------------------------------------------------------------------- test B
-def run_test_b(idx, symbols, log=print):
+def run_test_b(idx, symbols, b_variants=B_VARIANTS, log=print):
     """Signal at every closed 4h bar per variant; one open trade per symbol; random-side + flipped controls."""
     rng = random.Random(obs.SEED)
-    names = [f"{k}_{thr:g}" for k, thr in B_VARIANTS]
+    names = [f"{k}_{thr:g}" for k, thr in b_variants]
     rows, ctrl, flip = ({n: [] for n in names} for _ in range(3))
     no_data = defaultdict(int)
     for sym in symbols:
@@ -137,10 +137,10 @@ def run_test_b(idx, symbols, log=print):
             if T < C_FROM or T >= CUTOFF:
                 continue
             atr = f4["atr"][i]
-            feats = {k: idx.at(k, T) for k in KINDS}
+            feats = {k: idx.at(k, T) for k in {k for k, _ in b_variants}}
             j = bisect_left(ts15, T + obs.SCAN_LAG_MS)
             fwd = m15[j:j + ub.LIMIT_WAIT_BARS + obs.B_WINDOW]
-            for k, thr in B_VARIANTS:
+            for k, thr in b_variants:
                 name = f"{k}_{thr:g}"
                 x = feats[k]
                 if x is None:
@@ -200,21 +200,26 @@ def grade_b(rows, ctrl, flip, no_data):
 
 
 # ----------------------------------------------------------------------------- report
-def coverage(idx, start_ms, end_ms):
-    hours = range(start_ms, end_ms, dd.HOUR_MS)
-    return {k: 100.0 * sum(1 for h in hours if idx.at(k, h) is not None) / len(hours) for k in KINDS}
+def coverage(idx, start_ms, end_ms, kinds=KINDS, step_ms=dd.HOUR_MS):
+    steps = range(start_ms, end_ms, step_ms)
+    return {k: 100.0 * sum(1 for h in steps if idx.at(k, h) is not None) / len(steps) for k in kinds}
 
 
-def write_report(date_tag, cov, a_table, a_verdict, b_table, b_verdict, n_trades, elapsed):
+DVOL_TITLE = "Options-implied volatility (Deribit DVOL)"
+DVOL_INTRO = ("Data: BTC DVOL hourly (`dvol_data.py`), one market-wide value for every coin; every feature is read "
+              "as FADE THE FEAR (positive = favours a LONG).")
+
+
+def write_report(date_tag, cov, a_table, a_verdict, b_table, b_verdict, n_trades, elapsed,
+                 title=DVOL_TITLE, intro=DVOL_INTRO, prereg=PREREG, out_name="dvol", input_name="DVOL"):
     fmt, short = obs.fmt, obs.short
-    L = [f"# Options-implied volatility (Deribit DVOL) as a new input ({date_tag})", "",
-         f"Pre-registration: `logs/backtest_reports/{PREREG}` (written before this code). Data: BTC DVOL hourly "
-         "(`dvol_data.py`), one market-wide value for every coin; every feature is read as FADE THE FEAR "
-         "(positive = favours a LONG). Cells: n · profitable % · net R per trade (the managed trade) · net PF "
+    L = [f"# {title} as a new input ({date_tag})", "",
+         f"Pre-registration: `logs/backtest_reports/{prereg}` (written before this code). {intro} Cells:"
+         " n · profitable % · net R per trade (the managed trade) · net PF "
          "(· % of weeks green). Fit half = OLDER + TRAIN; unseen half = TEST + H.\n",
-         "**Coverage (hours of the study window with the feature defined):** "
+         "**Coverage (share of the study window with the feature defined):** "
          + ", ".join(f"{k} {v:.0f}%" for k, v in cov.items()) + "\n",
-         f"## Test A — DVOL as a filter on the live rules ({n_trades} recorded trades)\n",
+         f"## Test A — {input_name} as a filter on the live rules ({n_trades} recorded trades)\n",
          "| variant | fit: all | fit: aligned | fit: against | unseen: all | unseen: aligned | unseen: against | unseen gap |",
          "|---|---|---|---|---|---|---|---|"]
     for name, e in a_table.items():
@@ -245,7 +250,7 @@ def write_report(date_tag, cov, a_table, a_verdict, b_table, b_verdict, n_trades
     else:
         L.append("\n### Verdict A: **NO** (no variant reached the fit-half floor)\n")
 
-    L.append("\n## Test B — DVOL as a signal of its own (every closed 4h bar)\n")
+    L.append(f"\n## Test B — {input_name} as a signal of its own (every closed 4h bar)\n")
     L.append("| variant | no-data closes | fit: signal | fit: random | unseen: signal | unseen: random | unseen: flipped |")
     L.append("|---|---|---|---|---|---|---|")
     for name, e in b_table.items():
@@ -263,10 +268,10 @@ def write_report(date_tag, cov, a_table, a_verdict, b_table, b_verdict, n_trades
         L.append("\nUnseen half by direction: " + ", ".join(f"{d} {fmt(c)}" for d, c in b_table[sel]["by_dir"].items()))
     else:
         L.append("\n### Verdict B: **NO** (no variant reached n ≥ 100 on the fit half)\n")
-    n = len(A_VARIANTS) + len(B_VARIANTS)
+    n = len(a_table) + len(b_table)
     L.append(f"\n---\n{n} selected trials in total (≈ {0.05 * n:.2f} false PASS expected at 5 % with no edge). "
              f"Nothing was varied after the run. Run time {elapsed:.0f}s.")
-    out = REPORT_DIR / f"dvol_{date_tag}.md"
+    out = REPORT_DIR / f"{out_name}_{date_tag}.md"
     out.write_text("\n".join(L) + "\n", encoding="utf-8")
     return out
 
