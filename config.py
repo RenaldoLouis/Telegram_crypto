@@ -108,7 +108,9 @@ ENGINE_VIEW_LOOKBACK_MIN = 150  # include shadow rows persisted by (quiet) runs 
 # (shorts 66.7% / +0.154R, longs 52.6% / -0.290R).
 DAILY_BOOK_ENABLED = True
 DAILY_PICKS_MAX = 3
-DAILY_DIRECTIONS = ("long", "short")   # user: both, the weekly review decides
+# 2026-11-17: longs CUT by the weekly review's fixed rule (30 scored, 37% / -0.37R; review 2026-11-09).
+# Shorts kept by the same rule, but their +0.17R is the BTC decline, not a proven edge (progress.md 2026-11-17).
+DAILY_DIRECTIONS = ("short",)
 DAILY_DISABLED_SIGNALS = ()
 DAILY_TRIAL_START = "2026-10-19"
 DAILY_TRIAL_DAYS = 14
