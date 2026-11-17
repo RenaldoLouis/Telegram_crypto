@@ -453,6 +453,12 @@ The Python pre-filter uses rules extracted from the knowledge base to score 50 t
 
 ## Changelog
 
+### 2026-11-17 — Cascade with a 2× stop confirmed on the 2024-25 year → NO; the 15m cascade family is closed
+
+**Why:** user: "stops getting hit … check the flow at 4h 1h 30m then get in in 15m". A scratchpad diagnostic on the 2026-10-21 cascade data (not a study) found (a) 48% of trades stopped before T1 later reached T1 — random entries 46.5%, so stop hunts are a market feature; (b) a 2× stop with targets scaled to the new risk took the cascade from −0.110R to +0.002R vs random −0.050R (gap +0.053R), picked from 8 variants. Pre-registration `prereg_cascade_wide_stop_20261117.md` committed (335506e) before code; `cascade_confirm.py` + `test_cascade_confirm.py` committed before the run.
+
+**Result** (2024-10-20 → 2025-10-19, 28 symbols — USUSDT had no cache): cascade n=1359 · 54.8% · **−0.024R** · PF 0.94 · 55% weeks green vs random twins n=4096 · −0.044R → gap **+0.021R** (bar +0.05R); both halves negative (H1 −0.030R, H2 −0.018R); the gap flips sign by side and half (longs H2 −0.007R, shorts H1 −0.020R). **NO.** The wider stop removes fee drag (random improves too) but the entry adds ~nothing over random — same finding as `win_rate_geometry.py`. No live change. Same day: the eval-scan's "WATCH PROMOTABLE" `trend_pullback_short` / `failed_breakout_short` and the checklist ≥ 5 "READY" line were checked against the BTC decline (6 red weeks) and history — direction, not skill (no code change).
+
 ### 2026-11-05 — Basis-tilt fade filter confirmed on the untouched 2024-25 year → NO (gap shrank +0.19R → +0.05R, long-side only, filtered book still negative); cross-venue dispersion closed
 
 **Why:** the one lead of week two (`venue_dispersion_20261104.md`, Test A: `basis_disp_tilt_1`, +0.194R out of sample, PF 1.22). User: "lets try that and check it". Pre-registration `prereg_venue_confirm_20261104.md` committed (f57d210) before any venue series of the window was downloaded; code `venue_confirm.py` + window tag in `venue_data.py` committed (b0beeaa) before the run; report `venue_confirm_20261104.md` (+ `_rows.json`; run 2026-11-05 WIB, UTC date tag 11-04).
