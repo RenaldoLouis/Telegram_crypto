@@ -1,0 +1,159 @@
+{
+  "run_timestamp_utc": "2026-11-18T04:02:04.991557+00:00",
+  "run_tag": "20261118_0402",
+  "model": "claude-sonnet-4-6",
+  "mechanical_model": "mechanical_v2",
+  "primary_source": "mechanical",
+  "regime": "cautious",
+  "sources": {
+    "mechanical": 0,
+    "claude": 0,
+    "watch": 0,
+    "shadow": 2,
+    "daily_picks": 1
+  },
+  "setups": [
+    {
+      "symbol": "BREVUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "failed_breakout",
+      "entry_low": 0.10793635,
+      "entry_high": 0.11102365,
+      "stop_loss": 0.14054268,
+      "target_1": 0.08618299,
+      "target_2": 0.04735464,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 1,
+      "volume_confirmed": true,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "liquidity_sweep"
+        ],
+        "key_factor": "failed_breakout_short on 4h: failed breakout of 0.1200, RSI 92.1"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "failed_breakout_short",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.545,
+      "signal_test_n": 112,
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "rank": 2,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 68.11,
+          "rsi": 92.08,
+          "macd": 0.009366,
+          "macd_hist": 0.0065,
+          "trend": "bullish",
+          "ema20_dist_atr": 3.37,
+          "range_pct": 75.66
+        },
+        "tf_1h": {
+          "adx": 66.96,
+          "rsi": 73.36,
+          "macd": 0.013026,
+          "macd_hist": 0.000586,
+          "trend": "bullish",
+          "ema20_dist_atr": 0.94,
+          "range_pct": 73.86
+        },
+        "backtested_signal": "failed_breakout_short"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794974400000,
+        "score": 3,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": false,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": true,
+          "volume": true
+        },
+        "derivs_ok": true
+      },
+      "daily_pick": true,
+      "daily_pick_seq": 3
+    },
+    {
+      "symbol": "INITUSDT",
+      "direction": "long",
+      "timeframe": "intraday",
+      "setup_type": "range_mean_reversion",
+      "entry_low": 0.10132125,
+      "entry_high": 0.10315875,
+      "stop_loss": 0.08999,
+      "target_1": 0.1114275,
+      "target_2": 0.12674,
+      "predicted_rr": 0.75,
+      "confidence": "low",
+      "tf_confluence": 2,
+      "volume_confirmed": false,
+      "reasoning": {
+        "rules_applied": [
+          "validated_signal",
+          "range_reversion"
+        ],
+        "key_factor": "rsi_bounce_long on 4h: RSI 36.9 bouncing (was 18.9), ADX 14.2"
+      },
+      "tier": "shadow",
+      "source": "shadow",
+      "signal_name": "rsi_bounce_long",
+      "signal_tf": "4h",
+      "signal_expectancy": 0.51,
+      "signal_test_n": 96,
+      "regime": "cautious",
+      "interest_score": 0.0,
+      "rank": 11,
+      "entry_indicators": {
+        "tf_4h": {
+          "adx": 14.24,
+          "rsi": 36.92,
+          "macd": -0.005824,
+          "macd_hist": 0.001567,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.27,
+          "range_pct": 53.94
+        },
+        "tf_1h": {
+          "adx": 17.4,
+          "rsi": 59.88,
+          "macd": 0.000601,
+          "macd_hist": 0.000369,
+          "trend": "bearish",
+          "ema20_dist_atr": 0.8,
+          "range_pct": 15.65
+        },
+        "backtested_signal": "rsi_bounce_long"
+      },
+      "model": "shadow_v1",
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1794974400000,
+        "score": 2,
+        "points": {
+          "trend_4h": false,
+          "trend_1h": false,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": false,
+          "funding": true,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
