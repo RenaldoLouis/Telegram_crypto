@@ -1,6 +1,6 @@
 # Head-to-Head: Mechanical vs Claude
 
-Total evaluated trades: 989
+Total evaluated trades: 998
 Cost model: 0.170% round-trip (fee 0.055% + slippage 0.030% ×2) + funding; net = gross − cost.
 Every expectancy / PF below is the MANAGED trade (50% at T1, BE/+0.3R trail, rest to T2/expiry) — the same definition as unified_backtest (pinned 2026-10-08). win% is the legacy full-position win.
 
@@ -12,7 +12,7 @@ Quality yardstick (2026-10-21, replaced the ≥70% hit-rate bar): **net exp > 0 
 |---|---|---|---|---|---|---|
 | claude | 299 | 32.1% | **39.8% [34–45]** | -0.123 | **-0.195** | 0.67 |
 | mechanical | 54 | 55.6% | **61.1% [48–73]** | +0.011 | **-0.048** | 0.88 |
-| shadow | 503 | 46.7% | **54.9% [50–59]** | +0.013 | **-0.030** | 0.93 |
+| shadow | 512 | 47.3% | **55.3% [51–60]** | +0.016 | **-0.026** | 0.94 |
 | watch | 133 | 35.3% | **51.1% [43–60]** | -0.072 | **-0.112** | 0.75 |
 
 ## WATCH lane — promotion watch (paper-tracked, NOT in the edge book; v2 era only)
@@ -22,10 +22,10 @@ Bar to promote a watch signal into the gated EXECUTE book: **net exp > 0 · net 
 | watch signal | n | win% | **profitable%** | gross exp (R) | **net exp (R)** | net PF | weeks+ | status |
 |---|---|---|---|---|---|---|---|---|
 | range_reversion_short | 6 | 50.0% | **83.3% [44–97]** | +0.393 | **+0.374** | 3.21 | 100% | ↑ clears bar, building sample (6/30) |
-| trend_pullback_short | 140 | 55.7% | **65.0% [57–72]** | +0.254 | **+0.220** | 1.68 | 62% | ✅ PROMOTABLE — review for EXECUTE |
-| failed_breakout_short | 96 | 61.5% | **66.7% [57–75]** | +0.230 | **+0.213** | 1.70 | 57% | ✅ PROMOTABLE — review for EXECUTE |
-| rsi_bounce_long | 99 | 38.4% | **43.4% [34–53]** | -0.208 | **-0.232** | 0.46 | 14% | ✗ below bar |
-| liquidity_sweep_long | 159 | 35.8% | **47.2% [40–55]** | -0.167 | **-0.237** | 0.58 | 25% | ✗ below bar |
+| failed_breakout_short | 98 | 62.2% | **67.3% [58–76]** | +0.240 | **+0.223** | 1.74 | 62% | ✅ PROMOTABLE — review for EXECUTE |
+| trend_pullback_short | 143 | 55.9% | **65.0% [57–72]** | +0.247 | **+0.214** | 1.66 | 56% | ✅ PROMOTABLE — review for EXECUTE |
+| rsi_bounce_long | 100 | 39.0% | **44.0% [35–54]** | -0.201 | **-0.225** | 0.47 | 29% | ✗ below bar |
+| liquidity_sweep_long | 162 | 36.4% | **47.5% [40–55]** | -0.163 | **-0.233** | 0.58 | 33% | ✗ below bar |
 | range_reversion_long | 9 | 33.3% | **33.3% [12–65]** | -0.450 | **-0.634** | 0.25 | 33% | building (9/30) |
 
 ## By signal backing (gross → net of cost)
@@ -52,21 +52,21 @@ Bar to promote a watch signal into the gated EXECUTE book: **net exp > 0 · net 
 
 ## Eval engine v2 era (post-fix book — the one the quality yardstick is judged on)
 
-n=509 v2-scored trades. Pre-fix records are not comparable.
+n=518 v2-scored trades. Pre-fix records are not comparable.
 
 | source | n | **net exp (R)** | net PF | weeks+ | profitable% | status vs bar |
 |---|---|---|---|---|---|---|
-| shadow | 503 | **-0.030** | 0.93 | 44% | 54.9% [50–59] | ✗ below bar |
+| shadow | 512 | **-0.026** | 0.94 | 56% | 55.3% [51–60] | ✗ below bar |
 | watch | 6 | **+0.374** | 3.21 | 100% | 83.3% [44–97] | ↑ clears bar, building sample (6/30) |
 
-_Forward-sample velocity: 6 surfaced v2 trades in 44 days (1.0/week) → ~25 more weeks to n=30 at this rate._
+_Forward-sample velocity: 6 surfaced v2 trades in 45 days (0.9/week) → ~26 more weeks to n=30 at this rate._
 
 | source | signal | n | **net exp (R)** | net PF | weeks+ | profitable% | status vs bar |
 |---|---|---|---|---|---|---|---|
-| shadow | liquidity_sweep_long | 159 | **-0.237** | 0.58 | 25% | 47.2% [40–55] | ✗ below bar |
-| shadow | trend_pullback_short | 140 | **+0.220** | 1.68 | 62% | 65.0% [57–72] | ✅ PROMOTABLE — review for EXECUTE |
-| shadow | rsi_bounce_long | 99 | **-0.232** | 0.46 | 14% | 43.4% [34–53] | ✗ below bar |
-| shadow | failed_breakout_short | 96 | **+0.213** | 1.70 | 57% | 66.7% [57–75] | ✅ PROMOTABLE — review for EXECUTE |
+| shadow | liquidity_sweep_long | 162 | **-0.233** | 0.58 | 33% | 47.5% [40–55] | ✗ below bar |
+| shadow | trend_pullback_short | 143 | **+0.214** | 1.66 | 56% | 65.0% [57–72] | ✅ PROMOTABLE — review for EXECUTE |
+| shadow | rsi_bounce_long | 100 | **-0.225** | 0.47 | 29% | 44.0% [35–54] | ✗ below bar |
+| shadow | failed_breakout_short | 98 | **+0.223** | 1.74 | 62% | 67.3% [58–76] | ✅ PROMOTABLE — review for EXECUTE |
 | shadow | range_reversion_long | 9 | **-0.634** | 0.25 | 33% | 33.3% [12–65] | building (9/30) |
 | watch | range_reversion_short | 6 | **+0.374** | 3.21 | 100% | 83.3% [44–97] | ↑ clears bar, building sample (6/30) |
 
@@ -75,7 +75,7 @@ _Forward-sample velocity: 6 surfaced v2 trades in 44 days (1.0/week) → ~25 mor
 ⚠️ CONCENTRATION: mechanical book is one-directional (short-only), 52/54 from a single signal — lead is not yet a broad edge. Do NOT flip PRIMARY_SOURCE until both directions and >1 signal have live data.
 
 ## Net-of-cost reality check
-- Whole book: gross -0.040R → **net -0.092R** (PF 0.81, n=989)
+- Whole book: gross -0.038R → **net -0.089R** (PF 0.81, n=998)
 - Mechanical: gross +0.011R → **net -0.048R** (n=54)
 - Signal-backed: gross -0.025R → **net -0.082R** (n=81) — the only cut that should be near a real net edge
 - **VERDICT: NOT DECIDABLE YET (6/30 trades)** — v2-era surfaced book (mechanical + watch; shadow excluded): n=6 trades = 6 independent bets, profitable 83.3% [44–97], net +0.374R, 95% CI of net per bet [-0.45, +1.20]R. Below 30 trades the sign of any lane is noise — including the all-era rows above.
