@@ -1,4 +1,4 @@
-# Paper tournament — tournament_v1 (2026-11-18 16:36 UTC)
+# Paper tournament — tournament_v1 (2026-11-19 00:11 UTC)
 
 Pre-registration: `logs/backtest_reports/prereg_tournament_20261026.md` · rules_hash `ce6337a4bd97ea7c` · paper only, no orders.
 
@@ -18,5 +18,5 @@ Week = Mon–Sun ending 2026-11-15. Entrants and controls are at 10% volatility;
 | paper #3 blend | own clock | -0.01% | +1.80% | 0.44% | — | 1/2 | RUNNING |
 | paper #2 momentum k56 | own clock | +2.61% | +9.98% | 0.00% | — | 2/2 | 6/26 weeks |
 | paper #2 momentum k91 | own clock | +1.35% | +2.35% | 0.00% | — | 2/2 | 6/26 weeks |
-| daily book | own clock | -0.79% | +2.86% | 0.79% | — | 1/2 | 79 trades scored |
-| checklist ≥ 5 | own clock | +2.30% | +3.20% | 0.00% | — | 2/2 | 43/30 scored |
+| daily book | own clock | -0.79% | +2.86% | 0.79% | — | 1/2 | 83 trades scored |
+| checklist ≥ 5 | own clock | +2.30% | +3.20% | 0.00% | — | 2/2 | 45/30 scored |
