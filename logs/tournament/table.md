@@ -1,22 +1,22 @@
-# Paper tournament — tournament_v1 (2026-11-22 15:29 UTC)
+# Paper tournament — tournament_v1 (2026-11-23 00:11 UTC)
 
 Pre-registration: `logs/backtest_reports/prereg_tournament_20261026.md` · rules_hash `ce6337a4bd97ea7c` · paper only, no orders.
 
 **Bar:** Stage 1 (2026-11-02 → 2027-01-31): an entrant whose drawdown passes 15% is out; at the end at most 2 entrants with net > 0 and a Sharpe above every random control go on. Stage 2 (2027-02-01 → 2027-08-01, fresh data): PASS = daily mean > 0 by a one-sided t-test, Holm at 5% across the picks; drawdown > 15% = FAIL. A PASS is not an order to trade real money.
 
-Week = Mon–Sun ending 2026-11-15. Entrants and controls are at 10% volatility; per-trade lanes are % of the account at 0.5% risk per trade, by signal week, and fill in as 2-day windows close. Sharpe shows after 8 weeks. The leader is not a winner: selection 2027-02-01, confirmation to 2027-08-01.
+Week = Mon–Sun ending 2026-11-22. Entrants and controls are at 10% volatility; per-trade lanes are % of the account at 0.5% risk per trade, by signal week, and fill in as 2-day windows close. Sharpe shows after 8 weeks. The leader is not a winner: selection 2027-02-01, confirmation to 2027-08-01.
 
 | lane | role | week | since 11-02 | max DD | Sharpe | weeks green | status |
 |---|---|---|---|---|---|---|---|
-| 28-day momentum | entrant | -6.70% | +1.06% | 8.38% | — | 1/2 | stage 1 · week 3/13 |
-| new-listing short, BTC-hedged | entrant | -0.58% | +0.72% | 0.59% | — | 1/2 | stage 1 · week 3/13 |
-| BTC trend, long only | entrant | +0.00% | +0.00% | 0.00% | — | 0/2 | stage 1 · week 3/13 |
-| funding carry 7d | entrant | +7.24% | +3.20% | 5.61% | — | 1/2 | stage 1 · week 3/13 |
-| random control 1 | control | -6.76% | -6.51% | 7.69% | — | 1/2 | control |
-| random control 2 | control | -1.45% | -2.44% | 2.44% | — | 0/2 | control |
-| random control 3 | control | -0.32% | -0.96% | 0.99% | — | 0/2 | control |
-| paper #3 blend | own clock | -0.01% | +1.80% | 0.44% | — | 1/2 | RUNNING |
-| paper #2 momentum k56 | own clock | +2.61% | +9.98% | 0.00% | — | 2/2 | 6/26 weeks |
-| paper #2 momentum k91 | own clock | +1.35% | +2.35% | 0.00% | — | 2/2 | 6/26 weeks |
-| daily book | own clock | -0.79% | +2.86% | 0.79% | — | 1/2 | 90 trades scored |
-| checklist ≥ 5 | own clock | +2.30% | +3.20% | 0.00% | — | 2/2 | 51/30 scored |
+| 28-day momentum | entrant | +0.76% | +1.82% | 8.38% | — | 2/3 | stage 1 · week 3/13 |
+| new-listing short, BTC-hedged | entrant | -1.05% | -0.33% | 2.74% | — | 1/3 | stage 1 · week 3/13 |
+| BTC trend, long only | entrant | +0.00% | +0.00% | 0.00% | — | 0/3 | stage 1 · week 3/13 |
+| funding carry 7d | entrant | -0.69% | +2.51% | 5.61% | — | 1/3 | stage 1 · week 3/13 |
+| random control 1 | control | +0.14% | -6.37% | 7.69% | — | 2/3 | control |
+| random control 2 | control | -0.71% | -3.14% | 3.14% | — | 0/3 | control |
+| random control 3 | control | +0.25% | -0.71% | 1.19% | — | 1/3 | control |
+| paper #3 blend | own clock | -0.32% | +1.48% | 0.82% | — | 1/3 | RUNNING |
+| paper #2 momentum k56 | own clock | — | +9.98% | 0.00% | — | 2/2 | 6/26 weeks |
+| paper #2 momentum k91 | own clock | — | +2.35% | 0.00% | — | 2/2 | 6/26 weeks |
+| daily book | own clock | +2.40% | +5.26% | 0.79% | — | 2/3 | 91 trades scored |
+| checklist ≥ 5 | own clock | +1.01% | +4.21% | 0.00% | — | 3/3 | 52/30 scored |
