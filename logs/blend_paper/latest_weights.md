@@ -1,6 +1,6 @@
-# Paper book for 2026-11-26 (held over the next UTC day) — 10% volatility target
+# Paper book for 2026-11-27 (held over the next UTC day) — 10% volatility target
 
-37 positions · gross 35.0% of capital · net exposure -0.0% · computed 2026-11-27T00:04:05.399175+00:00 · paper only, no orders.
+37 positions · gross 35.0% of capital · net exposure -0.0% · computed 2026-11-28T00:04:31.905861+00:00 · paper only, no orders.
 
 | symbol | side | weight (% of capital) |
 |---|---|---|
