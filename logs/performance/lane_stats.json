@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-27T00:03:22.030593+00:00",
+  "generated_at": "2026-11-28T00:03:22.547407+00:00",
   "era": "v2 (closed-bar signals, trade_sim, managed trade net of cost)",
   "lanes": [
     "mechanical",
@@ -19,26 +19,26 @@
         "net": 0.254
       },
       "d30": {
-        "n": 36,
-        "prof_pct": 72.2,
-        "net": 0.289
+        "n": 31,
+        "prof_pct": 67.7,
+        "net": 0.263
       }
     },
     "liquidity_sweep_long": {
       "all": {
-        "n": 180,
-        "prof_pct": 47.8,
-        "net": -0.183
+        "n": 183,
+        "prof_pct": 48.1,
+        "net": -0.18
       },
       "last30": {
         "n": 30,
-        "prof_pct": 40.0,
-        "net": -0.117
+        "prof_pct": 46.7,
+        "net": -0.008
       },
       "d30": {
-        "n": 81,
-        "prof_pct": 51.9,
-        "net": -0.051
+        "n": 84,
+        "prof_pct": 52.4,
+        "net": -0.049
       }
     },
     "range_reversion_long": {
@@ -70,9 +70,9 @@
         "net": 0.374
       },
       "d30": {
-        "n": 2,
+        "n": 1,
         "prof_pct": 100.0,
-        "net": 0.861
+        "net": 1.068
       }
     },
     "rsi_bounce_long": {
@@ -87,39 +87,39 @@
         "net": -0.304
       },
       "d30": {
-        "n": 50,
-        "prof_pct": 44.0,
-        "net": -0.238
+        "n": 48,
+        "prof_pct": 45.8,
+        "net": -0.223
       }
     },
     "trend_pullback_short": {
       "all": {
-        "n": 171,
-        "prof_pct": 61.4,
-        "net": 0.152
+        "n": 174,
+        "prof_pct": 61.5,
+        "net": 0.154
       },
       "last30": {
         "n": 30,
         "prof_pct": 43.3,
-        "net": -0.17
+        "net": -0.129
       },
       "d30": {
-        "n": 89,
-        "prof_pct": 66.3,
-        "net": 0.299
+        "n": 88,
+        "prof_pct": 68.2,
+        "net": 0.334
       }
     }
   },
   "by_direction": {
     "short": {
-      "n": 281,
+      "n": 284,
       "prof_pct": 64.4,
-      "net": 0.193
+      "net": 0.194
     },
     "long": {
-      "n": 297,
-      "prof_pct": 47.1,
-      "net": -0.192
+      "n": 300,
+      "prof_pct": 47.3,
+      "net": -0.19
     }
   }
 }

@@ -1,0 +1,50 @@
+{
+  "run_tag": "20261125_0402",
+  "run_timestamp_utc": "2026-11-25T04:02:05.025641+00:00",
+  "model": "claude-sonnet-4-6",
+  "regime": "risk_off",
+  "evaluated_at_utc": "2026-11-28T00:03:17.011297+00:00",
+  "results": [
+    {
+      "status": "not_filled",
+      "reason": "limit at 0.07383 not traded through within 2 bars",
+      "entry_model": "limit_open",
+      "symbol": "ACEUSDT",
+      "direction": "short",
+      "timeframe": "intraday",
+      "setup_type": "trend_pullback",
+      "confidence": "low",
+      "predicted_rr": 0.75,
+      "tf_confluence": 3,
+      "rank": 1,
+      "rules_applied": [
+        "validated_signal",
+        "trend_pullback"
+      ],
+      "regime": "risk_off",
+      "interest_score": 0.0,
+      "source": "shadow",
+      "backtested_signal": "trend_pullback_short",
+      "signal_name": "trend_pullback_short",
+      "daily_pick": true,
+      "daily_pick_seq": 3,
+      "checklist": {
+        "version": "v1",
+        "t_ms": 1795579200000,
+        "score": 4,
+        "points": {
+          "trend_4h": true,
+          "trend_1h": true,
+          "ma200_d": true,
+          "sd_zone": false,
+          "trendline": false,
+          "btc_4h": true,
+          "funding": false,
+          "oi_trapped": false,
+          "volume": false
+        },
+        "derivs_ok": true
+      }
+    }
+  ]
+}
